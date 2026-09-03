@@ -1,0 +1,6 @@
+{
+  "name": "Executive Operations & Compliance Portal",
+  "description": "Centralized Performance & Review Dashboards for operational, safety, quality, and compliance management.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
