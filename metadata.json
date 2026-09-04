@@ -1,6 +1,6 @@
 {
   "name": "Executive Operations & Compliance Portal",
-  "description": "Centralized Performance & Review Dashboards for operational, safety, quality, and compliance management.",
+  "description": "FPCL Executive Operations & Compliance Portal featuring 3D orbiting emblem, 8-foot high-visibility display mode, and Plant Loss Reports (PLR) dashboard plotting 233 incident records and recommendations from Google Sheets.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

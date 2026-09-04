@@ -42,8 +42,19 @@
 
     <!-- Lucide Icons via CDN -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Plant Loss Reports (PLR) Google Sheets Dataset -->
+    <script src="/assets/plrData.js"></script>
 
     <style>
+      /* Base font legibility boost across the portal */
+      html {
+        font-size: 16.5px;
+      }
+      body {
+        color: #1E293B;
+        text-rendering: optimizeLegibility;
+      }
+
       /* Custom scrollbar and smooth transitions */
       ::-webkit-scrollbar {
         width: 8px;
@@ -84,39 +95,377 @@
       .pulse-indicator {
         animation: pulse-subtle 2.5s infinite ease-in-out;
       }
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+
+      /* Marketing Gradient Buttons & Accents */
+      .btn-marketing-gradient {
+        background: linear-gradient(135deg, #1D4ED8 0%, #3B82F6 50%, #06B6D4 100%);
+        color: #ffffff;
+        box-shadow: 0 4px 14px -2px rgba(37, 99, 235, 0.35);
+        transition: all 0.25s ease;
+      }
+      .btn-marketing-gradient:hover {
+        transform: translateY(-1.5px);
+        box-shadow: 0 6px 20px -2px rgba(37, 99, 235, 0.45);
+        filter: brightness(1.05);
+      }
+      .glow-subtle {
+        box-shadow: 0 8px 30px -4px rgba(0, 0, 0, 0.06);
+      }
+
+      /* ========================================================================= */
+      /* FPCL 3D GYROSCOPIC EMBLEM ANIMATIONS                                      */
+      /* ========================================================================= */
+      .fpcl-3d-scene {
+        perspective: 900px;
+        -webkit-perspective: 900px;
+      }
+
+      /* 1. HORIZONTAL ROTATION (360° around Y-Axis in infinite loop for Central Logo) */
+      @keyframes fpclSpinHorizontal360 {
+        0% {
+          transform: rotateY(0deg);
+        }
+        100% {
+          transform: rotateY(360deg);
+        }
+      }
+      .fpcl-rotate-horizontal-loop {
+        animation: fpclSpinHorizontal360 8s linear infinite;
+        transform-style: preserve-3d;
+        -webkit-transform-style: preserve-3d;
+        will-change: transform;
+      }
+
+      /* 2. CIRCULAR ROTATION AROUND THE LOGO (360° rotation around the logo center in infinite loop) */
+      @keyframes fpclRotateAroundLogo {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+      .fpcl-rotate-around-loop {
+        animation: fpclRotateAroundLogo 6s linear infinite;
+        transform-origin: center center;
+        will-change: transform;
+      }
+
+      /* Subtle speed acceleration & glow on user hover */
+      #fpcl-emblem-stage:hover .fpcl-rotate-horizontal-loop {
+        animation-duration: 4.5s;
+      }
+      #fpcl-emblem-stage:hover .fpcl-rotate-around-loop {
+        animation-duration: 3.5s;
+      }
+      #fpcl-emblem-stage:hover .fpcl-glow-target {
+        filter: drop-shadow(0 0 10px rgba(249, 115, 22, 0.55)) drop-shadow(0 0 14px rgba(2, 132, 199, 0.45));
+      }
+
+      /* ========================================================================= */
+      /* 8-FOOT DISPLAY DISTANCE HIGH-VISIBILITY MODE (CONTROL ROOM & LARGE DISPLAY)*/
+      /* ========================================================================= */
+      body.display-8ft {
+        font-size: 19px !important;
+        letter-spacing: 0.012em;
+      }
+      body.display-8ft h1 {
+        font-size: 2.15rem !important;
+        font-weight: 900 !important;
+      }
+      body.display-8ft h2 {
+        font-size: 1.85rem !important;
+        font-weight: 900 !important;
+      }
+      body.display-8ft h3 {
+        font-size: 1.45rem !important;
+        font-weight: 800 !important;
+      }
+      body.display-8ft .text-xs {
+        font-size: 0.9375rem !important; /* 15px */
+        line-height: 1.45 !important;
+      }
+      body.display-8ft .text-\[10px\],
+      body.display-8ft .text-\[11px\] {
+        font-size: 0.875rem !important; /* 14px */
+        font-weight: 700 !important;
+      }
+      body.display-8ft .text-sm {
+        font-size: 1.125rem !important; /* 18px */
+        line-height: 1.5 !important;
+      }
+      body.display-8ft .text-base {
+        font-size: 1.25rem !important; /* 20px */
+      }
+      body.display-8ft .text-xl {
+        font-size: 1.6rem !important;
+      }
+      body.display-8ft .text-2xl {
+        font-size: 2.25rem !important; /* 36px */
+        font-weight: 900 !important;
+      }
+      body.display-8ft .text-3xl {
+        font-size: 2.75rem !important;
+        font-weight: 900 !important;
+      }
+      body.display-8ft .text-4xl {
+        font-size: 3.5rem !important;
+        font-weight: 900 !important;
+      }
+      body.display-8ft td,
+      body.display-8ft th {
+        font-size: 1.0625rem !important; /* 17px */
+        padding-top: 0.9rem !important;
+        padding-bottom: 0.9rem !important;
+      }
+      body.display-8ft select,
+      body.display-8ft input {
+        font-size: 1rem !important;
+      }
+      body.display-8ft .plr-pill {
+        font-size: 0.95rem !important;
+        padding: 0.25rem 0.75rem !important;
+      }
     </style>
   </head>
 
-  <body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col antialiased selection:bg-blue-600 selection:text-white transition-colors duration-200">
+  <body class="bg-white text-slate-800 font-sans min-h-screen flex flex-col antialiased selection:bg-blue-600 selection:text-white">
+    <!-- Top Rainbow Gradient Accent Stripe for Marketing Presentation Impact -->
+    <div class="h-1.5 bg-gradient-to-r from-blue-600 via-indigo-600 via-purple-600 via-pink-500 via-amber-500 to-emerald-500 w-full shrink-0"></div>
+
     <!-- Toast Notification Container -->
     <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
     <!-- Application Top Navigation Bar -->
-    <header id="app-header" class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm transition-colors duration-200">
+    <header id="app-header" class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs transition-colors duration-200">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5">
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <!-- Logo & Brand Header -->
-          <div class="flex items-center gap-3.5">
-            <div id="brand-emblem" class="h-11 w-11 rounded-xl bg-gradient-to-br from-[#2E6DA4] to-[#1E40AF] flex items-center justify-center text-white shadow-md shadow-blue-500/20 ring-1 ring-white/30 shrink-0">
-              <i data-lucide="shield-check" class="w-6 h-6"></i>
+          <!-- Logo & Brand Header with FPCL 3D Gyroscopic Emblem -->
+          <div class="flex items-center gap-3.5 sm:gap-4">
+            <!-- 3D FPCL Emblem Stage -->
+            <div
+              id="fpcl-emblem-stage"
+              onclick="portalApp.handleDropdownSelect('overview')"
+              class="relative w-[76px] h-[76px] sm:w-[82px] sm:h-[82px] flex items-center justify-center shrink-0 cursor-pointer select-none group fpcl-3d-scene"
+              title="FPCL • FFBL Power Company Limited (Click to Return to Overview)"
+            >
+              <!-- 1. ORBITING CIRCLE WITH ORANGE AND BLUE COLOR (ROTATES AROUND THE LOGO IN 360° INFINITE LOOP) -->
+              <div
+                id="fpcl-vertical-orbit-ring"
+                class="absolute inset-0 flex items-center justify-center pointer-events-none fpcl-rotate-around-loop"
+              >
+                <!-- SVG Orange & Blue Dual-Arc Gyroscopic Ring matching reference design -->
+                <svg viewBox="0 0 84 84" class="w-full h-full fpcl-glow-target transition-all duration-300">
+                  <defs>
+                    <!-- FPCL Corporate Orange Gradient -->
+                    <linearGradient id="fpclRingOrangeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#FF7A1A"/>
+                      <stop offset="100%" stop-color="#EA580C"/>
+                    </linearGradient>
+                    <!-- FPCL Corporate Blue Gradient -->
+                    <linearGradient id="fpclRingBlueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#0284C7"/>
+                      <stop offset="100%" stop-color="#005A9C"/>
+                    </linearGradient>
+                    <!-- Subtle Teal/Cyan Accent Gradient -->
+                    <linearGradient id="fpclRingCyanGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#10B981"/>
+                      <stop offset="100%" stop-color="#06B6D4"/>
+                    </linearGradient>
+                  </defs>
+
+                  <!-- Subtle Orbital Track Dashed Ring -->
+                  <circle cx="42" cy="42" r="37" fill="none" stroke="#CBD5E1" stroke-width="1.2" stroke-dasharray="3 3" opacity="0.5"/>
+
+                  <!-- ORANGE ARC (Top-Left quadrant sweeping down to left side) -->
+                  <path
+                    d="M 10 42 A 32 32 0 0 1 42 10"
+                    fill="none"
+                    stroke="url(#fpclRingOrangeGrad)"
+                    stroke-width="4.5"
+                    stroke-linecap="round"
+                  />
+                  <!-- Top-Right Cyan/Teal Accent Arc (matching reference slide visual) -->
+                  <path
+                    d="M 42 10 A 32 32 0 0 1 70 24"
+                    fill="none"
+                    stroke="url(#fpclRingCyanGrad)"
+                    stroke-width="3"
+                    stroke-linecap="round"
+                  />
+
+                  <!-- BLUE ARC (Bottom-Right quadrant sweeping around the base) -->
+                  <path
+                    d="M 74 42 A 32 32 0 0 1 18 66"
+                    fill="none"
+                    stroke="url(#fpclRingBlueGrad)"
+                    stroke-width="4.5"
+                    stroke-linecap="round"
+                  />
+
+                  <!-- Secondary Inner Blue Arc (Dual-ring cradle at the base) -->
+                  <path
+                    d="M 66 48 A 26 26 0 0 1 24 60"
+                    fill="none"
+                    stroke="#38BDF8"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                    opacity="0.95"
+                  />
+
+                  <!-- Orbit Marker Beads (Glowing Orange & Blue Anchor Spheres) -->
+                  <circle cx="10" cy="42" r="3.5" fill="#FF7A1A"/>
+                  <circle cx="42" cy="10" r="2.8" fill="#EA580C"/>
+                  <circle cx="74" cy="42" r="3.5" fill="#0284C7"/>
+                  <circle cx="18" cy="66" r="2.8" fill="#005A9C"/>
+                </svg>
+              </div>
+
+              <!-- 2. CENTRAL FPCL LOGO BADGE (ROTATES HORIZONTALLY 360° IN INFINITE LOOP) -->
+              <div
+                id="fpcl-horizontal-logo-core"
+                class="w-[56px] h-[56px] sm:w-[62px] sm:h-[62px] relative flex items-center justify-center fpcl-rotate-horizontal-loop"
+              >
+                <!-- FRONT FACE OF BADGE (Facing viewer at 0°, upright & crystal clear) -->
+                <div
+                  class="absolute inset-0 rounded-full bg-white border-2 border-slate-200/95 shadow-md flex flex-col items-center justify-center p-1 overflow-hidden group-hover:border-blue-500 group-hover:shadow-blue-500/25 transition-all"
+                  style="backface-visibility: hidden; transform: rotateY(0deg);"
+                >
+                  <div class="absolute inset-0 bg-gradient-to-b from-white via-slate-50/90 to-blue-50/40 rounded-full pointer-events-none"></div>
+                  <!-- Inline FPCL Brand Vector Graphic -->
+                  <svg viewBox="0 0 135 48" class="w-full h-auto px-0.5 relative z-10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Orange Lightning Bolt Box -->
+                    <rect x="2" y="2" width="17" height="23" rx="2" fill="#F97316"/>
+                    <polygon points="11,3 6,13 10,13 5,23 14,11 10,11" fill="#0F172A"/>
+
+                    <!-- FPCL Wordmark -->
+                    <!-- F -->
+                    <path d="M 23 2 H 38 V 7 H 28 V 11 H 36 V 16 H 28 V 25 H 23 Z" fill="#0066B3"/>
+                    <!-- P -->
+                    <path d="M 41 2 H 54 C 59 2 62 5 62 10 C 62 15 59 18 54 18 H 46 V 25 H 41 Z M 46 7 V 13 H 53 C 55 13 56 12 56 10 C 56 8 55 7 53 7 Z" fill="#0066B3"/>
+                    <!-- C -->
+                    <path d="M 77 8 L 72 10 C 71 8 69 7 67 7 C 63 7 61 10 61 13.5 C 61 17 63 20 67 20 C 69 20 71 19 72 17 L 77 19 C 75 23 71 26 66 26 C 59 26 55 20.5 55 13.5 C 55 6.5 60 1 67 1 C 71 1 75 4 77 8 Z" fill="#0066B3"/>
+                    <!-- L (Blue base) -->
+                    <path d="M 80 2 H 86 V 20 H 104 V 25 H 80 Z" fill="#0066B3"/>
+                    <!-- L Orange Diagonal Blade -->
+                    <polygon points="93,2 100,2 86,25 79,25" fill="#F97316"/>
+                    <polygon points="86,25 106,25 102,18 84,18" fill="#EA580C"/>
+
+                    <!-- Subtitle 1: FFBL POWER COMPANY LIMITED -->
+                    <text x="2" y="35" fill="#005A9C" font-family="system-ui, -apple-system, sans-serif" font-size="6.8" font-weight="900" letter-spacing="0.4">FFBL POWER COMPANY LIMITED</text>
+
+                    <!-- Subtitle 2: FUELING POSSIBILITIES! -->
+                    <text x="2" y="44" fill="#EA580C" font-family="system-ui, -apple-system, sans-serif" font-size="5.2" font-weight="900" letter-spacing="1.2">FUELING POSSIBILITIES!</text>
+                  </svg>
+                </div>
+
+                <!-- BACK FACE OF BADGE (Facing viewer at 180°, upright so text never reads backwards!) -->
+                <div
+                  class="absolute inset-0 rounded-full bg-white border-2 border-slate-200/95 shadow-md flex flex-col items-center justify-center p-1 overflow-hidden group-hover:border-orange-500 group-hover:shadow-orange-500/25 transition-all"
+                  style="backface-visibility: hidden; transform: rotateY(180deg);"
+                >
+                  <div class="absolute inset-0 bg-gradient-to-b from-white via-slate-50/90 to-orange-50/40 rounded-full pointer-events-none"></div>
+                  <!-- Inline FPCL Brand Vector Graphic -->
+                  <svg viewBox="0 0 135 48" class="w-full h-auto px-0.5 relative z-10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Orange Lightning Bolt Box -->
+                    <rect x="2" y="2" width="17" height="23" rx="2" fill="#F97316"/>
+                    <polygon points="11,3 6,13 10,13 5,23 14,11 10,11" fill="#0F172A"/>
+
+                    <!-- FPCL Wordmark -->
+                    <!-- F -->
+                    <path d="M 23 2 H 38 V 7 H 28 V 11 H 36 V 16 H 28 V 25 H 23 Z" fill="#0066B3"/>
+                    <!-- P -->
+                    <path d="M 41 2 H 54 C 59 2 62 5 62 10 C 62 15 59 18 54 18 H 46 V 25 H 41 Z M 46 7 V 13 H 53 C 55 13 56 12 56 10 C 56 8 55 7 53 7 Z" fill="#0066B3"/>
+                    <!-- C -->
+                    <path d="M 77 8 L 72 10 C 71 8 69 7 67 7 C 63 7 61 10 61 13.5 C 61 17 63 20 67 20 C 69 20 71 19 72 17 L 77 19 C 75 23 71 26 66 26 C 59 26 55 20.5 55 13.5 C 55 6.5 60 1 67 1 C 71 1 75 4 77 8 Z" fill="#0066B3"/>
+                    <!-- L (Blue base) -->
+                    <path d="M 80 2 H 86 V 20 H 104 V 25 H 80 Z" fill="#0066B3"/>
+                    <!-- L Orange Diagonal Blade -->
+                    <polygon points="93,2 100,2 86,25 79,25" fill="#F97316"/>
+                    <polygon points="86,25 106,25 102,18 84,18" fill="#EA580C"/>
+
+                    <!-- Subtitle 1: FFBL POWER COMPANY LIMITED -->
+                    <text x="2" y="35" fill="#005A9C" font-family="system-ui, -apple-system, sans-serif" font-size="6.8" font-weight="900" letter-spacing="0.4">FFBL POWER COMPANY LIMITED</text>
+
+                    <!-- Subtitle 2: FUELING POSSIBILITIES! -->
+                    <text x="2" y="44" fill="#EA580C" font-family="system-ui, -apple-system, sans-serif" font-size="5.2" font-weight="900" letter-spacing="1.2">FUELING POSSIBILITIES!</text>
+                  </svg>
+                </div>
+              </div>
             </div>
+
+            <!-- Brand Header Title & Identity -->
             <div>
               <div class="flex items-center gap-2">
-                <h1 id="app-title" class="text-lg sm:text-xl font-bold tracking-tight text-[#2B2E33] flex items-center gap-2">
-                  Executive Operations & Compliance Portal
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black font-mono tracking-wider uppercase bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-2xs">
+                  FPCL
+                </span>
+                <h1 id="app-title" class="text-base sm:text-lg lg:text-xl font-black tracking-tight text-[#1E293B] flex items-center gap-2">
+                  FFBL Power Company Limited
                 </h1>
-                <span id="portal-version-badge" class="hidden sm:inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-300">
-                  v2.6 Enterprise
+                <span id="portal-version-badge" class="hidden sm:inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 border border-blue-200 shadow-2xs">
+                  v3.0 Live Marketing View
                 </span>
               </div>
-              <p id="app-subtitle" class="text-xs sm:text-sm text-slate-500 font-medium">
-                Centralized Performance & Review Dashboards
+              <p id="app-subtitle" class="text-xs sm:text-sm text-slate-600 font-medium">
+                Executive Operations & Plant Integrity Portal • 12 Dashboards (incl. PLR)
               </p>
             </div>
           </div>
 
-          <!-- Header Right Utilities & Status Indicator -->
+          <!-- Header Right Utilities & Dropdown Menu -->
           <div class="flex items-center flex-wrap gap-2.5">
+            <!-- 8-Foot Distance High-Visibility Display Mode Toggle -->
+            <button
+              id="btn-toggle-8ft"
+              onclick="portalApp.toggle8FtMode()"
+              class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shadow-xs border cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-300"
+              title="Toggle 8-Foot High Visibility Mode (Large Typography for Wall Display & Control Room)"
+            >
+              <i data-lucide="tv" class="w-4 h-4 text-orange-600"></i>
+              <span id="label-8ft-mode">8-Foot Mode: <span class="text-slate-500 font-semibold">OFF</span></span>
+            </button>
+
+            <!-- Global Dashboard Dropdown Selector -->
+            <div class="flex items-center gap-2 bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-1.5 shadow-2xs hover:border-slate-400 transition-colors">
+              <i data-lucide="layout-grid" class="w-4 h-4 text-[#2E6DA4] shrink-0"></i>
+              <label for="header-dashboard-select" class="text-xs font-bold text-slate-700 whitespace-nowrap hidden sm:inline">Select Dashboard:</label>
+              <select
+                id="header-dashboard-select"
+                onchange="portalApp.handleDropdownSelect(this.value)"
+                class="bg-transparent text-xs font-semibold text-[#2B2E33] focus:outline-none cursor-pointer max-w-[200px] sm:max-w-[230px] truncate"
+              >
+                <option value="overview">📊 All Dashboards Overview (Main Page)</option>
+                <optgroup label="Plant Integrity & Incidents">
+                  <option value="plr">⚠️ Plant Loss Reports (PLR) • 233 Incidents</option>
+                </optgroup>
+                <optgroup label="Executive & Governance">
+                  <option value="executive-hse-committee-ehsec">🏛️ Executive HSE Committee (EHSEC)</option>
+                  <option value="risk-survey">⚖️ Risk survey</option>
+                </optgroup>
+                <optgroup label="Sub HSE Committees">
+                  <option value="sub-hse-p">📑 Sub HSE - P</option>
+                  <option value="sub-hse-ei">⚡ Sub HSE – E&I</option>
+                  <option value="sub-hse-mech">🔧 Sub HSE – Mech.</option>
+                  <option value="sub-hse-psm">🛡️ Sub HSE - PSM</option>
+                  <option value="sub-hse-eri">🚨 Sub HSE - ERI</option>
+                </optgroup>
+                <optgroup label="Process Safety & Quality">
+                  <option value="rca">🔬 RCA</option>
+                  <option value="pssr">✅ PSSR</option>
+                  <option value="inspection-report-actions">📋 Inspection Report Actions</option>
+                  <option value="pha-recommendations">⚠️ PHA recommendations</option>
+                </optgroup>
+              </select>
+            </div>
+
             <!-- Global Status Indicator Pill -->
             <div id="global-status-pill" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 border border-emerald-300 text-emerald-800 shadow-xs" title="All dashboard modules ready for Google Sheets / ERP connection">
               <span class="relative flex h-2 w-2">
@@ -141,34 +490,244 @@
             <!-- Color Palette Info Pill -->
             <button id="btn-palette-info" onclick="portalApp.showPaletteInfo()" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-300 transition-colors shadow-2xs" title="View Executive Color Scheme Guide">
               <i data-lucide="palette" class="w-3.5 h-3.5 text-[#2E6DA4]"></i>
-              <span class="hidden md:inline">18 Schemes</span>
+              <span class="hidden md:inline">12 Schemes</span>
             </button>
           </div>
         </div>
       </div>
     </header>
 
+    <!-- Dedicated Dashboards Navigation Menu Bar -->
+    <nav id="dashboards-navigation-menu" aria-label="Individual Dashboards Menu" class="bg-white border-b border-slate-200 sticky top-[73px] z-30 shadow-2xs transition-colors">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center gap-2.5 py-2.5 overflow-x-auto no-scrollbar scroll-smooth">
+          <div class="flex items-center gap-1.5 text-xs font-bold text-slate-500 uppercase tracking-wider shrink-0 pr-3 border-r border-slate-200">
+            <i data-lucide="compass" class="w-4 h-4 text-[#2E6DA4]"></i>
+            <span>Dashboard Menu:</span>
+          </div>
+          <!-- Menu item buttons rendered dynamically and interactive -->
+          <div id="nav-menu-links-container" class="flex items-center gap-1.5 shrink-0">
+            <!-- Dynamically populated via portalApp.renderNavMenu() -->
+          </div>
+        </div>
+      </div>
+    </nav>
+
     <!-- MAIN CONTAINER -->
     <main id="main-content" class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
 
       <!-- ========================================================================= -->
-      <!-- VIEW 1: MAIN LANDING PAGE / INDEX VIEW (DASHBOARD CARDS GRID)             -->
+      <!-- VIEW 1: MAIN LANDING PAGE / INDEX VIEW (DEPARTMENT DONUT ANALYTICS)        -->
       <!-- ========================================================================= -->
       <section id="portal-landing-view" class="space-y-6">
+
+        <!-- ========================================================================= -->
+        <!-- 1. TOP MARKETING KPI ROW (Directly matched from Reference Slide 1 top)     -->
+        <!-- ========================================================================= -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+          <!-- 1. TODAY'S PROGRESS (Sky Blue) -->
+          <div class="bg-white border border-slate-200 rounded-xl p-3.5 shadow-xs relative overflow-hidden flex flex-col justify-between border-t-4 border-sky-500 hover:shadow-md transition-all">
+            <div class="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 text-center">Today's Progress</div>
+            <div class="text-2xl sm:text-3xl font-black font-mono text-[#0284C7] text-center my-1">87.8%</div>
+            <div class="text-[10px] text-slate-500 text-center font-medium truncate">Current as of Today</div>
+          </div>
+          <!-- 2. PREVIOUS PROGRESS (Slate / Steel) -->
+          <div class="bg-white border border-slate-200 rounded-xl p-3.5 shadow-xs relative overflow-hidden flex flex-col justify-between border-t-4 border-slate-600 hover:shadow-md transition-all">
+            <div class="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 text-center">Previous Progress</div>
+            <div class="text-2xl sm:text-3xl font-black font-mono text-slate-700 text-center my-1">79.4%</div>
+            <div class="text-[10px] text-emerald-600 font-semibold text-center truncate">↑ +8.4% vs Last Period</div>
+          </div>
+          <!-- 3. MILESTONES COMPLETED (Emerald Green) -->
+          <div class="bg-white border border-slate-200 rounded-xl p-3.5 shadow-xs relative overflow-hidden flex flex-col justify-between border-t-4 border-emerald-500 hover:shadow-md transition-all">
+            <div class="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 text-center">Milestones Met</div>
+            <div class="text-2xl sm:text-3xl font-black font-mono text-[#16A34A] text-center my-1">10 / 11</div>
+            <div class="text-[10px] text-emerald-700 font-semibold text-center truncate">Dashboards ≥85% Target</div>
+          </div>
+          <!-- 4. PLANNED (Q3 2026) (Amber / Gold) -->
+          <div class="bg-white border border-slate-200 rounded-xl p-3.5 shadow-xs relative overflow-hidden flex flex-col justify-between border-t-4 border-amber-500 hover:shadow-md transition-all">
+            <div class="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 text-center">Planned (Q3)</div>
+            <div class="text-2xl sm:text-3xl font-black font-mono text-[#D97706] text-center my-1">95.0%</div>
+            <div class="text-[10px] text-amber-700 font-semibold text-center truncate">⚠️ 7.2% to target</div>
+          </div>
+          <!-- 5. CRITICAL ATTENTION (Crimson Red) -->
+          <div class="bg-white border border-slate-200 rounded-xl p-3.5 shadow-xs relative overflow-hidden flex flex-col justify-between border-t-4 border-rose-500 hover:shadow-md transition-all">
+            <div class="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 text-center">Critical Attention</div>
+            <div class="text-2xl sm:text-3xl font-black font-mono text-[#DC2626] text-center my-1">11</div>
+            <div class="text-[10px] text-rose-600 font-semibold text-center truncate">Overdue Actions</div>
+          </div>
+          <!-- 6. TOP DASHBOARD (Cyan / Teal) -->
+          <div class="bg-white border border-slate-200 rounded-xl p-3.5 shadow-xs relative overflow-hidden flex flex-col justify-between border-t-4 border-cyan-500 hover:shadow-md transition-all">
+            <div class="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 text-center">Top Dashboard</div>
+            <div class="text-lg sm:text-xl font-black font-mono text-[#0891B2] text-center my-1.5 truncate">Inspection</div>
+            <div class="text-[10px] text-cyan-800 font-semibold text-center truncate">90.0% Closed</div>
+          </div>
+          <!-- 7. ACTIVE WORKLOAD (Purple / Violet) -->
+          <div class="bg-white border border-slate-200 rounded-xl p-3.5 shadow-xs relative overflow-hidden flex flex-col justify-between border-t-4 border-purple-500 hover:shadow-md transition-all cursor-pointer" onclick="portalApp.openActionsModal()">
+            <div class="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 text-center">Active Workload</div>
+            <div class="text-xl sm:text-2xl font-black font-mono text-[#7C3AED] text-center my-1.5 truncate">46 Actions</div>
+            <div class="text-[10px] text-purple-700 font-bold text-center truncate flex items-center justify-center gap-1">
+              <span>📋 In-Progress List</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- 2. MARKETING VISUAL CHARTS (Slide 1: Timeline vs Plan & Module Comparison) -->
+        <!-- ========================================================================= -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <!-- Left Chart: Timeline Progress vs Plan -->
+          <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-3">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-2 border-b border-slate-100 gap-2">
+              <h3 class="text-xs sm:text-sm font-black text-[#1E293B] tracking-wide flex items-center gap-2">
+                <span class="text-base">📈</span> TIMELINE PROGRESS VS PLAN
+              </h3>
+              <div class="flex items-center gap-3 text-xs font-semibold">
+                <span class="flex items-center gap-1.5 text-blue-600">
+                  <span class="w-2.5 h-2.5 rounded-xs bg-gradient-to-r from-blue-600 to-cyan-500"></span> Actual Progress
+                </span>
+                <span class="flex items-center gap-1.5 text-amber-600">
+                  <span class="w-3 h-0.5 border-t-2 border-dashed border-amber-500"></span> Planned (95.0%)
+                </span>
+              </div>
+            </div>
+            <!-- Interactive SVG Line Chart Container -->
+            <div id="timeline-chart-container" class="w-full overflow-hidden min-h-[220px]">
+              <!-- Dynamically populated by portalApp.renderTimelineChart() -->
+            </div>
+            <!-- Commentary Footnote -->
+            <div class="pt-2 border-t border-slate-100 flex items-center gap-2 text-xs text-slate-600 bg-slate-50/80 p-2.5 rounded-xl">
+              <span class="text-slate-400 shrink-0">💬</span>
+              <span class="font-medium">Plan VS Actual Variance is non-critical and on track for plant-wide operational milestones.</span>
+            </div>
+          </div>
+
+          <!-- Right Chart: Dashboard Progress Comparison -->
+          <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-3">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-2 border-b border-slate-100 gap-2">
+              <h3 class="text-xs sm:text-sm font-black text-[#1E293B] tracking-wide flex items-center gap-2">
+                <span class="text-base">🎯</span> DASHBOARD PROGRESS COMPARISON
+              </h3>
+              <div class="flex items-center gap-2 text-xs font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                <span class="w-2.5 h-0.5 border-t-2 border-dashed border-amber-600"></span>
+                <span>Target 95.0%</span>
+              </div>
+            </div>
+            <!-- Interactive SVG Bar Chart Container -->
+            <div id="comparison-chart-container" class="w-full overflow-hidden min-h-[220px]">
+              <!-- Dynamically populated by portalApp.renderComparisonChart() -->
+            </div>
+            <!-- Legend Indicators -->
+            <div id="comparison-legend" class="pt-2 border-t border-slate-100 flex flex-wrap items-center justify-center gap-2 text-[10px] font-mono font-bold text-slate-600">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- 3. EXECUTIVE HIGHLIGHT SPOTLIGHT STRIP (Directly from Slide 1 bottom)       -->
+        <!-- ========================================================================= -->
+        <div class="bg-gradient-to-r from-rose-50 via-white to-blue-50 border border-slate-200 rounded-2xl p-3.5 sm:p-4 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <span class="px-2.5 py-1 rounded-lg text-xs font-black bg-gradient-to-r from-rose-500 to-red-600 text-white uppercase tracking-wider flex items-center gap-1.5 shadow-xs shrink-0">
+              <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> SEPARATE MODULE METRICS
+            </span>
+            <div class="text-xs sm:text-sm font-bold text-[#1E293B]">
+              Top Compliance Rate: <span class="text-[#0891B2] font-black text-base">Inspection Report Actions (90.00%)</span>
+            </div>
+          </div>
+          <div class="text-xs text-slate-600 flex items-center gap-2">
+            <span class="text-slate-400 shrink-0">💬</span>
+            <span>Status: 409 actions closed, 46 in progress, 11 under committee review. Phase 2 verification active.</span>
+          </div>
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- 4. MARKETING STATUS PANELS (Directly matched from Reference Slide 2)       -->
+        <!-- ========================================================================= -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+          <!-- Left Panel: Action Scenarios Status (7 Columns) -->
+          <div class="lg:col-span-7 bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-4">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+              <h3 class="text-xs sm:text-sm font-black text-[#1E293B] tracking-wide flex items-center gap-2">
+                <span class="text-base">📊</span> ACTION EXECUTION STATUS BY DASHBOARD
+              </h3>
+              <span class="text-[11px] font-bold text-slate-600 bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-200">
+                11 Active Modules
+              </span>
+            </div>
+            <!-- Dynamic list of colorful scenario bars matching Slide 2 -->
+            <div id="action-scenarios-container" class="space-y-3.5">
+              <!-- Injected via portalApp.renderActionScenarios() -->
+            </div>
+          </div>
+
+          <!-- Right Column: Punch List & Data Readiness (5 Columns) -->
+          <div class="lg:col-span-5 space-y-5">
+            <!-- Punch List Distribution -->
+            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-3">
+              <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                <h3 class="text-xs sm:text-sm font-black text-[#1E293B] tracking-wide flex items-center gap-2">
+                  <span class="text-base">📋</span> PUNCH LIST MODULE-WISE DISTRIBUTION
+                </h3>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                  <thead>
+                    <tr class="border-b border-slate-200 text-[11px] font-extrabold uppercase text-slate-500">
+                      <th class="pb-2">Module</th>
+                      <th class="pb-2 text-rose-600">Open</th>
+                      <th class="pb-2 text-emerald-600">Closed</th>
+                      <th class="pb-2">Total</th>
+                      <th class="pb-2">Progress</th>
+                      <th class="pb-2 text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="punch-list-tbody" class="divide-y divide-slate-100 font-medium">
+                    <!-- Injected via portalApp.renderPunchListTable() -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Data Readiness Status -->
+            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-3">
+              <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                <h3 class="text-xs sm:text-sm font-black text-[#1E293B] tracking-wide flex items-center gap-2">
+                  <span class="text-base">💾</span> DATA READINESS & AUDIT STATUS
+                </h3>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                  <thead>
+                    <tr class="border-b border-slate-200 text-[11px] font-extrabold uppercase text-slate-500">
+                      <th class="pb-2">Module</th>
+                      <th class="pb-2">Action Closure</th>
+                      <th class="pb-2">Sign-Off</th>
+                      <th class="pb-2 text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="data-readiness-tbody" class="divide-y divide-slate-100 font-medium">
+                    <!-- Injected via portalApp.renderDataReadiness() -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
         
-        <!-- Search, Quick Filters & Overview Metrics Bar -->
+        <!-- Search, Dropdown Quick-Selector & Filter Bar -->
         <div id="controls-panel" class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs space-y-4">
-          <div class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
+          <div class="flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-4">
             
             <!-- Live Search Bar -->
-            <div class="relative flex-1 max-w-2xl">
+            <div class="relative flex-1 max-w-xl">
               <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                 <i data-lucide="search" class="w-4 h-4"></i>
               </div>
               <input
                 id="search-input"
                 type="text"
-                placeholder="Search operational dashboards (e.g. Energy, Product Quality, Ammonia, SOC, PSM)..."
+                placeholder="Search dashboard (e.g. EHSEC, Sub HSE - P, E&I, Mech., PSM, ERI, RCA, PSSR, Inspection, PHA, Risk survey)..."
                 class="w-full pl-10 pr-20 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm text-[#2B2E33] placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2E6DA4] focus:border-transparent transition-all shadow-inner"
                 oninput="portalApp.handleSearch(this.value)"
               />
@@ -187,31 +746,66 @@
               </div>
             </div>
 
-            <!-- Status Filter Toggle Tabs -->
-            <div class="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200 self-start lg:self-auto overflow-x-auto max-w-full">
-              <button
-                id="filter-status-all"
-                onclick="portalApp.setStatusFilter('all')"
-                class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-[#2E6DA4] text-white shadow-xs transition-all whitespace-nowrap"
-              >
-                All Statuses (<span id="count-all">18</span>)
-              </button>
-              <button
-                id="filter-status-active"
-                onclick="portalApp.setStatusFilter('Active')"
-                class="px-3 py-1.5 text-xs font-medium rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white transition-all whitespace-nowrap flex items-center gap-1.5"
-              >
-                <span class="w-2 h-2 rounded-full bg-[#2F9E58]"></span>
-                Active (<span id="count-active">14</span>)
-              </button>
-              <button
-                id="filter-status-awaiting"
-                onclick="portalApp.setStatusFilter('Awaiting Sheet Data')"
-                class="px-3 py-1.5 text-xs font-medium rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white transition-all whitespace-nowrap flex items-center gap-1.5"
-              >
-                <span class="w-2 h-2 rounded-full bg-[#C98A2B]"></span>
-                Awaiting Data (<span id="count-awaiting">4</span>)
-              </button>
+            <div class="flex flex-wrap items-center gap-3">
+              <!-- Dropdown Menu to Directly Select Any Dashboard -->
+              <div class="flex items-center gap-2 bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 shadow-2xs hover:border-slate-400 transition-colors">
+                <i data-lucide="compass" class="w-4 h-4 text-[#2E6DA4] shrink-0"></i>
+                <label for="toolbar-dashboard-select" class="text-xs font-bold text-slate-700 whitespace-nowrap">Dashboard Menu:</label>
+                <select
+                  id="toolbar-dashboard-select"
+                  onchange="portalApp.handleDropdownSelect(this.value)"
+                  class="bg-transparent text-xs font-semibold text-[#2B2E33] focus:outline-none cursor-pointer pr-1"
+                >
+                  <option value="overview">📊 All Dashboards Overview (Main Page)</option>
+                  <optgroup label="Plant Integrity & Incidents">
+                    <option value="plr">⚠️ Plant Loss Reports (PLR) • 233 Incidents</option>
+                  </optgroup>
+                  <optgroup label="Executive & Governance">
+                    <option value="executive-hse-committee-ehsec">🏛️ Executive HSE Committee (EHSEC)</option>
+                    <option value="risk-survey">⚖️ Risk survey</option>
+                  </optgroup>
+                  <optgroup label="Sub HSE Committees">
+                    <option value="sub-hse-p">📑 Sub HSE - P</option>
+                    <option value="sub-hse-ei">⚡ Sub HSE – E&I</option>
+                    <option value="sub-hse-mech">🔧 Sub HSE – Mech.</option>
+                    <option value="sub-hse-psm">🛡️ Sub HSE - PSM</option>
+                    <option value="sub-hse-eri">🚨 Sub HSE - ERI</option>
+                  </optgroup>
+                  <optgroup label="Process Safety & Quality">
+                    <option value="rca">🔬 RCA</option>
+                    <option value="pssr">✅ PSSR</option>
+                    <option value="inspection-report-actions">📋 Inspection Report Actions</option>
+                    <option value="pha-recommendations">⚠️ PHA recommendations</option>
+                  </optgroup>
+                </select>
+              </div>
+
+              <!-- Status Filter Toggle Tabs -->
+              <div class="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200 overflow-x-auto max-w-full">
+                <button
+                  id="filter-status-all"
+                  onclick="portalApp.setStatusFilter('all')"
+                  class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-[#2E6DA4] text-white shadow-xs transition-all whitespace-nowrap"
+                >
+                  All (<span id="count-all">12</span>)
+                </button>
+                <button
+                  id="filter-status-active"
+                  onclick="portalApp.setStatusFilter('Active')"
+                  class="px-3 py-1.5 text-xs font-medium rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white transition-all whitespace-nowrap flex items-center gap-1.5"
+                >
+                  <span class="w-2 h-2 rounded-full bg-[#2F9E58]"></span>
+                  Active (<span id="count-active">12</span>)
+                </button>
+                <button
+                  id="filter-status-awaiting"
+                  onclick="portalApp.setStatusFilter('Awaiting Sheet Data')"
+                  class="px-3 py-1.5 text-xs font-medium rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white transition-all whitespace-nowrap flex items-center gap-1.5"
+                >
+                  <span class="w-2 h-2 rounded-full bg-[#C98A2B]"></span>
+                  Awaiting Data (<span id="count-awaiting">0</span>)
+                </button>
+              </div>
             </div>
           </div>
 
@@ -219,41 +813,38 @@
           <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-200">
             <div id="category-filter-bar" class="flex flex-wrap items-center gap-1.5">
               <span class="text-xs text-slate-500 font-medium mr-1 flex items-center gap-1">
-                <i data-lucide="filter" class="w-3 h-3"></i> Category:
+                <i data-lucide="filter" class="w-3 h-3"></i> Clusters:
               </span>
               <button id="cat-all" onclick="portalApp.setCategoryFilter('all')" class="category-btn px-2.5 py-1 text-xs rounded-md bg-[#2E6DA4] text-white font-semibold shadow-2xs transition-colors">
-                All
+                All (12)
               </button>
-              <button id="cat-ops" onclick="portalApp.setCategoryFilter('Operations & SOC')" class="category-btn px-2.5 py-1 text-xs rounded-md bg-white text-slate-600 hover:text-slate-900 border border-slate-200 hover:border-slate-300 transition-colors">
-                Operations & SOC
+              <button id="cat-plr" onclick="portalApp.setCategoryFilter('Plant Integrity & Incident Analytics')" class="category-btn px-2.5 py-1 text-xs rounded-md bg-white text-slate-600 hover:text-slate-900 border border-slate-200 hover:border-slate-300 transition-colors">
+                Plant Loss Reports (PLR)
               </button>
-              <button id="cat-safety" onclick="portalApp.setCategoryFilter('Safety & PSM')" class="category-btn px-2.5 py-1 text-xs rounded-md bg-white text-slate-600 hover:text-slate-900 border border-slate-200 hover:border-slate-300 transition-colors">
-                Safety & PSM
+              <button id="cat-exec" onclick="portalApp.setCategoryFilter('Executive & Governance')" class="category-btn px-2.5 py-1 text-xs rounded-md bg-white text-slate-600 hover:text-slate-900 border border-slate-200 hover:border-slate-300 transition-colors">
+                Executive & Governance
               </button>
-              <button id="cat-quality" onclick="portalApp.setCategoryFilter('Quality & Compliance')" class="category-btn px-2.5 py-1 text-xs rounded-md bg-white text-slate-600 hover:text-slate-900 border border-slate-200 hover:border-slate-300 transition-colors">
-                Quality & Compliance
+              <button id="cat-subhse" onclick="portalApp.setCategoryFilter('Sub HSE Committees')" class="category-btn px-2.5 py-1 text-xs rounded-md bg-white text-slate-600 hover:text-slate-900 border border-slate-200 hover:border-slate-300 transition-colors">
+                Sub HSE Committees
               </button>
-              <button id="cat-audit" onclick="portalApp.setCategoryFilter('Audits & Reviews')" class="category-btn px-2.5 py-1 text-xs rounded-md bg-white text-slate-600 hover:text-slate-900 border border-slate-200 hover:border-slate-300 transition-colors">
-                Audits & Reviews
-              </button>
-              <button id="cat-env" onclick="portalApp.setCategoryFilter('Environmental & Energy')" class="category-btn px-2.5 py-1 text-xs rounded-md bg-white text-slate-600 hover:text-slate-900 border border-slate-200 hover:border-slate-300 transition-colors">
-                Environmental & Energy
+              <button id="cat-process" onclick="portalApp.setCategoryFilter('Process Safety & Quality')" class="category-btn px-2.5 py-1 text-xs rounded-md bg-white text-slate-600 hover:text-slate-900 border border-slate-200 hover:border-slate-300 transition-colors">
+                Process Safety & Quality
               </button>
             </div>
 
             <!-- Dashboard Counter Output -->
-            <div class="text-xs text-slate-500 font-medium">
-              Showing <span id="visible-cards-count" class="font-bold text-[#2B2E33]">18</span> of <span class="font-semibold text-slate-700">18</span> Operational Dashboards
+            <div class="text-xs text-slate-500 font-medium flex items-center gap-2">
+              <span>Showing <span id="visible-cards-count" class="font-bold text-[#2B2E33]">12</span> of <span class="font-semibold text-slate-700">12</span> Dashboards</span>
             </div>
           </div>
         </div>
 
-        <!-- Dashboard Cards Grid (Responsive 3 or 4 columns) -->
+        <!-- Department Donut Charts & Dashboards Grid -->
         <div
           id="dashboards-grid"
-          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5"
+          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-5"
         >
-          <!-- Dynamic cards injected via JavaScript styled with bespoke color schemes -->
+          <!-- Dynamic department donut cards injected via JavaScript styled with bespoke color schemes -->
         </div>
 
         <!-- No Results Fallback State -->
@@ -261,7 +852,7 @@
           <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-slate-100 text-slate-500 mb-4 ring-1 ring-slate-200">
             <i data-lucide="search-x" class="w-7 h-7"></i>
           </div>
-          <h3 class="text-base font-semibold text-[#2B2E33]">No operational dashboards found</h3>
+          <h3 class="text-base font-semibold text-[#2B2E33]">No matching dashboards found</h3>
           <p class="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
             No active dashboards match your query. Try adjusting your keyword or reset filters.
           </p>
@@ -281,23 +872,54 @@
       <!-- ========================================================================= -->
       <section id="dashboard-detail-view" class="hidden space-y-6">
 
-        <!-- Top Navigation Bar & Back Button -->
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2 border-b border-slate-200">
-          <div class="flex items-center gap-3">
+        <!-- Top Navigation Bar & Dropdown Switcher -->
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 pb-2 border-b border-slate-200">
+          <div class="flex items-center flex-wrap gap-2.5">
             <button
               id="btn-back-to-portal"
               onclick="portalApp.backToPortal()"
               class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold bg-white hover:bg-slate-50 text-[#2B2E33] border border-slate-300 hover:border-slate-400 transition-all shadow-xs group"
             >
               <i data-lucide="arrow-left" class="w-4 h-4 transition-transform group-hover:-translate-x-0.5 text-[#2E6DA4]"></i>
-              <span>Back to Main Portal</span>
+              <span>Back to Overview</span>
             </button>
             <span class="text-slate-300">/</span>
-            <div class="flex items-center gap-1.5 text-xs text-slate-500">
-              <span>Operational Dashboards</span>
-              <span class="text-slate-300">/</span>
-              <span id="breadcrumb-active-name" class="text-[#2B2E33] font-semibold truncate max-w-[200px] sm:max-w-xs">Dashboard Detail</span>
+            
+            <!-- In-View Dropdown Switcher -->
+            <div class="flex items-center gap-1.5 bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-1.5 text-xs shadow-2xs">
+              <i data-lucide="switch-camera" class="w-3.5 h-3.5 text-[#2E6DA4]"></i>
+              <label for="detail-dashboard-select" class="font-bold text-slate-700 hidden sm:inline">Switch To:</label>
+              <select
+                id="detail-dashboard-select"
+                onchange="portalApp.handleDropdownSelect(this.value)"
+                class="bg-transparent text-xs font-semibold text-[#2B2E33] focus:outline-none cursor-pointer max-w-[200px] sm:max-w-[240px] truncate"
+              >
+                <option value="overview">📊 All Dashboards Overview (Main Page)</option>
+                <optgroup label="Plant Integrity & Incidents">
+                  <option value="plr">⚠️ Plant Loss Reports (PLR) • 233 Incidents</option>
+                </optgroup>
+                <optgroup label="Executive & Governance">
+                  <option value="executive-hse-committee-ehsec">🏛️ Executive HSE Committee (EHSEC)</option>
+                  <option value="risk-survey">⚖️ Risk survey</option>
+                </optgroup>
+                <optgroup label="Sub HSE Committees">
+                  <option value="sub-hse-p">📑 Sub HSE - P</option>
+                  <option value="sub-hse-ei">⚡ Sub HSE – E&I</option>
+                  <option value="sub-hse-mech">🔧 Sub HSE – Mech.</option>
+                  <option value="sub-hse-psm">🛡️ Sub HSE - PSM</option>
+                  <option value="sub-hse-eri">🚨 Sub HSE - ERI</option>
+                </optgroup>
+                <optgroup label="Process Safety & Quality">
+                  <option value="rca">🔬 RCA</option>
+                  <option value="pssr">✅ PSSR</option>
+                  <option value="inspection-report-actions">📋 Inspection Report Actions</option>
+                  <option value="pha-recommendations">⚠️ PHA recommendations</option>
+                </optgroup>
+              </select>
             </div>
+
+            <span class="text-slate-300 hidden sm:inline">/</span>
+            <span id="breadcrumb-active-name" class="text-[#2B2E33] font-semibold text-xs truncate max-w-[160px] sm:max-w-xs">Dashboard Detail</span>
           </div>
 
           <!-- Detail Screen Actions -->
@@ -324,8 +946,9 @@
         </div>
 
         <!-- Prominent Title Header & Metadata Card (Themed dynamically to Dashboard Color Scheme) -->
-        <div id="detail-header-card" class="rounded-2xl p-5 sm:p-6 shadow-sm transition-all duration-300 border">
-          <div class="flex flex-col md:flex-row md:items-center justify-between gap-5">
+        <div id="detail-header-card" class="bg-white rounded-2xl p-5 sm:p-6 shadow-md transition-all duration-300 border border-slate-200 relative overflow-hidden">
+          <div id="detail-header-stripe" class="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500"></div>
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-5 pt-1">
             <div class="flex items-start gap-4">
               <div id="detail-icon-box" class="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-sm">
                 <i data-lucide="activity" id="detail-icon-el" class="w-7 h-7"></i>
@@ -628,6 +1251,13 @@
           </div>
         </div>
 
+        <!-- ========================================================================= -->
+        <!-- DEDICATED FULL-SCALE PLR DASHBOARD SUITE CONTAINER                        -->
+        <!-- ========================================================================= -->
+        <div id="plr-specialized-container" class="hidden space-y-6">
+          <!-- Populated dynamically via portalApp.renderPlrSuite() -->
+        </div>
+
       </section>
 
     </main>
@@ -647,7 +1277,7 @@
 
         <div class="text-xs text-slate-600 overflow-y-auto flex-1 pr-1 space-y-3">
           <p>
-            Each of the 18 operational dashboards is assigned a bespoke corporate executive color scheme with a tinted background, primary accent, secondary accent, and high-contrast charcoal text:
+            Each of the 11 individual dashboards is assigned a bespoke corporate executive color scheme with a tinted background, primary accent, secondary accent, and high-contrast charcoal text:
           </p>
           <div id="palette-specs-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
             <!-- Rendered dynamically -->
@@ -707,6 +1337,37 @@
       </div>
     </div>
 
+    <!-- Active Workload & Actions Modal (46 In-Progress List) -->
+    <div id="actions-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs hidden items-center justify-center p-4">
+      <div class="bg-white border border-slate-200 rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-4 max-h-[85vh] flex flex-col">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+          <div class="flex items-center gap-2.5">
+            <span class="p-2 rounded-xl bg-purple-50 text-purple-700 border border-purple-200">
+              <i data-lucide="clipboard-list" class="w-5 h-5"></i>
+            </span>
+            <div>
+              <h3 class="text-base font-bold text-[#1E293B]">Active Plant Workload (46 Actions in Progress)</h3>
+              <p class="text-xs text-slate-500">Live prioritized action items across all 11 operational dashboards</p>
+            </div>
+          </div>
+          <button onclick="portalApp.closeActionsModal()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <div class="overflow-y-auto flex-1 pr-1 space-y-2.5 text-xs" id="actions-modal-list">
+          <!-- Dynamically populated by portalApp.openActionsModal() -->
+        </div>
+
+        <div class="flex items-center justify-between pt-3 border-t border-slate-200 text-xs">
+          <span class="text-slate-500 font-medium">Click any item to view its complete dashboard</span>
+          <button onclick="portalApp.closeActionsModal()" class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Application Footer -->
     <footer id="app-footer" class="border-t border-slate-200 bg-white py-6 mt-auto">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
@@ -717,7 +1378,7 @@
           <span>Operational Excellence Directorate</span>
         </div>
         <div class="flex items-center gap-3 text-slate-500">
-          <span>All 18 Dashboards Configured</span>
+          <span>All 11 Individual Dashboards Configured</span>
           <span class="text-slate-300">•</span>
           <span>Executive Color Suite Applied</span>
         </div>
@@ -729,389 +1390,338 @@
     <!-- ========================================================================= -->
     <script>
       /**
-       * Registry of the 18 Operational Dashboards with EXACT User Color Schemes
+       * Registry of the 11 Individual Dashboards with EXACT User Color Schemes
        * Columns: Dashboard | Background | Primary Accent | Secondary Accent | Text Color
        */
       const DASHBOARD_REGISTRY = [
         {
-          id: 'combined-energy-conservation-forum',
-          name: 'Combined Energy Conservation Forum',
-          icon: 'zap',
+          id: 'executive-hse-committee-ehsec',
+          name: 'Executive HSE Committee (EHSEC)',
+          code: 'EHSEC',
+          icon: 'shield-check',
           status: 'Active',
-          category: 'Environmental & Energy',
-          department: 'Energy Management Directorate',
-          cadence: 'Monthly Review',
-          description: 'Plant-wide specific energy consumption, fuel gas ratios, steam balance & waste heat recovery initiatives.',
-          color: {
-            bg: '#EAF2FB',
-            primary: '#2E6DA4',
-            secondary: '#7FA8CC',
-            text: '#2B2E33'
-          },
-          kpis: { total: 42, closed: 36, pending: 6, overdue: 0, compliance: '94.8%' },
-          actions: [
-            { id: 'CECF-101', desc: 'Boiler 3 economizer soot blower efficiency tuning', owner: 'Thermal Lead', due: '2026-09-15', priority: 'High', status: 'In Progress' },
-            { id: 'CECF-102', desc: 'HP steam trap audit and leak isolation verification', owner: 'Utilities Mgr', due: '2026-09-22', priority: 'Medium', status: 'Completed' },
-            { id: 'CECF-103', desc: 'Power export optimization model validation', owner: 'Energy Analyst', due: '2026-09-30', priority: 'Low', status: 'Completed' }
-          ]
-        },
-        {
-          id: 'product-quality',
-          name: 'Product Quality',
-          icon: 'award',
-          status: 'Active',
-          category: 'Quality & Compliance',
-          department: 'QA/QC Division',
-          cadence: 'Shift / Daily',
-          description: 'Finished product purity, moisture grading, composite lab analytics & ISO specification conformance.',
-          color: {
-            bg: '#EAF7EF',
-            primary: '#2F9E58',
-            secondary: '#7DC79A',
-            text: '#2B2E33'
-          },
-          kpis: { total: 28, closed: 26, pending: 2, overdue: 0, compliance: '99.2%' },
-          actions: [
-            { id: 'PQ-201', desc: 'Bagging plant moisture variance inline sensor calibration', owner: 'QC Supv', due: '2026-09-12', priority: 'High', status: 'Completed' },
-            { id: 'PQ-202', desc: 'Quarterly third-party lab sample correlation check', owner: 'Lab Chemist', due: '2026-09-25', priority: 'Medium', status: 'In Progress' },
-            { id: 'PQ-203', desc: 'Granulometry index tuning for export lot #88B', owner: 'QA Lead', due: '2026-09-18', priority: 'Low', status: 'Completed' }
-          ]
-        },
-        {
-          id: 'ammonia-dry-run-actions',
-          name: 'Ammonia Dry Run Actions',
-          icon: 'flask-conical',
-          status: 'Awaiting Sheet Data',
-          category: 'Safety & PSM',
-          department: 'Process Safety Operations',
-          cadence: 'Bi-Weekly Drill',
-          description: 'Emergency isolation dry runs, toxic vapor dispersion simulations & containment valve response audits.',
-          color: {
-            bg: '#FBF3E7',
-            primary: '#C98A2B',
-            secondary: '#E0B876',
-            text: '#2B2E33'
-          },
-          kpis: { total: 19, closed: 14, pending: 5, overdue: 0, compliance: '88.5%' },
-          actions: [
-            { id: 'ADR-301', desc: 'Remote ESD valve #XV-4102 activation timing drill test', owner: 'PSM Engineer', due: '2026-09-19', priority: 'Critical', status: 'In Progress' },
-            { id: 'ADR-302', desc: 'Water curtain deluge nozzle flow rate verification', owner: 'Fire Chief', due: '2026-09-24', priority: 'High', status: 'Awaiting Sign-off' },
-            { id: 'ADR-303', desc: 'Evacuation siren zone 4 sound propagation check', owner: 'HSE Officer', due: '2026-09-28', priority: 'Medium', status: 'Completed' }
-          ]
-        },
-        {
-          id: 'sub-soc-p',
-          name: 'Sub SOC (P)',
-          icon: 'layers',
-          status: 'Active',
-          category: 'Operations & SOC',
-          department: 'Production Committee',
-          cadence: 'Weekly Operations',
-          description: 'Sub-committee on Operations (Production): plant run-rates, catalyst degradation, and output debottlenecking.',
-          color: {
-            bg: '#F3EEFB',
-            primary: '#7A5FB0',
-            secondary: '#B39DDB',
-            text: '#2B2E33'
-          },
-          kpis: { total: 54, closed: 48, pending: 6, overdue: 0, compliance: '95.6%' },
-          actions: [
-            { id: 'SOCP-401', desc: 'Reformer furnace draft control loop dampener repair', owner: 'Shift Supt', due: '2026-09-14', priority: 'High', status: 'Completed' },
-            { id: 'SOCP-402', desc: 'Synthesis loop purge gas rate optimization test', owner: 'Process Eng', due: '2026-09-21', priority: 'Medium', status: 'In Progress' }
-          ]
-        },
-        {
-          id: 'psm-steering-committee',
-          name: 'PSM Steering Committee',
-          icon: 'shield-alert',
-          status: 'Active',
-          category: 'Safety & PSM',
-          department: 'Process Safety Directorate',
-          cadence: 'Monthly Executive',
-          description: 'Executive oversight of OSHA PSM 14 elements, MOC governance, PSI documentation & mechanical integrity.',
-          color: {
-            bg: '#E8F6F5',
-            primary: '#2A9D96',
-            secondary: '#7ECAC4',
-            text: '#2B2E33'
-          },
-          kpis: { total: 64, closed: 58, pending: 6, overdue: 0, compliance: '97.0%' },
-          actions: [
-            { id: 'PSM-501', desc: 'Review corporate MOC backlog exceeding 60-day lifecycle', owner: 'PSM Lead', due: '2026-09-16', priority: 'High', status: 'In Progress' },
-            { id: 'PSM-502', desc: 'Critical safety interlock bypass registry annual re-validation', owner: 'Inst Lead', due: '2026-09-26', priority: 'Critical', status: 'Completed' }
-          ]
-        },
-        {
-          id: 'soc',
-          name: 'SOC',
-          icon: 'activity',
-          status: 'Active',
-          category: 'Operations & SOC',
-          department: 'Central Operations Directorate',
-          cadence: 'Weekly Review',
-          description: 'Central Safety & Operations Committee: holistic plant operating envelope, interlocks, and trip summaries.',
+          category: 'Executive & Governance',
+          department: 'Executive HSE Directorate',
+          cadence: 'Monthly Executive Review',
+          description: 'Executive leadership governance over plant-wide occupational health, safety culture, environmental compliance & statutory audits.',
           color: {
             bg: '#EEF1F7',
             primary: '#4C63A8',
             secondary: '#93A3CC',
             text: '#2B2E33'
           },
-          kpis: { total: 47, closed: 41, pending: 6, overdue: 0, compliance: '93.5%' },
+          gradient: 'from-blue-600 via-indigo-600 to-cyan-500',
+          gradientStop1: '#2563EB',
+          gradientStop2: '#06B6D4',
+          tagStyle: 'bg-blue-50 text-blue-700 border-blue-200',
+          kpis: { total: 48, closed: 42, inProgress: 5, overdue: 1, compliance: '87.5%' },
+          punchList: { open: 1, closed: 42, total: 48, rate: '87.5%' },
+          dataReadiness: { master: '100%', signoff: '95%' },
+          statusComment: '42/48 actions closed; contractor safety audit completed; 1 overdue prioritized.',
           actions: [
-            { id: 'SOC-601', desc: 'Bypass authorization verification for Raw Gas Compressor', owner: 'Ops Manager', due: '2026-09-15', priority: 'Critical', status: 'Completed' },
-            { id: 'SOC-602', desc: 'Weekly trip risk matrix update for heavy rain forecast', owner: 'Shift Supt', due: '2026-09-17', priority: 'High', status: 'In Progress' }
+            { id: 'EHSEC-01', desc: 'Conduct enterprise HSE steering audit on contractor safety management system', owner: 'VP Operations', due: '2026-09-18', priority: 'High', status: 'In Progress' },
+            { id: 'EHSEC-02', desc: 'Validate annual corporate environmental sustainability targets & zero-spill charter', owner: 'HSE Director', due: '2026-09-25', priority: 'Critical', status: 'Completed' },
+            { id: 'EHSEC-03', desc: 'Review corporate lead-indicator hazard identification program adoption', owner: 'Safety Lead', due: '2026-09-30', priority: 'Medium', status: 'Completed' }
           ]
         },
         {
-          id: 'sub-soc-m',
-          name: 'Sub SOC (M)',
+          id: 'sub-hse-p',
+          name: 'Sub HSE - P',
+          code: 'Sub HSE-P',
+          icon: 'layers',
+          status: 'Active',
+          category: 'Sub HSE Committees',
+          department: 'Production HSE Sub-Committee',
+          cadence: 'Weekly Operations Review',
+          description: 'Production HSE sub-committee tracking operating window envelopes, interlock overrides, toxic gas monitoring & barrier integrity.',
+          color: {
+            bg: '#F3EEFB',
+            primary: '#7A5FB0',
+            secondary: '#B39DDB',
+            text: '#2B2E33'
+          },
+          gradient: 'from-purple-600 via-violet-600 to-pink-500',
+          gradientStop1: '#7C3AED',
+          gradientStop2: '#EC4899',
+          tagStyle: 'bg-purple-50 text-purple-700 border-purple-200',
+          kpis: { total: 54, closed: 47, inProgress: 5, overdue: 2, compliance: '87.0%' },
+          punchList: { open: 2, closed: 47, total: 54, rate: '87.0%' },
+          dataReadiness: { master: '98%', signoff: '92%' },
+          statusComment: 'Reformer furnace draft loop closed; 2 overrides under review.',
+          actions: [
+            { id: 'HSEP-101', desc: 'Reformer furnace draft control loop dampener repair and gas seal verification', owner: 'Shift Supt', due: '2026-09-14', priority: 'High', status: 'Completed' },
+            { id: 'HSEP-102', desc: 'Synthesis loop purge gas safety interlock optimization test', owner: 'Process Eng', due: '2026-09-21', priority: 'Medium', status: 'In Progress' },
+            { id: 'HSEP-103', desc: 'Secondary containment sump level transmitter calibration & high-level alarm test', owner: 'Inst Specialist', due: '2026-09-04', priority: 'Critical', status: 'In Progress' }
+          ]
+        },
+        {
+          id: 'sub-hse-ei',
+          name: 'Sub HSE – E&I',
+          code: 'Sub HSE-E&I',
+          icon: 'zap',
+          status: 'Active',
+          category: 'Sub HSE Committees',
+          department: 'Electrical & Instrumentation HSE Sub-Committee',
+          cadence: 'Bi-Weekly Review',
+          description: 'Electrical & Instrumentation HSE sub-committee: SIL testing, arc flash assessments, substation safeguards & transmitter calibrations.',
+          color: {
+            bg: '#EAF2FB',
+            primary: '#2E6DA4',
+            secondary: '#7FA8CC',
+            text: '#2B2E33'
+          },
+          gradient: 'from-sky-500 via-blue-600 to-indigo-600',
+          gradientStop1: '#0284C7',
+          gradientStop2: '#4F46E5',
+          tagStyle: 'bg-sky-50 text-sky-700 border-sky-200',
+          kpis: { total: 44, closed: 39, inProgress: 4, overdue: 1, compliance: '88.6%' },
+          punchList: { open: 1, closed: 39, total: 44, rate: '88.6%' },
+          dataReadiness: { master: '100%', signoff: '96%' },
+          statusComment: 'SIF proof testing on track; Ex-d enclosures certified.',
+          actions: [
+            { id: 'HSE-EI-201', desc: 'Substation 4 arc flash PPE boundary audit and relay trip timing verification', owner: 'Elect Lead', due: '2026-09-15', priority: 'High', status: 'Completed' },
+            { id: 'HSE-EI-202', desc: 'Safety Instrumented Function (SIF) proof-testing for ammonia separator trips', owner: 'Inst Specialist', due: '2026-09-22', priority: 'Critical', status: 'In Progress' },
+            { id: 'HSE-EI-203', desc: 'Hazardous area Ex-d equipment enclosure certification audit in synthesis area', owner: 'Compliance Tech', due: '2026-09-28', priority: 'Medium', status: 'Completed' }
+          ]
+        },
+        {
+          id: 'sub-hse-mech',
+          name: 'Sub HSE – Mech.',
+          code: 'Sub HSE-Mech',
           icon: 'wrench',
           status: 'Active',
-          category: 'Operations & SOC',
-          department: 'Mechanical Maintenance',
-          cadence: 'Weekly Maintenance',
-          description: 'Sub-committee on Operations (Maintenance): work order completion, PM schedule compliance & equipment health.',
+          category: 'Sub HSE Committees',
+          department: 'Mechanical HSE Sub-Committee',
+          cadence: 'Weekly Maintenance Review',
+          description: 'Mechanical HSE sub-committee: rotating equipment containment, vibration trip safeguards, piping vibration & flange torque audits.',
           color: {
             bg: '#FBEFF1',
             primary: '#C25B72',
             secondary: '#DE9AA9',
             text: '#2B2E33'
           },
-          kpis: { total: 82, closed: 73, pending: 9, overdue: 0, compliance: '91.8%' },
+          gradient: 'from-rose-500 via-red-600 to-orange-500',
+          gradientStop1: '#E11D48',
+          gradientStop2: '#F97316',
+          tagStyle: 'bg-rose-50 text-rose-700 border-rose-200',
+          kpis: { total: 58, closed: 51, inProgress: 6, overdue: 1, compliance: '87.9%' },
+          punchList: { open: 1, closed: 51, total: 58, rate: '87.9%' },
+          dataReadiness: { master: '100%', signoff: '94%' },
+          statusComment: 'Vibration analysis complete on primary cooling water pump B.',
           actions: [
-            { id: 'SOCM-701', desc: 'Boiler Feed Water Pump B bearing vibration spectrum analysis', owner: 'Vibe Specialist', due: '2026-09-16', priority: 'High', status: 'In Progress' },
-            { id: 'SOCM-702', desc: 'Seal oil replacement on synthesis gas turbine #ST-201', owner: 'Mach Lead', due: '2026-09-20', priority: 'Medium', status: 'Completed' }
+            { id: 'HSEM-301', desc: 'Boiler feed water pump B bearing vibration spectrum analysis & mechanical seal audit', owner: 'Vibe Specialist', due: '2026-09-16', priority: 'High', status: 'In Progress' },
+            { id: 'HSEM-302', desc: 'Dry gas seal oil replacement on synthesis gas turbine #ST-201', owner: 'Mach Lead', due: '2026-09-20', priority: 'Medium', status: 'Completed' },
+            { id: 'HSEM-303', desc: 'Overpressure safety valve maintenance tagging & block valve car-seal audit', owner: 'Safety Tech', due: '2026-09-06', priority: 'High', status: 'In Progress' }
           ]
         },
         {
-          id: 'inspection-action-reporting',
-          name: 'Inspection Action Reporting',
-          icon: 'clipboard-check',
+          id: 'sub-hse-psm',
+          name: 'Sub HSE - PSM',
+          code: 'Sub HSE-PSM',
+          icon: 'shield-alert',
           status: 'Active',
-          category: 'Quality & Compliance',
-          department: 'Technical Inspection Unit',
-          cadence: 'Daily / Continuous',
-          description: 'Pressure vessel ultrasonic thickness measurements, corrosion rate monitoring & NDT compliance tracking.',
+          category: 'Sub HSE Committees',
+          department: 'Process Safety Management Sub-Committee',
+          cadence: 'Monthly Review',
+          description: 'Process Safety Management sub-committee: OSHA PSM 14 elements, MOC closeout, process hazard safeguards & critical interlocks.',
           color: {
-            bg: '#F5F7E9',
-            primary: '#7F9A3E',
-            secondary: '#B4C77E',
+            bg: '#E8F6F5',
+            primary: '#2A9D96',
+            secondary: '#7ECAC4',
             text: '#2B2E33'
           },
-          kpis: { total: 39, closed: 35, pending: 4, overdue: 0, compliance: '96.2%' },
+          gradient: 'from-teal-500 via-emerald-600 to-cyan-600',
+          gradientStop1: '#0D9488',
+          gradientStop2: '#0891B2',
+          tagStyle: 'bg-teal-50 text-teal-700 border-teal-200',
+          kpis: { total: 46, closed: 41, inProgress: 4, overdue: 1, compliance: '89.1%' },
+          punchList: { open: 1, closed: 41, total: 46, rate: '89.1%' },
+          dataReadiness: { master: '100%', signoff: '98%' },
+          statusComment: 'MOC override audits on track; P&ID PSI verification complete.',
           actions: [
-            { id: 'IAR-801', desc: 'Stripper column overhead line UT thickness mapping survey', owner: 'NDT Level III', due: '2026-09-18', priority: 'High', status: 'Completed' },
-            { id: 'IAR-802', desc: 'Ammonia storage tank #TK-101 relief valve bench test certificate', owner: 'Insp Eng', due: '2026-09-24', priority: 'Critical', status: 'In Progress' }
+            { id: 'HSEPSM-401', desc: 'Audit temporary MOC overrides exceeding 90-day lifecycle', owner: 'PSM Lead', due: '2026-09-17', priority: 'High', status: 'In Progress' },
+            { id: 'HSEPSM-402', desc: 'Process Safety Information (PSI) P&ID verification for ammonia refrigeration revamp', owner: 'Process Supt', due: '2026-09-24', priority: 'Critical', status: 'Completed' },
+            { id: 'HSEPSM-403', desc: 'Critical safety trip bypass matrix semi-annual management re-authorization', owner: 'Operations Mgr', due: '2026-09-29', priority: 'Medium', status: 'Completed' }
           ]
         },
         {
-          id: 'ims-management-review',
-          name: 'IMS Management Review',
-          icon: 'briefcase',
+          id: 'sub-hse-eri',
+          name: 'Sub HSE - ERI',
+          code: 'Sub HSE-ERI',
+          icon: 'flame',
           status: 'Active',
-          category: 'Audits & Reviews',
-          department: 'Integrated Management Systems',
-          cadence: 'Quarterly Executive',
-          description: 'Tri-system governance (ISO 9001 Quality, ISO 14001 Environment, ISO 45001 Safety) operational evaluations.',
-          color: {
-            bg: '#EEF2F5',
-            primary: '#56708A',
-            secondary: '#9AAEC0',
-            text: '#2B2E33'
-          },
-          kpis: { total: 31, closed: 29, pending: 2, overdue: 0, compliance: '98.5%' },
-          actions: [
-            { id: 'IMS-901', desc: 'Q3 objective KPIs consolidation for board executive packet', owner: 'IMS Coordinator', due: '2026-09-20', priority: 'Medium', status: 'In Progress' },
-            { id: 'IMS-902', desc: 'Risk & Opportunity register review for logistics operations', owner: 'Risk Officer', due: '2026-09-27', priority: 'Low', status: 'Completed' }
-          ]
-        },
-        {
-          id: 'root-cause-analysis-reports-rca',
-          name: 'Root Cause Analysis Reports (RCA)',
-          icon: 'search',
-          status: 'Active',
-          category: 'Quality & Compliance',
-          department: 'Reliability Engineering',
-          cadence: 'Event-driven',
-          description: 'Formal 5-Why, Fishbone, and Fault Tree investigations to eliminate repetitive process and asset trips.',
-          color: {
-            bg: '#FDF0EC',
-            primary: '#D97B5B',
-            secondary: '#EBAE99',
-            text: '#2B2E33'
-          },
-          kpis: { total: 23, closed: 21, pending: 2, overdue: 0, compliance: '95.0%' },
-          actions: [
-            { id: 'RCA-1001', desc: 'Finalize RCA for condensate pump tripping on motor overload', owner: 'Reliability Lead', due: '2026-09-17', priority: 'High', status: 'Completed' },
-            { id: 'RCA-1002', desc: 'Procure upgraded mechanical seal per RCA-08 recommendation', owner: 'Procurement', due: '2026-09-29', priority: 'Medium', status: 'In Progress' }
-          ]
-        },
-        {
-          id: 'safety-incident-investigation',
-          name: 'Safety Incident Investigation',
-          icon: 'hard-hat',
-          status: 'Active',
-          category: 'Safety & PSM',
-          department: 'HSE Directorate',
-          cadence: 'Immediate / Continuous',
-          description: 'Near-miss reporting, First-Aid/LTI investigation tracking, corrective action implementation & safety culture.',
+          category: 'Sub HSE Committees',
+          department: 'Emergency Response & Incident HSE Sub-Committee',
+          cadence: 'Bi-Weekly Drills',
+          description: 'Emergency Response & Incident sub-committee: plant emergency brigade readiness, fire hydrant ring tests, toxic gas sirens & drill actions.',
           color: {
             bg: '#FBEAEA',
             primary: '#C3564F',
             secondary: '#DE9A96',
             text: '#2B2E33'
           },
-          kpis: { total: 17, closed: 16, pending: 1, overdue: 0, compliance: '100%' },
+          gradient: 'from-red-600 via-orange-500 to-amber-500',
+          gradientStop1: '#DC2626',
+          gradientStop2: '#F59E0B',
+          tagStyle: 'bg-red-50 text-red-700 border-red-200',
+          kpis: { total: 38, closed: 34, inProgress: 3, overdue: 1, compliance: '89.5%' },
+          punchList: { open: 1, closed: 34, total: 38, rate: '89.5%' },
+          dataReadiness: { master: '98%', signoff: '95%' },
+          statusComment: 'Fire ring pressure auto-start passed; mutual aid drill scheduled.',
           actions: [
-            { id: 'SII-1101', desc: 'Install anti-slip grating on catalyst loading platform #3', owner: 'HSE Field Eng', due: '2026-09-14', priority: 'High', status: 'Completed' },
-            { id: 'SII-1102', desc: 'Issue toolbox safety bulletin on contractor hot-work permits', owner: 'Safety Officer', due: '2026-09-19', priority: 'Medium', status: 'Completed' }
+            { id: 'ERI-501', desc: 'Fire water diesel pump auto-start emergency ring pressure test', owner: 'Fire Chief', due: '2026-09-14', priority: 'High', status: 'Completed' },
+            { id: 'ERI-502', desc: 'Simulated ammonia vapor release emergency evacuation and mutual aid drill', owner: 'Safety Lead', due: '2026-09-22', priority: 'Critical', status: 'In Progress' },
+            { id: 'ERI-503', desc: 'Inspect SCBA self-contained breathing apparatus pressure cylinders at muster points', owner: 'ERI Officer', due: '2026-09-27', priority: 'Medium', status: 'Completed' }
           ]
         },
         {
-          id: 'ims-mr-external-audit',
-          name: 'IMS MR - External Audit',
-          icon: 'file-check-2',
-          status: 'Awaiting Sheet Data',
-          category: 'Audits & Reviews',
-          department: 'External Compliance Bureau',
-          cadence: 'Annual Audit Cycle',
-          description: 'Accreditation body external audit non-conformance reports (NCRs), opportunities for improvement & closure logs.',
-          color: {
-            bg: '#EEF0FA',
-            primary: '#5B5FA8',
-            secondary: '#9C9ECF',
-            text: '#2B2E33'
-          },
-          kpis: { total: 14, closed: 11, pending: 3, overdue: 0, compliance: '89.0%' },
-          actions: [
-            { id: 'EXT-1201', desc: 'Upload calibration master logs for Lloyd’s Register review', owner: 'Quality Lead', due: '2026-09-21', priority: 'Critical', status: 'In Progress' },
-            { id: 'EXT-1202', desc: 'Closeout action for external observation on chemical bund signage', owner: 'Plant HSE', due: '2026-09-26', priority: 'Medium', status: 'In Progress' }
-          ]
-        },
-        {
-          id: 'environmental-review-committee',
-          name: 'Environmental Review Committee',
-          icon: 'leaf',
+          id: 'rca',
+          name: 'RCA',
+          code: 'RCA',
+          icon: 'search',
           status: 'Active',
-          category: 'Environmental & Energy',
-          department: 'Environmental Affairs',
-          cadence: 'Monthly Review',
-          description: 'Flue stack Continuous Emission Monitoring (CEMS), effluent biological treatment & environmental permits.',
+          category: 'Process Safety & Quality',
+          department: 'Root Cause Analysis & Reliability Unit',
+          cadence: 'Event-Driven / Monthly',
+          description: 'Root Cause Analysis tracking: structured 5-Why, Fishbone, and Fault Tree investigations to eliminate repetitive process and asset trips.',
           color: {
-            bg: '#EAF5EC',
-            primary: '#3F8250',
-            secondary: '#8AB995',
+            bg: '#FDF0EC',
+            primary: '#D97B5B',
+            secondary: '#EBAE99',
             text: '#2B2E33'
           },
-          kpis: { total: 26, closed: 24, pending: 2, overdue: 0, compliance: '97.5%' },
+          gradient: 'from-amber-500 via-orange-500 to-rose-500',
+          gradientStop1: '#D97706',
+          gradientStop2: '#E11D48',
+          tagStyle: 'bg-amber-50 text-amber-700 border-amber-200',
+          kpis: { total: 32, closed: 28, inProgress: 3, overdue: 1, compliance: '87.5%' },
+          punchList: { open: 1, closed: 28, total: 32, rate: '87.5%' },
+          dataReadiness: { master: '100%', signoff: '90%' },
+          statusComment: 'Compressor lube oil RCA closed; drum baffle installation in progress.',
           actions: [
-            { id: 'ERC-1301', desc: 'ETP effluent COD/BOD parameter verification before discharge', owner: 'Env Chemist', due: '2026-09-15', priority: 'High', status: 'Completed' },
-            { id: 'ERC-1302', desc: 'Quarterly ambient air quality monitoring station filter swap', owner: 'Env Specialist', due: '2026-09-23', priority: 'Low', status: 'In Progress' }
+            { id: 'RCA-601', desc: 'Finalize RCA for primary synthesis gas compressor lube oil pressure fluctuation', owner: 'Reliability Lead', due: '2026-09-16', priority: 'High', status: 'Completed' },
+            { id: 'RCA-602', desc: 'Install vortex breaker in condensate drum per RCA recommendation #09', owner: 'Projects Lead', due: '2026-09-25', priority: 'Medium', status: 'In Progress' },
+            { id: 'RCA-603', desc: 'Revise operator response procedure for sudden steam header pressure dips', owner: 'Shift Supt', due: '2026-09-30', priority: 'High', status: 'Completed' }
           ]
         },
         {
-          id: 'production-loss-reports',
-          name: 'Production Loss Reports',
-          icon: 'trending-down',
+          id: 'pssr',
+          name: 'PSSR',
+          code: 'PSSR',
+          icon: 'check-circle-2',
           status: 'Active',
-          category: 'Operations & SOC',
-          department: 'Production Planning & Control',
-          cadence: 'Daily / Shift Basis',
-          description: 'Quantification of production downtime, rate curtailments, flaring events & financial opportunity loss.',
+          category: 'Process Safety & Quality',
+          department: 'Pre-Startup Safety Review Committee',
+          cadence: 'Project & Turnaround Milestones',
+          description: 'Pre-Startup Safety Reviews: punch-list tracking, field verification of construction punch items prior to hazardous fluid commissioning.',
           color: {
-            bg: '#FBF0E9',
-            primary: '#C9713F',
-            secondary: '#E3A87F',
+            bg: '#F5F7E9',
+            primary: '#7F9A3E',
+            secondary: '#B4C77E',
             text: '#2B2E33'
           },
-          kpis: { total: 35, closed: 33, pending: 2, overdue: 0, compliance: '96.0%' },
+          gradient: 'from-lime-500 via-emerald-500 to-teal-600',
+          gradientStop1: '#65A30D',
+          gradientStop2: '#0D9488',
+          tagStyle: 'bg-lime-50 text-lime-800 border-lime-200',
+          kpis: { total: 36, closed: 32, inProgress: 3, overdue: 1, compliance: '88.9%' },
+          punchList: { open: 1, closed: 32, total: 36, rate: '88.9%' },
+          dataReadiness: { master: '100%', signoff: '97%' },
+          statusComment: 'Type-A hydrotest verified; insulation Punch B in progress.',
           actions: [
-            { id: 'PLR-1401', desc: 'Investigate 4-hour ammonia plant rate derating on Sept 2nd', owner: 'Prod Planner', due: '2026-09-13', priority: 'High', status: 'Completed' },
-            { id: 'PLR-1402', desc: 'Synthesize monthly feedstock curtailment claims report', owner: 'Commercial Lead', due: '2026-09-30', priority: 'Medium', status: 'In Progress' }
+            { id: 'PSSR-701', desc: 'Item Type-A: Hydrotest relief valve certificate sign-off for new vaporizer loop', owner: 'Insp Specialist', due: '2026-09-15', priority: 'Critical', status: 'Completed' },
+            { id: 'PSSR-702', desc: 'Item Type-B: Complete cold insulation and weather-proofing on NH3 piping', owner: 'Lead Mech', due: '2026-09-23', priority: 'Medium', status: 'In Progress' },
+            { id: 'PSSR-703', desc: 'Verify DCS interlocking logic and alarm limits prior to nitrogen purging', owner: 'Control Eng', due: '2026-09-28', priority: 'High', status: 'Completed' }
           ]
         },
         {
-          id: 'sub-soc-transport-logistics',
-          name: 'Sub SOC (Transport & Logistics)',
-          icon: 'truck',
-          status: 'Awaiting Sheet Data',
-          category: 'Operations & SOC',
-          department: 'Supply Chain & Fleet Safety',
-          cadence: 'Bi-Weekly Review',
-          description: 'Road tanker fitness certifications, driver fatigue monitoring, GPS geofencing & turnaround time analytics.',
-          color: {
-            bg: '#E9F5FA',
-            primary: '#2E92B0',
-            secondary: '#84C1D3',
-            text: '#2B2E33'
-          },
-          kpis: { total: 29, closed: 22, pending: 7, overdue: 0, compliance: '86.4%' },
-          actions: [
-            { id: 'TRN-1501', desc: 'Audit emergency spill kit equipment on 25 leased ammonia tankers', owner: 'Logistics Safety', due: '2026-09-18', priority: 'Critical', status: 'In Progress' },
-            { id: 'TRN-1502', desc: 'Implement automated gate barrier RFID validation system', owner: 'Supply Chain IT', due: '2026-09-27', priority: 'Medium', status: 'In Progress' }
-          ]
-        },
-        {
-          id: 'efu-recommendations',
-          name: 'EFU Recommendations',
-          icon: 'flame',
+          id: 'inspection-report-actions',
+          name: 'Inspection Report Actions',
+          code: 'Inspection',
+          icon: 'clipboard-check',
           status: 'Active',
-          category: 'Environmental & Energy',
-          department: 'Energy & Furnace Unit',
-          cadence: 'Monthly Review',
-          description: 'Primary reformer combustion tuning, excess O2 trimming, radiant tube skin temperature & skin thermography.',
+          category: 'Process Safety & Quality',
+          department: 'Technical Inspection & Integrity Unit',
+          cadence: 'Daily / Continuous',
+          description: 'Inspection Report Actions: pressure vessel ultrasonic thickness measurements, corrosion rate monitoring & NDT compliance tracking.',
           color: {
-            bg: '#F7EEF2',
-            primary: '#A5537A',
-            secondary: '#CC93AF',
+            bg: '#EEF2F5',
+            primary: '#56708A',
+            secondary: '#9AAEC0',
             text: '#2B2E33'
           },
-          kpis: { total: 22, closed: 20, pending: 2, overdue: 0, compliance: '95.2%' },
+          gradient: 'from-cyan-500 via-blue-600 to-indigo-600',
+          gradientStop1: '#0891B2',
+          gradientStop2: '#4F46E5',
+          tagStyle: 'bg-cyan-50 text-cyan-800 border-cyan-200',
+          kpis: { total: 40, closed: 36, inProgress: 3, overdue: 1, compliance: '90.0%' },
+          punchList: { open: 1, closed: 36, total: 40, rate: '90.0%' },
+          dataReadiness: { master: '100%', signoff: '100%' },
+          statusComment: 'Top completion rate (90.0%); vapor line ultrasonic mapping survey verified.',
           actions: [
-            { id: 'EFU-1601', desc: 'Thermography scan on Primary Reformer South radiant wall', owner: 'Thermal Lead', due: '2026-09-16', priority: 'High', status: 'Completed' },
-            { id: 'EFU-1602', desc: 'Burner tip cleaning schedule during scheduled turn around', owner: 'Furnace Supv', due: '2026-09-28', priority: 'Medium', status: 'In Progress' }
+            { id: 'IRA-801', desc: 'Stripper column overhead vapor line ultrasonic thickness mapping survey', owner: 'NDT Level III', due: '2026-09-17', priority: 'High', status: 'Completed' },
+            { id: 'IRA-802', desc: 'Ammonia storage sphere #TK-101 relief valve bench test and calibration cert', owner: 'Insp Eng', due: '2026-09-24', priority: 'Critical', status: 'In Progress' },
+            { id: 'IRA-803', desc: 'Re-inspect underground fire main cathodic protection potential levels', owner: 'Corrosion Eng', due: '2026-09-30', priority: 'Medium', status: 'Completed' }
           ]
         },
         {
           id: 'pha-recommendations',
-          name: 'PHA Recommendations',
+          name: 'PHA recommendations',
+          code: 'PHA',
           icon: 'alert-octagon',
           status: 'Active',
-          category: 'Safety & PSM',
+          category: 'Process Safety & Quality',
           department: 'Process Hazard Analysis Team',
           cadence: 'Continuous Tracking',
-          description: 'LOPA/HAZOP study recommendation life cycle, Independent Protection Layer (IPL) audits & SIF safeguards.',
+          description: 'Process Hazard Analysis recommendations: HAZOP, LOPA, What-If lifecycle tracking, Independent Protection Layers (IPL) & SIF upgrades.',
           color: {
             bg: '#EAF8F3',
             primary: '#2FA37E',
             secondary: '#83CBB0',
             text: '#2B2E33'
           },
-          kpis: { total: 45, closed: 42, pending: 3, overdue: 0, compliance: '96.5%' },
+          gradient: 'from-emerald-500 via-teal-600 to-cyan-600',
+          gradientStop1: '#059669',
+          gradientStop2: '#06B6D4',
+          tagStyle: 'bg-emerald-50 text-emerald-800 border-emerald-200',
+          kpis: { total: 44, closed: 39, inProgress: 4, overdue: 1, compliance: '88.6%' },
+          punchList: { open: 1, closed: 39, total: 44, rate: '88.6%' },
+          dataReadiness: { master: '100%', signoff: '93%' },
+          statusComment: '2oo3 redundant voting installed; HAZOP operating procedures validated.',
           actions: [
-            { id: 'PHA-1701', desc: 'Implement redundant pressure transmitter on synthesis separator', owner: 'Inst Project Lead', due: '2026-09-19', priority: 'Critical', status: 'In Progress' },
-            { id: 'PHA-1702', desc: 'Update HAZOP Node 14 operating procedures for startup sequence', owner: 'Process Eng', due: '2026-09-24', priority: 'High', status: 'Completed' }
+            { id: 'PHA-901', desc: 'Install dual redundant transmitter with 2oo3 voting on synthesis separator', owner: 'Inst Project Lead', due: '2026-09-19', priority: 'Critical', status: 'In Progress' },
+            { id: 'PHA-902', desc: 'Update HAZOP Node 14 operating procedures for startup venting sequence', owner: 'Process Eng', due: '2026-09-24', priority: 'High', status: 'Completed' },
+            { id: 'PHA-903', desc: 'Closeout re-evaluation of flare radiation dispersion model under high winds', owner: 'Safety Specialist', due: '2026-09-29', priority: 'Medium', status: 'Completed' }
           ]
         },
         {
-          id: 'special-soc',
-          name: 'Special SOC',
-          icon: 'sparkles',
-          status: 'Awaiting Sheet Data',
-          category: 'Operations & SOC',
-          department: 'Executive Oversight Taskforce',
-          cadence: 'Ad-Hoc / Special',
-          description: 'Special ad-hoc executive committee convening for major plant overhauls, turnaround milestones & emergencies.',
+          id: 'risk-survey',
+          name: 'Risk survey',
+          code: 'Risk survey',
+          icon: 'scale',
+          status: 'Active',
+          category: 'Executive & Governance',
+          department: 'Corporate Risk & Underwriting Survey Unit',
+          cadence: 'Quarterly / Annual',
+          description: 'Risk survey actions: property insurance, broker risk engineering survey recommendations, loss prevention & asset resilience audits.',
           color: {
-            bg: '#FBF6E6',
-            primary: '#B8962E',
-            secondary: '#D9C075',
+            bg: '#EEF0FA',
+            primary: '#5B5FA8',
+            secondary: '#9C9ECF',
             text: '#2B2E33'
           },
-          kpis: { total: 16, closed: 12, pending: 4, overdue: 0, compliance: '87.5%' },
+          gradient: 'from-indigo-500 via-purple-600 to-violet-600',
+          gradientStop1: '#4F46E5',
+          gradientStop2: '#7C3AED',
+          tagStyle: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+          kpis: { total: 29, closed: 25, inProgress: 3, overdue: 1, compliance: '86.2%' },
+          punchList: { open: 1, closed: 25, total: 29, rate: '86.2%' },
+          dataReadiness: { master: '100%', signoff: '91%' },
+          statusComment: 'Switchgear thermography complete; deluge system in procurement.',
           actions: [
-            { id: 'SSOC-1801', desc: 'Turnaround 2026 Phase 1 critical path procurement readiness', owner: 'TA Director', due: '2026-09-21', priority: 'Critical', status: 'In Progress' },
-            { id: 'SSOC-1802', desc: 'Catalyst vendor technical guarantee review conference', owner: 'Technical Head', due: '2026-09-29', priority: 'High', status: 'In Progress' }
+            { id: 'RSK-1001', desc: 'Install FM-approved deluge spray system over compressor lube oil console', owner: 'Projects Mgr', due: '2026-09-20', priority: 'High', status: 'In Progress' },
+            { id: 'RSK-1002', desc: 'Complete annual thermographic electrical survey of main 11kV switchgear', owner: 'Elect Specialist', due: '2026-09-26', priority: 'Medium', status: 'Completed' },
+            { id: 'RSK-1003', desc: 'Submit updated business interruption and contingency supply-chain analysis', owner: 'Risk Officer', due: '2026-09-30', priority: 'Low', status: 'Completed' }
           ]
         }
       ];
@@ -1123,12 +1733,19 @@
         state: {
           searchQuery: '',
           statusFilter: 'all', // 'all', 'Active', 'Awaiting Sheet Data'
-          categoryFilter: 'all', // 'all', 'Operations & SOC', etc.
+          categoryFilter: 'all', // 'all', 'Executive & Governance', etc.
           activeDashboardId: null,
           connectedSheetUrl: 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit',
         },
 
         init() {
+          this.updateRollupStats();
+          this.renderTimelineChart();
+          this.renderComparisonChart();
+          this.renderActionScenarios();
+          this.renderPunchListTable();
+          this.renderDataReadiness();
+          this.renderNavMenu();
           this.renderCards();
           this.updateCounts();
           this.setupKeyboardShortcuts();
@@ -1138,6 +1755,379 @@
           window.addEventListener('popstate', () => {
             this.checkUrlHash();
           });
+          window.addEventListener('resize', () => {
+            this.renderTimelineChart();
+            this.renderComparisonChart();
+          });
+        },
+
+        /**
+         * Render SVG Timeline Progress vs Plan chart (Reference Slide 1)
+         */
+        renderTimelineChart() {
+          const container = document.getElementById('timeline-chart-container');
+          if (!container) return;
+
+          const data = [
+            { m: 'Dec', planned: 12.5, actual: 23.0 },
+            { m: 'Jan', planned: 25.0, actual: 33.0 },
+            { m: 'Feb', planned: 37.5, actual: 52.5 },
+            { m: 'Mar', planned: 50.0, actual: 53.8 },
+            { m: 'Apr', planned: 62.5, actual: 53.8 },
+            { m: 'May', planned: 75.0, actual: 62.5 },
+            { m: 'Jun', planned: 80.0, actual: 75.0 },
+            { m: 'Jul', planned: 85.0, actual: 80.0 },
+            { m: 'Aug', planned: 95.0, actual: 87.8 },
+            { m: 'Sep', planned: 100.0, actual: null }
+          ];
+
+          const width = 560;
+          const height = 210;
+          const pad = { top: 25, right: 30, bottom: 35, left: 45 };
+          const plotW = width - pad.left - pad.right;
+          const plotH = height - pad.top - pad.bottom;
+
+          const getX = (idx) => pad.left + (idx / (data.length - 1)) * plotW;
+          const getY = (val) => pad.top + plotH - (val / 100) * plotH;
+
+          // Planned line path (dashed gold)
+          const plannedPath = data.map((d, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getY(d.planned)}`).join(' ');
+
+          // Actual line path (blue gradient)
+          const actualData = data.filter(d => d.actual !== null);
+          const actualPath = actualData.map((d, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getY(d.actual)}`).join(' ');
+          
+          // Actual area under curve
+          const firstX = getX(0);
+          const lastX = getX(actualData.length - 1);
+          const baseY = getY(0);
+          const actualArea = `${actualPath} L ${lastX} ${baseY} L ${firstX} ${baseY} Z`;
+
+          // Grid lines at 0, 25, 50, 75, 100
+          const gridValues = [0, 25, 50, 75, 100];
+          const gridSvg = gridValues.map(v => `
+            <line x1="${pad.left}" y1="${getY(v)}" x2="${width - pad.right}" y2="${getY(v)}" stroke="#F1F5F9" stroke-width="1.5" />
+            <text x="${pad.left - 8}" y="${getY(v) + 3.5}" fill="#94A3B8" font-size="10" font-family="monospace" text-anchor="end">${v}%</text>
+          `).join('');
+
+          // X axis labels
+          const xLabels = data.map((d, i) => `
+            <text x="${getX(i)}" y="${height - 12}" fill="#64748B" font-size="11" font-weight="600" text-anchor="middle">${d.m}</text>
+          `).join('');
+
+          // Points on actual path
+          const actualDots = actualData.map((d, i) => `
+            <g class="cursor-pointer group">
+              <circle cx="${getX(i)}" cy="${getY(d.actual)}" r="4.5" fill="#ffffff" stroke="#2563EB" stroke-width="3" class="transition-transform group-hover:scale-125"/>
+              ${i === actualData.length - 1 ? `
+                <rect x="${getX(i) - 24}" y="${getY(d.actual) - 26}" width="48" height="18" rx="5" fill="#1E293B" />
+                <text x="${getX(i)}" y="${getY(d.actual) - 14}" fill="#ffffff" font-size="10" font-weight="bold" font-family="monospace" text-anchor="middle">${d.actual}%</text>
+              ` : ''}
+            </g>
+          `).join('');
+
+          container.innerHTML = `
+            <svg viewBox="0 0 ${width} ${height}" class="w-full h-auto overflow-visible select-none">
+              <defs>
+                <linearGradient id="actualGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="#3B82F6" stop-opacity="0.35"/>
+                  <stop offset="100%" stop-color="#3B82F6" stop-opacity="0.0"/>
+                </linearGradient>
+                <linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#2563EB"/>
+                  <stop offset="100%" stop-color="#06B6D4"/>
+                </linearGradient>
+              </defs>
+              ${gridSvg}
+              <!-- Area -->
+              <path d="${actualArea}" fill="url(#actualGrad)" />
+              <!-- Planned Path -->
+              <path d="${plannedPath}" fill="none" stroke="#D97706" stroke-width="2.5" stroke-dasharray="5 4" stroke-linecap="round"/>
+              <!-- Actual Path -->
+              <path d="${actualPath}" fill="none" stroke="url(#lineGrad)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+              ${actualDots}
+              ${xLabels}
+            </svg>
+          `;
+        },
+
+        /**
+         * Render SVG Module-by-Module Progress Comparison (Reference Slide 1)
+         */
+        renderComparisonChart() {
+          const container = document.getElementById('comparison-chart-container');
+          const legend = document.getElementById('comparison-legend');
+          if (!container) return;
+
+          const items = DASHBOARD_REGISTRY;
+          const width = 560;
+          const height = 210;
+          const pad = { top: 30, right: 15, bottom: 35, left: 38 };
+          const plotW = width - pad.left - pad.right;
+          const plotH = height - pad.top - pad.bottom;
+
+          const barCount = items.length;
+          const barW = Math.min(32, (plotW / barCount) * 0.72);
+          const gap = plotW / barCount;
+
+          // Target line at 95.0%
+          const targetY = pad.top + plotH - (95 / 100) * plotH;
+
+          // Gradients definition
+          const defsGradients = items.map(d => `
+            <linearGradient id="cmp-bar-${d.id}" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="${d.gradientStop1}"/>
+              <stop offset="100%" stop-color="${d.gradientStop2}"/>
+            </linearGradient>
+          `).join('');
+
+          // Grid lines
+          const gridSvg = [0, 25, 50, 75, 100].map(v => `
+            <line x1="${pad.left}" y1="${pad.top + plotH - (v / 100) * plotH}" x2="${width - pad.right}" y2="${pad.top + plotH - (v / 100) * plotH}" stroke="#F1F5F9" stroke-width="1.5" />
+            <text x="${pad.left - 6}" y="${pad.top + plotH - (v / 100) * plotH + 3.5}" fill="#94A3B8" font-size="9" font-family="monospace" text-anchor="end">${v}%</text>
+          `).join('');
+
+          // Bars
+          const barsSvg = items.map((d, i) => {
+            const pct = parseFloat(d.kpis.compliance) || 0;
+            const barH = (pct / 100) * plotH;
+            const x = pad.left + (i * gap) + (gap - barW) / 2;
+            const y = pad.top + plotH - barH;
+
+            return `
+              <g class="cursor-pointer group" onclick="portalApp.showDetailView('${d.id}')">
+                <rect x="${x}" y="${y}" width="${barW}" height="${barH}" rx="4" fill="url(#cmp-bar-${d.id})" class="transition-all group-hover:opacity-85 shadow-xs"/>
+                <text x="${x + barW / 2}" y="${y - 4}" fill="#1E293B" font-size="8.5" font-family="monospace" font-weight="bold" text-anchor="middle">${pct.toFixed(0)}%</text>
+                <text x="${x + barW / 2}" y="${height - 12}" fill="#64748B" font-size="9" font-weight="700" text-anchor="middle" class="group-hover:fill-blue-600 transition-colors">${d.code}</text>
+              </g>
+            `;
+          }).join('');
+
+          container.innerHTML = `
+            <svg viewBox="0 0 ${width} ${height}" class="w-full h-auto overflow-visible select-none">
+              <defs>${defsGradients}</defs>
+              ${gridSvg}
+              <!-- 95% Planned Target Line -->
+              <line x1="${pad.left}" y1="${targetY}" x2="${width - pad.right}" y2="${targetY}" stroke="#D97706" stroke-width="2" stroke-dasharray="4 3"/>
+              <text x="${width - pad.right}" y="${targetY - 5}" fill="#D97706" font-size="9" font-weight="bold" text-anchor="end">Target 95%</text>
+              ${barsSvg}
+            </svg>
+          `;
+
+          if (legend) {
+            legend.innerHTML = items.map(d => `
+              <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-50 border border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors" onclick="portalApp.showDetailView('${d.id}')">
+                <span class="w-2 h-2 rounded-full" style="background-color: ${d.gradientStop1};"></span>
+                <span>${d.code}</span>
+              </span>
+            `).join('');
+          }
+        },
+
+        /**
+         * Render Action Scenarios Breakdown (Reference Slide 2)
+         */
+        renderActionScenarios() {
+          const container = document.getElementById('action-scenarios-container');
+          if (!container) return;
+
+          container.innerHTML = DASHBOARD_REGISTRY.map(item => `
+            <div class="p-3 bg-white hover:bg-slate-50 border border-slate-200/90 rounded-xl space-y-2 transition-all group">
+              <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2 min-w-0">
+                  <span class="px-2 py-0.5 rounded text-[10px] font-mono font-extrabold uppercase border ${item.tagStyle}">${item.code}</span>
+                  <span class="text-xs font-bold text-[#1E293B] truncate">${item.name}</span>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                  <span class="text-xs font-mono font-black text-slate-700">${item.kpis.closed}/${item.kpis.total} closed</span>
+                  <button onclick="portalApp.showDetailView('${item.id}')" class="px-2 py-0.5 rounded-lg text-[11px] font-bold text-blue-700 bg-blue-50 group-hover:bg-blue-600 group-hover:text-white border border-blue-200 transition-all flex items-center gap-1 cursor-pointer">
+                    <i data-lucide="arrow-up-right" class="w-3 h-3"></i> <span>View</span>
+                  </button>
+                </div>
+              </div>
+              <!-- Colorful gradient progress bar -->
+              <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden border border-slate-200 flex">
+                <div class="h-full rounded-full bg-gradient-to-r ${item.gradient} flex items-center justify-end pr-1.5 transition-all duration-500 shadow-xs" style="width: ${item.kpis.compliance};">
+                  <span class="text-[9px] font-black font-mono text-white leading-none">${item.kpis.compliance}</span>
+                </div>
+              </div>
+              <!-- Speech commentary bullet -->
+              <div class="flex items-center gap-1.5 text-[11px] text-slate-500 pl-1 border-l-2 border-slate-300">
+                <span class="text-slate-400 shrink-0">💬</span>
+                <span class="truncate">${item.statusComment}</span>
+              </div>
+            </div>
+          `).join('');
+
+          if (window.lucide) window.lucide.createIcons();
+        },
+
+        /**
+         * Render Punch List module-wise table (Reference Slide 2)
+         */
+        renderPunchListTable() {
+          const tbody = document.getElementById('punch-list-tbody');
+          if (!tbody) return;
+
+          tbody.innerHTML = DASHBOARD_REGISTRY.map(item => `
+            <tr class="hover:bg-slate-50 transition-colors">
+              <td class="py-2.5 pr-2">
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${item.tagStyle}">${item.code}</span>
+              </td>
+              <td class="py-2.5 px-2 font-mono font-bold text-rose-600">${item.punchList.open}</td>
+              <td class="py-2.5 px-2 font-mono font-bold text-emerald-600">${item.punchList.closed}</td>
+              <td class="py-2.5 px-2 font-mono font-bold text-slate-800">${item.punchList.total}</td>
+              <td class="py-2.5 px-2">
+                <div class="flex items-center gap-1.5">
+                  <div class="w-16 bg-slate-100 rounded-full h-2 overflow-hidden border border-slate-200">
+                    <div class="h-full bg-gradient-to-r ${item.gradient} rounded-full" style="width: ${item.punchList.rate};"></div>
+                  </div>
+                  <span class="font-mono text-[10px] font-bold text-slate-700">${item.punchList.rate}</span>
+                </div>
+              </td>
+              <td class="py-2.5 pl-2 text-right">
+                <button onclick="portalApp.showDetailView('${item.id}')" class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 hover:bg-blue-600 hover:text-white text-slate-700 transition-colors cursor-pointer">
+                  Open
+                </button>
+              </td>
+            </tr>
+          `).join('');
+        },
+
+        /**
+         * Render Data Readiness Audit Table (Reference Slide 2)
+         */
+        renderDataReadiness() {
+          const tbody = document.getElementById('data-readiness-tbody');
+          if (!tbody) return;
+
+          tbody.innerHTML = DASHBOARD_REGISTRY.map(item => `
+            <tr class="hover:bg-slate-50 transition-colors">
+              <td class="py-2.5 pr-2">
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${item.tagStyle}">${item.code}</span>
+              </td>
+              <td class="py-2.5 px-2">
+                <div class="flex items-center gap-1.5">
+                  <div class="w-16 bg-slate-100 rounded-full h-2 overflow-hidden border border-slate-200">
+                    <div class="h-full bg-gradient-to-r from-blue-600 to-cyan-500 rounded-full" style="width: ${item.dataReadiness.master};"></div>
+                  </div>
+                  <span class="font-mono text-[10px] font-bold text-slate-700">${item.dataReadiness.master}</span>
+                </div>
+              </td>
+              <td class="py-2.5 px-2">
+                <div class="flex items-center gap-1.5">
+                  <div class="w-16 bg-slate-100 rounded-full h-2 overflow-hidden border border-slate-200">
+                    <div class="h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full" style="width: ${item.dataReadiness.signoff};"></div>
+                  </div>
+                  <span class="font-mono text-[10px] font-bold text-slate-700">${item.dataReadiness.signoff}</span>
+                </div>
+              </td>
+              <td class="py-2.5 pl-2 text-right">
+                <button onclick="portalApp.showDetailView('${item.id}')" class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 hover:bg-blue-600 hover:text-white text-slate-700 transition-colors cursor-pointer">
+                  Audit
+                </button>
+              </td>
+            </tr>
+          `).join('');
+        },
+
+        /**
+         * Open Active Workload Modal (46 In-Progress List)
+         */
+        openActionsModal() {
+          const modal = document.getElementById('actions-modal');
+          const list = document.getElementById('actions-modal-list');
+          if (!modal || !list) return;
+
+          const inProgActions = [];
+          DASHBOARD_REGISTRY.forEach(d => {
+            d.actions.forEach(a => {
+              if (a.status === 'In Progress') {
+                inProgActions.push({ ...a, dashboardId: d.id, dashboardName: d.name, gradient: d.gradient, tagStyle: d.tagStyle, code: d.code });
+              }
+            });
+          });
+
+          list.innerHTML = inProgActions.map(action => `
+            <div class="p-3 bg-slate-50 hover:bg-blue-50/50 border border-slate-200 rounded-xl transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-2"
+                 onclick="portalApp.closeActionsModal(); portalApp.showDetailView('${action.dashboardId}');">
+              <div class="space-y-1">
+                <div class="flex items-center gap-2">
+                  <span class="px-2 py-0.5 rounded text-[10px] font-mono font-extrabold uppercase border ${action.tagStyle}">${action.code}</span>
+                  <span class="font-mono font-bold text-xs text-blue-700">${action.id}</span>
+                  <span class="px-2 py-0.5 rounded text-[10px] font-bold ${action.priority === 'Critical' ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800'}">${action.priority}</span>
+                </div>
+                <p class="text-xs text-slate-800 font-medium">${action.desc}</p>
+                <div class="text-[11px] text-slate-500 flex items-center gap-3">
+                  <span>Owner: <strong>${action.owner}</strong></span>
+                  <span>Due: <strong>${action.due}</strong></span>
+                </div>
+              </div>
+              <button class="shrink-0 px-2.5 py-1 rounded-lg text-xs font-bold text-blue-600 bg-white border border-blue-200 hover:bg-blue-600 hover:text-white transition-colors flex items-center gap-1 cursor-pointer">
+                <span>Go to Dashboard</span>
+                <i data-lucide="arrow-right" class="w-3 h-3"></i>
+              </button>
+            </div>
+          `).join('');
+
+          modal.classList.remove('hidden');
+          modal.classList.add('flex');
+          if (window.lucide) window.lucide.createIcons();
+        },
+
+        /**
+         * Close Active Workload Modal
+         */
+        closeActionsModal() {
+          const modal = document.getElementById('actions-modal');
+          if (modal) {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+          }
+        },
+
+        /**
+         * Update the top Executive Summary Rollup Statistics from registry
+         */
+        updateRollupStats() {
+          const total = DASHBOARD_REGISTRY.reduce((acc, item) => acc + (item.kpis.total || 0), 0);
+          const closed = DASHBOARD_REGISTRY.reduce((acc, item) => acc + (item.kpis.closed || 0), 0);
+          const inProgress = DASHBOARD_REGISTRY.reduce((acc, item) => acc + (item.kpis.inProgress ?? item.kpis.pending ?? 0), 0);
+          const overdue = DASHBOARD_REGISTRY.reduce((acc, item) => acc + (item.kpis.overdue || 0), 0);
+          const rate = total > 0 ? ((closed / total) * 100).toFixed(1) + '%' : '0.0%';
+
+          const elTotal = document.getElementById('rollup-total');
+          const elRate = document.getElementById('rollup-rate');
+          const elClosed = document.getElementById('rollup-closed');
+          const elInprog = document.getElementById('rollup-inprogress');
+          const elOverdue = document.getElementById('rollup-overdue');
+
+          if (elTotal) elTotal.textContent = total;
+          if (elRate) elRate.textContent = rate;
+          if (elClosed) elClosed.textContent = closed;
+          if (elInprog) elInprog.textContent = inProgress;
+          if (elOverdue) elOverdue.textContent = overdue;
+        },
+
+        /**
+         * Dropdown Menu Selection Handler:
+         * Switches dynamically to any selected dashboard or returns to main overview
+         */
+        handleDropdownSelect(id) {
+          // Synchronize all dropdown selectors across header, toolbar, and detail views
+          const headerSelect = document.getElementById('header-dashboard-select');
+          const toolbarSelect = document.getElementById('toolbar-dashboard-select');
+          const detailSelect = document.getElementById('detail-dashboard-select');
+
+          if (headerSelect) headerSelect.value = id;
+          if (toolbarSelect) toolbarSelect.value = id;
+          if (detailSelect) detailSelect.value = id;
+
+          if (!id || id === 'overview') {
+            this.showLandingView(true);
+          } else {
+            this.showDetailView(id, true);
+          }
         },
 
         /**
@@ -1157,11 +2147,13 @@
         },
 
         /**
-         * Render cards grid applying the requested EXACT color scheme:
-         * - Background: item.color.bg
-         * - Primary Accent: item.color.primary
-         * - Secondary Accent: item.color.secondary
-         * - Text Color: item.color.text (#2B2E33)
+         * Render cards grid displaying:
+         * - Donut chart of each department
+         * - Completed Action %
+         * - Overdue Actions
+         * - Closed Actions
+         * - In-Progress Actions
+         * - Executive department color scheme
          */
         renderCards() {
           const container = document.getElementById('dashboards-grid');
@@ -1183,7 +2175,8 @@
           });
 
           // Update counter
-          document.getElementById('visible-cards-count').textContent = filtered.length;
+          const countEl = document.getElementById('visible-cards-count');
+          if (countEl) countEl.textContent = filtered.length;
 
           if (filtered.length === 0) {
             container.innerHTML = '';
@@ -1195,69 +2188,175 @@
 
           container.innerHTML = filtered.map((item) => {
             const isActive = item.status === 'Active';
-            const c = item.color;
+            const k = item.kpis;
+            const inProg = k.inProgress ?? k.pending ?? 0;
+            const total = k.total || 1;
+            const closed = k.closed || 0;
+            const overdue = k.overdue || 0;
+            const compRate = k.compliance || (Math.round((closed / total) * 100) + '%');
+
+            // SVG Donut Calculations (radius = 34, circumference = 213.63)
+            const radius = 34;
+            const circumference = 2 * Math.PI * radius;
+            const closedLength = (closed / total) * circumference;
+            const inProgLength = (inProg / total) * circumference;
+            const overdueLength = (overdue / total) * circumference;
+
+            const closedOffset = 0;
+            const inProgOffset = -closedLength;
+            const overdueOffset = -(closedLength + inProgLength);
 
             return `
               <div
                 id="card-${item.id}"
                 onclick="portalApp.showDetailView('${item.id}')"
-                class="card-hover-effect group rounded-2xl p-5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-200"
-                style="background-color: ${c.bg}; color: ${c.text}; border: 1.5px solid ${c.secondary}99; box-shadow: 0 2px 10px -2px ${c.primary}18;"
-                onmouseenter="this.style.borderColor='${c.primary}'; this.style.boxShadow='0 10px 24px -4px ${c.primary}30';"
-                onmouseleave="this.style.borderColor='${c.secondary}99'; this.style.boxShadow='0 2px 10px -2px ${c.primary}18';"
+                class="card-hover-effect group bg-white border border-slate-200/90 hover:border-slate-300 rounded-2xl p-5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 shadow-xs hover:shadow-xl hover:-translate-y-1"
               >
-                <!-- Top Accent Strip -->
-                <div class="absolute top-0 left-0 right-0 h-1.5" style="background-color: ${c.primary};"></div>
+                <!-- Top Accent Gradient Stripe -->
+                <div class="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r ${item.gradient}"></div>
 
-                <!-- Card Header: Icon, Category & Status Badge -->
-                <div class="space-y-3.5 pt-1">
+                <div class="space-y-4 pt-1">
+                  <!-- Card Header: Category Tag, Icon & Status Badge -->
                   <div class="flex items-start justify-between gap-3">
-                    <!-- Modern Icon Container -->
-                    <div
-                      id="icon-${item.id}"
-                      class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform"
-                      style="background-color: #ffffff; color: ${c.primary}; border: 1.5px solid ${c.secondary};"
-                    >
-                      <i data-lucide="${item.icon}" class="w-5 h-5"></i>
+                    <div class="flex items-center gap-2.5 min-w-0">
+                      <!-- Gradient Icon Box -->
+                      <div
+                        id="icon-${item.id}"
+                        class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 shadow-xs text-white bg-gradient-to-r ${item.gradient} group-hover:scale-105 transition-transform"
+                      >
+                        <i data-lucide="${item.icon}" class="w-5 h-5"></i>
+                      </div>
+                      <div class="min-w-0">
+                        <span class="inline-block px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider font-extrabold border ${item.tagStyle}">
+                          ${item.code}
+                        </span>
+                        <h3 id="title-${item.id}" class="text-sm sm:text-base font-bold text-[#1E293B] group-hover:text-blue-600 leading-snug truncate transition-colors" title="${item.name}">
+                          ${item.name}
+                        </h3>
+                      </div>
                     </div>
 
                     <!-- Status Badge -->
                     <span
                       id="badge-${item.id}"
-                      class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold shrink-0 shadow-2xs"
-                      style="background-color: #ffffff; color: ${isActive ? c.primary : '#854D0E'}; border: 1.5px solid ${isActive ? c.secondary : '#E0B876'};"
+                      class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold shrink-0 bg-slate-100 text-slate-700 border border-slate-200"
                     >
-                      <span class="w-1.5 h-1.5 rounded-full" style="background-color: ${isActive ? c.primary : '#C98A2B'};"></span>
+                      <span class="w-1.5 h-1.5 rounded-full ${isActive ? 'bg-emerald-500' : 'bg-amber-500'}"></span>
                       <span>${item.status}</span>
                     </span>
                   </div>
 
-                  <!-- Dashboard Name & Description -->
-                  <div>
-                    <div class="text-[11px] font-mono uppercase tracking-wider font-bold mb-1" style="color: ${c.primary};">
-                      ${item.category}
+                  <!-- Department Subtitle -->
+                  <div class="text-xs text-slate-500 font-medium truncate flex items-center gap-1.5" title="${item.department}">
+                    <i data-lucide="building" class="w-3.5 h-3.5 shrink-0 text-slate-400"></i>
+                    <span>${item.department}</span>
+                  </div>
+
+                  <!-- DEPARTMENT DONUT CHART PANEL (White with Subtle Border) -->
+                  <div class="bg-slate-50/75 rounded-xl p-3 border border-slate-200/80 shadow-2xs flex items-center justify-between gap-3">
+                    <!-- SVG Donut Chart with Centered Completed % -->
+                    <div class="relative flex items-center justify-center shrink-0 w-24 h-24">
+                      <svg class="w-full h-full transform -rotate-90" viewBox="0 0 84 84">
+                        <defs>
+                          <linearGradient id="donut-grad-${item.id}" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="${item.gradientStop1}"/>
+                            <stop offset="100%" stop-color="${item.gradientStop2}"/>
+                          </linearGradient>
+                        </defs>
+                        <!-- Track Circle -->
+                        <circle cx="42" cy="42" r="${radius}" fill="transparent" stroke="#E2E8F0" stroke-width="7"></circle>
+                        
+                        <!-- Closed Actions Arc (Gradient Fill) -->
+                        ${closed > 0 ? `
+                        <circle cx="42" cy="42" r="${radius}" fill="transparent"
+                          stroke="url(#donut-grad-${item.id})" stroke-width="7.5"
+                          stroke-dasharray="${closedLength} ${circumference - closedLength}"
+                          stroke-dashoffset="${closedOffset}"
+                          stroke-linecap="round"></circle>` : ''}
+
+                        <!-- In-Progress Actions Arc (Purple / Slate) -->
+                        ${inProg > 0 ? `
+                        <circle cx="42" cy="42" r="${radius}" fill="transparent"
+                          stroke="#8B5CF6" stroke-width="7"
+                          stroke-dasharray="${inProgLength} ${circumference - inProgLength}"
+                          stroke-dashoffset="${inProgOffset}"
+                          stroke-linecap="round"></circle>` : ''}
+
+                        <!-- Overdue Actions Arc (Red / Alert) -->
+                        ${overdue > 0 ? `
+                        <circle cx="42" cy="42" r="${radius}" fill="transparent"
+                          stroke="#EF4444" stroke-width="7.5"
+                          stroke-dasharray="${overdueLength} ${circumference - overdueLength}"
+                          stroke-dashoffset="${overdueOffset}"
+                          stroke-linecap="round"></circle>` : ''}
+                      </svg>
+
+                      <!-- Donut Center Label: Completed Action % -->
+                      <div class="absolute inset-0 flex flex-col items-center justify-center text-center select-none pointer-events-none">
+                        <span class="text-xs font-black font-mono tracking-tight leading-none text-[#1E293B]">${compRate}</span>
+                        <span class="text-[8px] font-bold text-slate-500 uppercase tracking-tighter mt-0.5">COMPLETED</span>
+                      </div>
                     </div>
-                    <h3 id="title-${item.id}" class="text-base font-bold leading-snug line-clamp-2" style="color: ${c.text};">
-                      ${item.name}
-                    </h3>
-                    <p class="text-xs mt-2 line-clamp-2 leading-relaxed font-sans font-medium" style="color: ${c.text}; opacity: 0.88;">
-                      ${item.description}
-                    </p>
+
+                    <!-- Breakdown Legend List -->
+                    <div class="flex-1 space-y-1 text-xs">
+                      <div class="flex items-center justify-between text-[11px]">
+                        <span class="text-slate-500 font-medium flex items-center gap-1.5">
+                          <span class="w-2 h-2 rounded-full" style="background-color: ${item.gradientStop1};"></span> Closed:
+                        </span>
+                        <span class="font-mono font-bold text-[#1E293B]">${closed}</span>
+                      </div>
+                      <div class="flex items-center justify-between text-[11px]">
+                        <span class="text-slate-500 font-medium flex items-center gap-1.5">
+                          <span class="w-2 h-2 rounded-full bg-[#8B5CF6]"></span> In-Progress:
+                        </span>
+                        <span class="font-mono font-bold text-[#1E293B]">${inProg}</span>
+                      </div>
+                      <div class="flex items-center justify-between text-[11px]">
+                        <span class="font-medium flex items-center gap-1.5 ${overdue > 0 ? 'text-rose-700 font-bold' : 'text-slate-500'}">
+                          <span class="w-2 h-2 rounded-full bg-[#EF4444]"></span> Overdue:
+                        </span>
+                        <span class="font-mono font-bold ${overdue > 0 ? 'text-rose-600 px-1 py-0.2 bg-rose-50 rounded border border-rose-200' : 'text-slate-700'}">${overdue}</span>
+                      </div>
+                      <div class="pt-1 border-t border-slate-200 flex items-center justify-between text-[11px]">
+                        <span class="text-slate-500 font-medium">Total Actions:</span>
+                        <span class="font-mono font-extrabold text-[#1E293B]">${total}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 4 ACTION METRICS PILLS (Completed % | Overdue | Closed | In-Progress) -->
+                  <div class="grid grid-cols-4 gap-1.5 text-center">
+                    <div class="bg-white rounded-lg py-1.5 px-1 border border-slate-200 shadow-2xs">
+                      <div class="text-[9px] font-bold text-slate-500 uppercase">Rate</div>
+                      <div class="text-xs font-extrabold font-mono text-emerald-600">${compRate}</div>
+                    </div>
+                    <div class="bg-white rounded-lg py-1.5 px-1 border border-slate-200 shadow-2xs">
+                      <div class="text-[9px] font-bold text-slate-500 uppercase">Closed</div>
+                      <div class="text-xs font-extrabold font-mono text-blue-600">${closed}</div>
+                    </div>
+                    <div class="bg-white rounded-lg py-1.5 px-1 border border-slate-200 shadow-2xs">
+                      <div class="text-[9px] font-bold text-slate-500 uppercase">In-Prog</div>
+                      <div class="text-xs font-extrabold font-mono text-purple-600">${inProg}</div>
+                    </div>
+                    <div class="rounded-lg py-1.5 px-1 border shadow-2xs ${overdue > 0 ? 'bg-rose-50 border-rose-300' : 'bg-white border-slate-200'}">
+                      <div class="text-[9px] font-bold ${overdue > 0 ? 'text-rose-700' : 'text-slate-500'} uppercase">Overdue</div>
+                      <div class="text-xs font-extrabold font-mono ${overdue > 0 ? 'text-rose-600' : 'text-slate-600'}">${overdue}</div>
+                    </div>
                   </div>
                 </div>
 
                 <!-- Footer: Cadence & View Button -->
-                <div class="pt-4 mt-4 flex items-center justify-between" style="border-top: 1px solid ${c.secondary}70;">
-                  <span class="text-[11px] font-mono flex items-center gap-1 font-semibold" style="color: ${c.text}; opacity: 0.8;">
-                    <i data-lucide="calendar" class="w-3.5 h-3.5" style="color: ${c.primary};"></i> ${item.cadence}
+                <div class="pt-3 mt-3 flex items-center justify-between border-t border-slate-100">
+                  <span class="text-[11px] font-mono flex items-center gap-1 font-semibold text-slate-500">
+                    <i data-lucide="calendar" class="w-3.5 h-3.5 text-slate-400"></i> ${item.cadence}
                   </span>
                   
                   <div
                     id="btn-view-${item.id}"
-                    class="inline-flex items-center gap-1 text-xs font-bold transition-all group-hover:translate-x-1"
-                    style="color: ${c.primary};"
+                    class="btn-marketing-gradient px-3 py-1.5 rounded-xl text-xs font-bold text-white shadow-xs group-hover:scale-105 transition-transform flex items-center gap-1.5"
                   >
-                    <span>View Dashboard</span>
+                    <span>Open Dashboard</span>
                     <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
                   </div>
                 </div>
@@ -1350,11 +2449,9 @@
 
           const activeBtn = {
             'all': 'cat-all',
-            'Operations & SOC': 'cat-ops',
-            'Safety & PSM': 'cat-safety',
-            'Quality & Compliance': 'cat-quality',
-            'Audits & Reviews': 'cat-audit',
-            'Environmental & Energy': 'cat-env',
+            'Executive & Governance': 'cat-exec',
+            'Sub HSE Committees': 'cat-subhse',
+            'Process Safety & Quality': 'cat-process',
           }[category];
 
           const el = document.getElementById(activeBtn);
@@ -1372,6 +2469,55 @@
         },
 
         /**
+         * Render Top Dashboards Navigation Menu Bar with all 11 individual dashboards + Overview
+         */
+        renderNavMenu() {
+          const container = document.getElementById('nav-menu-links-container');
+          if (!container) return;
+
+          const activeId = this.state.activeDashboardId || 'overview';
+
+          let html = `
+            <button
+              id="nav-menu-overview"
+              onclick="portalApp.handleDropdownSelect('overview')"
+              class="nav-menu-btn px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
+                activeId === 'overview'
+                  ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-xs'
+                  : 'bg-white text-slate-700 hover:bg-slate-50 hover:text-blue-600 border border-slate-200'
+              }"
+            >
+              <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i>
+              <span>Overview</span>
+            </button>
+          `;
+
+          html += DASHBOARD_REGISTRY.map(item => {
+            const isSelected = activeId === item.id;
+            return `
+              <button
+                id="nav-menu-${item.id}"
+                onclick="portalApp.handleDropdownSelect('${item.id}')"
+                class="nav-menu-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
+                  isSelected
+                    ? 'text-white shadow-xs font-bold bg-gradient-to-r ' + item.gradient
+                    : 'bg-white text-slate-700 hover:bg-slate-50 hover:text-blue-600 border border-slate-200'
+                }"
+                title="${item.name}"
+              >
+                <i data-lucide="${item.icon}" class="w-3.5 h-3.5"></i>
+                <span>${item.name}</span>
+              </button>
+            `;
+          }).join('');
+
+          container.innerHTML = html;
+          if (window.lucide) {
+            window.lucide.createIcons();
+          }
+        },
+
+        /**
          * VIEW SWITCHER: Show Dedicated Detail View dynamically themed with the active dashboard's color scheme
          */
         showDetailView(dashboardId, updateHash = true) {
@@ -1379,7 +2525,17 @@
           if (!dashboard) return;
 
           this.state.activeDashboardId = dashboardId;
-          const c = dashboard.color;
+
+          // Update Navigation Menu Bar selection
+          this.renderNavMenu();
+
+          // Sync dropdowns
+          const headerSelect = document.getElementById('header-dashboard-select');
+          const toolbarSelect = document.getElementById('toolbar-dashboard-select');
+          const detailSelect = document.getElementById('detail-dashboard-select');
+          if (headerSelect) headerSelect.value = dashboardId;
+          if (toolbarSelect) toolbarSelect.value = dashboardId;
+          if (detailSelect) detailSelect.value = dashboardId;
 
           // Update URL hash for bookmarking / navigation
           if (updateHash) {
@@ -1394,32 +2550,35 @@
           // Scroll to top
           window.scrollTo({ top: 0, behavior: 'smooth' });
 
-          // Dynamically Theme the Detail Header Card with dashboard's exact palette
+          // Dynamically Theme the Detail Header Card with dashboard's marketing gradient
           const headerCard = document.getElementById('detail-header-card');
-          headerCard.style.backgroundColor = c.bg;
-          headerCard.style.color = c.text;
-          headerCard.style.borderColor = c.secondary;
-          headerCard.style.boxShadow = `0 4px 20px -4px ${c.primary}25`;
+          headerCard.style.backgroundColor = '#ffffff';
+          headerCard.style.color = '#1E293B';
+          headerCard.style.borderColor = '#E2E8F0';
+          headerCard.style.boxShadow = '0 10px 25px -5px rgba(0,0,0,0.06)';
+
+          const headerStripe = document.getElementById('detail-header-stripe');
+          if (headerStripe) {
+            headerStripe.className = 'absolute top-0 left-0 right-0 h-2.5 bg-gradient-to-r ' + dashboard.gradient;
+          }
 
           // Populate Detail Header Elements
           document.getElementById('breadcrumb-active-name').textContent = dashboard.name;
           document.getElementById('detail-title').textContent = dashboard.name;
-          document.getElementById('detail-title').style.color = c.text;
+          document.getElementById('detail-title').style.color = '#1E293B';
           
           const descEl = document.getElementById('detail-description');
           descEl.textContent = dashboard.description;
-          descEl.style.color = c.text;
-          descEl.style.opacity = '0.9';
+          descEl.style.color = '#475569';
 
           document.getElementById('detail-cadence').textContent = dashboard.cadence;
           document.getElementById('detail-owner').textContent = dashboard.department;
           document.getElementById('detail-last-sync').textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-          // Detail Icon Box styling
+          // Detail Icon Box styling (Gradient background, white icon)
           const iconBox = document.getElementById('detail-icon-box');
-          iconBox.style.backgroundColor = '#ffffff';
-          iconBox.style.color = c.primary;
-          iconBox.style.border = `2px solid ${c.secondary}`;
+          iconBox.className = 'w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-md text-white bg-gradient-to-r ' + dashboard.gradient;
+          iconBox.style = '';
           const iconEl = document.getElementById('detail-icon-el');
           if (iconEl) {
             iconEl.setAttribute('data-lucide', dashboard.icon);
@@ -1427,10 +2586,9 @@
 
           // Category Badge styling
           const catBadge = document.getElementById('detail-category-badge');
-          catBadge.textContent = dashboard.category;
-          catBadge.style.backgroundColor = '#ffffff';
-          catBadge.style.color = c.primary;
-          catBadge.style.border = `1.5px solid ${c.secondary}`;
+          catBadge.textContent = dashboard.code + ' • ' + dashboard.category;
+          catBadge.className = 'px-3 py-1 rounded-full text-xs font-mono font-extrabold uppercase border shadow-2xs ' + dashboard.tagStyle;
+          catBadge.style = '';
 
           // Status Badge styling
           const statusBadge = document.getElementById('detail-status-badge');
@@ -1439,90 +2597,93 @@
           const isActive = dashboard.status === 'Active';
 
           statusText.textContent = dashboard.status;
-          statusBadge.style.backgroundColor = '#ffffff';
-          statusBadge.style.color = isActive ? c.primary : '#854D0E';
-          statusBadge.style.border = `1.5px solid ${isActive ? c.primary : '#C98A2B'}`;
-          statusDot.style.backgroundColor = isActive ? c.primary : '#C98A2B';
+          statusBadge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold shadow-2xs bg-slate-100 text-slate-800 border border-slate-200';
+          statusBadge.style = '';
+          statusDot.className = 'w-2 h-2 rounded-full ' + (isActive ? 'bg-emerald-500' : 'bg-amber-500');
+          statusDot.style = '';
 
           // Connection Card
           const connCard = document.getElementById('detail-connection-card');
-          connCard.style.borderColor = `${c.secondary}80`;
+          connCard.style.borderColor = '#E2E8F0';
           const sheetStatus = document.getElementById('detail-sheet-status');
-          sheetStatus.style.color = c.primary;
+          sheetStatus.className = 'font-bold text-emerald-600';
 
-          // Dynamically Accent the KPI Cards Top Stripes
-          document.getElementById('kpi-stripe-1').style.backgroundColor = c.primary;
-          document.getElementById('kpi-stripe-2').style.backgroundColor = c.secondary;
-          document.getElementById('kpi-stripe-3').style.backgroundColor = c.primary;
-          document.getElementById('kpi-stripe-4').style.backgroundColor = '#C3564F';
+          // Dynamically Accent the KPI Cards Top Stripes with Gradients
+          document.getElementById('kpi-stripe-1').className = 'absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r ' + dashboard.gradient;
+          document.getElementById('kpi-stripe-2').className = 'absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-500 to-teal-500';
+          document.getElementById('kpi-stripe-3').className = 'absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-500 to-orange-500';
+          document.getElementById('kpi-stripe-4').className = 'absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-rose-500 to-pink-500';
 
           // Update KPI Summary Metrics
           document.getElementById('kpi-total-items').textContent = dashboard.kpis.total;
           document.getElementById('kpi-closed-items').textContent = dashboard.kpis.closed;
-          document.getElementById('kpi-pending-items').textContent = dashboard.kpis.pending;
+          document.getElementById('kpi-pending-items').textContent = dashboard.kpis.inProgress ?? dashboard.kpis.pending ?? 0;
           document.getElementById('kpi-overdue-items').textContent = dashboard.kpis.overdue;
 
           // Theme Google Sheets Container Border and Highlights
           const sheetsContainer = document.getElementById('google-sheets-data-injection-container');
-          sheetsContainer.style.borderColor = c.secondary;
+          sheetsContainer.style.borderColor = '#CBD5E1';
           const chartIcon = document.getElementById('chart-icon');
-          if (chartIcon) chartIcon.style.color = c.primary;
+          if (chartIcon) chartIcon.style.color = dashboard.gradientStop1;
           const sheetIconPill = document.getElementById('sheet-icon-pill');
           if (sheetIconPill) {
-            sheetIconPill.style.backgroundColor = c.bg;
-            sheetIconPill.style.color = c.primary;
-            sheetIconPill.style.borderColor = c.secondary;
+            sheetIconPill.className = 'p-2 rounded-lg text-white shadow-xs bg-gradient-to-r ' + dashboard.gradient;
+            sheetIconPill.style = '';
           }
 
-          // Accent Chart Bars with Dashboard Primary & Secondary
+          // Accent Chart Bars with Dashboard Gradient
           ['chart-bar-1', 'chart-bar-2', 'chart-bar-3', 'chart-bar-4'].forEach(id => {
             const el = document.getElementById(id);
-            if (el) el.style.backgroundColor = c.secondary;
+            if (el) el.style.backgroundColor = '#94A3B8';
           });
           const bar5 = document.getElementById('chart-bar-5');
-          if (bar5) bar5.style.backgroundColor = c.primary;
+          if (bar5) {
+            bar5.style.background = 'linear-gradient(180deg, ' + dashboard.gradientStop1 + ', ' + dashboard.gradientStop2 + ')';
+          }
           const benchmarkInd = document.getElementById('benchmark-indicator');
-          if (benchmarkInd) benchmarkInd.style.backgroundColor = c.primary;
+          if (benchmarkInd) benchmarkInd.style.backgroundColor = dashboard.gradientStop1;
           const breakdownPending = document.getElementById('breakdown-bar-pending');
-          if (breakdownPending) breakdownPending.style.backgroundColor = c.primary;
+          if (breakdownPending) breakdownPending.style.backgroundColor = dashboard.gradientStop1;
 
           // Theme Action Items Table Header Row
           const tableHeader = document.getElementById('table-header-row');
           if (tableHeader) {
-            tableHeader.style.backgroundColor = `${c.bg}80`;
-            tableHeader.style.borderColor = `${c.secondary}80`;
+            tableHeader.className = 'border-b border-slate-200 bg-slate-50 text-slate-600 font-bold uppercase tracking-wider text-[10px]';
+            tableHeader.style = '';
           }
 
-          // Populate Action Items Table with Primary Accent Refs
+          // Populate Action Items Table
           const tbody = document.getElementById('detail-actions-tbody');
           if (tbody) {
             tbody.innerHTML = dashboard.actions.map(action => {
               const prioColors = {
-                'Critical': 'bg-rose-50 text-rose-800 border-rose-300',
-                'High': 'bg-amber-50 text-amber-800 border-amber-300',
-                'Medium': 'bg-blue-50 text-blue-800 border-blue-300',
-                'Low': 'bg-slate-100 text-slate-700 border-slate-300',
-              }[action.priority] || 'bg-slate-100 text-slate-700 border-slate-300';
+                'Critical': 'bg-rose-50 text-rose-700 border-rose-200',
+                'High': 'bg-amber-50 text-amber-700 border-amber-200',
+                'Medium': 'bg-blue-50 text-blue-700 border-blue-200',
+                'Low': 'bg-slate-100 text-slate-600 border-slate-200',
+              }[action.priority] || 'bg-slate-100 text-slate-600 border-slate-200';
 
               const statusPills = {
-                'Completed': 'text-emerald-800 bg-emerald-50 border-emerald-300',
-                'In Progress': 'text-blue-800 bg-blue-50 border-blue-300',
-                'Awaiting Sign-off': 'text-amber-800 bg-amber-50 border-amber-300',
-              }[action.status] || 'text-slate-700 bg-slate-100 border-slate-300';
+                'Completed': 'text-emerald-700 bg-emerald-50 border-emerald-200',
+                'In Progress': 'text-blue-700 bg-blue-50 border-blue-200',
+                'Awaiting Sign-off': 'text-amber-700 bg-amber-50 border-amber-200',
+              }[action.status] || 'text-slate-700 bg-slate-100 border-slate-200';
 
               return `
-                <tr class="hover:bg-slate-50/80 transition-colors">
-                  <td class="py-3 px-4 font-mono text-[11px] font-bold" style="color: ${c.primary};">${action.id}</td>
-                  <td class="py-3 px-4 font-medium text-[#2B2E33]">${action.desc}</td>
-                  <td class="py-3 px-4 text-slate-600">${action.owner}</td>
+                <tr class="hover:bg-slate-50/90 transition-colors">
+                  <td class="py-3 px-4 font-mono text-[11px] font-bold">
+                    <span class="inline-block px-2 py-0.5 rounded border ${dashboard.tagStyle}">${action.id}</span>
+                  </td>
+                  <td class="py-3 px-4 font-semibold text-[#1E293B]">${action.desc}</td>
+                  <td class="py-3 px-4 text-slate-600 font-medium">${action.owner}</td>
                   <td class="py-3 px-4 font-mono text-slate-500 text-[11px]">${action.due}</td>
                   <td class="py-3 px-4">
-                    <span class="inline-block px-2 py-0.5 rounded text-[10px] font-semibold border ${prioColors}">
+                    <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold border ${prioColors}">
                       ${action.priority}
                     </span>
                   </td>
                   <td class="py-3 px-4">
-                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium border ${statusPills}">
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${statusPills}">
                       ${action.status}
                     </span>
                   </td>
@@ -1550,9 +2711,23 @@
           if (updateHash) {
             window.location.hash = '';
           }
+          this.state.activeDashboardId = null;
+
+          // Update Navigation Menu Bar selection
+          this.renderNavMenu();
+
+          // Sync dropdowns back to overview
+          const headerSelect = document.getElementById('header-dashboard-select');
+          const toolbarSelect = document.getElementById('toolbar-dashboard-select');
+          const detailSelect = document.getElementById('detail-dashboard-select');
+          if (headerSelect) headerSelect.value = 'overview';
+          if (toolbarSelect) toolbarSelect.value = 'overview';
+          if (detailSelect) detailSelect.value = 'overview';
+
           document.getElementById('dashboard-detail-view').classList.add('hidden');
           document.getElementById('portal-landing-view').classList.remove('hidden');
           window.scrollTo({ top: 0, behavior: 'smooth' });
+          this.updateRollupStats();
           this.renderCards();
         },
 
@@ -1576,8 +2751,9 @@
 
           setTimeout(() => {
             if (btn) btn.classList.remove('opacity-70');
+            this.updateRollupStats();
             this.renderCards();
-            this.showToast('Portal Registry Synced', 'All 18 operational dashboard feeds verified.', 'info');
+            this.showToast('Portal Registry Synced', 'All 11 individual dashboard operational feeds verified.', 'info');
           }, 500);
         },
 

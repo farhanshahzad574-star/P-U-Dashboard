@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 84" width="100%" height="100%">
+  <defs>
+    <!-- Orange Gradient -->
+    <linearGradient id="fpclOrangeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF7A1A"/>
+      <stop offset="100%" stop-color="#EA580C"/>
+    </linearGradient>
+    <!-- Blue Gradient -->
+    <linearGradient id="fpclBlueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0066B3"/>
+      <stop offset="100%" stop-color="#004C8C"/>
+    </linearGradient>
+    <filter id="subtleGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000000" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+
+  <!-- Group with subtle shadow -->
+  <g filter="url(#subtleGlow)">
+    <!-- 1. ORANGE LIGHTNING BOLT BOX -->
+    <rect x="2" y="4" width="34" height="46" rx="3" fill="url(#fpclOrangeGrad)"/>
+    <!-- Lightning Bolt Cutout -->
+    <polygon points="21,7 10,27 18,27 9,47 27,23 19,23" fill="#1E293B"/>
+
+    <!-- 2. LETTER 'F' -->
+    <path d="M 43,4 L 74,4 L 74,15 L 56,15 L 56,22 L 71,22 L 71,32 L 56,32 L 56,50 L 43,50 Z" fill="url(#fpclBlueGrad)"/>
+
+    <!-- 3. LETTER 'P' -->
+    <path d="M 80,4 L 109,4 C 119,4 125,9 125,19 C 125,29 119,34 109,34 L 93,34 L 93,50 L 80,50 Z M 93,14 L 93,24 L 106,24 C 110,24 112,22 112,19 C 112,16 110,14 106,14 Z" fill="url(#fpclBlueGrad)"/>
+
+    <!-- 4. LETTER 'C' -->
+    <path d="M 163,16 L 152,20 C 150,16 146,14 141,14 C 133,14 128,20 128,27 C 128,34 133,40 141,40 C 146,40 150,38 152,34 L 163,38 C 159,45 151,51 140,51 C 125,51 115,41 115,27 C 115,13 125,3 140,3 C 151,3 159,9 163,16 Z" fill="url(#fpclBlueGrad)"/>
+
+    <!-- 5. LETTER 'L' WITH STYLIZED ORANGE ACCENT -->
+    <!-- Blue bottom horizontal foot -->
+    <path d="M 172,4 L 185,4 L 185,38 L 220,38 L 220,50 L 172,50 Z" fill="url(#fpclBlueGrad)"/>
+    <!-- Orange Dynamic Slanted Blade of L -->
+    <polygon points="198,4 213,4 182,50 167,50" fill="url(#fpclOrangeGrad)"/>
+    <polygon points="182,50 226,50 216,36 182,36" fill="url(#fpclOrangeGrad)"/>
+  </g>
+
+  <!-- SUBTITLE 1: FFBL POWER COMPANY LIMITED -->
+  <text x="2" y="66" fill="#005A9C" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="11.5" font-weight="900" letter-spacing="1.2">FFBL POWER COMPANY LIMITED</text>
+
+  <!-- SUBTITLE 2: FUELING POSSIBILITIES! -->
+  <text x="2" y="79" fill="#EA580C" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="9" font-weight="900" letter-spacing="3.2">FUELING POSSIBILITIES!</text>
+</svg>
