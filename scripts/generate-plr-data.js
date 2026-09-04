@@ -561,6 +561,150 @@ const recommendations = [
     recommendation: '1. Ultrasonic thickness mapping of Boiler-01 waterwall tubes at elevation +14m.\n2. Replace eroded tube section with upgraded metallurgy (SA-213 T22).',
     actionBy: 'Mechanical / Inspection',
     status: 'Open'
+  },
+  {
+    sNo: 20,
+    plrNo: 232,
+    year: 2025,
+    date: '12-Nov-2025',
+    recommendation: 'Review boiler water chemistry records and silica carryover limits leading up to the tube leakage incident.',
+    actionBy: 'Operations / Laboratory',
+    status: 'Open'
+  },
+  {
+    sNo: 22,
+    plrNo: 194,
+    year: 2024,
+    date: '27/02/2024',
+    recommendation: 'Review interlocking and protection trip coordination between FFBL and FPCL K-08 / K-16 interconnecting breakers.',
+    actionBy: 'FFBL E&I / FPCL E&I',
+    status: 'Closed'
+  },
+  {
+    sNo: 22,
+    plrNo: 194,
+    year: 2024,
+    date: '27/02/2024',
+    recommendation: 'Update switching protocol and authorization matrix for manual opening of tie breakers during grid disturbances.',
+    actionBy: 'Operations / Technical',
+    status: 'Closed'
+  },
+  {
+    sNo: 23,
+    plrNo: 195,
+    year: 2024,
+    date: '28/02/2024',
+    recommendation: 'Redesign refractory seal packing arrangement at Bed Ash Chute B to furnace floor interface.',
+    actionBy: 'Mechanical Maintenance',
+    status: 'Closed'
+  },
+  {
+    sNo: 23,
+    plrNo: 195,
+    year: 2024,
+    date: '28/02/2024',
+    recommendation: 'Repair windbox west side hopper thermal insulation and conduct thermographic survey prior to light-up.',
+    actionBy: 'Mechanical / Inspection',
+    status: 'Closed'
+  },
+  {
+    sNo: 28,
+    plrNo: 200,
+    year: 2024,
+    date: '21/05/2024',
+    recommendation: 'Inspect primary air flow measurement differential transmitters and clear impulse line chokages.',
+    actionBy: 'E&I / Instrumentation',
+    status: 'Closed'
+  },
+  {
+    sNo: 31,
+    plrNo: 203,
+    year: 2024,
+    date: '06/07/2024',
+    recommendation: 'Dynamic balancing and vibration baseline recording of newly installed replacement rotor on STG-01 generator.',
+    actionBy: 'Mechanical / BHGE',
+    status: 'Closed'
+  },
+  {
+    sNo: 45,
+    plrNo: 179,
+    year: 2023,
+    date: '7th March 2023',
+    recommendation: 'Overhaul Neutral Earthing Transformer (NET) and re-verify G-60 ground fault trip sensitivity thresholds.',
+    actionBy: 'E&I Department',
+    status: 'Closed'
+  },
+  {
+    sNo: 45,
+    plrNo: 179,
+    year: 2023,
+    date: '7th March 2023',
+    recommendation: 'Establish islanding contingency procedure to preserve STG-01 and STG-03 stability during abrupt grid disconnection.',
+    actionBy: 'Operations / Technical',
+    status: 'Closed'
+  },
+  {
+    sNo: 48,
+    plrNo: 182,
+    year: 2023,
+    date: '3rd May 2023',
+    recommendation: 'Revise heavy rigging and hydraulic jacking procedure for turbine generator rotor extraction with certified lifting plans.',
+    actionBy: 'Mechanical Maintenance',
+    status: 'Closed'
+  },
+  {
+    sNo: 48,
+    plrNo: 182,
+    year: 2023,
+    date: '3rd May 2023',
+    recommendation: 'Complete stator rewinding, high-voltage insulation resistance testing, and wedge tightness audit by OEM.',
+    actionBy: 'E&I / OEM Specialist',
+    status: 'Closed'
+  },
+  {
+    sNo: 48,
+    plrNo: 182,
+    year: 2023,
+    date: '3rd May 2023',
+    recommendation: 'Procure dedicated rotor extraction carriage tool to eliminate hydraulic jack slippage hazards.',
+    actionBy: 'Procurement / Maintenance',
+    status: 'Closed'
+  },
+  {
+    sNo: 68,
+    plrNo: 156,
+    year: 2022,
+    date: '22-May-2022',
+    recommendation: 'Replace redundant module of Rack A and analog output card of Rack B on STG-02 governor control rack.',
+    actionBy: 'E&I Department',
+    status: 'Closed'
+  },
+  {
+    sNo: 68,
+    plrNo: 156,
+    year: 2022,
+    date: '22-May-2022',
+    recommendation: 'Conduct 6-month preventative health-check of all PLC rack power supplies and output cards.',
+    actionBy: 'E&I Department',
+    status: 'Closed'
+  },
+  {
+    sNo: 167,
+    plrNo: 92,
+    year: 2019,
+    date: '24-Dec-2019',
+    recommendation: 'Retrofit dual-redundant I/O cards for boiler feed water level control valves (LCVs).',
+    actionBy: 'E&I / Schneider',
+    status: 'Closed'
+  },
+  {
+    sNo: 167,
+    plrNo: 92,
+    year: 2019,
+    date: '24-Dec-2019',
+    recommendation: 'Tune steam drum low-level and high-level trip response timing to prevent cascading plant-wide tripping.',
+    actionBy: 'Operations / Process',
+    status: 'Closed'
   }
 ];
 

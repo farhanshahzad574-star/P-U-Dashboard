@@ -4,9 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Executive Operations & Compliance Portal</title>
-    <meta name="description" content="Centralized Performance & Review Dashboards for operational, safety, quality, and compliance management." />
+    <meta name="description" content="FPCL Executive Operations & Compliance Portal featuring Sub HSE - PSM Internal Audit Findings Executive BI dashboard (121 observations across 13 Action Departments, resolution tracking, PSM elements breakdown), 3D orbiting emblem, and Plant Loss Reports (PLR)." />
     <meta property="og:title" content="Executive Operations & Compliance Portal" />
-    <meta property="og:description" content="Centralized Performance & Review Dashboards for operational, safety, quality, and compliance management." />
+    <meta property="og:description" content="FPCL Executive Operations & Compliance Portal featuring Sub HSE - PSM Internal Audit Findings Executive BI dashboard (121 observations across 13 Action Departments, resolution tracking, PSM elements breakdown), 3D orbiting emblem, and Plant Loss Reports (PLR)." />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
 
@@ -42,8 +42,13 @@
 
     <!-- Lucide Icons via CDN -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Plant Loss Reports (PLR) Google Sheets Dataset -->
+    <!-- Plant Loss Reports (PLR) Google Sheets Dataset & Specialized Visualization Suite -->
     <script src="/assets/plrData.js"></script>
+    <script src="/assets/plrRecommendationsData.js"></script>
+    <script src="/assets/plrSuite.js"></script>
+    <!-- Sub HSE - PSM (Process Safety Management) Dataset & Specialized Visualization Suite -->
+    <script src="/assets/psmData.js"></script>
+    <script src="/assets/psmSuite.js"></script>
 
     <style>
       /* Base font legibility boost across the portal */
@@ -172,66 +177,93 @@
       /* ========================================================================= */
       /* 8-FOOT DISPLAY DISTANCE HIGH-VISIBILITY MODE (CONTROL ROOM & LARGE DISPLAY)*/
       /* ========================================================================= */
+      #btn-toggle-8ft {
+        font-size: 0.95rem;
+        font-weight: 800;
+        letter-spacing: 0.01em;
+      }
       body.display-8ft {
-        font-size: 19px !important;
-        letter-spacing: 0.012em;
+        font-size: 20px !important;
+        letter-spacing: 0.015em;
+      }
+      body.display-8ft #btn-toggle-8ft {
+        font-size: 1.25rem !important; /* 20px - highly prominent from 8 feet */
+        font-weight: 900 !important;
+        padding: 0.75rem 1.6rem !important;
+        border-width: 3px !important;
+      }
+      body.display-8ft #btn-toggle-8ft span {
+        font-size: 1.15rem !important;
       }
       body.display-8ft h1 {
-        font-size: 2.15rem !important;
+        font-size: 2.4rem !important;
         font-weight: 900 !important;
       }
       body.display-8ft h2 {
-        font-size: 1.85rem !important;
+        font-size: 2.05rem !important;
         font-weight: 900 !important;
       }
       body.display-8ft h3 {
-        font-size: 1.45rem !important;
+        font-size: 1.65rem !important;
+        font-weight: 800 !important;
+      }
+      body.display-8ft h4 {
+        font-size: 1.35rem !important;
         font-weight: 800 !important;
       }
       body.display-8ft .text-xs {
-        font-size: 0.9375rem !important; /* 15px */
-        line-height: 1.45 !important;
+        font-size: 1.05rem !important; /* 17px */
+        line-height: 1.5 !important;
       }
       body.display-8ft .text-\[10px\],
       body.display-8ft .text-\[11px\] {
-        font-size: 0.875rem !important; /* 14px */
+        font-size: 0.95rem !important; /* 15px */
         font-weight: 700 !important;
       }
       body.display-8ft .text-sm {
-        font-size: 1.125rem !important; /* 18px */
-        line-height: 1.5 !important;
+        font-size: 1.2rem !important; /* 19px */
+        line-height: 1.55 !important;
       }
       body.display-8ft .text-base {
-        font-size: 1.25rem !important; /* 20px */
+        font-size: 1.35rem !important; /* 21.5px */
       }
       body.display-8ft .text-xl {
-        font-size: 1.6rem !important;
+        font-size: 1.8rem !important;
       }
       body.display-8ft .text-2xl {
-        font-size: 2.25rem !important; /* 36px */
+        font-size: 2.5rem !important; /* 40px */
         font-weight: 900 !important;
       }
       body.display-8ft .text-3xl {
-        font-size: 2.75rem !important;
+        font-size: 3.1rem !important;
         font-weight: 900 !important;
       }
       body.display-8ft .text-4xl {
-        font-size: 3.5rem !important;
+        font-size: 3.8rem !important;
         font-weight: 900 !important;
       }
       body.display-8ft td,
       body.display-8ft th {
-        font-size: 1.0625rem !important; /* 17px */
-        padding-top: 0.9rem !important;
-        padding-bottom: 0.9rem !important;
+        font-size: 1.15rem !important; /* 18.5px */
+        padding-top: 1rem !important;
+        padding-bottom: 1rem !important;
       }
       body.display-8ft select,
       body.display-8ft input {
+        font-size: 1.1rem !important;
+        padding: 0.6rem 0.9rem !important;
+      }
+      body.display-8ft .nav-menu-btn {
+        font-size: 1.05rem !important;
+        padding: 0.65rem 1.25rem !important;
+      }
+      body.display-8ft .category-btn {
         font-size: 1rem !important;
+        padding: 0.5rem 1rem !important;
       }
       body.display-8ft .plr-pill {
-        font-size: 0.95rem !important;
-        padding: 0.25rem 0.75rem !important;
+        font-size: 1.05rem !important;
+        padding: 0.35rem 0.85rem !important;
       }
     </style>
   </head>
@@ -426,11 +458,11 @@
             <button
               id="btn-toggle-8ft"
               onclick="portalApp.toggle8FtMode()"
-              class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shadow-xs border cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-300"
+              class="inline-flex items-center gap-2.5 px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl text-sm sm:text-base font-black transition-all shadow-md border-2 cursor-pointer bg-amber-50 hover:bg-amber-100 text-slate-800 border-amber-400"
               title="Toggle 8-Foot High Visibility Mode (Large Typography for Wall Display & Control Room)"
             >
-              <i data-lucide="tv" class="w-4 h-4 text-orange-600"></i>
-              <span id="label-8ft-mode">8-Foot Mode: <span class="text-slate-500 font-semibold">OFF</span></span>
+              <i data-lucide="tv" class="w-5 h-5 text-orange-600"></i>
+              <span id="label-8ft-mode">8-Foot Mode: <span class="bg-slate-200 text-slate-800 px-2 py-0.5 rounded font-extrabold text-xs uppercase">OFF</span></span>
             </button>
 
             <!-- Global Dashboard Dropdown Selector -->
@@ -497,16 +529,17 @@
       </div>
     </header>
 
-    <!-- Dedicated Dashboards Navigation Menu Bar -->
+    <!-- Dedicated Dashboards Navigation Menu Bar (All Dashboards Always Shown) -->
     <nav id="dashboards-navigation-menu" aria-label="Individual Dashboards Menu" class="bg-white border-b border-slate-200 sticky top-[73px] z-30 shadow-2xs transition-colors">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center gap-2.5 py-2.5 overflow-x-auto no-scrollbar scroll-smooth">
-          <div class="flex items-center gap-1.5 text-xs font-bold text-slate-500 uppercase tracking-wider shrink-0 pr-3 border-r border-slate-200">
-            <i data-lucide="compass" class="w-4 h-4 text-[#2E6DA4]"></i>
-            <span>Dashboard Menu:</span>
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+        <div class="flex flex-wrap items-center gap-2">
+          <div class="flex items-center gap-1.5 text-xs font-black text-slate-600 uppercase tracking-wider shrink-0 pr-2 border-r border-slate-200">
+            <i data-lucide="layout-grid" class="w-4 h-4 text-[#2E6DA4]"></i>
+            <span class="hidden sm:inline">Dashboards:</span>
           </div>
-          <!-- Menu item buttons rendered dynamically and interactive -->
-          <div id="nav-menu-links-container" class="flex items-center gap-1.5 shrink-0">
+
+          <!-- All Dashboards Always Displayed (No Scrollbar Cluster) -->
+          <div id="nav-menu-links-container" class="flex flex-wrap items-center gap-1.5 flex-1">
             <!-- Dynamically populated via portalApp.renderNavMenu() -->
           </div>
         </div>
@@ -522,196 +555,33 @@
       <section id="portal-landing-view" class="space-y-6">
 
         <!-- ========================================================================= -->
-        <!-- 1. TOP MARKETING KPI ROW (Directly matched from Reference Slide 1 top)     -->
+        <!-- DASHBOARD PROGRESS COMPARISON (Expanded Full-Width Bar Chart)             -->
         <!-- ========================================================================= -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
-          <!-- 1. TODAY'S PROGRESS (Sky Blue) -->
-          <div class="bg-white border border-slate-200 rounded-xl p-3.5 shadow-xs relative overflow-hidden flex flex-col justify-between border-t-4 border-sky-500 hover:shadow-md transition-all">
-            <div class="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 text-center">Today's Progress</div>
-            <div class="text-2xl sm:text-3xl font-black font-mono text-[#0284C7] text-center my-1">87.8%</div>
-            <div class="text-[10px] text-slate-500 text-center font-medium truncate">Current as of Today</div>
-          </div>
-          <!-- 2. PREVIOUS PROGRESS (Slate / Steel) -->
-          <div class="bg-white border border-slate-200 rounded-xl p-3.5 shadow-xs relative overflow-hidden flex flex-col justify-between border-t-4 border-slate-600 hover:shadow-md transition-all">
-            <div class="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 text-center">Previous Progress</div>
-            <div class="text-2xl sm:text-3xl font-black font-mono text-slate-700 text-center my-1">79.4%</div>
-            <div class="text-[10px] text-emerald-600 font-semibold text-center truncate">↑ +8.4% vs Last Period</div>
-          </div>
-          <!-- 3. MILESTONES COMPLETED (Emerald Green) -->
-          <div class="bg-white border border-slate-200 rounded-xl p-3.5 shadow-xs relative overflow-hidden flex flex-col justify-between border-t-4 border-emerald-500 hover:shadow-md transition-all">
-            <div class="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 text-center">Milestones Met</div>
-            <div class="text-2xl sm:text-3xl font-black font-mono text-[#16A34A] text-center my-1">10 / 11</div>
-            <div class="text-[10px] text-emerald-700 font-semibold text-center truncate">Dashboards ≥85% Target</div>
-          </div>
-          <!-- 4. PLANNED (Q3 2026) (Amber / Gold) -->
-          <div class="bg-white border border-slate-200 rounded-xl p-3.5 shadow-xs relative overflow-hidden flex flex-col justify-between border-t-4 border-amber-500 hover:shadow-md transition-all">
-            <div class="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 text-center">Planned (Q3)</div>
-            <div class="text-2xl sm:text-3xl font-black font-mono text-[#D97706] text-center my-1">95.0%</div>
-            <div class="text-[10px] text-amber-700 font-semibold text-center truncate">⚠️ 7.2% to target</div>
-          </div>
-          <!-- 5. CRITICAL ATTENTION (Crimson Red) -->
-          <div class="bg-white border border-slate-200 rounded-xl p-3.5 shadow-xs relative overflow-hidden flex flex-col justify-between border-t-4 border-rose-500 hover:shadow-md transition-all">
-            <div class="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 text-center">Critical Attention</div>
-            <div class="text-2xl sm:text-3xl font-black font-mono text-[#DC2626] text-center my-1">11</div>
-            <div class="text-[10px] text-rose-600 font-semibold text-center truncate">Overdue Actions</div>
-          </div>
-          <!-- 6. TOP DASHBOARD (Cyan / Teal) -->
-          <div class="bg-white border border-slate-200 rounded-xl p-3.5 shadow-xs relative overflow-hidden flex flex-col justify-between border-t-4 border-cyan-500 hover:shadow-md transition-all">
-            <div class="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 text-center">Top Dashboard</div>
-            <div class="text-lg sm:text-xl font-black font-mono text-[#0891B2] text-center my-1.5 truncate">Inspection</div>
-            <div class="text-[10px] text-cyan-800 font-semibold text-center truncate">90.0% Closed</div>
-          </div>
-          <!-- 7. ACTIVE WORKLOAD (Purple / Violet) -->
-          <div class="bg-white border border-slate-200 rounded-xl p-3.5 shadow-xs relative overflow-hidden flex flex-col justify-between border-t-4 border-purple-500 hover:shadow-md transition-all cursor-pointer" onclick="portalApp.openActionsModal()">
-            <div class="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 text-center">Active Workload</div>
-            <div class="text-xl sm:text-2xl font-black font-mono text-[#7C3AED] text-center my-1.5 truncate">46 Actions</div>
-            <div class="text-[10px] text-purple-700 font-bold text-center truncate flex items-center justify-center gap-1">
-              <span>📋 In-Progress List</span>
+        <div class="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-xs space-y-3">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-2.5 border-b border-slate-100 gap-2">
+            <h3 class="text-xs sm:text-sm font-black text-[#1E293B] tracking-wide flex items-center gap-2">
+              <span class="text-base">📊</span> DASHBOARD PROGRESS COMPARISON (CLOSED ACTIONS BY DASHBOARD)
+            </h3>
+            <div class="flex items-center gap-2 text-xs font-mono font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200">
+              <span>Values in Numbers (Actual Count)</span>
             </div>
+          </div>
+          <!-- Interactive SVG Bar Chart Container -->
+          <div id="comparison-chart-container" class="w-full overflow-hidden min-h-[240px]">
+            <!-- Dynamically populated by portalApp.renderComparisonChart() -->
+          </div>
+          <!-- Legend Indicators -->
+          <div id="comparison-legend" class="pt-2 border-t border-slate-100 flex flex-wrap items-center justify-center gap-2 text-[10px] font-mono font-bold text-slate-600">
+            <!-- Dynamically populated -->
           </div>
         </div>
-
-        <!-- ========================================================================= -->
-        <!-- 2. MARKETING VISUAL CHARTS (Slide 1: Timeline vs Plan & Module Comparison) -->
-        <!-- ========================================================================= -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
-          <!-- Left Chart: Timeline Progress vs Plan -->
-          <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-3">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-2 border-b border-slate-100 gap-2">
-              <h3 class="text-xs sm:text-sm font-black text-[#1E293B] tracking-wide flex items-center gap-2">
-                <span class="text-base">📈</span> TIMELINE PROGRESS VS PLAN
-              </h3>
-              <div class="flex items-center gap-3 text-xs font-semibold">
-                <span class="flex items-center gap-1.5 text-blue-600">
-                  <span class="w-2.5 h-2.5 rounded-xs bg-gradient-to-r from-blue-600 to-cyan-500"></span> Actual Progress
-                </span>
-                <span class="flex items-center gap-1.5 text-amber-600">
-                  <span class="w-3 h-0.5 border-t-2 border-dashed border-amber-500"></span> Planned (95.0%)
-                </span>
-              </div>
-            </div>
-            <!-- Interactive SVG Line Chart Container -->
-            <div id="timeline-chart-container" class="w-full overflow-hidden min-h-[220px]">
-              <!-- Dynamically populated by portalApp.renderTimelineChart() -->
-            </div>
-            <!-- Commentary Footnote -->
-            <div class="pt-2 border-t border-slate-100 flex items-center gap-2 text-xs text-slate-600 bg-slate-50/80 p-2.5 rounded-xl">
-              <span class="text-slate-400 shrink-0">💬</span>
-              <span class="font-medium">Plan VS Actual Variance is non-critical and on track for plant-wide operational milestones.</span>
-            </div>
+          <!-- Interactive SVG Bar Chart Container -->
+          <div id="comparison-chart-container" class="w-full overflow-hidden min-h-[220px]">
+            <!-- Dynamically populated by portalApp.renderComparisonChart() -->
           </div>
-
-          <!-- Right Chart: Dashboard Progress Comparison -->
-          <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-3">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-2 border-b border-slate-100 gap-2">
-              <h3 class="text-xs sm:text-sm font-black text-[#1E293B] tracking-wide flex items-center gap-2">
-                <span class="text-base">🎯</span> DASHBOARD PROGRESS COMPARISON
-              </h3>
-              <div class="flex items-center gap-2 text-xs font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
-                <span class="w-2.5 h-0.5 border-t-2 border-dashed border-amber-600"></span>
-                <span>Target 95.0%</span>
-              </div>
-            </div>
-            <!-- Interactive SVG Bar Chart Container -->
-            <div id="comparison-chart-container" class="w-full overflow-hidden min-h-[220px]">
-              <!-- Dynamically populated by portalApp.renderComparisonChart() -->
-            </div>
-            <!-- Legend Indicators -->
-            <div id="comparison-legend" class="pt-2 border-t border-slate-100 flex flex-wrap items-center justify-center gap-2 text-[10px] font-mono font-bold text-slate-600">
-              <!-- Dynamically populated -->
-            </div>
-          </div>
-        </div>
-
-        <!-- ========================================================================= -->
-        <!-- 3. EXECUTIVE HIGHLIGHT SPOTLIGHT STRIP (Directly from Slide 1 bottom)       -->
-        <!-- ========================================================================= -->
-        <div class="bg-gradient-to-r from-rose-50 via-white to-blue-50 border border-slate-200 rounded-2xl p-3.5 sm:p-4 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3">
-          <div class="flex items-center gap-3">
-            <span class="px-2.5 py-1 rounded-lg text-xs font-black bg-gradient-to-r from-rose-500 to-red-600 text-white uppercase tracking-wider flex items-center gap-1.5 shadow-xs shrink-0">
-              <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> SEPARATE MODULE METRICS
-            </span>
-            <div class="text-xs sm:text-sm font-bold text-[#1E293B]">
-              Top Compliance Rate: <span class="text-[#0891B2] font-black text-base">Inspection Report Actions (90.00%)</span>
-            </div>
-          </div>
-          <div class="text-xs text-slate-600 flex items-center gap-2">
-            <span class="text-slate-400 shrink-0">💬</span>
-            <span>Status: 409 actions closed, 46 in progress, 11 under committee review. Phase 2 verification active.</span>
-          </div>
-        </div>
-
-        <!-- ========================================================================= -->
-        <!-- 4. MARKETING STATUS PANELS (Directly matched from Reference Slide 2)       -->
-        <!-- ========================================================================= -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
-          <!-- Left Panel: Action Scenarios Status (7 Columns) -->
-          <div class="lg:col-span-7 bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-4">
-            <div class="flex items-center justify-between pb-2 border-b border-slate-100">
-              <h3 class="text-xs sm:text-sm font-black text-[#1E293B] tracking-wide flex items-center gap-2">
-                <span class="text-base">📊</span> ACTION EXECUTION STATUS BY DASHBOARD
-              </h3>
-              <span class="text-[11px] font-bold text-slate-600 bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-200">
-                11 Active Modules
-              </span>
-            </div>
-            <!-- Dynamic list of colorful scenario bars matching Slide 2 -->
-            <div id="action-scenarios-container" class="space-y-3.5">
-              <!-- Injected via portalApp.renderActionScenarios() -->
-            </div>
-          </div>
-
-          <!-- Right Column: Punch List & Data Readiness (5 Columns) -->
-          <div class="lg:col-span-5 space-y-5">
-            <!-- Punch List Distribution -->
-            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-3">
-              <div class="flex items-center justify-between pb-2 border-b border-slate-100">
-                <h3 class="text-xs sm:text-sm font-black text-[#1E293B] tracking-wide flex items-center gap-2">
-                  <span class="text-base">📋</span> PUNCH LIST MODULE-WISE DISTRIBUTION
-                </h3>
-              </div>
-              <div class="overflow-x-auto">
-                <table class="w-full text-left text-xs">
-                  <thead>
-                    <tr class="border-b border-slate-200 text-[11px] font-extrabold uppercase text-slate-500">
-                      <th class="pb-2">Module</th>
-                      <th class="pb-2 text-rose-600">Open</th>
-                      <th class="pb-2 text-emerald-600">Closed</th>
-                      <th class="pb-2">Total</th>
-                      <th class="pb-2">Progress</th>
-                      <th class="pb-2 text-right">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody id="punch-list-tbody" class="divide-y divide-slate-100 font-medium">
-                    <!-- Injected via portalApp.renderPunchListTable() -->
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            <!-- Data Readiness Status -->
-            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-3">
-              <div class="flex items-center justify-between pb-2 border-b border-slate-100">
-                <h3 class="text-xs sm:text-sm font-black text-[#1E293B] tracking-wide flex items-center gap-2">
-                  <span class="text-base">💾</span> DATA READINESS & AUDIT STATUS
-                </h3>
-              </div>
-              <div class="overflow-x-auto">
-                <table class="w-full text-left text-xs">
-                  <thead>
-                    <tr class="border-b border-slate-200 text-[11px] font-extrabold uppercase text-slate-500">
-                      <th class="pb-2">Module</th>
-                      <th class="pb-2">Action Closure</th>
-                      <th class="pb-2">Sign-Off</th>
-                      <th class="pb-2 text-right">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody id="data-readiness-tbody" class="divide-y divide-slate-100 font-medium">
-                    <!-- Injected via portalApp.renderDataReadiness() -->
-                  </tbody>
-                </table>
-              </div>
-            </div>
+          <!-- Legend Indicators -->
+          <div id="comparison-legend" class="pt-2 border-t border-slate-100 flex flex-wrap items-center justify-center gap-2 text-[10px] font-mono font-bold text-slate-600">
+            <!-- Dynamically populated -->
           </div>
         </div>
         
@@ -994,8 +864,12 @@
           </div>
         </div>
 
-        <!-- Executive KPI Metrics Summary Cards -->
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <!-- ========================================================================= -->
+        <!-- STANDARD DASHBOARDS DETAIL CONTENT (KPIs, Charts, Table)                   -->
+        <!-- ========================================================================= -->
+        <div id="standard-detail-container" class="space-y-6">
+          <!-- Executive KPI Metrics Summary Cards -->
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs relative overflow-hidden">
             <div id="kpi-stripe-1" class="absolute top-0 left-0 right-0 h-1 bg-[#2E6DA4]"></div>
             <div class="flex items-center justify-between text-slate-500 text-xs font-medium pt-1">
@@ -1250,12 +1124,20 @@
 
           </div>
         </div>
+        </div>
 
         <!-- ========================================================================= -->
         <!-- DEDICATED FULL-SCALE PLR DASHBOARD SUITE CONTAINER                        -->
         <!-- ========================================================================= -->
         <div id="plr-specialized-container" class="hidden space-y-6">
           <!-- Populated dynamically via portalApp.renderPlrSuite() -->
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- DEDICATED FULL-SCALE SUB HSE - PSM DASHBOARD SUITE CONTAINER              -->
+        <!-- ========================================================================= -->
+        <div id="psm-specialized-container" class="hidden space-y-6">
+          <!-- Populated dynamically via FPCL_PSM_SUITE.render() -->
         </div>
 
       </section>
@@ -1395,11 +1277,43 @@
        */
       const DASHBOARD_REGISTRY = [
         {
+          id: 'plr',
+          name: 'Plant Loss Reports (PLR)',
+          code: 'PLR',
+          icon: 'alert-triangle',
+          status: 'Active',
+          hasSheetLink: true,
+          category: 'Plant Integrity & Incident Analytics',
+          department: 'Plant Reliability & Asset Integrity',
+          cadence: 'Continuous / Incident Driven',
+          description: 'Comprehensive plant loss reports tracking 233 generation loss incidents, root cause machine attribution, and multi-recommendation closure matrix across power plant assets.',
+          color: {
+            bg: '#FFF7ED',
+            primary: '#EA580C',
+            secondary: '#FDBA74',
+            text: '#431407'
+          },
+          gradient: 'from-amber-500 via-orange-500 to-rose-600',
+          gradientStop1: '#EA580C',
+          gradientStop2: '#DC2626',
+          tagStyle: 'bg-orange-50 text-orange-700 border-orange-200',
+          kpis: { total: 233, closed: 206, inProgress: 27, overdue: 0, compliance: '88.4%' },
+          punchList: { open: 27, closed: 206, total: 233, rate: '88.4%' },
+          dataReadiness: { master: '100%', signoff: '100%' },
+          statusComment: '206/233 incidents resolved; 27 open under root cause investigation; 451 recommendations tracked (420 closed, 31 open).',
+          actions: [
+            { id: 'PLR-216-R1', desc: 'Recalibrate STG-4 turbine high exhaust temperature thermocouple wiring and trip latch loop', owner: 'E&I Team', due: '2025-11-20', priority: 'Critical', status: 'In Progress' },
+            { id: 'PLR-216-R2', desc: 'Inspect lube oil cooler auxiliary thermostatic bypass valve seating and replace gaskets', owner: 'Mech Team', due: '2025-11-25', priority: 'High', status: 'Completed' },
+            { id: 'PLR-216-R3', desc: 'Revise STG warm startup SOP to include continuous DCS differential expansion monitoring', owner: 'Operations', due: '2025-11-28', priority: 'Medium', status: 'Completed' }
+          ]
+        },
+        {
           id: 'executive-hse-committee-ehsec',
           name: 'Executive HSE Committee (EHSEC)',
           code: 'EHSEC',
           icon: 'shield-check',
-          status: 'Active',
+          status: 'Awaiting Sheet Link',
+          hasSheetLink: false,
           category: 'Executive & Governance',
           department: 'Executive HSE Directorate',
           cadence: 'Monthly Executive Review',
@@ -1414,22 +1328,19 @@
           gradientStop1: '#2563EB',
           gradientStop2: '#06B6D4',
           tagStyle: 'bg-blue-50 text-blue-700 border-blue-200',
-          kpis: { total: 48, closed: 42, inProgress: 5, overdue: 1, compliance: '87.5%' },
-          punchList: { open: 1, closed: 42, total: 48, rate: '87.5%' },
-          dataReadiness: { master: '100%', signoff: '95%' },
-          statusComment: '42/48 actions closed; contractor safety audit completed; 1 overdue prioritized.',
-          actions: [
-            { id: 'EHSEC-01', desc: 'Conduct enterprise HSE steering audit on contractor safety management system', owner: 'VP Operations', due: '2026-09-18', priority: 'High', status: 'In Progress' },
-            { id: 'EHSEC-02', desc: 'Validate annual corporate environmental sustainability targets & zero-spill charter', owner: 'HSE Director', due: '2026-09-25', priority: 'Critical', status: 'Completed' },
-            { id: 'EHSEC-03', desc: 'Review corporate lead-indicator hazard identification program adoption', owner: 'Safety Lead', due: '2026-09-30', priority: 'Medium', status: 'Completed' }
-          ]
+          kpis: { total: 0, closed: 0, inProgress: 0, overdue: 0, compliance: '0.0%' },
+          punchList: { open: 0, closed: 0, total: 0, rate: '0.0%' },
+          dataReadiness: { master: '0%', signoff: '0%' },
+          statusComment: 'Awaiting Google Sheet connection.',
+          actions: []
         },
         {
           id: 'sub-hse-p',
           name: 'Sub HSE - P',
           code: 'Sub HSE-P',
           icon: 'layers',
-          status: 'Active',
+          status: 'Awaiting Sheet Link',
+          hasSheetLink: false,
           category: 'Sub HSE Committees',
           department: 'Production HSE Sub-Committee',
           cadence: 'Weekly Operations Review',
@@ -1444,22 +1355,19 @@
           gradientStop1: '#7C3AED',
           gradientStop2: '#EC4899',
           tagStyle: 'bg-purple-50 text-purple-700 border-purple-200',
-          kpis: { total: 54, closed: 47, inProgress: 5, overdue: 2, compliance: '87.0%' },
-          punchList: { open: 2, closed: 47, total: 54, rate: '87.0%' },
-          dataReadiness: { master: '98%', signoff: '92%' },
-          statusComment: 'Reformer furnace draft loop closed; 2 overrides under review.',
-          actions: [
-            { id: 'HSEP-101', desc: 'Reformer furnace draft control loop dampener repair and gas seal verification', owner: 'Shift Supt', due: '2026-09-14', priority: 'High', status: 'Completed' },
-            { id: 'HSEP-102', desc: 'Synthesis loop purge gas safety interlock optimization test', owner: 'Process Eng', due: '2026-09-21', priority: 'Medium', status: 'In Progress' },
-            { id: 'HSEP-103', desc: 'Secondary containment sump level transmitter calibration & high-level alarm test', owner: 'Inst Specialist', due: '2026-09-04', priority: 'Critical', status: 'In Progress' }
-          ]
+          kpis: { total: 0, closed: 0, inProgress: 0, overdue: 0, compliance: '0.0%' },
+          punchList: { open: 0, closed: 0, total: 0, rate: '0.0%' },
+          dataReadiness: { master: '0%', signoff: '0%' },
+          statusComment: 'Awaiting Google Sheet connection.',
+          actions: []
         },
         {
           id: 'sub-hse-ei',
           name: 'Sub HSE – E&I',
           code: 'Sub HSE-E&I',
           icon: 'zap',
-          status: 'Active',
+          status: 'Awaiting Sheet Link',
+          hasSheetLink: false,
           category: 'Sub HSE Committees',
           department: 'Electrical & Instrumentation HSE Sub-Committee',
           cadence: 'Bi-Weekly Review',
@@ -1474,22 +1382,19 @@
           gradientStop1: '#0284C7',
           gradientStop2: '#4F46E5',
           tagStyle: 'bg-sky-50 text-sky-700 border-sky-200',
-          kpis: { total: 44, closed: 39, inProgress: 4, overdue: 1, compliance: '88.6%' },
-          punchList: { open: 1, closed: 39, total: 44, rate: '88.6%' },
-          dataReadiness: { master: '100%', signoff: '96%' },
-          statusComment: 'SIF proof testing on track; Ex-d enclosures certified.',
-          actions: [
-            { id: 'HSE-EI-201', desc: 'Substation 4 arc flash PPE boundary audit and relay trip timing verification', owner: 'Elect Lead', due: '2026-09-15', priority: 'High', status: 'Completed' },
-            { id: 'HSE-EI-202', desc: 'Safety Instrumented Function (SIF) proof-testing for ammonia separator trips', owner: 'Inst Specialist', due: '2026-09-22', priority: 'Critical', status: 'In Progress' },
-            { id: 'HSE-EI-203', desc: 'Hazardous area Ex-d equipment enclosure certification audit in synthesis area', owner: 'Compliance Tech', due: '2026-09-28', priority: 'Medium', status: 'Completed' }
-          ]
+          kpis: { total: 0, closed: 0, inProgress: 0, overdue: 0, compliance: '0.0%' },
+          punchList: { open: 0, closed: 0, total: 0, rate: '0.0%' },
+          dataReadiness: { master: '0%', signoff: '0%' },
+          statusComment: 'Awaiting Google Sheet connection.',
+          actions: []
         },
         {
           id: 'sub-hse-mech',
           name: 'Sub HSE – Mech.',
           code: 'Sub HSE-Mech',
           icon: 'wrench',
-          status: 'Active',
+          status: 'Awaiting Sheet Link',
+          hasSheetLink: false,
           category: 'Sub HSE Committees',
           department: 'Mechanical HSE Sub-Committee',
           cadence: 'Weekly Maintenance Review',
@@ -1504,15 +1409,11 @@
           gradientStop1: '#E11D48',
           gradientStop2: '#F97316',
           tagStyle: 'bg-rose-50 text-rose-700 border-rose-200',
-          kpis: { total: 58, closed: 51, inProgress: 6, overdue: 1, compliance: '87.9%' },
-          punchList: { open: 1, closed: 51, total: 58, rate: '87.9%' },
-          dataReadiness: { master: '100%', signoff: '94%' },
-          statusComment: 'Vibration analysis complete on primary cooling water pump B.',
-          actions: [
-            { id: 'HSEM-301', desc: 'Boiler feed water pump B bearing vibration spectrum analysis & mechanical seal audit', owner: 'Vibe Specialist', due: '2026-09-16', priority: 'High', status: 'In Progress' },
-            { id: 'HSEM-302', desc: 'Dry gas seal oil replacement on synthesis gas turbine #ST-201', owner: 'Mach Lead', due: '2026-09-20', priority: 'Medium', status: 'Completed' },
-            { id: 'HSEM-303', desc: 'Overpressure safety valve maintenance tagging & block valve car-seal audit', owner: 'Safety Tech', due: '2026-09-06', priority: 'High', status: 'In Progress' }
-          ]
+          kpis: { total: 0, closed: 0, inProgress: 0, overdue: 0, compliance: '0.0%' },
+          punchList: { open: 0, closed: 0, total: 0, rate: '0.0%' },
+          dataReadiness: { master: '0%', signoff: '0%' },
+          statusComment: 'Awaiting Google Sheet connection.',
+          actions: []
         },
         {
           id: 'sub-hse-psm',
@@ -1520,28 +1421,29 @@
           code: 'Sub HSE-PSM',
           icon: 'shield-alert',
           status: 'Active',
+          hasSheetLink: true,
           category: 'Sub HSE Committees',
           department: 'Process Safety Management Sub-Committee',
-          cadence: 'Monthly Review',
-          description: 'Process Safety Management sub-committee: OSHA PSM 14 elements, MOC closeout, process hazard safeguards & critical interlocks.',
+          cadence: 'Phase 1 June 2026 Audit',
+          description: 'Process Safety Management internal audit findings, action department tracking, PSM elements compliance & resolution analytics.',
           color: {
             bg: '#E8F6F5',
-            primary: '#2A9D96',
-            secondary: '#7ECAC4',
-            text: '#2B2E33'
+            primary: '#0D9488',
+            secondary: '#14B8A6',
+            text: '#0F172A'
           },
-          gradient: 'from-teal-500 via-emerald-600 to-cyan-600',
+          gradient: 'from-teal-600 via-emerald-600 to-indigo-600',
           gradientStop1: '#0D9488',
           gradientStop2: '#0891B2',
           tagStyle: 'bg-teal-50 text-teal-700 border-teal-200',
-          kpis: { total: 46, closed: 41, inProgress: 4, overdue: 1, compliance: '89.1%' },
-          punchList: { open: 1, closed: 41, total: 46, rate: '89.1%' },
-          dataReadiness: { master: '100%', signoff: '98%' },
-          statusComment: 'MOC override audits on track; P&ID PSI verification complete.',
+          kpis: { total: 121, closed: 76, inProgress: 45, overdue: 0, compliance: '62.8%' },
+          punchList: { open: 45, closed: 76, total: 121, rate: '62.8%' },
+          dataReadiness: { master: '100%', signoff: '100%' },
+          statusComment: '121 audit observations tracked across 13 Action Departments (76 Closed, 45 Open, 63% Closure Rate).',
           actions: [
-            { id: 'HSEPSM-401', desc: 'Audit temporary MOC overrides exceeding 90-day lifecycle', owner: 'PSM Lead', due: '2026-09-17', priority: 'High', status: 'In Progress' },
-            { id: 'HSEPSM-402', desc: 'Process Safety Information (PSI) P&ID verification for ammonia refrigeration revamp', owner: 'Process Supt', due: '2026-09-24', priority: 'Critical', status: 'Completed' },
-            { id: 'HSEPSM-403', desc: 'Critical safety trip bypass matrix semi-annual management re-authorization', owner: 'Operations Mgr', due: '2026-09-29', priority: 'Medium', status: 'Completed' }
+            { id: 'PSM-IA-2026-0001', desc: 'Management attendance in D level meeting marked with immediate effect', owner: 'Operations (CASH)', due: '2026-07-15', priority: 'Major', status: 'Completed' },
+            { id: 'PSM-IA-2026-0005', desc: 'Employee Training Plan & Validation of PSM Elements cross training', owner: 'Operations (CASH) & L&D', due: '2026-08-30', priority: 'Minor', status: 'In Progress' },
+            { id: 'PSM-IA-2026-0021', desc: 'Non-Compliance of Deferral protocols for PHA approved plan', owner: 'Operations (PSG)', due: '2026-08-15', priority: 'Major', status: 'In Progress' }
           ]
         },
         {
@@ -1549,7 +1451,8 @@
           name: 'Sub HSE - ERI',
           code: 'Sub HSE-ERI',
           icon: 'flame',
-          status: 'Active',
+          status: 'Awaiting Sheet Link',
+          hasSheetLink: false,
           category: 'Sub HSE Committees',
           department: 'Emergency Response & Incident HSE Sub-Committee',
           cadence: 'Bi-Weekly Drills',
@@ -1564,22 +1467,19 @@
           gradientStop1: '#DC2626',
           gradientStop2: '#F59E0B',
           tagStyle: 'bg-red-50 text-red-700 border-red-200',
-          kpis: { total: 38, closed: 34, inProgress: 3, overdue: 1, compliance: '89.5%' },
-          punchList: { open: 1, closed: 34, total: 38, rate: '89.5%' },
-          dataReadiness: { master: '98%', signoff: '95%' },
-          statusComment: 'Fire ring pressure auto-start passed; mutual aid drill scheduled.',
-          actions: [
-            { id: 'ERI-501', desc: 'Fire water diesel pump auto-start emergency ring pressure test', owner: 'Fire Chief', due: '2026-09-14', priority: 'High', status: 'Completed' },
-            { id: 'ERI-502', desc: 'Simulated ammonia vapor release emergency evacuation and mutual aid drill', owner: 'Safety Lead', due: '2026-09-22', priority: 'Critical', status: 'In Progress' },
-            { id: 'ERI-503', desc: 'Inspect SCBA self-contained breathing apparatus pressure cylinders at muster points', owner: 'ERI Officer', due: '2026-09-27', priority: 'Medium', status: 'Completed' }
-          ]
+          kpis: { total: 0, closed: 0, inProgress: 0, overdue: 0, compliance: '0.0%' },
+          punchList: { open: 0, closed: 0, total: 0, rate: '0.0%' },
+          dataReadiness: { master: '0%', signoff: '0%' },
+          statusComment: 'Awaiting Google Sheet connection.',
+          actions: []
         },
         {
-          id: 'rca',
+          id: 'sub-hse-rca',
           name: 'RCA',
           code: 'RCA',
           icon: 'search',
-          status: 'Active',
+          status: 'Awaiting Sheet Link',
+          hasSheetLink: false,
           category: 'Process Safety & Quality',
           department: 'Root Cause Analysis & Reliability Unit',
           cadence: 'Event-Driven / Monthly',
@@ -1594,22 +1494,19 @@
           gradientStop1: '#D97706',
           gradientStop2: '#E11D48',
           tagStyle: 'bg-amber-50 text-amber-700 border-amber-200',
-          kpis: { total: 32, closed: 28, inProgress: 3, overdue: 1, compliance: '87.5%' },
-          punchList: { open: 1, closed: 28, total: 32, rate: '87.5%' },
-          dataReadiness: { master: '100%', signoff: '90%' },
-          statusComment: 'Compressor lube oil RCA closed; drum baffle installation in progress.',
-          actions: [
-            { id: 'RCA-601', desc: 'Finalize RCA for primary synthesis gas compressor lube oil pressure fluctuation', owner: 'Reliability Lead', due: '2026-09-16', priority: 'High', status: 'Completed' },
-            { id: 'RCA-602', desc: 'Install vortex breaker in condensate drum per RCA recommendation #09', owner: 'Projects Lead', due: '2026-09-25', priority: 'Medium', status: 'In Progress' },
-            { id: 'RCA-603', desc: 'Revise operator response procedure for sudden steam header pressure dips', owner: 'Shift Supt', due: '2026-09-30', priority: 'High', status: 'Completed' }
-          ]
+          kpis: { total: 0, closed: 0, inProgress: 0, overdue: 0, compliance: '0.0%' },
+          punchList: { open: 0, closed: 0, total: 0, rate: '0.0%' },
+          dataReadiness: { master: '0%', signoff: '0%' },
+          statusComment: 'Awaiting Google Sheet connection.',
+          actions: []
         },
         {
           id: 'pssr',
           name: 'PSSR',
           code: 'PSSR',
           icon: 'check-circle-2',
-          status: 'Active',
+          status: 'Awaiting Sheet Link',
+          hasSheetLink: false,
           category: 'Process Safety & Quality',
           department: 'Pre-Startup Safety Review Committee',
           cadence: 'Project & Turnaround Milestones',
@@ -1624,22 +1521,19 @@
           gradientStop1: '#65A30D',
           gradientStop2: '#0D9488',
           tagStyle: 'bg-lime-50 text-lime-800 border-lime-200',
-          kpis: { total: 36, closed: 32, inProgress: 3, overdue: 1, compliance: '88.9%' },
-          punchList: { open: 1, closed: 32, total: 36, rate: '88.9%' },
-          dataReadiness: { master: '100%', signoff: '97%' },
-          statusComment: 'Type-A hydrotest verified; insulation Punch B in progress.',
-          actions: [
-            { id: 'PSSR-701', desc: 'Item Type-A: Hydrotest relief valve certificate sign-off for new vaporizer loop', owner: 'Insp Specialist', due: '2026-09-15', priority: 'Critical', status: 'Completed' },
-            { id: 'PSSR-702', desc: 'Item Type-B: Complete cold insulation and weather-proofing on NH3 piping', owner: 'Lead Mech', due: '2026-09-23', priority: 'Medium', status: 'In Progress' },
-            { id: 'PSSR-703', desc: 'Verify DCS interlocking logic and alarm limits prior to nitrogen purging', owner: 'Control Eng', due: '2026-09-28', priority: 'High', status: 'Completed' }
-          ]
+          kpis: { total: 0, closed: 0, inProgress: 0, overdue: 0, compliance: '0.0%' },
+          punchList: { open: 0, closed: 0, total: 0, rate: '0.0%' },
+          dataReadiness: { master: '0%', signoff: '0%' },
+          statusComment: 'Awaiting Google Sheet connection.',
+          actions: []
         },
         {
           id: 'inspection-report-actions',
           name: 'Inspection Report Actions',
           code: 'Inspection',
           icon: 'clipboard-check',
-          status: 'Active',
+          status: 'Awaiting Sheet Link',
+          hasSheetLink: false,
           category: 'Process Safety & Quality',
           department: 'Technical Inspection & Integrity Unit',
           cadence: 'Daily / Continuous',
@@ -1654,22 +1548,19 @@
           gradientStop1: '#0891B2',
           gradientStop2: '#4F46E5',
           tagStyle: 'bg-cyan-50 text-cyan-800 border-cyan-200',
-          kpis: { total: 40, closed: 36, inProgress: 3, overdue: 1, compliance: '90.0%' },
-          punchList: { open: 1, closed: 36, total: 40, rate: '90.0%' },
-          dataReadiness: { master: '100%', signoff: '100%' },
-          statusComment: 'Top completion rate (90.0%); vapor line ultrasonic mapping survey verified.',
-          actions: [
-            { id: 'IRA-801', desc: 'Stripper column overhead vapor line ultrasonic thickness mapping survey', owner: 'NDT Level III', due: '2026-09-17', priority: 'High', status: 'Completed' },
-            { id: 'IRA-802', desc: 'Ammonia storage sphere #TK-101 relief valve bench test and calibration cert', owner: 'Insp Eng', due: '2026-09-24', priority: 'Critical', status: 'In Progress' },
-            { id: 'IRA-803', desc: 'Re-inspect underground fire main cathodic protection potential levels', owner: 'Corrosion Eng', due: '2026-09-30', priority: 'Medium', status: 'Completed' }
-          ]
+          kpis: { total: 0, closed: 0, inProgress: 0, overdue: 0, compliance: '0.0%' },
+          punchList: { open: 0, closed: 0, total: 0, rate: '0.0%' },
+          dataReadiness: { master: '0%', signoff: '0%' },
+          statusComment: 'Awaiting Google Sheet connection.',
+          actions: []
         },
         {
           id: 'pha-recommendations',
           name: 'PHA recommendations',
           code: 'PHA',
           icon: 'alert-octagon',
-          status: 'Active',
+          status: 'Awaiting Sheet Link',
+          hasSheetLink: false,
           category: 'Process Safety & Quality',
           department: 'Process Hazard Analysis Team',
           cadence: 'Continuous Tracking',
@@ -1684,22 +1575,19 @@
           gradientStop1: '#059669',
           gradientStop2: '#06B6D4',
           tagStyle: 'bg-emerald-50 text-emerald-800 border-emerald-200',
-          kpis: { total: 44, closed: 39, inProgress: 4, overdue: 1, compliance: '88.6%' },
-          punchList: { open: 1, closed: 39, total: 44, rate: '88.6%' },
-          dataReadiness: { master: '100%', signoff: '93%' },
-          statusComment: '2oo3 redundant voting installed; HAZOP operating procedures validated.',
-          actions: [
-            { id: 'PHA-901', desc: 'Install dual redundant transmitter with 2oo3 voting on synthesis separator', owner: 'Inst Project Lead', due: '2026-09-19', priority: 'Critical', status: 'In Progress' },
-            { id: 'PHA-902', desc: 'Update HAZOP Node 14 operating procedures for startup venting sequence', owner: 'Process Eng', due: '2026-09-24', priority: 'High', status: 'Completed' },
-            { id: 'PHA-903', desc: 'Closeout re-evaluation of flare radiation dispersion model under high winds', owner: 'Safety Specialist', due: '2026-09-29', priority: 'Medium', status: 'Completed' }
-          ]
+          kpis: { total: 0, closed: 0, inProgress: 0, overdue: 0, compliance: '0.0%' },
+          punchList: { open: 0, closed: 0, total: 0, rate: '0.0%' },
+          dataReadiness: { master: '0%', signoff: '0%' },
+          statusComment: 'Awaiting Google Sheet connection.',
+          actions: []
         },
         {
           id: 'risk-survey',
           name: 'Risk survey',
           code: 'Risk survey',
           icon: 'scale',
-          status: 'Active',
+          status: 'Awaiting Sheet Link',
+          hasSheetLink: false,
           category: 'Executive & Governance',
           department: 'Corporate Risk & Underwriting Survey Unit',
           cadence: 'Quarterly / Annual',
@@ -1714,30 +1602,46 @@
           gradientStop1: '#4F46E5',
           gradientStop2: '#7C3AED',
           tagStyle: 'bg-indigo-50 text-indigo-700 border-indigo-200',
-          kpis: { total: 29, closed: 25, inProgress: 3, overdue: 1, compliance: '86.2%' },
-          punchList: { open: 1, closed: 25, total: 29, rate: '86.2%' },
-          dataReadiness: { master: '100%', signoff: '91%' },
-          statusComment: 'Switchgear thermography complete; deluge system in procurement.',
-          actions: [
-            { id: 'RSK-1001', desc: 'Install FM-approved deluge spray system over compressor lube oil console', owner: 'Projects Mgr', due: '2026-09-20', priority: 'High', status: 'In Progress' },
-            { id: 'RSK-1002', desc: 'Complete annual thermographic electrical survey of main 11kV switchgear', owner: 'Elect Specialist', due: '2026-09-26', priority: 'Medium', status: 'Completed' },
-            { id: 'RSK-1003', desc: 'Submit updated business interruption and contingency supply-chain analysis', owner: 'Risk Officer', due: '2026-09-30', priority: 'Low', status: 'Completed' }
-          ]
+          kpis: { total: 0, closed: 0, inProgress: 0, overdue: 0, compliance: '0.0%' },
+          punchList: { open: 0, closed: 0, total: 0, rate: '0.0%' },
+          dataReadiness: { master: '0%', signoff: '0%' },
+          statusComment: 'Awaiting Google Sheet connection.',
+          actions: []
         }
       ];
 
       /**
        * State & Controller Object
        */
-      const portalApp = {
-        state: {
-          searchQuery: '',
-          statusFilter: 'all', // 'all', 'Active', 'Awaiting Sheet Data'
-          categoryFilter: 'all', // 'all', 'Executive & Governance', etc.
-          activeDashboardId: null,
-          connectedSheetUrl: 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit',
-        },
+      window.portalApp = window.portalApp || {};
+      window.portalApp.state = Object.assign({
+        searchQuery: '',
+        statusFilter: 'all', // 'all', 'Active', 'Awaiting Sheet Data'
+        categoryFilter: 'all', // 'all', 'Executive & Governance', etc.
+        activeDashboardId: null,
+        connectedSheetUrl: 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit',
+      }, window.portalApp.state || {});
 
+      // Preserve or initialize plrState safely
+      window.portalApp.state.plrState = window.portalApp.state.plrState || {
+        activeTab: 'incidents',
+        selectedYear: 'all',
+        selectedMachine: 'all',
+        selectedDept: 'all',
+        selectedStatus: 'all',
+        searchQuery: '',
+        page: 1,
+        pageSize: 15,
+        recSearchQuery: '',
+        recSelectedDept: 'all',
+        recSelectedStatus: 'all',
+        recMultiOnly: false,
+        recViewMode: 'grouped',
+        focusedPlrNo: null
+      };
+
+      const portalApp = window.portalApp;
+      Object.assign(portalApp, {
         init() {
           this.updateRollupStats();
           this.renderTimelineChart();
@@ -1860,18 +1764,20 @@
           if (!container) return;
 
           const items = DASHBOARD_REGISTRY;
-          const width = 560;
-          const height = 210;
-          const pad = { top: 30, right: 15, bottom: 35, left: 38 };
+          const width = 900;
+          const height = 280;
+          const pad = { top: 35, right: 30, bottom: 75, left: 50 };
           const plotW = width - pad.left - pad.right;
           const plotH = height - pad.top - pad.bottom;
 
           const barCount = items.length;
-          const barW = Math.min(32, (plotW / barCount) * 0.72);
           const gap = plotW / barCount;
+          const barW = Math.min(36, gap * 0.58);
 
-          // Target line at 95.0%
-          const targetY = pad.top + plotH - (95 / 100) * plotH;
+          // Max value scale for numbers (closed actions)
+          const maxClosed = Math.max(...items.map(d => d.kpis.closed || 0));
+          // Set sensible ceiling for numbers (e.g., 250)
+          const yMax = Math.ceil((maxClosed || 100) / 50) * 50;
 
           // Gradients definition
           const defsGradients = items.map(d => `
@@ -1881,24 +1787,42 @@
             </linearGradient>
           `).join('');
 
-          // Grid lines
-          const gridSvg = [0, 25, 50, 75, 100].map(v => `
-            <line x1="${pad.left}" y1="${pad.top + plotH - (v / 100) * plotH}" x2="${width - pad.right}" y2="${pad.top + plotH - (v / 100) * plotH}" stroke="#F1F5F9" stroke-width="1.5" />
-            <text x="${pad.left - 6}" y="${pad.top + plotH - (v / 100) * plotH + 3.5}" fill="#94A3B8" font-size="9" font-family="monospace" text-anchor="end">${v}%</text>
-          `).join('');
+          // Number grid lines (0, 50, 100, 150, 200, 250)
+          const gridSteps = [0, 50, 100, 150, 200, yMax];
+          const gridSvg = gridSteps.map(v => {
+            const yPos = pad.top + plotH - (v / yMax) * plotH;
+            return `
+              <line x1="${pad.left}" y1="${yPos}" x2="${width - pad.right}" y2="${yPos}" stroke="#E2E8F0" stroke-width="1.2" stroke-dasharray="3 3"/>
+              <text x="${pad.left - 8}" y="${yPos + 4}" fill="#64748B" font-size="10" font-family="monospace" font-weight="bold" text-anchor="end">${v}</text>
+            `;
+          }).join('');
 
-          // Bars
+          // Bars in numbers (Actual closed actions count)
           const barsSvg = items.map((d, i) => {
-            const pct = parseFloat(d.kpis.compliance) || 0;
-            const barH = (pct / 100) * plotH;
+            const count = d.kpis.closed || 0;
+            const barH = yMax > 0 ? (count / yMax) * plotH : 0;
             const x = pad.left + (i * gap) + (gap - barW) / 2;
             const y = pad.top + plotH - barH;
 
             return `
               <g class="cursor-pointer group" onclick="portalApp.showDetailView('${d.id}')">
-                <rect x="${x}" y="${y}" width="${barW}" height="${barH}" rx="4" fill="url(#cmp-bar-${d.id})" class="transition-all group-hover:opacity-85 shadow-xs"/>
-                <text x="${x + barW / 2}" y="${y - 4}" fill="#1E293B" font-size="8.5" font-family="monospace" font-weight="bold" text-anchor="middle">${pct.toFixed(0)}%</text>
-                <text x="${x + barW / 2}" y="${height - 12}" fill="#64748B" font-size="9" font-weight="700" text-anchor="middle" class="group-hover:fill-blue-600 transition-colors">${d.code}</text>
+                <!-- Hover highlight column -->
+                <rect x="${x - 4}" y="${pad.top}" width="${barW + 8}" height="${plotH}" fill="transparent" class="hover:fill-slate-50 transition-colors"/>
+                <!-- Bar (only if count > 0) -->
+                ${count > 0 ? `
+                  <rect x="${x}" y="${y}" width="${barW}" height="${barH}" rx="5" fill="url(#cmp-bar-${d.id})" class="transition-all group-hover:opacity-90 filter drop-shadow-xs"/>
+                ` : `
+                  <!-- Zero line indicator for awaiting sheets -->
+                  <rect x="${x}" y="${pad.top + plotH - 3}" width="${barW}" height="3" rx="1.5" fill="#CBD5E1"/>
+                `}
+                <!-- Number Label on top of bar (No %age) -->
+                <text x="${x + barW / 2}" y="${count > 0 ? y - 6 : pad.top + plotH - 8}" fill="${count > 0 ? '#0F172A' : '#94A3B8'}" font-size="10" font-family="monospace" font-weight="900" text-anchor="middle">${count}</text>
+                <!-- Non-overlapping X Axis Label: Tilted at -25 degrees with generous spacing -->
+                <g transform="translate(${x + barW / 2}, ${pad.top + plotH + 16})">
+                  <text transform="rotate(-25)" fill="#334155" font-size="10" font-weight="700" text-anchor="end" class="group-hover:fill-blue-600 transition-colors">
+                    ${d.code}
+                  </text>
+                </g>
               </g>
             `;
           }).join('');
@@ -1906,19 +1830,19 @@
           container.innerHTML = `
             <svg viewBox="0 0 ${width} ${height}" class="w-full h-auto overflow-visible select-none">
               <defs>${defsGradients}</defs>
+              <!-- Baseline -->
+              <line x1="${pad.left}" y1="${pad.top + plotH}" x2="${width - pad.right}" y2="${pad.top + plotH}" stroke="#94A3B8" stroke-width="1.5"/>
               ${gridSvg}
-              <!-- 95% Planned Target Line -->
-              <line x1="${pad.left}" y1="${targetY}" x2="${width - pad.right}" y2="${targetY}" stroke="#D97706" stroke-width="2" stroke-dasharray="4 3"/>
-              <text x="${width - pad.right}" y="${targetY - 5}" fill="#D97706" font-size="9" font-weight="bold" text-anchor="end">Target 95%</text>
               ${barsSvg}
             </svg>
           `;
 
           if (legend) {
             legend.innerHTML = items.map(d => `
-              <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-50 border border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors" onclick="portalApp.showDetailView('${d.id}')">
-                <span class="w-2 h-2 rounded-full" style="background-color: ${d.gradientStop1};"></span>
-                <span>${d.code}</span>
+              <span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-slate-50 border border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors" onclick="portalApp.showDetailView('${d.id}')">
+                <span class="w-2.5 h-2.5 rounded-full shadow-2xs" style="background-color: ${d.gradientStop1};"></span>
+                <span class="font-bold">${d.code}</span>
+                <span class="text-slate-400 font-mono">(${d.kpis.closed || 0})</span>
               </span>
             `).join('');
           }
@@ -2088,12 +2012,14 @@
 
         /**
          * Update the top Executive Summary Rollup Statistics from registry
+         * ONLY sums dashboards attached with Google Sheet links (hasSheetLink === true)
          */
         updateRollupStats() {
-          const total = DASHBOARD_REGISTRY.reduce((acc, item) => acc + (item.kpis.total || 0), 0);
-          const closed = DASHBOARD_REGISTRY.reduce((acc, item) => acc + (item.kpis.closed || 0), 0);
-          const inProgress = DASHBOARD_REGISTRY.reduce((acc, item) => acc + (item.kpis.inProgress ?? item.kpis.pending ?? 0), 0);
-          const overdue = DASHBOARD_REGISTRY.reduce((acc, item) => acc + (item.kpis.overdue || 0), 0);
+          const linkedDashboards = DASHBOARD_REGISTRY.filter(item => item.hasSheetLink === true);
+          const total = linkedDashboards.reduce((acc, item) => acc + (item.kpis.total || 0), 0);
+          const closed = linkedDashboards.reduce((acc, item) => acc + (item.kpis.closed || 0), 0);
+          const inProgress = linkedDashboards.reduce((acc, item) => acc + (item.kpis.inProgress ?? item.kpis.pending ?? 0), 0);
+          const overdue = linkedDashboards.reduce((acc, item) => acc + (item.kpis.overdue || 0), 0);
           const rate = total > 0 ? ((closed / total) * 100).toFixed(1) + '%' : '0.0%';
 
           const elTotal = document.getElementById('rollup-total');
@@ -2449,6 +2375,7 @@
 
           const activeBtn = {
             'all': 'cat-all',
+            'Plant Integrity & Incident Analytics': 'cat-plr',
             'Executive & Governance': 'cat-exec',
             'Sub HSE Committees': 'cat-subhse',
             'Process Safety & Quality': 'cat-process',
@@ -2466,6 +2393,43 @@
           this.clearSearch();
           this.setStatusFilter('all');
           this.setCategoryFilter('all');
+        },
+
+        /**
+         * Horizontal scroll for Dashboard Navigation Bar
+         */
+        scrollNavMenu(amount) {
+          const scroller = document.getElementById('nav-menu-scroll-container');
+          if (scroller) {
+            scroller.scrollBy({ left: amount, behavior: 'smooth' });
+          }
+        },
+
+        /**
+         * 8-Foot Visibility Mode Toggle (Large Display / Wall Control Room View)
+         */
+        toggle8FtMode() {
+          const body = document.body;
+          const is8Ft = body.classList.toggle('display-8ft');
+          const label = document.getElementById('label-8ft-mode');
+          const btn = document.getElementById('btn-toggle-8ft');
+          if (is8Ft) {
+            if (label) {
+              label.innerHTML = '8-Foot Mode: <span class="bg-emerald-600 text-white px-2.5 py-0.5 rounded font-black text-xs uppercase shadow-xs">ACTIVE ON</span>';
+            }
+            if (btn) {
+              btn.className = 'inline-flex items-center gap-2.5 px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl text-sm sm:text-base font-black transition-all shadow-lg border-2 cursor-pointer bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border-emerald-500 ring-2 ring-emerald-400';
+            }
+            this.showToast('8-Foot Mode Enabled', 'High-contrast typography scaled for 8-foot wall & control room viewing.', 'success');
+          } else {
+            if (label) {
+              label.innerHTML = '8-Foot Mode: <span class="bg-slate-200 text-slate-800 px-2 py-0.5 rounded font-extrabold text-xs uppercase">OFF</span>';
+            }
+            if (btn) {
+              btn.className = 'inline-flex items-center gap-2.5 px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl text-sm sm:text-base font-black transition-all shadow-md border-2 cursor-pointer bg-amber-50 hover:bg-amber-100 text-slate-800 border-amber-400';
+            }
+            this.showToast('8-Foot Mode Disabled', 'Restored standard desktop typography scale.', 'info');
+          }
         },
 
         /**
@@ -2607,6 +2571,48 @@
           connCard.style.borderColor = '#E2E8F0';
           const sheetStatus = document.getElementById('detail-sheet-status');
           sheetStatus.className = 'font-bold text-emerald-600';
+          const sheetKeyEl = document.getElementById('detail-sheet-key');
+
+          // Specialized PLR Suite vs PSM Suite vs Standard Dashboard Containers
+          const stdContainer = document.getElementById('standard-detail-container');
+          const plrContainer = document.getElementById('plr-specialized-container');
+          const psmContainer = document.getElementById('psm-specialized-container');
+
+          if (dashboardId === 'plr') {
+            if (stdContainer) stdContainer.classList.add('hidden');
+            if (psmContainer) psmContainer.classList.add('hidden');
+            if (plrContainer) {
+              plrContainer.classList.remove('hidden');
+              if (window.portalApp && typeof window.portalApp.renderPlrSuite === 'function') {
+                window.portalApp.renderPlrSuite();
+              }
+            }
+            if (sheetKeyEl) {
+              sheetKeyEl.textContent = 'PLRs white dashboard • 233 Incidents & 451 Recommendations';
+              sheetKeyEl.title = 'PLRs white dashboard (PLRStatus & Recommendations)';
+            }
+          } else if (dashboardId === 'sub-hse-psm') {
+            if (stdContainer) stdContainer.classList.add('hidden');
+            if (plrContainer) plrContainer.classList.add('hidden');
+            if (psmContainer) {
+              psmContainer.classList.remove('hidden');
+              if (window.FPCL_PSM_SUITE && typeof window.FPCL_PSM_SUITE.render === 'function') {
+                window.FPCL_PSM_SUITE.render();
+              }
+            }
+            if (sheetKeyEl) {
+              sheetKeyEl.textContent = 'PSM Audit Phase 1 • 121 Findings & 13 Action Departments';
+              sheetKeyEl.title = 'PSM Internal Audit Findings (Phase 1 June 2026 Google Sheet)';
+            }
+          } else {
+            if (plrContainer) plrContainer.classList.add('hidden');
+            if (psmContainer) psmContainer.classList.add('hidden');
+            if (stdContainer) stdContainer.classList.remove('hidden');
+            if (sheetKeyEl) {
+              sheetKeyEl.textContent = 'Awaiting Google Sheet Link';
+              sheetKeyEl.title = 'Will be populated once Google Sheet URL is linked';
+            }
+          }
 
           // Dynamically Accent the KPI Cards Top Stripes with Gradients
           document.getElementById('kpi-stripe-1').className = 'absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r ' + dashboard.gradient;
@@ -2725,6 +2731,12 @@
           if (detailSelect) detailSelect.value = 'overview';
 
           document.getElementById('dashboard-detail-view').classList.add('hidden');
+          const plrContainer = document.getElementById('plr-specialized-container');
+          if (plrContainer) plrContainer.classList.add('hidden');
+          const psmContainer = document.getElementById('psm-specialized-container');
+          if (psmContainer) psmContainer.classList.add('hidden');
+          const stdContainer = document.getElementById('standard-detail-container');
+          if (stdContainer) stdContainer.classList.remove('hidden');
           document.getElementById('portal-landing-view').classList.remove('hidden');
           window.scrollTo({ top: 0, behavior: 'smooth' });
           this.updateRollupStats();
@@ -2906,7 +2918,7 @@
             }
           });
         }
-      };
+      });
 
       // Initialize on DOM ready
       document.addEventListener('DOMContentLoaded', () => {

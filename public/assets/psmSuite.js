@@ -1,0 +1,1684 @@
+/**
+ * FPCL Executive Operations & Compliance Portal
+ * Sub HSE - PSM (Process Safety Management) Executive BI Suite
+ * 
+ * Features:
+ * - Dynamic aggregation from Google Sheets dataset (or CSV URL)
+ * - 4 Executive KPI metric cards (Total, Open, Closed, % Closure)
+ * - Multi-dimensional drill-down filters (Search, Status, Action Dept, Action Unit, PSM Element, Severity, Audit No)
+ * - Interactive Horizontal Bar Chart: Open vs. Closed Findings by Action Department
+ * - Interactive Donut Chart: Audit Breakdown with toggle for PSM Element vs. Severity
+ * - Dual Data Tables: Table 1 (Action Department) & Table 2 (Action Unit) with sorting & visual progress bars
+ * - Detailed Findings Record Table with pagination (10, 15, 25, 50, all) and Search
+ * - Modal inspection drawer for full finding metadata
+ * - Live Google Sheets sync feed & CSV Export functionality
+ */
+
+(function() {
+  const psmSuite = {
+    state: {
+      searchQuery: '',
+      statusFilter: 'all',     // 'all' | 'Open' | 'Close'
+      deptFilter: 'all',       // Action Department
+      unitFilter: 'all',       // Action Unit
+      elementFilter: 'all',    // PSM Element (MC, RA&PHA, MOC-F, PSI, General)
+      natureFilter: 'all',     // Severity / Nature (Major, Minor, Suggestion, PSG)
+      auditFilter: 'all',      // Audit No
+      chartBreakdownMode: 'element', // 'element' | 'severity'
+      page: 1,
+      pageSize: 15,
+      deptTableSort: { col: 'total', dir: 'desc' },
+      unitTableSort: { col: 'total', dir: 'desc' },
+      isSyncing: false,
+      lastSynced: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      selectedFinding: null
+    },
+
+    init() {
+      window.FPCL_PSM_SUITE = this;
+      // Auto-load data if available
+      if (!window.FPCL_PSM_DATA && window.FPCL_PSM_RAW_CSV && typeof window.parsePSMCSV === 'function') {
+        window.FPCL_PSM_DATA = window.parsePSMCSV(window.FPCL_PSM_RAW_CSV);
+      }
+    },
+
+    getRawData() {
+      if (Array.isArray(window.FPCL_PSM_DATA) && window.FPCL_PSM_DATA.length > 0) {
+        return window.FPCL_PSM_DATA;
+      }
+      if (window.FPCL_PSM_RAW_CSV && typeof window.parsePSMCSV === 'function') {
+        window.FPCL_PSM_DATA = window.parsePSMCSV(window.FPCL_PSM_RAW_CSV);
+        return window.FPCL_PSM_DATA;
+      }
+      return [];
+    },
+
+    // Apply all active filters to the dataset
+    getFilteredData() {
+      const raw = this.getRawData();
+      const s = this.state;
+
+      return raw.filter(item => {
+        // Status filter
+        if (s.statusFilter !== 'all') {
+          if (item.status.toLowerCase() !== s.statusFilter.toLowerCase()) {
+            return false;
+          }
+        }
+
+        // Action Department filter
+        if (s.deptFilter !== 'all') {
+          if (item.actionDepartment !== s.deptFilter) {
+            return false;
+          }
+        }
+
+        // Action Unit filter
+        if (s.unitFilter !== 'all') {
+          if (item.actionUnit !== s.unitFilter) {
+            return false;
+          }
+        }
+
+        // PSM Element filter
+        if (s.elementFilter !== 'all') {
+          if (item.psmElement !== s.elementFilter) {
+            return false;
+          }
+        }
+
+        // Nature / Severity filter
+        if (s.natureFilter !== 'all') {
+          if (item.nature !== s.natureFilter) {
+            return false;
+          }
+        }
+
+        // Audit No filter
+        if (s.auditFilter !== 'all') {
+          if (item.auditNo !== s.auditFilter) {
+            return false;
+          }
+        }
+
+        // Keyword Search across multiple fields
+        if (s.searchQuery.trim()) {
+          const q = s.searchQuery.toLowerCase().trim();
+          const match = 
+            (item.observationNo && item.observationNo.toLowerCase().includes(q)) ||
+            (item.finding && item.finding.toLowerCase().includes(q)) ||
+            (item.actionDepartment && item.actionDepartment.toLowerCase().includes(q)) ||
+            (item.actionUnit && item.actionUnit.toLowerCase().includes(q)) ||
+            (item.psmElement && item.psmElement.toLowerCase().includes(q)) ||
+            (item.nature && item.nature.toLowerCase().includes(q)) ||
+            (item.actionRemarks && item.actionRemarks.toLowerCase().includes(q)) ||
+            (item.hseqRemarks && item.hseqRemarks.toLowerCase().includes(q));
+          
+          if (!match) return false;
+        }
+
+        return true;
+      });
+    },
+
+    // Aggregate dynamic statistics by department
+    getDepartmentAggregation(data) {
+      const map = {};
+      data.forEach(item => {
+        const dept = item.actionDepartment || 'Unassigned';
+        if (!map[dept]) {
+          map[dept] = { name: dept, total: 0, open: 0, close: 0 };
+        }
+        map[dept].total += 1;
+        if (item.status === 'Close') {
+          map[dept].close += 1;
+        } else {
+          map[dept].open += 1;
+        }
+      });
+
+      const list = Object.values(map).map(d => ({
+        ...d,
+        closureRate: d.total > 0 ? Math.round((d.close / d.total) * 100) : 0
+      }));
+
+      // Sort
+      const { col, dir } = this.state.deptTableSort;
+      list.sort((a, b) => {
+        let vA = a[col];
+        let vB = b[col];
+        if (typeof vA === 'string') {
+          return dir === 'asc' ? vA.localeCompare(vB) : vB.localeCompare(vA);
+        }
+        return dir === 'asc' ? vA - vB : vB - vA;
+      });
+
+      return list;
+    },
+
+    // Aggregate dynamic statistics by unit
+    getUnitAggregation(data) {
+      const map = {};
+      data.forEach(item => {
+        const unit = item.actionUnit || 'Unassigned';
+        if (!map[unit]) {
+          map[unit] = { name: unit, total: 0, open: 0, close: 0 };
+        }
+        map[unit].total += 1;
+        if (item.status === 'Close') {
+          map[unit].close += 1;
+        } else {
+          map[unit].open += 1;
+        }
+      });
+
+      const list = Object.values(map).map(u => ({
+        ...u,
+        closureRate: u.total > 0 ? Math.round((u.close / u.total) * 100) : 0
+      }));
+
+      // Sort
+      const { col, dir } = this.state.unitTableSort;
+      list.sort((a, b) => {
+        let vA = a[col];
+        let vB = b[col];
+        if (typeof vA === 'string') {
+          return dir === 'asc' ? vA.localeCompare(vB) : vB.localeCompare(vA);
+        }
+        return dir === 'asc' ? vA - vB : vB - vA;
+      });
+
+      return list;
+    },
+
+    // Aggregate by PSM Element
+    getElementAggregation(data) {
+      const map = {};
+      data.forEach(item => {
+        const el = item.psmElement || 'General';
+        if (!map[el]) {
+          map[el] = { name: el, count: 0, open: 0, close: 0 };
+        }
+        map[el].count += 1;
+        if (item.status === 'Close') map[el].close += 1;
+        else map[el].open += 1;
+      });
+
+      const total = data.length || 1;
+      return Object.values(map)
+        .sort((a, b) => b.count - a.count)
+        .map(e => ({
+          ...e,
+          percentage: Math.round((e.count / total) * 100)
+        }));
+    },
+
+    // Aggregate by Severity / Nature
+    getSeverityAggregation(data) {
+      const map = {};
+      data.forEach(item => {
+        const nat = item.nature || 'Minor';
+        if (!map[nat]) {
+          map[nat] = { name: nat, count: 0, open: 0, close: 0 };
+        }
+        map[nat].count += 1;
+        if (item.status === 'Close') map[nat].close += 1;
+        else map[nat].open += 1;
+      });
+
+      const total = data.length || 1;
+      return Object.values(map)
+        .sort((a, b) => b.count - a.count)
+        .map(s => ({
+          ...s,
+          percentage: Math.round((s.count / total) * 100)
+        }));
+    },
+
+    // Main render method mounted on #psm-specialized-container
+    render() {
+      const container = document.getElementById('psm-specialized-container');
+      if (!container) return;
+
+      const raw = this.getRawData();
+      const filtered = this.getFilteredData();
+
+      // Overall metrics calculated dynamically from raw or filtered
+      const totalRaw = raw.length;
+      const totalFiltered = filtered.length;
+      const openCount = filtered.filter(d => d.status === 'Open').length;
+      const closedCount = filtered.filter(d => d.status === 'Close').length;
+      const closurePercentage = totalFiltered > 0 ? Math.round((closedCount / totalFiltered) * 100) : 0;
+      const openPercentage = totalFiltered > 0 ? Math.round((openCount / totalFiltered) * 100) : 0;
+
+      // Dropdown option lists extracted dynamically from raw data
+      const allDepts = Array.from(new Set(raw.map(d => d.actionDepartment).filter(Boolean))).sort();
+      const allUnits = Array.from(new Set(raw.map(d => d.actionUnit).filter(Boolean))).sort();
+      const allElements = Array.from(new Set(raw.map(d => d.psmElement).filter(Boolean))).sort();
+      const allNatures = Array.from(new Set(raw.map(d => d.nature).filter(Boolean))).sort();
+      const allAudits = Array.from(new Set(raw.map(d => d.auditNo).filter(Boolean))).sort();
+
+      // Department & Unit Aggregations
+      const deptList = this.getDepartmentAggregation(filtered);
+      const unitList = this.getUnitAggregation(filtered);
+
+      // Total summary calculations for tables
+      const sumDeptTotal = deptList.reduce((acc, d) => acc + d.total, 0);
+      const sumDeptOpen = deptList.reduce((acc, d) => acc + d.open, 0);
+      const sumDeptClose = deptList.reduce((acc, d) => acc + d.close, 0);
+      const sumDeptClosure = sumDeptTotal > 0 ? Math.round((sumDeptClose / sumDeptTotal) * 100) : 0;
+
+      const sumUnitTotal = unitList.reduce((acc, u) => acc + u.total, 0);
+      const sumUnitOpen = unitList.reduce((acc, u) => acc + u.open, 0);
+      const sumUnitClose = unitList.reduce((acc, u) => acc + u.close, 0);
+      const sumUnitClosure = sumUnitTotal > 0 ? Math.round((sumUnitClose / sumUnitTotal) * 100) : 0;
+
+      // Pagination slice for records table
+      const s = this.state;
+      const pageSize = s.pageSize === 'all' ? filtered.length : parseInt(s.pageSize, 10);
+      const totalPages = Math.max(1, Math.ceil(filtered.length / (pageSize || 1)));
+      const currentPage = Math.min(s.page, totalPages);
+      const startIndex = (currentPage - 1) * pageSize;
+      const pageItems = filtered.slice(startIndex, startIndex + pageSize);
+
+      container.innerHTML = `
+        <div class="space-y-6 font-sans antialiased text-slate-800">
+          
+          <!-- ========================================================================= -->
+          <!-- 1. TOP EXECUTIVE BI HEADER BAR                                           -->
+          <!-- ========================================================================= -->
+          <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 text-white rounded-2xl p-5 sm:p-6 shadow-xl border border-slate-700/60 relative overflow-hidden">
+            <!-- Subtle backdrop gradient glow -->
+            <div class="absolute -right-20 -top-20 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute -left-20 -bottom-20 w-80 h-80 bg-teal-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+            <div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+              <div class="flex items-start sm:items-center gap-3.5">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-teal-400 to-emerald-600 text-white flex items-center justify-center shadow-lg shadow-teal-500/20 shrink-0">
+                  <i data-lucide="shield-check" class="w-6 h-6"></i>
+                </div>
+                <div>
+                  <div class="flex flex-wrap items-center gap-2.5">
+                    <h2 class="text-xl sm:text-2xl font-black tracking-tight text-white flex items-center gap-2">
+                      PSM INTERNAL AUDIT FINDINGS
+                    </h2>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded text-[11px] font-black uppercase tracking-wider bg-teal-500/20 text-teal-300 border border-teal-500/40">
+                      EXECUTIVE BI
+                    </span>
+                  </div>
+                  <p class="text-xs sm:text-sm text-slate-300 font-medium mt-0.5">
+                    Compliance, Action Department Tracking & Resolution Analytics • <span class="text-teal-300 font-semibold">Phase 1 2026 Audit Findings Data</span>
+                  </p>
+                </div>
+              </div>
+
+              <!-- Top Right Controls -->
+              <div class="flex items-center flex-wrap gap-2.5">
+                <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                  <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                  <span>LIVE SHEETS CONNECTED</span>
+                </div>
+
+                <button
+                  onclick="FPCL_PSM_SUITE.syncLiveFeed()"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-white border border-white/15 transition-all shadow-xs cursor-pointer"
+                  title="Force re-sync from Google Sheets"
+                >
+                  <i data-lucide="refresh-cw" class="w-3.5 h-3.5 ${s.isSyncing ? 'animate-spin' : ''}"></i>
+                  <span>Sync Feed</span>
+                </button>
+
+                <button
+                  onclick="FPCL_PSM_SUITE.openConfigModal()"
+                  class="inline-flex items-center gap-1.5 p-2 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-white border border-white/15 transition-all shadow-xs cursor-pointer"
+                  title="Configure Google Sheet Link"
+                >
+                  <i data-lucide="settings" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ========================================================================= -->
+          <!-- 2. AUDIT STATUS BAR & QUICK ACTION CONTROLS                               -->
+          <!-- ========================================================================= -->
+          <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+              <div class="p-2 rounded-xl bg-teal-50 text-teal-700 border border-teal-200">
+                <i data-lucide="file-check-2" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="font-bold text-sm text-slate-900">PSM INTERNAL AUDIT FINDINGS</span>
+                  <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200">Phase 1 2026 Audit</span>
+                </div>
+                <p class="text-xs text-slate-500">Live Compliance, Action Department Tracking & Conditional % Closure Progress</p>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <button
+                onclick="FPCL_PSM_SUITE.resetAllFilters()"
+                class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors shadow-2xs cursor-pointer"
+                title="Reset all filter selections"
+              >
+                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                <span>Reset All Filters</span>
+              </button>
+
+              <button
+                onclick="FPCL_PSM_SUITE.exportFilteredCSV()"
+                class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white transition-all shadow-sm cursor-pointer"
+                title="Export currently filtered records to CSV"
+              >
+                <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                <span>Export CSV</span>
+              </button>
+
+              <button
+                onclick="FPCL_PSM_SUITE.syncLiveFeed()"
+                class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-teal-600 hover:bg-teal-700 text-white transition-all shadow-sm cursor-pointer"
+              >
+                <i data-lucide="refresh-cw" class="w-3.5 h-3.5 ${s.isSyncing ? 'animate-spin' : ''}"></i>
+                <span>Sync Feed</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- ========================================================================= -->
+          <!-- 3. TOP 4 EXECUTIVE KPI SUMMARY CARDS (DYNAMICALLY COMPUTED)               -->
+          <!-- ========================================================================= -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            
+            <!-- Card 1: Total Findings -->
+            <div 
+              onclick="FPCL_PSM_SUITE.setStatusFilter('all')"
+              class="bg-white border border-slate-200 hover:border-slate-300 rounded-2xl p-5 shadow-xs hover:shadow-md transition-all cursor-pointer relative overflow-hidden group ${s.statusFilter === 'all' ? 'ring-2 ring-slate-400' : ''}"
+            >
+              <div class="absolute top-0 left-0 right-0 h-1.5 bg-slate-600"></div>
+              <div class="flex items-center justify-between text-slate-500 text-xs font-bold tracking-wider uppercase">
+                <span>1. TOTAL FINDINGS</span>
+                <span class="p-1.5 rounded-lg bg-slate-100 text-slate-600 group-hover:bg-slate-200 transition-colors">
+                  <i data-lucide="files" class="w-4 h-4"></i>
+                </span>
+              </div>
+              <div class="mt-3 flex items-baseline gap-2">
+                <span class="text-3xl sm:text-4xl font-black font-mono tracking-tight text-slate-900">${totalFiltered}</span>
+                ${totalFiltered !== totalRaw ? `<span class="text-xs font-mono text-slate-400">/ ${totalRaw}</span>` : ''}
+              </div>
+              <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                <span class="text-slate-500 font-medium">Click to inspect</span>
+                <span class="px-2 py-0.5 rounded text-[11px] font-bold font-mono bg-slate-100 text-slate-700 border border-slate-200">
+                  100% Ingested
+                </span>
+              </div>
+            </div>
+
+            <!-- Card 2: Open Findings -->
+            <div 
+              onclick="FPCL_PSM_SUITE.setStatusFilter('Open')"
+              class="bg-white border border-slate-200 hover:border-rose-300 rounded-2xl p-5 shadow-xs hover:shadow-md transition-all cursor-pointer relative overflow-hidden group ${s.statusFilter === 'Open' ? 'ring-2 ring-rose-500 bg-rose-50/20' : ''}"
+            >
+              <div class="absolute top-0 left-0 right-0 h-1.5 bg-rose-500"></div>
+              <div class="flex items-center justify-between text-rose-700 text-xs font-bold tracking-wider uppercase">
+                <span>2. OPEN FINDINGS</span>
+                <span class="p-1.5 rounded-lg bg-rose-50 text-rose-600 group-hover:bg-rose-100 transition-colors">
+                  <i data-lucide="alert-circle" class="w-4 h-4"></i>
+                </span>
+              </div>
+              <div class="mt-3 flex items-baseline gap-2">
+                <span class="text-3xl sm:text-4xl font-black font-mono tracking-tight text-rose-600">${openCount}</span>
+                <span class="text-xs font-mono font-bold text-rose-700">(${openPercentage}%)</span>
+              </div>
+              <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                <span class="text-slate-500 font-medium">Click to inspect</span>
+                <span class="px-2 py-0.5 rounded text-[11px] font-bold font-mono bg-rose-50 text-rose-700 border border-rose-200">
+                  ${openPercentage}% Active
+                </span>
+              </div>
+            </div>
+
+            <!-- Card 3: Closed Findings -->
+            <div 
+              onclick="FPCL_PSM_SUITE.setStatusFilter('Close')"
+              class="bg-white border border-slate-200 hover:border-emerald-300 rounded-2xl p-5 shadow-xs hover:shadow-md transition-all cursor-pointer relative overflow-hidden group ${s.statusFilter === 'Close' ? 'ring-2 ring-emerald-500 bg-emerald-50/20' : ''}"
+            >
+              <div class="absolute top-0 left-0 right-0 h-1.5 bg-emerald-500"></div>
+              <div class="flex items-center justify-between text-emerald-700 text-xs font-bold tracking-wider uppercase">
+                <span>3. CLOSED FINDINGS</span>
+                <span class="p-1.5 rounded-lg bg-emerald-50 text-emerald-600 group-hover:bg-emerald-100 transition-colors">
+                  <i data-lucide="check-circle" class="w-4 h-4"></i>
+                </span>
+              </div>
+              <div class="mt-3 flex items-baseline gap-2">
+                <span class="text-3xl sm:text-4xl font-black font-mono tracking-tight text-emerald-600">${closedCount}</span>
+                <span class="text-xs font-mono font-bold text-emerald-700">(${closurePercentage}%)</span>
+              </div>
+              <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                <span class="text-slate-500 font-medium">Click to inspect</span>
+                <span class="px-2 py-0.5 rounded text-[11px] font-bold font-mono bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  ${closurePercentage}% Completed
+                </span>
+              </div>
+            </div>
+
+            <!-- Card 4: % Closure -->
+            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs relative overflow-hidden">
+              <div class="absolute top-0 left-0 right-0 h-1.5 bg-teal-500"></div>
+              <div class="flex items-center justify-between text-teal-700 text-xs font-bold tracking-wider uppercase">
+                <span>4. % CLOSURE</span>
+                <span class="p-1.5 rounded-lg bg-teal-50 text-teal-600">
+                  <i data-lucide="trending-up" class="w-4 h-4"></i>
+                </span>
+              </div>
+              <div class="mt-3 flex items-baseline gap-2">
+                <span class="text-3xl sm:text-4xl font-black font-mono tracking-tight text-teal-600">${closurePercentage}%</span>
+              </div>
+              <div class="mt-4 pt-3 border-t border-slate-100 flex flex-col gap-1.5 text-xs">
+                <div class="flex items-center justify-between text-slate-500 text-[11px]">
+                  <span>Audit Resolution</span>
+                  <span class="font-mono font-bold text-slate-700">${closedCount} / ${totalFiltered}</span>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden flex">
+                  <div class="bg-teal-500 h-2 rounded-full transition-all duration-500" style="width: ${closurePercentage}%;"></div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- ========================================================================= -->
+          <!-- 4. INTERACTIVE DRILL-DOWN & FILTERS BAR                                   -->
+          <!-- ========================================================================= -->
+          <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+              <div class="flex items-center gap-2 text-xs font-black text-slate-800 uppercase tracking-wider">
+                <i data-lucide="sliders-horizontal" class="w-4 h-4 text-teal-600"></i>
+                <span>INTERACTIVE DRILL-DOWN & FILTERS</span>
+                <span class="text-slate-400 normal-case font-medium text-[11px]">(Click any value, bar or chart to filter)</span>
+              </div>
+              <button
+                onclick="FPCL_PSM_SUITE.resetAllFilters()"
+                class="inline-flex items-center gap-1 text-xs font-bold text-slate-600 hover:text-teal-600 cursor-pointer self-start sm:self-auto"
+              >
+                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                <span>Reset All</span>
+              </button>
+            </div>
+
+            <!-- Filter Controls Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-7 gap-3">
+              
+              <!-- 1. Search Findings -->
+              <div class="xl:col-span-1">
+                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1 flex items-center gap-1">
+                  <i data-lucide="search" class="w-3 h-3"></i> SEARCH FINDINGS
+                </label>
+                <div class="relative">
+                  <input
+                    type="text"
+                    value="${s.searchQuery}"
+                    oninput="FPCL_PSM_SUITE.setSearchQuery(this.value)"
+                    placeholder="Keywords, obs..."
+                    class="w-full pl-3 pr-7 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
+                  />
+                  ${s.searchQuery ? `
+                    <button onclick="FPCL_PSM_SUITE.clearSearch()" class="absolute right-2 top-2 text-slate-400 hover:text-slate-600">
+                      <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                    </button>
+                  ` : ''}
+                </div>
+              </div>
+
+              <!-- 2. Status Filter -->
+              <div>
+                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">STATUS</label>
+                <select
+                  onchange="FPCL_PSM_SUITE.setStatusFilter(this.value)"
+                  class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer"
+                >
+                  <option value="all" ${s.statusFilter === 'all' ? 'selected' : ''}>All Statuses (${totalRaw})</option>
+                  <option value="Open" ${s.statusFilter === 'Open' ? 'selected' : ''}>Open</option>
+                  <option value="Close" ${s.statusFilter === 'Close' ? 'selected' : ''}>Close</option>
+                </select>
+              </div>
+
+              <!-- 3. Action Department -->
+              <div>
+                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">ACTION DEPT</label>
+                <select
+                  onchange="FPCL_PSM_SUITE.setDeptFilter(this.value)"
+                  class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer"
+                >
+                  <option value="all" ${s.deptFilter === 'all' ? 'selected' : ''}>All Departments</option>
+                  ${allDepts.map(d => `<option value="${d}" ${s.deptFilter === d ? 'selected' : ''}>${d}</option>`).join('')}
+                </select>
+              </div>
+
+              <!-- 4. Action Unit -->
+              <div>
+                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">ACTION UNIT</label>
+                <select
+                  onchange="FPCL_PSM_SUITE.setUnitFilter(this.value)"
+                  class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer"
+                >
+                  <option value="all" ${s.unitFilter === 'all' ? 'selected' : ''}>All Action Units</option>
+                  ${allUnits.map(u => `<option value="${u}" ${s.unitFilter === u ? 'selected' : ''}>${u}</option>`).join('')}
+                </select>
+              </div>
+
+              <!-- 5. PSM Element -->
+              <div>
+                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">PSM ELEMENT</label>
+                <select
+                  onchange="FPCL_PSM_SUITE.setElementFilter(this.value)"
+                  class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer"
+                >
+                  <option value="all" ${s.elementFilter === 'all' ? 'selected' : ''}>All PSM Elements</option>
+                  ${allElements.map(e => `<option value="${e}" ${s.elementFilter === e ? 'selected' : ''}>${e}</option>`).join('')}
+                </select>
+              </div>
+
+              <!-- 6. Nature / Severity -->
+              <div>
+                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">NATURE / SEVERITY</label>
+                <select
+                  onchange="FPCL_PSM_SUITE.setNatureFilter(this.value)"
+                  class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer"
+                >
+                  <option value="all" ${s.natureFilter === 'all' ? 'selected' : ''}>All Severities</option>
+                  ${allNatures.map(n => `<option value="${n}" ${s.natureFilter === n ? 'selected' : ''}>${n}</option>`).join('')}
+                </select>
+              </div>
+
+              <!-- 7. Audit No -->
+              <div>
+                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">AUDIT NO</label>
+                <select
+                  onchange="FPCL_PSM_SUITE.setAuditFilter(this.value)"
+                  class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer"
+                >
+                  <option value="all" ${s.auditFilter === 'all' ? 'selected' : ''}>All Audit Numbers</option>
+                  ${allAudits.map(a => `<option value="${a}" ${s.auditFilter === a ? 'selected' : ''}>${a}</option>`).join('')}
+                </select>
+              </div>
+
+            </div>
+
+            <!-- Active Filter Badges (if any applied) -->
+            ${this.renderActiveFilterPills()}
+          </div>
+
+          <!-- ========================================================================= -->
+          <!-- 5. CHARTS ROW: BAR CHART (LEFT) + DONUT AUDIT BREAKDOWN (RIGHT)           -->
+          <!-- ========================================================================= -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+            
+            <!-- Left Chart (7 cols): Open vs Closed by Action Department -->
+            <div class="lg:col-span-7 bg-white border border-slate-200 rounded-2xl p-5 shadow-xs flex flex-col justify-between space-y-4">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                <div>
+                  <h3 class="text-xs sm:text-sm font-black tracking-wide text-slate-900 flex items-center gap-2 uppercase">
+                    <i data-lucide="bar-chart-3" class="w-4 h-4 text-teal-600"></i>
+                    <span>OPEN VS. CLOSED FINDINGS BY ACTION DEPARTMENT</span>
+                  </h3>
+                  <p class="text-[11px] text-slate-500">Click any bar to filter & view items</p>
+                </div>
+                <!-- Legend -->
+                <div class="flex items-center gap-3 text-xs font-bold font-mono">
+                  <span class="inline-flex items-center gap-1.5">
+                    <span class="w-2.5 h-2.5 rounded-sm bg-rose-500"></span>
+                    <span class="text-slate-600">Open Findings</span>
+                  </span>
+                  <span class="inline-flex items-center gap-1.5">
+                    <span class="w-2.5 h-2.5 rounded-sm bg-teal-500"></span>
+                    <span class="text-slate-600">Closed Findings</span>
+                  </span>
+                </div>
+              </div>
+
+              <!-- Horizontal SVG Bar Chart -->
+              <div id="psm-dept-bar-chart" class="w-full overflow-x-auto">
+                ${this.renderDepartmentBarChart(deptList)}
+              </div>
+            </div>
+
+            <!-- Right Chart (5 cols): Audit Breakdown Donut -->
+            <div class="lg:col-span-5 bg-white border border-slate-200 rounded-2xl p-5 shadow-xs flex flex-col justify-between space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="text-xs sm:text-sm font-black tracking-wide text-slate-900 flex items-center gap-2 uppercase">
+                  <i data-lucide="pie-chart" class="w-4 h-4 text-indigo-600"></i>
+                  <span>AUDIT BREAKDOWN</span>
+                </h3>
+                <!-- Toggle Mode: PSM Element vs Severity -->
+                <div class="inline-flex rounded-lg bg-slate-100 p-0.5 border border-slate-200">
+                  <button
+                    onclick="FPCL_PSM_SUITE.setBreakdownMode('element')"
+                    class="px-2.5 py-1 text-[11px] font-bold rounded-md transition-all cursor-pointer ${s.chartBreakdownMode === 'element' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-500 hover:text-slate-900'}"
+                  >
+                    PSM Element
+                  </button>
+                  <button
+                    onclick="FPCL_PSM_SUITE.setBreakdownMode('severity')"
+                    class="px-2.5 py-1 text-[11px] font-bold rounded-md transition-all cursor-pointer ${s.chartBreakdownMode === 'severity' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-500 hover:text-slate-900'}"
+                  >
+                    Severity
+                  </button>
+                </div>
+              </div>
+
+              <!-- Donut SVG & Legend -->
+              <div class="py-2">
+                ${this.renderBreakdownDonut(filtered)}
+              </div>
+
+              <!-- Bottom Compliance Ratio Bar -->
+              <div class="pt-3 border-t border-slate-100 space-y-1.5">
+                <div class="flex items-center justify-between text-xs font-bold">
+                  <span class="text-slate-600">Compliance Ratio</span>
+                  <span class="text-teal-700 font-mono font-black">${closurePercentage}% Closure</span>
+                </div>
+                <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden flex">
+                  <div class="bg-teal-500 h-2.5" style="width: ${closurePercentage}%;" title="Closed: ${closedCount}"></div>
+                  <div class="bg-rose-500 h-2.5" style="width: ${openPercentage}%;" title="Open: ${openCount}"></div>
+                </div>
+                <div class="flex items-center justify-between text-[10px] font-mono font-bold text-slate-500">
+                  <span>${closedCount} Closed</span>
+                  <span>${openCount} Open</span>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- ========================================================================= -->
+          <!-- 6. TABLES ROW: TABLE 1 (DEPARTMENT) & TABLE 2 (ACTION UNIT)              -->
+          <!-- ========================================================================= -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            
+            <!-- Table 1: Findings Status by Action Department -->
+            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-3">
+              <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                <div class="flex items-center gap-2">
+                  <div class="w-2 h-2 rounded-full bg-teal-500"></div>
+                  <h4 class="text-xs sm:text-sm font-black text-slate-900 uppercase">TABLE 1: FINDINGS STATUS BY ACTION DEPARTMENT</h4>
+                </div>
+                <span class="text-[11px] text-slate-400 font-medium">Click any row to filter</span>
+              </div>
+
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr class="border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[10px] bg-slate-50">
+                      <th class="py-2.5 px-3 cursor-pointer hover:text-teal-600" onclick="FPCL_PSM_SUITE.sortDeptTable('name')">
+                        DEPARTMENT ${s.deptTableSort.col === 'name' ? (s.deptTableSort.dir === 'asc' ? '↑' : '↓') : '↕'}
+                      </th>
+                      <th class="py-2.5 px-3 text-center cursor-pointer hover:text-teal-600" onclick="FPCL_PSM_SUITE.sortDeptTable('total')">
+                        TOTAL ${s.deptTableSort.col === 'total' ? (s.deptTableSort.dir === 'asc' ? '↑' : '↓') : '↕'}
+                      </th>
+                      <th class="py-2.5 px-3 text-center cursor-pointer hover:text-rose-600" onclick="FPCL_PSM_SUITE.sortDeptTable('open')">
+                        OPEN ${s.deptTableSort.col === 'open' ? (s.deptTableSort.dir === 'asc' ? '↑' : '↓') : '↕'}
+                      </th>
+                      <th class="py-2.5 px-3 text-center cursor-pointer hover:text-emerald-600" onclick="FPCL_PSM_SUITE.sortDeptTable('close')">
+                        CLOSE ${s.deptTableSort.col === 'close' ? (s.deptTableSort.dir === 'asc' ? '↑' : '↓') : '↕'}
+                      </th>
+                      <th class="py-2.5 px-3 text-center cursor-pointer hover:text-teal-600 min-w-[120px]" onclick="FPCL_PSM_SUITE.sortDeptTable('closureRate')">
+                        % CLOSURE ${s.deptTableSort.col === 'closureRate' ? (s.deptTableSort.dir === 'asc' ? '↑' : '↓') : '↕'}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100 text-slate-800">
+                    ${deptList.map(d => {
+                      const isSelected = s.deptFilter === d.name;
+                      return `
+                        <tr
+                          onclick="FPCL_PSM_SUITE.setDeptFilter('${isSelected ? 'all' : d.name}')"
+                          class="hover:bg-slate-50 transition-colors cursor-pointer group ${isSelected ? 'bg-teal-50/50 font-bold' : ''}"
+                        >
+                          <td class="py-2.5 px-3 font-semibold text-slate-900 group-hover:text-teal-700">
+                            ${d.name}
+                          </td>
+                          <td class="py-2.5 px-3 text-center font-mono font-bold">${d.total}</td>
+                          <td class="py-2.5 px-3 text-center font-mono font-bold ${d.open > 0 ? 'text-rose-600' : 'text-slate-400'}">${d.open}</td>
+                          <td class="py-2.5 px-3 text-center font-mono font-bold ${d.close > 0 ? 'text-emerald-600' : 'text-slate-400'}">${d.close}</td>
+                          <td class="py-2.5 px-3 text-center">
+                            ${this.renderProgressPill(d.closureRate)}
+                          </td>
+                        </tr>
+                      `;
+                    }).join('')}
+                  </tbody>
+                  <!-- Total Summary Row -->
+                  <tfoot>
+                    <tr class="bg-slate-100 font-black text-slate-900 border-t-2 border-slate-300">
+                      <td class="py-3 px-3 uppercase tracking-wider">TOTAL / SUMMARY</td>
+                      <td class="py-3 px-3 text-center font-mono">${sumDeptTotal}</td>
+                      <td class="py-3 px-3 text-center font-mono text-rose-600">${sumDeptOpen}</td>
+                      <td class="py-3 px-3 text-center font-mono text-emerald-600">${sumDeptClose}</td>
+                      <td class="py-3 px-3 text-center">
+                        ${this.renderProgressPill(sumDeptClosure)}
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+
+            <!-- Table 2: Findings Status by Action Unit -->
+            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-3">
+              <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                <div class="flex items-center gap-2">
+                  <div class="w-2 h-2 rounded-full bg-indigo-500"></div>
+                  <h4 class="text-xs sm:text-sm font-black text-slate-900 uppercase">TABLE 2: FINDINGS STATUS BY ACTION UNIT</h4>
+                </div>
+                <span class="text-[11px] text-slate-400 font-medium">Click any row to filter</span>
+              </div>
+
+              <div class="overflow-x-auto max-h-[500px]">
+                <table class="w-full text-left text-xs border-collapse">
+                  <thead class="sticky top-0 bg-slate-50 z-10">
+                    <tr class="border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[10px]">
+                      <th class="py-2.5 px-3 cursor-pointer hover:text-indigo-600" onclick="FPCL_PSM_SUITE.sortUnitTable('name')">
+                        ACTION UNIT ${s.unitTableSort.col === 'name' ? (s.unitTableSort.dir === 'asc' ? '↑' : '↓') : '↕'}
+                      </th>
+                      <th class="py-2.5 px-3 text-center cursor-pointer hover:text-indigo-600" onclick="FPCL_PSM_SUITE.sortUnitTable('total')">
+                        TOTAL ${s.unitTableSort.col === 'total' ? (s.unitTableSort.dir === 'asc' ? '↑' : '↓') : '↕'}
+                      </th>
+                      <th class="py-2.5 px-3 text-center cursor-pointer hover:text-rose-600" onclick="FPCL_PSM_SUITE.sortUnitTable('open')">
+                        OPEN ${s.unitTableSort.col === 'open' ? (s.unitTableSort.dir === 'asc' ? '↑' : '↓') : '↕'}
+                      </th>
+                      <th class="py-2.5 px-3 text-center cursor-pointer hover:text-emerald-600" onclick="FPCL_PSM_SUITE.sortUnitTable('close')">
+                        CLOSE ${s.unitTableSort.col === 'close' ? (s.unitTableSort.dir === 'asc' ? '↑' : '↓') : '↕'}
+                      </th>
+                      <th class="py-2.5 px-3 text-center cursor-pointer hover:text-indigo-600 min-w-[120px]" onclick="FPCL_PSM_SUITE.sortUnitTable('closureRate')">
+                        % CLOSURE ${s.unitTableSort.col === 'closureRate' ? (s.unitTableSort.dir === 'asc' ? '↑' : '↓') : '↕'}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100 text-slate-800">
+                    ${unitList.map(u => {
+                      const isSelected = s.unitFilter === u.name;
+                      return `
+                        <tr
+                          onclick="FPCL_PSM_SUITE.setUnitFilter('${isSelected ? 'all' : u.name}')"
+                          class="hover:bg-slate-50 transition-colors cursor-pointer group ${isSelected ? 'bg-indigo-50/50 font-bold' : ''}"
+                        >
+                          <td class="py-2.5 px-3 font-semibold text-slate-900 group-hover:text-indigo-700">
+                            ${u.name}
+                          </td>
+                          <td class="py-2.5 px-3 text-center font-mono font-bold">${u.total}</td>
+                          <td class="py-2.5 px-3 text-center font-mono font-bold ${u.open > 0 ? 'text-rose-600' : 'text-slate-400'}">${u.open}</td>
+                          <td class="py-2.5 px-3 text-center font-mono font-bold ${u.close > 0 ? 'text-emerald-600' : 'text-slate-400'}">${u.close}</td>
+                          <td class="py-2.5 px-3 text-center">
+                            ${this.renderProgressPill(u.closureRate)}
+                          </td>
+                        </tr>
+                      `;
+                    }).join('')}
+                  </tbody>
+                  <!-- Total Summary Row -->
+                  <tfoot class="sticky bottom-0 bg-slate-100">
+                    <tr class="font-black text-slate-900 border-t-2 border-slate-300">
+                      <td class="py-3 px-3 uppercase tracking-wider">TOTAL / SUMMARY</td>
+                      <td class="py-3 px-3 text-center font-mono">${sumUnitTotal}</td>
+                      <td class="py-3 px-3 text-center font-mono text-rose-600">${sumUnitOpen}</td>
+                      <td class="py-3 px-3 text-center font-mono text-emerald-600">${sumUnitClose}</td>
+                      <td class="py-3 px-3 text-center">
+                        ${this.renderProgressPill(sumUnitClosure)}
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- ========================================================================= -->
+          <!-- 7. DETAILED PSM AUDIT OBSERVATION RECORDS TABLE                           -->
+          <!-- ========================================================================= -->
+          <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+              <div class="flex items-center gap-2.5">
+                <div class="p-2 rounded-xl bg-slate-100 text-slate-700 border border-slate-200">
+                  <i data-lucide="table" class="w-5 h-5"></i>
+                </div>
+                <div>
+                  <h3 class="text-xs sm:text-sm font-black text-slate-900 uppercase tracking-wide">
+                    PSM AUDIT OBSERVATION RECORDS
+                  </h3>
+                  <p class="text-xs text-slate-500">
+                    Showing <strong class="text-slate-800">${pageItems.length}</strong> of <strong class="text-slate-800">${filtered.length}</strong> filtered findings (Click any row to inspect complete details)
+                  </p>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-2 self-start sm:self-auto">
+                <label for="psm-page-size" class="text-xs font-bold text-slate-500">Rows:</label>
+                <select
+                  id="psm-page-size"
+                  onchange="FPCL_PSM_SUITE.setPageSize(this.value)"
+                  class="px-2.5 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs font-bold text-slate-800 focus:outline-none focus:ring-1 focus:ring-teal-500 cursor-pointer"
+                >
+                  <option value="10" ${s.pageSize === '10' ? 'selected' : ''}>10</option>
+                  <option value="15" ${s.pageSize === '15' ? 'selected' : ''}>15</option>
+                  <option value="25" ${s.pageSize === '25' ? 'selected' : ''}>25</option>
+                  <option value="50" ${s.pageSize === '50' ? 'selected' : ''}>50</option>
+                  <option value="all" ${s.pageSize === 'all' ? 'selected' : ''}>All (${filtered.length})</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Findings Table -->
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr class="border-b border-slate-200 bg-slate-50 text-slate-600 font-bold uppercase tracking-wider text-[10px]">
+                    <th class="py-3 px-3">OBS #</th>
+                    <th class="py-3 px-3">PSM ELEMENT</th>
+                    <th class="py-3 px-3">ACTION DEPT</th>
+                    <th class="py-3 px-3">ACTION UNIT</th>
+                    <th class="py-3 px-4 min-w-[280px]">OBSERVATION / FINDINGS</th>
+                    <th class="py-3 px-3 text-center">STATUS</th>
+                    <th class="py-3 px-3">HSEQ REMARKS</th>
+                    <th class="py-3 px-3 text-center">INSPECT</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-slate-800">
+                  ${pageItems.length === 0 ? `
+                    <tr>
+                      <td colspan="8" class="text-center py-10 text-slate-400">
+                        <i data-lucide="inbox" class="w-8 h-8 mx-auto mb-2 text-slate-300"></i>
+                        No audit findings match your selected filter criteria.
+                      </td>
+                    </tr>
+                  ` : pageItems.map(item => {
+                    const isClosed = item.status === 'Close';
+                    return `
+                      <tr 
+                        onclick="FPCL_PSM_SUITE.inspectFinding('${item.observationNo}')"
+                        class="hover:bg-slate-50/80 transition-colors cursor-pointer group"
+                      >
+                        <!-- OBS # -->
+                        <td class="py-3 px-3 font-mono font-bold text-slate-900 whitespace-nowrap">
+                          <div>${item.observationNo}</div>
+                          <div class="text-[10px] text-slate-400 font-sans font-normal">${item.auditNo}</div>
+                        </td>
+
+                        <!-- PSM Element -->
+                        <td class="py-3 px-3 whitespace-nowrap">
+                          <span class="inline-block px-2.5 py-1 rounded-md text-[11px] font-bold font-mono border ${this.getElementBadgeStyle(item.psmElement)}">
+                            ${item.psmElement}
+                          </span>
+                        </td>
+
+                        <!-- Action Dept -->
+                        <td class="py-3 px-3 font-medium text-slate-900 whitespace-nowrap">
+                          ${item.actionDepartment}
+                        </td>
+
+                        <!-- Action Unit -->
+                        <td class="py-3 px-3 text-slate-600 whitespace-nowrap font-mono">
+                          ${item.actionUnit}
+                        </td>
+
+                        <!-- Observation / Findings -->
+                        <td class="py-3 px-4 text-slate-700 leading-relaxed font-medium">
+                          <div class="line-clamp-2" title="${item.finding.replace(/"/g, '&quot;')}">
+                            ${item.finding}
+                          </div>
+                        </td>
+
+                        <!-- Status Badge -->
+                        <td class="py-3 px-3 text-center whitespace-nowrap">
+                          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold ${
+                            isClosed 
+                              ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' 
+                              : 'bg-rose-50 text-rose-800 border border-rose-200'
+                          }">
+                            <i data-lucide="${isClosed ? 'check' : 'alert-circle'}" class="w-3 h-3"></i>
+                            <span>${item.status}</span>
+                          </span>
+                        </td>
+
+                        <!-- HSEQ Remarks -->
+                        <td class="py-3 px-3 text-slate-500 text-[11px] max-w-[200px] truncate" title="${(item.hseqRemarks || '').replace(/"/g, '&quot;')}">
+                          ${item.hseqRemarks || '—'}
+                        </td>
+
+                        <!-- Inspect Button -->
+                        <td class="py-3 px-3 text-center whitespace-nowrap">
+                          <button
+                            onclick="event.stopPropagation(); FPCL_PSM_SUITE.inspectFinding('${item.observationNo}')"
+                            class="p-1.5 rounded-lg text-slate-500 hover:text-teal-600 hover:bg-slate-100 transition-colors"
+                            title="Inspect complete details"
+                          >
+                            <i data-lucide="eye" class="w-4 h-4"></i>
+                          </button>
+                        </td>
+                      </tr>
+                    `;
+                  }).join('')}
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Pagination Bar -->
+            ${totalPages > 1 ? `
+              <div class="pt-3 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+                <span class="text-slate-500 font-medium">
+                  Page <strong class="text-slate-800">${currentPage}</strong> of <strong class="text-slate-800">${totalPages}</strong>
+                </span>
+                <div class="flex items-center gap-1">
+                  <button
+                    onclick="FPCL_PSM_SUITE.setPage(${currentPage - 1})"
+                    ${currentPage <= 1 ? 'disabled class="px-2.5 py-1.5 rounded-lg bg-slate-100 text-slate-400 cursor-not-allowed"' : 'class="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 cursor-pointer"'}
+                  >
+                    Previous
+                  </button>
+                  ${Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let p = i + 1;
+                    if (totalPages > 5 && currentPage > 3) {
+                      p = currentPage - 2 + i;
+                      if (p > totalPages) p = totalPages - (4 - i);
+                    }
+                    const isActive = p === currentPage;
+                    return `
+                      <button
+                        onclick="FPCL_PSM_SUITE.setPage(${p})"
+                        class="px-3 py-1.5 rounded-lg font-bold ${isActive ? 'bg-teal-600 text-white shadow-2xs' : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 cursor-pointer'}"
+                      >
+                        ${p}
+                      </button>
+                    `;
+                  }).join('')}
+                  <button
+                    onclick="FPCL_PSM_SUITE.setPage(${currentPage + 1})"
+                    ${currentPage >= totalPages ? 'disabled class="px-2.5 py-1.5 rounded-lg bg-slate-100 text-slate-400 cursor-not-allowed"' : 'class="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 cursor-pointer"'}
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            ` : ''}
+
+          </div>
+
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- 8. FINDING INSPECTION MODAL                                               -->
+        <!-- ========================================================================= -->
+        <div id="psm-inspection-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs hidden items-center justify-center p-4">
+          <div id="psm-modal-card" class="bg-white border border-slate-200 rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <!-- Populated dynamically via inspectFinding() -->
+          </div>
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- 9. GOOGLE SHEETS LIVE CONFIG MODAL                                        -->
+        <!-- ========================================================================= -->
+        <div id="psm-sheet-config-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs hidden items-center justify-center p-4">
+          <div class="bg-white border border-slate-200 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+              <div class="flex items-center gap-2 text-slate-900 font-bold text-base">
+                <i data-lucide="file-spreadsheet" class="w-5 h-5 text-teal-600"></i>
+                <span>Google Sheet Live Integration</span>
+              </div>
+              <button onclick="FPCL_PSM_SUITE.closeConfigModal()" class="text-slate-400 hover:text-slate-600 p-1">
+                <i data-lucide="x" class="w-5 h-5"></i>
+              </button>
+            </div>
+
+            <div class="space-y-3 text-xs text-slate-600">
+              <p>
+                Configure the published Google Sheets URL to stream live audit findings, statuses, and remarks:
+              </p>
+              <div>
+                <label class="block text-slate-700 font-bold mb-1">Google Sheets URL or CSV Export Link:</label>
+                <input
+                  id="psm-sheet-url-input"
+                  type="text"
+                  value="${window.FPCL_PSM_SHEET_URL || ''}"
+                  class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  placeholder="https://docs.google.com/spreadsheets/d/.../pub?output=csv"
+                />
+                <p class="text-[11px] text-slate-400 mt-1">
+                  Supports standard Google Sheets links, Published to Web CSV URLs, or Google Visualization CSV endpoints.
+                </p>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-200">
+              <button onclick="FPCL_PSM_SUITE.closeConfigModal()" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 cursor-pointer">
+                Cancel
+              </button>
+              <button onclick="FPCL_PSM_SUITE.saveAndSyncSheetUrl()" class="px-4 py-2 rounded-xl text-xs font-bold bg-teal-600 hover:bg-teal-700 text-white cursor-pointer shadow-sm">
+                Save & Fetch Live Data
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Re-initialize icons
+      if (window.lucide) {
+        window.lucide.createIcons();
+      }
+    },
+
+    // Horizontal grouped/stacked bar chart for departments
+    renderDepartmentBarChart(deptList) {
+      if (!deptList || deptList.length === 0) {
+        return `<div class="text-center py-8 text-xs text-slate-400">No data available</div>`;
+      }
+
+      // Find maximum total to scale bars
+      const maxTotal = Math.max(...deptList.map(d => d.total), 1);
+      // Axis ticks up to max (e.g. 0, 5, 10, 15, 20, 25, 30)
+      const tickMax = Math.ceil(maxTotal / 5) * 5;
+      const ticks = [];
+      for (let t = 0; t <= tickMax; t += 5) {
+        ticks.push(t);
+      }
+
+      const rowHeight = 36;
+      const chartHeight = deptList.length * rowHeight + 40;
+      const svgWidth = 650;
+      const labelWidth = 130;
+      const plotWidth = svgWidth - labelWidth - 30;
+
+      const barsSvg = deptList.map((d, i) => {
+        const y = i * rowHeight + 10;
+        const totalW = (d.total / tickMax) * plotWidth;
+        const openW = (d.open / tickMax) * plotWidth;
+        const closeW = (d.close / tickMax) * plotWidth;
+        const isSelected = this.state.deptFilter === d.name;
+
+        return `
+          <g class="cursor-pointer group" onclick="FPCL_PSM_SUITE.setDeptFilter('${isSelected ? 'all' : d.name}')">
+            <!-- Row hover highlight -->
+            <rect x="0" y="${y - 4}" width="${svgWidth}" height="${rowHeight}" fill="${isSelected ? '#F0FDFA' : 'transparent'}" class="group-hover:fill-slate-50 transition-colors rounded-md"/>
+            
+            <!-- Department Label -->
+            <text x="${labelWidth - 10}" y="${y + 16}" fill="${isSelected ? '#0D9488' : '#334155'}" font-size="11" font-weight="${isSelected ? '900' : '700'}" text-anchor="end" class="transition-colors group-hover:fill-teal-700">
+              ${d.name}
+            </text>
+
+            <!-- Background Track -->
+            <rect x="${labelWidth}" y="${y + 4}" width="${plotWidth}" height="18" rx="4" fill="#F1F5F9"/>
+
+            <!-- Open Findings Bar (Rose) -->
+            ${d.open > 0 ? `
+              <rect x="${labelWidth}" y="${y + 4}" width="${openW}" height="18" rx="${d.close > 0 ? '4 0 0 4' : '4'}" fill="#F43F5E" class="transition-all opacity-95 group-hover:opacity-100"/>
+              ${openW > 14 ? `
+                <text x="${labelWidth + openW / 2}" y="${y + 16}" fill="#ffffff" font-size="10" font-weight="900" font-family="monospace" text-anchor="middle">${d.open}</text>
+              ` : ''}
+            ` : ''}
+
+            <!-- Closed Findings Bar (Teal) -->
+            ${d.close > 0 ? `
+              <rect x="${labelWidth + openW}" y="${y + 4}" width="${closeW}" height="18" rx="${d.open > 0 ? '0 4 4 0' : '4'}" fill="#10B981" class="transition-all opacity-95 group-hover:opacity-100"/>
+              ${closeW > 14 ? `
+                <text x="${labelWidth + openW + closeW / 2}" y="${y + 16}" fill="#ffffff" font-size="10" font-weight="900" font-family="monospace" text-anchor="middle">${d.close}</text>
+              ` : ''}
+            ` : ''}
+
+            <!-- Total count label at end of bar -->
+            <text x="${labelWidth + totalW + 8}" y="${y + 16}" fill="#64748B" font-size="10" font-weight="bold" font-family="monospace">
+              ${d.total}
+            </text>
+          </g>
+        `;
+      }).join('');
+
+      // Grid line ticks
+      const gridSvg = ticks.map(t => {
+        const x = labelWidth + (t / tickMax) * plotWidth;
+        return `
+          <line x1="${x}" y1="5" x2="${x}" y2="${deptList.length * rowHeight + 10}" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="2 2"/>
+          <text x="${x}" y="${deptList.length * rowHeight + 25}" fill="#94A3B8" font-size="10" font-family="monospace" text-anchor="middle">${t}</text>
+        `;
+      }).join('');
+
+      return `
+        <svg viewBox="0 0 ${svgWidth} ${chartHeight}" class="w-full h-auto select-none overflow-visible">
+          ${gridSvg}
+          ${barsSvg}
+        </svg>
+      `;
+    },
+
+    // Interactive Donut Chart for Audit Breakdown
+    renderBreakdownDonut(filteredData) {
+      const isElement = this.state.chartBreakdownMode === 'element';
+      const items = isElement ? this.getElementAggregation(filteredData) : this.getSeverityAggregation(filteredData);
+      
+      if (items.length === 0) {
+        return `<div class="text-center py-6 text-xs text-slate-400">No records available</div>`;
+      }
+
+      // Elegant palette colors for slices
+      const colors = ['#0D9488', '#0284C7', '#6366F1', '#EC4899', '#F59E0B', '#8B5CF6', '#10B981'];
+
+      const total = items.reduce((acc, it) => acc + it.count, 0);
+      const radius = 56;
+      const circumference = 2 * Math.PI * radius;
+
+      let currentOffset = 0;
+      const slicesSvg = items.map((it, i) => {
+        const color = colors[i % colors.length];
+        const sliceLength = (it.count / (total || 1)) * circumference;
+        const offset = currentOffset;
+        currentOffset -= sliceLength;
+
+        const isFiltered = (isElement && this.state.elementFilter === it.name) || (!isElement && this.state.natureFilter === it.name);
+
+        return `
+          <circle
+            cx="75" cy="75" r="${radius}"
+            fill="transparent"
+            stroke="${color}"
+            stroke-width="${isFiltered ? '24' : '20'}"
+            stroke-dasharray="${sliceLength} ${circumference - sliceLength}"
+            stroke-dashoffset="${offset}"
+            class="transition-all duration-300 cursor-pointer hover:opacity-85"
+            onclick="FPCL_PSM_SUITE.${isElement ? 'setElementFilter' : 'setNatureFilter'}('${isFiltered ? 'all' : it.name}')"
+          >
+            <title>${it.name}: ${it.count} (${it.percentage}%)</title>
+          </circle>
+        `;
+      }).join('');
+
+      const legendHtml = items.map((it, i) => {
+        const color = colors[i % colors.length];
+        const isFiltered = (isElement && this.state.elementFilter === it.name) || (!isElement && this.state.natureFilter === it.name);
+        return `
+          <button
+            onclick="FPCL_PSM_SUITE.${isElement ? 'setElementFilter' : 'setNatureFilter'}('${isFiltered ? 'all' : it.name}')"
+            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all text-left cursor-pointer ${
+              isFiltered 
+                ? 'bg-slate-900 text-white border-slate-900 shadow-2xs font-bold' 
+                : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
+            }"
+          >
+            <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: ${color};"></span>
+            <span class="text-xs font-bold truncate max-w-[90px]">${it.name}</span>
+            <span class="text-[11px] font-mono opacity-75">(${it.count})</span>
+          </button>
+        `;
+      }).join('');
+
+      return `
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-6">
+          <!-- Donut SVG -->
+          <div class="relative w-40 h-40 shrink-0">
+            <svg viewBox="0 0 150 150" class="w-full h-full transform -rotate-90">
+              <circle cx="75" cy="75" r="${radius}" fill="transparent" stroke="#F1F5F9" stroke-width="20"/>
+              ${slicesSvg}
+            </svg>
+            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
+              <span class="text-xl font-black font-mono text-slate-900">${total}</span>
+              <span class="text-[9px] font-bold text-slate-500 uppercase tracking-wider">FINDINGS</span>
+            </div>
+          </div>
+
+          <!-- Legend Tags -->
+          <div class="flex flex-wrap items-center justify-center gap-2 max-w-[220px]">
+            ${legendHtml}
+          </div>
+        </div>
+      `;
+    },
+
+    // Progress pill with color coding: >=80% green, 50-79% amber/yellow, <50% rose/orange
+    renderProgressPill(rate) {
+      let bgGrad = 'bg-teal-500';
+      let textColor = 'text-teal-700';
+      let border = 'border-teal-200';
+      let badgeBg = 'bg-teal-50';
+
+      if (rate >= 80) {
+        bgGrad = 'bg-emerald-500';
+        textColor = 'text-emerald-700';
+        border = 'border-emerald-200';
+        badgeBg = 'bg-emerald-50';
+      } else if (rate >= 50) {
+        bgGrad = 'bg-amber-500';
+        textColor = 'text-amber-700';
+        border = 'border-amber-200';
+        badgeBg = 'bg-amber-50';
+      } else {
+        bgGrad = 'bg-rose-500';
+        textColor = 'text-rose-700';
+        border = 'border-rose-200';
+        badgeBg = 'bg-rose-50';
+      }
+
+      return `
+        <div class="flex items-center justify-center gap-2">
+          <div class="w-14 bg-slate-200 rounded-full h-2 overflow-hidden">
+            <div class="${bgGrad} h-2 rounded-full transition-all duration-300" style="width: ${rate}%;"></div>
+          </div>
+          <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-mono font-bold ${badgeBg} ${textColor} border ${border} min-w-[36px] text-right">
+            ${rate}%
+          </span>
+        </div>
+      `;
+    },
+
+    // Element badge styling
+    getElementBadgeStyle(element) {
+      const map = {
+        'MC': 'bg-blue-50 text-blue-700 border-blue-200',
+        'RA&PHA': 'bg-purple-50 text-purple-700 border-purple-200',
+        'MOC-F': 'bg-teal-50 text-teal-700 border-teal-200',
+        'PSI': 'bg-amber-50 text-amber-700 border-amber-200',
+        'General': 'bg-slate-100 text-slate-700 border-slate-200'
+      };
+      return map[element] || 'bg-slate-50 text-slate-600 border-slate-200';
+    },
+
+    // Render active filter pills to allow quick removal
+    renderActiveFilterPills() {
+      const s = this.state;
+      const pills = [];
+
+      if (s.statusFilter !== 'all') {
+        pills.push({ label: `Status: ${s.statusFilter}`, clear: () => this.setStatusFilter('all') });
+      }
+      if (s.deptFilter !== 'all') {
+        pills.push({ label: `Dept: ${s.deptFilter}`, clear: () => this.setDeptFilter('all') });
+      }
+      if (s.unitFilter !== 'all') {
+        pills.push({ label: `Unit: ${s.unitFilter}`, clear: () => this.setUnitFilter('all') });
+      }
+      if (s.elementFilter !== 'all') {
+        pills.push({ label: `Element: ${s.elementFilter}`, clear: () => this.setElementFilter('all') });
+      }
+      if (s.natureFilter !== 'all') {
+        pills.push({ label: `Severity: ${s.natureFilter}`, clear: () => this.setNatureFilter('all') });
+      }
+      if (s.auditFilter !== 'all') {
+        pills.push({ label: `Audit: ${s.auditFilter}`, clear: () => this.setAuditFilter('all') });
+      }
+      if (s.searchQuery.trim()) {
+        pills.push({ label: `Search: "${s.searchQuery}"`, clear: () => this.clearSearch() });
+      }
+
+      if (pills.length === 0) return '';
+
+      return `
+        <div class="pt-2 border-t border-slate-100 flex flex-wrap items-center gap-2">
+          <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Active Filters:</span>
+          ${pills.map((p, idx) => `
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-teal-50 text-teal-800 border border-teal-200 shadow-2xs">
+              <span>${p.label}</span>
+              <button onclick="FPCL_PSM_SUITE.clearFilterIndex(${idx})" class="text-teal-600 hover:text-teal-900 cursor-pointer">
+                <i data-lucide="x" class="w-3 h-3"></i>
+              </button>
+            </span>
+          `).join('')}
+          <button
+            onclick="FPCL_PSM_SUITE.resetAllFilters()"
+            class="text-[11px] font-bold text-rose-600 hover:text-rose-800 underline cursor-pointer ml-1"
+          >
+            Clear All
+          </button>
+        </div>
+      `;
+    },
+
+    clearFilterIndex(idx) {
+      const s = this.state;
+      const pills = [];
+      if (s.statusFilter !== 'all') pills.push(() => this.setStatusFilter('all'));
+      if (s.deptFilter !== 'all') pills.push(() => this.setDeptFilter('all'));
+      if (s.unitFilter !== 'all') pills.push(() => this.setUnitFilter('all'));
+      if (s.elementFilter !== 'all') pills.push(() => this.setElementFilter('all'));
+      if (s.natureFilter !== 'all') pills.push(() => this.setNatureFilter('all'));
+      if (s.auditFilter !== 'all') pills.push(() => this.setAuditFilter('all'));
+      if (s.searchQuery.trim()) pills.push(() => this.clearSearch());
+
+      if (pills[idx]) {
+        pills[idx]();
+      }
+    },
+
+    // State Mutators & Filters
+    setSearchQuery(val) {
+      this.state.searchQuery = val;
+      this.state.page = 1;
+      this.render();
+    },
+
+    clearSearch() {
+      this.state.searchQuery = '';
+      this.state.page = 1;
+      this.render();
+    },
+
+    setStatusFilter(status) {
+      this.state.statusFilter = status;
+      this.state.page = 1;
+      this.render();
+    },
+
+    setDeptFilter(dept) {
+      this.state.deptFilter = dept;
+      this.state.page = 1;
+      this.render();
+    },
+
+    setUnitFilter(unit) {
+      this.state.unitFilter = unit;
+      this.state.page = 1;
+      this.render();
+    },
+
+    setElementFilter(el) {
+      this.state.elementFilter = el;
+      this.state.page = 1;
+      this.render();
+    },
+
+    setNatureFilter(nat) {
+      this.state.natureFilter = nat;
+      this.state.page = 1;
+      this.render();
+    },
+
+    setAuditFilter(audit) {
+      this.state.auditFilter = audit;
+      this.state.page = 1;
+      this.render();
+    },
+
+    setBreakdownMode(mode) {
+      this.state.chartBreakdownMode = mode;
+      this.render();
+    },
+
+    setPage(page) {
+      this.state.page = page;
+      this.render();
+    },
+
+    setPageSize(size) {
+      this.state.pageSize = size;
+      this.state.page = 1;
+      this.render();
+    },
+
+    sortDeptTable(col) {
+      const cur = this.state.deptTableSort;
+      if (cur.col === col) {
+        cur.dir = cur.dir === 'asc' ? 'desc' : 'asc';
+      } else {
+        cur.col = col;
+        cur.dir = 'desc';
+      }
+      this.render();
+    },
+
+    sortUnitTable(col) {
+      const cur = this.state.unitTableSort;
+      if (cur.col === col) {
+        cur.dir = cur.dir === 'asc' ? 'desc' : 'asc';
+      } else {
+        cur.col = col;
+        cur.dir = 'desc';
+      }
+      this.render();
+    },
+
+    resetAllFilters() {
+      this.state.searchQuery = '';
+      this.state.statusFilter = 'all';
+      this.state.deptFilter = 'all';
+      this.state.unitFilter = 'all';
+      this.state.elementFilter = 'all';
+      this.state.natureFilter = 'all';
+      this.state.auditFilter = 'all';
+      this.state.page = 1;
+      this.render();
+    },
+
+    // Inspect individual finding modal
+    inspectFinding(obsNo) {
+      const raw = this.getRawData();
+      const item = raw.find(d => d.observationNo === obsNo);
+      if (!item) return;
+
+      const modal = document.getElementById('psm-inspection-modal');
+      const card = document.getElementById('psm-modal-card');
+      if (!modal || !card) return;
+
+      const isClosed = item.status === 'Close';
+
+      card.innerHTML = `
+        <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+          <div class="flex items-center gap-3">
+            <span class="p-2 rounded-xl bg-teal-50 text-teal-700 border border-teal-200">
+              <i data-lucide="shield-check" class="w-5 h-5"></i>
+            </span>
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 class="text-base font-black text-slate-900 font-mono">${item.observationNo}</h3>
+                <span class="px-2 py-0.5 rounded-full text-xs font-bold ${
+                  isClosed ? 'bg-emerald-50 text-emerald-800 border border-emerald-300' : 'bg-rose-50 text-rose-800 border border-rose-300'
+                }">
+                  ${item.status}
+                </span>
+              </div>
+              <p class="text-xs text-slate-500">${item.auditNo}</p>
+            </div>
+          </div>
+          <button onclick="FPCL_PSM_SUITE.closeModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <div class="space-y-4 text-xs">
+          <!-- Metadata Grid -->
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+            <div>
+              <span class="text-slate-400 font-bold block text-[10px] uppercase">PSM Element</span>
+              <span class="font-bold text-slate-800 font-mono">${item.psmElement}</span>
+            </div>
+            <div>
+              <span class="text-slate-400 font-bold block text-[10px] uppercase">Nature / Severity</span>
+              <span class="font-bold text-slate-800">${item.nature}</span>
+            </div>
+            <div>
+              <span class="text-slate-400 font-bold block text-[10px] uppercase">Status</span>
+              <span class="font-bold ${isClosed ? 'text-emerald-600' : 'text-rose-600'}">${item.status}</span>
+            </div>
+            <div>
+              <span class="text-slate-400 font-bold block text-[10px] uppercase">Auditee Dept / Unit</span>
+              <span class="font-medium text-slate-700">${item.auditeeDepartment || '—'} / ${item.auditeeUnit || '—'}</span>
+            </div>
+            <div>
+              <span class="text-slate-400 font-bold block text-[10px] uppercase">Action Department</span>
+              <span class="font-bold text-teal-800">${item.actionDepartment}</span>
+            </div>
+            <div>
+              <span class="text-slate-400 font-bold block text-[10px] uppercase">Action Unit</span>
+              <span class="font-bold text-teal-800">${item.actionUnit}</span>
+            </div>
+          </div>
+
+          <!-- Finding Text -->
+          <div class="space-y-1.5">
+            <label class="font-black text-slate-700 uppercase tracking-wide text-[11px]">Observation / Findings:</label>
+            <div class="p-3.5 bg-white rounded-xl border border-slate-200 text-slate-800 leading-relaxed font-medium">
+              ${item.finding}
+            </div>
+          </div>
+
+          <!-- Action Dept Remarks -->
+          <div class="space-y-1.5">
+            <label class="font-black text-slate-700 uppercase tracking-wide text-[11px]">Action Department / Unit Remarks:</label>
+            <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200 text-slate-700 leading-relaxed">
+              ${item.actionRemarks ? item.actionRemarks : '<span class="text-slate-400 italic">No department remarks recorded</span>'}
+            </div>
+          </div>
+
+          <!-- HSEQ Remarks -->
+          <div class="space-y-1.5">
+            <label class="font-black text-teal-800 uppercase tracking-wide text-[11px]">HSEQ Verification Remarks:</label>
+            <div class="p-3.5 bg-teal-50/60 rounded-xl border border-teal-200 text-teal-900 leading-relaxed font-medium">
+              ${item.hseqRemarks ? item.hseqRemarks.replace(/\n/g, '<br/>') : '<span class="text-teal-600/70 italic">No HSEQ remarks recorded</span>'}
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between pt-3 border-t border-slate-200 text-xs">
+          <span class="text-slate-400 font-mono text-[11px]">Record #${item.sr}</span>
+          <button onclick="FPCL_PSM_SUITE.closeModal()" class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white transition-colors cursor-pointer">
+            Close
+          </button>
+        </div>
+      `;
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      if (window.lucide) window.lucide.createIcons();
+    },
+
+    closeModal() {
+      const modal = document.getElementById('psm-inspection-modal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    },
+
+    openConfigModal() {
+      const modal = document.getElementById('psm-sheet-config-modal');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+    },
+
+    closeConfigModal() {
+      const modal = document.getElementById('psm-sheet-config-modal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    },
+
+    // Save and re-sync from custom Google Sheet URL
+    saveAndSyncSheetUrl() {
+      const input = document.getElementById('psm-sheet-url-input');
+      if (input && input.value.trim()) {
+        window.FPCL_PSM_SHEET_URL = input.value.trim();
+      }
+      this.closeConfigModal();
+      this.syncLiveFeed();
+    },
+
+    // Live Feed Synchronization from Google Sheet
+    async syncLiveFeed() {
+      this.state.isSyncing = true;
+      this.render();
+
+      let targetUrl = window.FPCL_PSM_SHEET_URL;
+      
+      // Auto-convert edit link to CSV export link if user pasted standard Google Sheet link
+      if (targetUrl.includes('/edit')) {
+        const base = targetUrl.split('/edit')[0];
+        targetUrl = `${base}/export?format=csv`;
+      }
+
+      try {
+        const response = await fetch(targetUrl, { method: 'GET', cache: 'no-cache' });
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        const csvText = await response.text();
+        const parsed = window.parsePSMCSV(csvText);
+        if (parsed.length > 0) {
+          window.FPCL_PSM_DATA = parsed;
+          this.state.lastSynced = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          if (window.portalApp && typeof window.portalApp.showToast === 'function') {
+            window.portalApp.showToast('Google Sheet Synced', `Successfully loaded ${parsed.length} audit observations.`, 'success');
+          }
+        }
+      } catch (err) {
+        console.warn('Google Sheet live fetch encountered an issue, falling back to embedded dataset:', err);
+        // Fallback to embedded raw CSV
+        if (window.FPCL_PSM_RAW_CSV && typeof window.parsePSMCSV === 'function') {
+          window.FPCL_PSM_DATA = window.parsePSMCSV(window.FPCL_PSM_RAW_CSV);
+        }
+        if (window.portalApp && typeof window.portalApp.showToast === 'function') {
+          window.portalApp.showToast('Data Synced', `Loaded ${window.FPCL_PSM_DATA.length} audit records.`, 'info');
+        }
+      } finally {
+        this.state.isSyncing = false;
+        this.render();
+      }
+    },
+
+    // Export current filtered findings to CSV file
+    exportFilteredCSV() {
+      const data = this.getFilteredData();
+      if (!data || data.length === 0) return;
+
+      const headers = [
+        'Sr.',
+        'ObservationNo.',
+        'PSMElement',
+        'AuditNO',
+        'AuditeeDepartment',
+        'AuditeeUnit',
+        'Observation/Findings',
+        'ActionDepartment',
+        'ActionUnit',
+        'NatureofFindings',
+        'ActionDepartmenet/UnitRemarks',
+        'Status',
+        'HSEQRemarks'
+      ];
+
+      const rows = data.map((d, i) => [
+        i + 1,
+        `"${(d.observationNo || '').replace(/"/g, '""')}"`,
+        `"${(d.psmElement || '').replace(/"/g, '""')}"`,
+        `"${(d.auditNo || '').replace(/"/g, '""')}"`,
+        `"${(d.auditeeDepartment || '').replace(/"/g, '""')}"`,
+        `"${(d.auditeeUnit || '').replace(/"/g, '""')}"`,
+        `"${(d.finding || '').replace(/"/g, '""')}"`,
+        `"${(d.actionDepartment || '').replace(/"/g, '""')}"`,
+        `"${(d.actionUnit || '').replace(/"/g, '""')}"`,
+        `"${(d.nature || '').replace(/"/g, '""')}"`,
+        `"${(d.actionRemarks || '').replace(/"/g, '""')}"`,
+        `"${(d.status || '').replace(/"/g, '""')}"`,
+        `"${(d.hseqRemarks || '').replace(/"/g, '""')}"`
+      ]);
+
+      const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\r\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `PSM_Internal_Audit_Findings_${new Date().toISOString().slice(0, 10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
+  // Auto-register on DOM ready
+  document.addEventListener('DOMContentLoaded', () => {
+    psmSuite.init();
+  });
+
+  if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    psmSuite.init();
+  }
+
+})();
