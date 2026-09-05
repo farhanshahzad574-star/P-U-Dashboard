@@ -1009,9 +1009,9 @@
     ];
 
     const total = 233;
-    const r = 85;
-    const cx = 130;
-    const cy = 130;
+    const r = 124;
+    const cx = 160;
+    const cy = 160;
     const strokeWidth = 32;
 
     let cumulativeAngle = -Math.PI / 2;
@@ -1050,8 +1050,8 @@
     const isSTG4 = activeMachine.name.includes('STG # 4');
 
     container.innerHTML = `
-      <div class="relative w-[260px] h-[260px]">
-        <svg viewBox="0 0 260 260" class="w-full h-full select-none">
+      <div class="relative w-[300px] h-[300px] sm:w-[320px] sm:h-[320px] max-w-full aspect-square">
+        <svg viewBox="0 0 320 320" class="w-full h-full select-none">
           <!-- Soft Background Track Ring -->
           <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#f1f5f9" stroke-width="${strokeWidth}" />
           ${paths.join('')}
