@@ -287,14 +287,14 @@
           <!-- ========================================================================= -->
           <!-- 1. TOP EXECUTIVE BI HEADER BAR                                           -->
           <!-- ========================================================================= -->
-          <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 text-white rounded-2xl p-5 sm:p-6 shadow-xl border border-slate-700/60 relative overflow-hidden">
+          <div class="bg-gradient-to-r from-teal-600 via-emerald-600 to-indigo-600 text-white rounded-2xl p-5 sm:p-6 shadow-xl border border-teal-400/40 relative overflow-hidden">
             <!-- Subtle backdrop gradient glow -->
-            <div class="absolute -right-20 -top-20 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
-            <div class="absolute -left-20 -bottom-20 w-80 h-80 bg-teal-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute -right-20 -top-20 w-80 h-80 bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute -left-20 -bottom-20 w-80 h-80 bg-teal-300/20 rounded-full blur-3xl pointer-events-none"></div>
 
             <div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
               <div class="flex items-start sm:items-center gap-3.5">
-                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-teal-400 to-emerald-600 text-white flex items-center justify-center shadow-lg shadow-teal-500/20 shrink-0">
+                <div class="w-12 h-12 rounded-xl bg-white/20 text-white flex items-center justify-center shadow-lg backdrop-blur-xs shrink-0 border border-white/25">
                   <i data-lucide="shield-check" class="w-6 h-6"></i>
                 </div>
                 <div>
@@ -302,26 +302,26 @@
                     <h2 class="text-xl sm:text-2xl font-black tracking-tight text-white flex items-center gap-2">
                       PSM INTERNAL AUDIT FINDINGS
                     </h2>
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded text-[11px] font-black uppercase tracking-wider bg-teal-500/20 text-teal-300 border border-teal-500/40">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded text-[11px] font-black uppercase tracking-wider bg-white/20 text-white border border-white/30 backdrop-blur-xs">
                       EXECUTIVE BI
                     </span>
                   </div>
-                  <p class="text-xs sm:text-sm text-slate-300 font-medium mt-0.5">
-                    Compliance, Action Department Tracking & Resolution Analytics • <span class="text-teal-300 font-semibold">Phase 1 2026 Audit Findings Data</span>
+                  <p class="text-xs sm:text-sm text-teal-100 font-medium mt-0.5">
+                    Compliance, Action Department Tracking & Resolution Analytics • <span class="text-white font-bold">Phase 1 2026 Audit Findings Data</span>
                   </p>
                 </div>
               </div>
 
               <!-- Top Right Controls -->
               <div class="flex items-center flex-wrap gap-2.5">
-                <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
-                  <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-white/15 text-white border border-white/25">
+                  <span class="w-2 h-2 rounded-full bg-emerald-300 animate-pulse"></span>
                   <span>LIVE SHEETS CONNECTED</span>
                 </div>
 
                 <button
                   onclick="FPCL_PSM_SUITE.syncLiveFeed()"
-                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-white border border-white/15 transition-all shadow-xs cursor-pointer"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-white/15 hover:bg-white/25 text-white border border-white/25 transition-all shadow-xs cursor-pointer"
                   title="Force re-sync from Google Sheets"
                 >
                   <i data-lucide="refresh-cw" class="w-3.5 h-3.5 ${s.isSyncing ? 'animate-spin' : ''}"></i>
@@ -330,7 +330,7 @@
 
                 <button
                   onclick="FPCL_PSM_SUITE.openConfigModal()"
-                  class="inline-flex items-center gap-1.5 p-2 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-white border border-white/15 transition-all shadow-xs cursor-pointer"
+                  class="inline-flex items-center gap-1.5 p-2 rounded-xl text-xs font-bold bg-white/15 hover:bg-white/25 text-white border border-white/25 transition-all shadow-xs cursor-pointer"
                   title="Configure Google Sheet Link"
                 >
                   <i data-lucide="settings" class="w-4 h-4"></i>
@@ -344,15 +344,15 @@
           <!-- ========================================================================= -->
           <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div class="flex items-center gap-3">
-              <div class="p-2 rounded-xl bg-teal-50 text-teal-700 border border-teal-200">
+              <div class="p-2.5 rounded-xl bg-teal-50 text-teal-700 border border-teal-200">
                 <i data-lucide="file-check-2" class="w-5 h-5"></i>
               </div>
               <div>
-                <div class="flex items-center gap-2">
-                  <span class="font-bold text-sm text-slate-900">PSM INTERNAL AUDIT FINDINGS</span>
-                  <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200">Phase 1 2026 Audit</span>
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="font-black text-sm sm:text-base px-3 py-1 rounded-lg bg-gradient-to-r from-teal-600 via-emerald-600 to-indigo-600 text-white shadow-xs tracking-wide">PSM INTERNAL AUDIT FINDINGS</span>
+                  <span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200">Phase 1 2026 Audit</span>
                 </div>
-                <p class="text-xs text-slate-500">Live Compliance, Action Department Tracking & Conditional % Closure Progress</p>
+                <p class="text-xs text-slate-500 mt-1">Live Compliance, Action Department Tracking & Conditional % Closure Progress</p>
               </div>
             </div>
 
@@ -396,19 +396,19 @@
               class="bg-white border border-slate-200 hover:border-slate-300 rounded-2xl p-5 shadow-xs hover:shadow-md transition-all cursor-pointer relative overflow-hidden group ${s.statusFilter === 'all' ? 'ring-2 ring-slate-400' : ''}"
             >
               <div class="absolute top-0 left-0 right-0 h-1.5 bg-slate-600"></div>
-              <div class="flex items-center justify-between text-slate-500 text-xs font-bold tracking-wider uppercase">
+              <div class="flex items-center justify-between text-slate-500 text-xs sm:text-sm font-bold tracking-wider uppercase">
                 <span>1. TOTAL FINDINGS</span>
                 <span class="p-1.5 rounded-lg bg-slate-100 text-slate-600 group-hover:bg-slate-200 transition-colors">
                   <i data-lucide="files" class="w-4 h-4"></i>
                 </span>
               </div>
               <div class="mt-3 flex items-baseline gap-2">
-                <span class="text-3xl sm:text-4xl font-black font-mono tracking-tight text-slate-900">${totalFiltered}</span>
-                ${totalFiltered !== totalRaw ? `<span class="text-xs font-mono text-slate-400">/ ${totalRaw}</span>` : ''}
+                <span class="text-4xl sm:text-5xl font-black font-mono tracking-tight text-slate-900 kpi-metric-val">${totalFiltered}</span>
+                ${totalFiltered !== totalRaw ? `<span class="text-sm font-mono text-slate-400">/ ${totalRaw}</span>` : ''}
               </div>
-              <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+              <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs sm:text-sm">
                 <span class="text-slate-500 font-medium">Click to inspect</span>
-                <span class="px-2 py-0.5 rounded text-[11px] font-bold font-mono bg-slate-100 text-slate-700 border border-slate-200">
+                <span class="px-2.5 py-0.5 rounded text-xs font-bold font-mono bg-slate-100 text-slate-700 border border-slate-200">
                   100% Ingested
                 </span>
               </div>
@@ -420,19 +420,19 @@
               class="bg-white border border-slate-200 hover:border-rose-300 rounded-2xl p-5 shadow-xs hover:shadow-md transition-all cursor-pointer relative overflow-hidden group ${s.statusFilter === 'Open' ? 'ring-2 ring-rose-500 bg-rose-50/20' : ''}"
             >
               <div class="absolute top-0 left-0 right-0 h-1.5 bg-rose-500"></div>
-              <div class="flex items-center justify-between text-rose-700 text-xs font-bold tracking-wider uppercase">
+              <div class="flex items-center justify-between text-rose-700 text-xs sm:text-sm font-bold tracking-wider uppercase">
                 <span>2. OPEN FINDINGS</span>
                 <span class="p-1.5 rounded-lg bg-rose-50 text-rose-600 group-hover:bg-rose-100 transition-colors">
                   <i data-lucide="alert-circle" class="w-4 h-4"></i>
                 </span>
               </div>
               <div class="mt-3 flex items-baseline gap-2">
-                <span class="text-3xl sm:text-4xl font-black font-mono tracking-tight text-rose-600">${openCount}</span>
-                <span class="text-xs font-mono font-bold text-rose-700">(${openPercentage}%)</span>
+                <span class="text-4xl sm:text-5xl font-black font-mono tracking-tight text-rose-600 kpi-metric-val">${openCount}</span>
+                <span class="text-sm font-mono font-bold text-rose-700">(${openPercentage}%)</span>
               </div>
-              <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+              <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs sm:text-sm">
                 <span class="text-slate-500 font-medium">Click to inspect</span>
-                <span class="px-2 py-0.5 rounded text-[11px] font-bold font-mono bg-rose-50 text-rose-700 border border-rose-200">
+                <span class="px-2.5 py-0.5 rounded text-xs font-bold font-mono bg-rose-50 text-rose-700 border border-rose-200">
                   ${openPercentage}% Active
                 </span>
               </div>
@@ -444,19 +444,19 @@
               class="bg-white border border-slate-200 hover:border-emerald-300 rounded-2xl p-5 shadow-xs hover:shadow-md transition-all cursor-pointer relative overflow-hidden group ${s.statusFilter === 'Close' ? 'ring-2 ring-emerald-500 bg-emerald-50/20' : ''}"
             >
               <div class="absolute top-0 left-0 right-0 h-1.5 bg-emerald-500"></div>
-              <div class="flex items-center justify-between text-emerald-700 text-xs font-bold tracking-wider uppercase">
+              <div class="flex items-center justify-between text-emerald-700 text-xs sm:text-sm font-bold tracking-wider uppercase">
                 <span>3. CLOSED FINDINGS</span>
                 <span class="p-1.5 rounded-lg bg-emerald-50 text-emerald-600 group-hover:bg-emerald-100 transition-colors">
                   <i data-lucide="check-circle" class="w-4 h-4"></i>
                 </span>
               </div>
               <div class="mt-3 flex items-baseline gap-2">
-                <span class="text-3xl sm:text-4xl font-black font-mono tracking-tight text-emerald-600">${closedCount}</span>
-                <span class="text-xs font-mono font-bold text-emerald-700">(${closurePercentage}%)</span>
+                <span class="text-4xl sm:text-5xl font-black font-mono tracking-tight text-emerald-600 kpi-metric-val">${closedCount}</span>
+                <span class="text-sm font-mono font-bold text-emerald-700">(${closurePercentage}%)</span>
               </div>
-              <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+              <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs sm:text-sm">
                 <span class="text-slate-500 font-medium">Click to inspect</span>
-                <span class="px-2 py-0.5 rounded text-[11px] font-bold font-mono bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <span class="px-2.5 py-0.5 rounded text-xs font-bold font-mono bg-emerald-50 text-emerald-700 border border-emerald-200">
                   ${closurePercentage}% Completed
                 </span>
               </div>
@@ -465,22 +465,22 @@
             <!-- Card 4: % Closure -->
             <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs relative overflow-hidden">
               <div class="absolute top-0 left-0 right-0 h-1.5 bg-teal-500"></div>
-              <div class="flex items-center justify-between text-teal-700 text-xs font-bold tracking-wider uppercase">
+              <div class="flex items-center justify-between text-teal-700 text-xs sm:text-sm font-bold tracking-wider uppercase">
                 <span>4. % CLOSURE</span>
                 <span class="p-1.5 rounded-lg bg-teal-50 text-teal-600">
                   <i data-lucide="trending-up" class="w-4 h-4"></i>
                 </span>
               </div>
               <div class="mt-3 flex items-baseline gap-2">
-                <span class="text-3xl sm:text-4xl font-black font-mono tracking-tight text-teal-600">${closurePercentage}%</span>
+                <span class="text-4xl sm:text-5xl font-black font-mono tracking-tight text-teal-600 kpi-metric-val">${closurePercentage}%</span>
               </div>
-              <div class="mt-4 pt-3 border-t border-slate-100 flex flex-col gap-1.5 text-xs">
-                <div class="flex items-center justify-between text-slate-500 text-[11px]">
+              <div class="mt-4 pt-3 border-t border-slate-100 flex flex-col gap-1.5 text-xs sm:text-sm">
+                <div class="flex items-center justify-between text-slate-600 text-xs font-semibold">
                   <span>Audit Resolution</span>
-                  <span class="font-mono font-bold text-slate-700">${closedCount} / ${totalFiltered}</span>
+                  <span class="font-mono font-bold text-slate-800">${closedCount} / ${totalFiltered}</span>
                 </div>
-                <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden flex">
-                  <div class="bg-teal-500 h-2 rounded-full transition-all duration-500" style="width: ${closurePercentage}%;"></div>
+                <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden flex">
+                  <div class="bg-teal-500 h-2.5 rounded-full transition-all duration-500" style="width: ${closurePercentage}%;"></div>
                 </div>
               </div>
             </div>

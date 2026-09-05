@@ -34,7 +34,10 @@
       activeTab: 'incidents', // 'incidents' or 'recommendations'
       recChartMode: 'stacked', // 'stacked', 'side-by-side', 'trend'
       selectedMachine: 'all',
+      selectedPriority: 'all',
       selectedDept: 'all',
+      selectedYear: 'all',
+      selectedEntity: 'all',
       selectedStatus: 'all',
       searchQuery: '',
       page: 1,
@@ -99,27 +102,297 @@
   }
 
   /**
+   * Filtered PLR Incidents dataset based on the active image filters
+   */
+  function getFilteredPlrData() {
+    const data = getPlrData();
+    const s = getPlrState();
+    const recsMap = getRecsMapByPlr();
+
+    return data.filter(item => {
+      // Machine filter (COL G)
+      if (s.selectedMachine && s.selectedMachine !== 'all') {
+        const itemMachine = String(item.machine || '').toLowerCase();
+        const targetMachine = s.selectedMachine.toLowerCase();
+        if (targetMachine === 'other equipment') {
+          if (['stg # 4', 'stg # 3', 'stg # 1', 'stg # 2', 'cfb-1', 'cfb-2'].some(m => itemMachine.includes(m))) {
+            return false;
+          }
+        } else if (!itemMachine.includes(targetMachine)) {
+          return false;
+        }
+      }
+
+      // Priority filter (COL H)
+      if (s.selectedPriority && s.selectedPriority !== 'all') {
+        if (String(item.priority || '').toLowerCase() !== s.selectedPriority.toLowerCase()) {
+          return false;
+        }
+      }
+
+      // Resp Dept filter (COL I)
+      if (s.selectedDept && s.selectedDept !== 'all') {
+        if (String(item.dept || '').toLowerCase() !== s.selectedDept.toLowerCase()) {
+          return false;
+        }
+      }
+
+      // Year filter
+      if (s.selectedYear && s.selectedYear !== 'all') {
+        if (String(item.year || '') !== String(s.selectedYear)) {
+          return false;
+        }
+      }
+
+      // Action Entity filter (checks linked recommendations or incident dept)
+      if (s.selectedEntity && s.selectedEntity !== 'all') {
+        const linkedRecs = recsMap.get(String(item.plrNo || '').toUpperCase()) || [];
+        const hasEntity = linkedRecs.some(r => String(r.actionBy || '').toLowerCase() === s.selectedEntity.toLowerCase()) ||
+          String(item.dept || '').toLowerCase() === s.selectedEntity.toLowerCase();
+        if (!hasEntity) return false;
+      }
+
+      // Status filter (COL F)
+      if (s.selectedStatus && s.selectedStatus !== 'all') {
+        if (String(item.status || '').toLowerCase() !== s.selectedStatus.toLowerCase()) {
+          return false;
+        }
+      }
+
+      // Search Query
+      if (s.searchQuery && s.searchQuery.trim()) {
+        const q = s.searchQuery.toLowerCase().trim();
+        const match =
+          String(item.plrNo || '').toLowerCase().includes(q) ||
+          String(item.incident || '').toLowerCase().includes(q) ||
+          String(item.machine || '').toLowerCase().includes(q) ||
+          String(item.dept || '').toLowerCase().includes(q) ||
+          String(item.priority || '').toLowerCase().includes(q);
+        if (!match) return false;
+      }
+
+      return true;
+    });
+  }
+
+  /**
+   * Filtered PLR Recommendations dataset based on the active image filters
+   */
+  function getFilteredPlrRecs() {
+    const raw = getPlrRecs();
+    const plrsMap = getPlrsMap();
+    const s = getPlrState();
+
+    return raw.filter(item => {
+      const parentPlr = plrsMap.get(String(item.plrNo || '').toUpperCase());
+
+      // Entity filter (checks actionBy)
+      const targetEntity = s.selectedEntity !== 'all' ? s.selectedEntity : (s.recSelectedEntity !== 'all' ? s.recSelectedEntity : null);
+      if (targetEntity) {
+        if (String(item.actionBy || '').toLowerCase() !== targetEntity.toLowerCase()) {
+          return false;
+        }
+      }
+
+      // Year filter
+      if (s.selectedYear && s.selectedYear !== 'all') {
+        const itemYear = item.year || (parentPlr ? parentPlr.year : null);
+        if (String(itemYear || '') !== String(s.selectedYear)) {
+          return false;
+        }
+      }
+
+      // Machine filter via parent PLR
+      if (s.selectedMachine && s.selectedMachine !== 'all') {
+        if (!parentPlr) return false;
+        const pMachine = String(parentPlr.machine || '').toLowerCase();
+        const tMachine = s.selectedMachine.toLowerCase();
+        if (tMachine === 'other equipment') {
+          if (['stg # 4', 'stg # 3', 'stg # 1', 'stg # 2', 'cfb-1', 'cfb-2'].some(m => pMachine.includes(m))) {
+            return false;
+          }
+        } else if (!pMachine.includes(tMachine)) {
+          return false;
+        }
+      }
+
+      // Priority filter via parent PLR
+      if (s.selectedPriority && s.selectedPriority !== 'all') {
+        if (!parentPlr || String(parentPlr.priority || '').toLowerCase() !== s.selectedPriority.toLowerCase()) {
+          return false;
+        }
+      }
+
+      // Dept filter
+      if (s.selectedDept && s.selectedDept !== 'all') {
+        const itemDept = String(item.actionBy || '').toLowerCase();
+        const pDept = parentPlr ? String(parentPlr.dept || '').toLowerCase() : '';
+        if (itemDept !== s.selectedDept.toLowerCase() && pDept !== s.selectedDept.toLowerCase()) {
+          return false;
+        }
+      }
+
+      // Status filter
+      const targetStatus = s.selectedStatus !== 'all' ? s.selectedStatus : (s.recSelectedStatus !== 'all' ? s.recSelectedStatus : null);
+      if (targetStatus) {
+        if (String(item.status || '').toLowerCase() !== targetStatus.toLowerCase()) {
+          return false;
+        }
+      }
+
+      // Search Query
+      const q = (s.recSearchQuery || '').toLowerCase().trim();
+      if (q) {
+        const match =
+          String(item.plrNo || '').toLowerCase().includes(q) ||
+          String(item.recommendation || '').toLowerCase().includes(q) ||
+          String(item.actionBy || '').toLowerCase().includes(q) ||
+          String(item.status || '').toLowerCase().includes(q);
+        if (!match) return false;
+      }
+
+      return true;
+    });
+  }
+
+  // Helper: Dynamically extract all unique Action Entities from Google Sheet tab Recommendations (Column F: actionBy)
+  function getDistinctActionEntities() {
+    const recs = getPlrRecs();
+    const counts = {};
+    recs.forEach(r => {
+      const val = (r.actionBy || '').trim();
+      if (val) {
+        counts[val] = (counts[val] || 0) + 1;
+      }
+    });
+    // Sort descending by frequency, then alphabetically
+    return Object.keys(counts)
+      .sort((a, b) => counts[b] - counts[a] || a.localeCompare(b))
+      .map(name => ({ name, count: counts[name] }));
+  }
+
+  // Helper: Render complete <option> list for Action Entity dropdowns
+  function renderActionEntitySelectOptions(selectedVal) {
+    const entities = getDistinctActionEntities();
+    const total = getPlrRecs().length;
+    let html = `<option value="all" ${selectedVal === 'all' ? 'selected' : ''}>All Entities (${total} Recs)</option>`;
+    entities.forEach(e => {
+      const isSel = String(selectedVal || '').toLowerCase() === e.name.toLowerCase();
+      const escaped = e.name.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      html += `<option value="${escaped}" ${isSel ? 'selected' : ''}>${escaped} (${e.count} items)</option>`;
+    });
+    return html;
+  }
+
+  // Helper: Dynamically generate entity analytics breakdown for chips and bento cards
+  function getEntityAnalyticsList() {
+    const recs = getPlrRecs();
+    const map = new Map();
+    recs.forEach(r => {
+      const val = (r.actionBy || '').trim() || 'Unassigned';
+      if (!map.has(val)) {
+        map.set(val, { name: val, items: 0, open: 0, closed: 0 });
+      }
+      const item = map.get(val);
+      item.items++;
+      if ((r.status || '').toLowerCase() === 'open') {
+        item.open++;
+      } else {
+        item.closed++;
+      }
+    });
+    return Array.from(map.values()).sort((a, b) => b.items - a.items || a.name.localeCompare(b.name));
+  }
+
+  // Filter Event Handlers matching attached image
+  portalApp.handlePlrMachineChange = function (val) {
+    const s = getPlrState();
+    s.selectedMachine = val;
+    s.page = 1;
+    s.recPage = 1;
+    portalApp.renderPlrSuite();
+  };
+
+  portalApp.handlePlrPriorityChange = function (val) {
+    const s = getPlrState();
+    s.selectedPriority = val;
+    s.page = 1;
+    s.recPage = 1;
+    portalApp.renderPlrSuite();
+  };
+
+  portalApp.handlePlrDeptChange = function (val) {
+    const s = getPlrState();
+    s.selectedDept = val;
+    s.page = 1;
+    s.recPage = 1;
+    portalApp.renderPlrSuite();
+  };
+
+  portalApp.handlePlrYearChange = function (val) {
+    const s = getPlrState();
+    s.selectedYear = val;
+    s.page = 1;
+    s.recPage = 1;
+    portalApp.renderPlrSuite();
+  };
+
+  portalApp.handlePlrEntityChange = function (val) {
+    const s = getPlrState();
+    s.selectedEntity = val;
+    s.recSelectedEntity = val;
+    s.page = 1;
+    s.recPage = 1;
+    portalApp.renderPlrSuite();
+  };
+
+  portalApp.resetAllPlrImageFilters = function () {
+    const s = getPlrState();
+    s.selectedMachine = 'all';
+    s.selectedPriority = 'all';
+    s.selectedDept = 'all';
+    s.selectedYear = 'all';
+    s.selectedEntity = 'all';
+    s.recSelectedEntity = 'all';
+    s.selectedStatus = 'all';
+    s.recSelectedStatus = 'all';
+    s.searchQuery = '';
+    s.recSearchQuery = '';
+    s.page = 1;
+    s.recPage = 1;
+    portalApp.renderPlrSuite();
+  };
+
+  /**
    * Main Render Method for the PLR specialized container
    */
   portalApp.renderPlrSuite = function () {
     const container = document.getElementById('plr-specialized-container');
     if (!container) return;
 
-    const data = getPlrData();
-    const recs = getPlrRecs();
+    const data = getFilteredPlrData();
+    const recs = getFilteredPlrRecs();
     const s = getPlrState();
 
-    // High Level Core Metrics:
-    // Total PLRs (233), Open PLRs (27), Total Recommendations (451), Open recommendations (31)
-    const totalPLRs = data.length || 233;
-    const openPLRs = data.filter(d => (d.status || '').toLowerCase() === 'open').length || 27;
-    const closedPLRs = totalPLRs - openPLRs; // 206
-    const plrClosureRate = ((closedPLRs / totalPLRs) * 100).toFixed(0); // 88%
+    // High Level Core Metrics calculated dynamically from active filters
+    const totalPLRs = data.length;
+    const openPLRs = data.filter(d => (d.status || '').toLowerCase() === 'open').length;
+    const closedPLRs = totalPLRs - openPLRs;
+    const plrClosureRate = totalPLRs > 0 ? ((closedPLRs / totalPLRs) * 100).toFixed(0) : 0;
 
-    const totalRecs = recs.length || 451;
-    const openRecs = recs.filter(r => (r.status || '').toLowerCase() === 'open').length || 31;
-    const closedRecs = totalRecs - openRecs; // 420
-    const recClosureRate = ((closedRecs / totalRecs) * 100).toFixed(0); // 93%
+    const totalRecs = recs.length;
+    const openRecs = recs.filter(r => (r.status || '').toLowerCase() === 'open').length;
+    const closedRecs = totalRecs - openRecs;
+    const recClosureRate = totalRecs > 0 ? ((closedRecs / totalRecs) * 100).toFixed(0) : 0;
+
+    const activeFilterCount = [
+      s.selectedMachine !== 'all',
+      s.selectedPriority !== 'all',
+      s.selectedDept !== 'all',
+      s.selectedYear !== 'all',
+      s.selectedEntity !== 'all'
+    ].filter(Boolean).length;
+    const hasActiveFilters = activeFilterCount > 0;
 
     container.innerHTML = `
       <div class="space-y-6 text-slate-800 font-sans antialiased">
@@ -149,7 +422,7 @@
           </div>
           <div class="flex items-center gap-2 shrink-0">
             <button
-              onclick="portalApp.resetPlrFilters()"
+              onclick="portalApp.resetAllPlrImageFilters()"
               class="px-3.5 py-2 rounded-xl text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
               title="Reset all filters across both tabs"
             >
@@ -167,24 +440,177 @@
         </div>
 
         <!-- ========================================================================= -->
-        <!-- 2. EXECUTIVE KPI CARDS: Total PLRs, Open PLRs, Total Recs, Open Recs      -->
+        <!-- 2. EXECUTIVE FILTER SUITE (ATTACHED IMAGE FILTER CONTROLS)                 -->
+        <!-- ========================================================================= -->
+        <div class="rounded-2xl p-4 sm:p-5 shadow-lg border relative overflow-hidden" style="background: linear-gradient(135deg, #091a32 0%, #0c2340 100%); border-color: #1e3a5f;">
+          <!-- Subtle ambient backdrop lighting -->
+          <div class="absolute -right-20 -top-20 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
+          <div class="absolute -left-20 -bottom-20 w-64 h-64 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+          <!-- Top Filter Header / Status Row -->
+          <div class="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3.5 mb-3.5 border-b border-[#1e3e66]">
+            <div class="flex items-center gap-2.5">
+              <span class="p-1.5 rounded-lg bg-cyan-500/20 text-cyan-300 border border-cyan-400/30">
+                <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+              </span>
+              <div>
+                <h4 class="text-xs sm:text-sm font-black text-white uppercase tracking-wider font-mono flex items-center gap-2">
+                  <span>Executive Filter Controls</span>
+                  <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-900/60 text-cyan-300 border border-cyan-500/30">
+                    PLR Dynamic Slicers
+                  </span>
+                </h4>
+                <p class="text-[11px] text-slate-300 font-medium">
+                  Direct cross-sheet filtering across Machine, Priority, Resp Dept, Year &amp; Action Entity
+                </p>
+              </div>
+            </div>
+            
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-mono font-bold text-cyan-300 px-3 py-1 rounded-lg bg-[#0d2747] border border-[#1e4470] shadow-inner">
+                ${hasActiveFilters ? `${activeFilterCount} Active Filters (${totalPLRs} PLRs • ${totalRecs} Recs)` : `All Combined (${totalPLRs} PLRs • ${totalRecs} Recs)`}
+              </span>
+            </div>
+          </div>
+
+          <!-- The 5 Dropdown Filters + Reset Button Grid (Matching Attached Image) -->
+          <div class="relative z-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5 items-end">
+            
+            <!-- Filter 1: MACHINE (COL G) -->
+            <div class="space-y-1.5">
+              <div class="flex items-center gap-1.5 text-[11px] font-mono font-black text-cyan-300 uppercase tracking-wider">
+                <i data-lucide="cpu" class="w-3.5 h-3.5 text-cyan-400"></i>
+                <span>MACHINE (COL G)</span>
+              </div>
+              <select
+                onchange="portalApp.handlePlrMachineChange(this.value)"
+                class="w-full text-xs font-semibold px-3 py-2 rounded-xl border border-[#1e3e66] bg-[#0c2138] text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 cursor-pointer shadow-inner"
+              >
+                <option value="all" ${s.selectedMachine === 'all' ? 'selected' : ''}>All Machines (233)</option>
+                <option value="STG # 4" ${s.selectedMachine === 'STG # 4' ? 'selected' : ''}>STG # 4 (155 Outages)</option>
+                <option value="STG # 3" ${s.selectedMachine === 'STG # 3' ? 'selected' : ''}>STG # 3 (17 Outages)</option>
+                <option value="STG # 1" ${s.selectedMachine === 'STG # 1' ? 'selected' : ''}>STG # 1 (13 Outages)</option>
+                <option value="STG # 2" ${s.selectedMachine === 'STG # 2' ? 'selected' : ''}>STG # 2 (12 Outages)</option>
+                <option value="CFB-1" ${s.selectedMachine === 'CFB-1' ? 'selected' : ''}>CFB-1 (10 Outages)</option>
+                <option value="CFB-2" ${s.selectedMachine === 'CFB-2' ? 'selected' : ''}>CFB-2 (8 Outages)</option>
+                <option value="Auxiliary" ${s.selectedMachine === 'Auxiliary' ? 'selected' : ''}>Auxiliary</option>
+                <option value="Other Equipment" ${s.selectedMachine === 'Other Equipment' ? 'selected' : ''}>Other Equipment (18)</option>
+              </select>
+            </div>
+
+            <!-- Filter 2: PRIORITY (COL H) -->
+            <div class="space-y-1.5">
+              <div class="flex items-center gap-1.5 text-[11px] font-mono font-black text-rose-300 uppercase tracking-wider">
+                <i data-lucide="shield-alert" class="w-3.5 h-3.5 text-rose-400"></i>
+                <span>PRIORITY (COL H)</span>
+              </div>
+              <select
+                onchange="portalApp.handlePlrPriorityChange(this.value)"
+                class="w-full text-xs font-semibold px-3 py-2 rounded-xl border border-[#1e3e66] bg-[#0c2138] text-white focus:outline-none focus:border-rose-400 focus:ring-1 focus:ring-rose-400 cursor-pointer shadow-inner"
+              >
+                <option value="all" ${s.selectedPriority === 'all' ? 'selected' : ''}>All Priorities</option>
+                <option value="Critical" ${s.selectedPriority === 'Critical' ? 'selected' : ''}>Critical Priority</option>
+                <option value="High" ${s.selectedPriority === 'High' ? 'selected' : ''}>High Priority</option>
+                <option value="Medium" ${s.selectedPriority === 'Medium' ? 'selected' : ''}>Medium Priority</option>
+                <option value="Low" ${s.selectedPriority === 'Low' ? 'selected' : ''}>Low Priority</option>
+              </select>
+            </div>
+
+            <!-- Filter 3: RESP DEPT (COL I) -->
+            <div class="space-y-1.5">
+              <div class="flex items-center gap-1.5 text-[11px] font-mono font-black text-amber-300 uppercase tracking-wider">
+                <i data-lucide="briefcase" class="w-3.5 h-3.5 text-amber-400"></i>
+                <span>RESP DEPT (COL I)</span>
+              </div>
+              <select
+                onchange="portalApp.handlePlrDeptChange(this.value)"
+                class="w-full text-xs font-semibold px-3 py-2 rounded-xl border border-[#1e3e66] bg-[#0c2138] text-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 cursor-pointer shadow-inner"
+              >
+                <option value="all" ${s.selectedDept === 'all' ? 'selected' : ''}>All Resp Depts</option>
+                <option value="KE" ${s.selectedDept === 'KE' ? 'selected' : ''}>KE</option>
+                <option value="Mechanical" ${s.selectedDept === 'Mechanical' ? 'selected' : ''}>Mechanical</option>
+                <option value="E&I" ${s.selectedDept === 'E&I' ? 'selected' : ''}>E&amp;I</option>
+                <option value="OPS-PSG" ${s.selectedDept === 'OPS-PSG' ? 'selected' : ''}>OPS-PSG</option>
+                <option value="Finance" ${s.selectedDept === 'Finance' ? 'selected' : ''}>Finance</option>
+                <option value="Planning" ${s.selectedDept === 'Planning' ? 'selected' : ''}>Planning</option>
+                <option value="HSE" ${s.selectedDept === 'HSE' ? 'selected' : ''}>HSE</option>
+              </select>
+            </div>
+
+            <!-- Filter 4: YEAR FILTER -->
+            <div class="space-y-1.5">
+              <div class="flex items-center gap-1.5 text-[11px] font-mono font-black text-indigo-300 uppercase tracking-wider">
+                <i data-lucide="calendar" class="w-3.5 h-3.5 text-indigo-400"></i>
+                <span>YEAR FILTER</span>
+              </div>
+              <select
+                onchange="portalApp.handlePlrYearChange(this.value)"
+                class="w-full text-xs font-semibold px-3 py-2 rounded-xl border border-[#1e3e66] bg-[#0c2138] text-white focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 cursor-pointer shadow-inner"
+              >
+                <option value="all" ${s.selectedYear === 'all' ? 'selected' : ''}>All Combined (2017–2025)</option>
+                <option value="2025" ${s.selectedYear === '2025' ? 'selected' : ''}>2025</option>
+                <option value="2024" ${s.selectedYear === '2024' ? 'selected' : ''}>2024</option>
+                <option value="2023" ${s.selectedYear === '2023' ? 'selected' : ''}>2023</option>
+                <option value="2022" ${s.selectedYear === '2022' ? 'selected' : ''}>2022</option>
+                <option value="2021" ${s.selectedYear === '2021' ? 'selected' : ''}>2021</option>
+                <option value="2020" ${s.selectedYear === '2020' ? 'selected' : ''}>2020</option>
+                <option value="2019" ${s.selectedYear === '2019' ? 'selected' : ''}>2019</option>
+                <option value="2018" ${s.selectedYear === '2018' ? 'selected' : ''}>2018</option>
+                <option value="2017" ${s.selectedYear === '2017' ? 'selected' : ''}>2017</option>
+              </select>
+            </div>
+
+            <!-- Filter 5: ACTION ENTITY -->
+            <div class="space-y-1.5">
+              <div class="flex items-center gap-1.5 text-[11px] font-mono font-black text-emerald-300 uppercase tracking-wider">
+                <i data-lucide="building-2" class="w-3.5 h-3.5 text-emerald-400"></i>
+                <span>ACTION ENTITY</span>
+              </div>
+              <select
+                onchange="portalApp.handlePlrEntityChange(this.value)"
+                class="w-full text-xs font-semibold px-3 py-2 rounded-xl border border-[#1e3e66] bg-[#0c2138] text-white focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 cursor-pointer shadow-inner"
+              >
+                ${renderActionEntitySelectOptions(s.selectedEntity)}
+              </select>
+            </div>
+
+            <!-- Filter 6: Reset All Button -->
+            <div class="space-y-1.5">
+              <div class="text-[11px] font-mono font-black text-slate-400 uppercase tracking-wider invisible">
+                <span>ACTION</span>
+              </div>
+              <button
+                onclick="portalApp.resetAllPlrImageFilters()"
+                class="w-full flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl text-xs font-black text-white bg-[#132e4f] hover:bg-[#1a3d68] border border-[#254b77] hover:border-cyan-400 transition-all shadow-sm cursor-pointer"
+                title="Reset all filters back to default"
+              >
+                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5 text-cyan-300"></i>
+                <span>Reset All</span>
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- 3. EXECUTIVE KPI CARDS: Total PLRs, Open PLRs, Total Recs, Open Recs      -->
         <!-- ========================================================================= -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
           
           <!-- Card 1: TOTAL PLRs -->
           <div class="bg-white border border-slate-200 hover:border-blue-300 rounded-2xl p-4 sm:p-5 shadow-sm relative overflow-hidden group transition-all">
-            <div class="flex items-center justify-between text-slate-500 text-xs font-bold uppercase tracking-wider">
+            <div class="flex items-center justify-between text-slate-500 text-xs sm:text-sm font-bold uppercase tracking-wider">
               <span>Total PLRs</span>
               <span class="p-1.5 rounded-lg bg-blue-50 text-[#2E6DA4] border border-blue-100">
                 <i data-lucide="file-text" class="w-4 h-4"></i>
               </span>
             </div>
             <div class="mt-3 mb-1.5 flex items-baseline gap-2">
-              <span class="text-3xl sm:text-4xl font-black font-mono text-slate-900 tracking-tight">${totalPLRs}</span>
-              <span class="text-xs font-bold text-[#2E6DA4] font-mono">100%</span>
+              <span class="text-5xl sm:text-6xl font-black font-mono text-slate-900 tracking-tight kpi-metric-val">${totalPLRs}</span>
+              <span class="text-xs sm:text-sm font-bold text-[#2E6DA4] font-mono">100%</span>
             </div>
-            <div class="flex items-center justify-between text-xs text-slate-500 mt-2">
-              <span>Historical Baseline (2017–2025)</span>
+            <div class="flex items-center justify-between text-xs sm:text-sm text-slate-500 mt-2">
+              <span>Historical Scope (2017–2025)</span>
               <span class="font-bold text-emerald-700 font-mono">${closedPLRs} Closed (${plrClosureRate}%)</span>
             </div>
           </div>
@@ -195,19 +621,19 @@
             class="bg-white border border-rose-200 hover:border-rose-400 rounded-2xl p-4 sm:p-5 shadow-sm relative overflow-hidden group transition-all cursor-pointer"
             title="Click to view all Open PLRs in table"
           >
-            <div class="flex items-center justify-between text-slate-500 text-xs font-bold uppercase tracking-wider">
+            <div class="flex items-center justify-between text-slate-500 text-xs sm:text-sm font-bold uppercase tracking-wider">
               <span>Open PLRs</span>
               <span class="p-1.5 rounded-lg bg-rose-50 text-rose-600 border border-rose-200">
                 <i data-lucide="alert-circle" class="w-4 h-4"></i>
               </span>
             </div>
             <div class="mt-3 mb-1.5 flex items-baseline gap-2">
-              <span class="text-3xl sm:text-4xl font-black font-mono text-rose-600 tracking-tight">${openPLRs}</span>
-              <span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
-                12% of Total
+              <span class="text-5xl sm:text-6xl font-black font-mono text-rose-600 tracking-tight kpi-metric-val">${openPLRs}</span>
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                ${totalPLRs > 0 ? ((openPLRs / totalPLRs) * 100).toFixed(0) : 0}% of Total
               </span>
             </div>
-            <div class="flex items-center justify-between text-xs text-slate-500 mt-2">
+            <div class="flex items-center justify-between text-xs sm:text-sm text-slate-500 mt-2">
               <span>Under Active Investigation</span>
               <span class="font-bold text-rose-600 hover:underline flex items-center gap-1">Inspect &gt;</span>
             </div>
@@ -219,17 +645,17 @@
             class="bg-white border border-slate-200 hover:border-blue-300 rounded-2xl p-4 sm:p-5 shadow-sm relative overflow-hidden group transition-all cursor-pointer"
             title="Click to view Recommendations Tab"
           >
-            <div class="flex items-center justify-between text-slate-500 text-xs font-bold uppercase tracking-wider">
+            <div class="flex items-center justify-between text-slate-500 text-xs sm:text-sm font-bold uppercase tracking-wider">
               <span>Total Recommendations</span>
               <span class="p-1.5 rounded-lg bg-sky-50 text-sky-600 border border-sky-100">
                 <i data-lucide="layers" class="w-4 h-4"></i>
               </span>
             </div>
             <div class="mt-3 mb-1.5 flex items-baseline gap-2">
-              <span class="text-3xl sm:text-4xl font-black font-mono text-slate-900 tracking-tight">${totalRecs}</span>
-              <span class="text-xs font-bold text-[#2E6DA4] font-mono">16+ Entities</span>
+              <span class="text-5xl sm:text-6xl font-black font-mono text-slate-900 tracking-tight kpi-metric-val">${totalRecs}</span>
+              <span class="text-xs sm:text-sm font-bold text-[#2E6DA4] font-mono">16+ Entities</span>
             </div>
-            <div class="flex items-center justify-between text-xs text-slate-500 mt-2">
+            <div class="flex items-center justify-between text-xs sm:text-sm text-slate-500 mt-2">
               <span>${closedRecs} Closed (${recClosureRate}%)</span>
               <span class="font-bold text-[#2E6DA4] hover:underline flex items-center gap-1">View Tab &gt;</span>
             </div>
@@ -241,20 +667,20 @@
             class="bg-white border border-amber-200 hover:border-amber-400 rounded-2xl p-4 sm:p-5 shadow-sm relative overflow-hidden group transition-all cursor-pointer"
             title="Click to view Open Recommendations"
           >
-            <div class="flex items-center justify-between text-slate-500 text-xs font-bold uppercase tracking-wider">
+            <div class="flex items-center justify-between text-slate-500 text-xs sm:text-sm font-bold uppercase tracking-wider">
               <span>Open Recommendations</span>
               <span class="p-1.5 rounded-lg bg-amber-50 text-amber-600 border border-amber-200">
                 <i data-lucide="clock" class="w-4 h-4"></i>
               </span>
             </div>
             <div class="mt-3 mb-1.5 flex items-baseline gap-2">
-              <span class="text-3xl sm:text-4xl font-black font-mono text-amber-600 tracking-tight">${openRecs}</span>
-              <span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
-                7% Open Obs
+              <span class="text-5xl sm:text-6xl font-black font-mono text-amber-600 tracking-tight kpi-metric-val">${openRecs}</span>
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                ${totalRecs > 0 ? ((openRecs / totalRecs) * 100).toFixed(0) : 0}% Open Obs
               </span>
             </div>
-            <div class="flex items-center justify-between text-xs text-slate-500 mt-2">
-              <span>15 E&amp;I • 13 Fin/KE • 2 Mech • 1 Plan</span>
+            <div class="flex items-center justify-between text-xs sm:text-sm text-slate-500 mt-2">
+              <span>Active Corrective Actions</span>
               <span class="font-bold text-amber-700 hover:underline flex items-center gap-1">Inspect &gt;</span>
             </div>
           </div>
@@ -292,15 +718,15 @@
                   </div>
                   <div>
                     <div class="flex items-center gap-2 flex-wrap">
-                      <h4 class="text-xs sm:text-sm font-black text-slate-900 uppercase tracking-wider">Incident Breakdown by Machine</h4>
-                      <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-100 text-slate-700 border border-slate-200">
-                        COL B &amp; COL G
+                      <h4 class="text-xs sm:text-sm font-extrabold text-slate-900 tracking-wide uppercase">Incident Breakdown by Machine</h4>
+                      <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-slate-100 text-slate-600 border border-slate-200">
+                        Columns B &amp; G
                       </span>
                     </div>
-                    <p class="text-[11px] text-slate-500 mt-0.5">Outages across STG units, Boilers &amp; Equipment</p>
+                    <p class="text-[11px] text-slate-500 mt-0.5">Outages across STG units, Boilers &amp; Auxiliary Equipment</p>
                   </div>
                 </div>
-                <span class="px-3 py-1 rounded-full text-xs font-mono font-black bg-blue-50 text-[#2E6DA4] border border-blue-200 shrink-0">
+                <span class="px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-[#1e40af] border border-blue-200 shrink-0">
                   233 Outages
                 </span>
               </div>
@@ -312,7 +738,10 @@
 
               <!-- Quick Select Buttons (Non-scrollable, fully visible covering page area) -->
               <div class="pt-3 border-t border-slate-100">
-                <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">QUICK SELECT MACHINE:</div>
+                <div class="flex items-center justify-between text-xs font-bold text-slate-600 mb-2">
+                  <span>Filter by Asset / Machine:</span>
+                  <span class="text-[11px] font-normal text-slate-400">Click to isolate records</span>
+                </div>
                 <div class="flex flex-wrap items-center gap-2" id="plr-machine-quick-select">
                   <!-- Rendered dynamically -->
                 </div>
@@ -323,24 +752,24 @@
             <div class="lg:col-span-6 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col justify-between space-y-4">
               <div class="flex items-start justify-between gap-2">
                 <div class="flex items-center gap-3">
-                  <div class="w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                  <div class="w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-100 text-[#047857] flex items-center justify-center shrink-0">
                     <i data-lucide="pie-chart" class="w-5 h-5"></i>
                   </div>
                   <div>
                     <div class="flex items-center gap-2 flex-wrap">
-                      <h4 class="text-xs sm:text-sm font-black text-slate-900 uppercase tracking-wider">Overall Incident Resolution</h4>
-                      <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-100 text-slate-700 border border-slate-200">
-                        COL F STATUS
+                      <h4 class="text-xs sm:text-sm font-extrabold text-slate-900 tracking-wide uppercase">Overall Incident Resolution</h4>
+                      <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-slate-100 text-slate-600 border border-slate-200">
+                        Column F Status
                       </span>
                     </div>
                     <p class="text-[11px] text-slate-500 mt-0.5">Open (Action Pending) vs. Closed (Resolved)</p>
                   </div>
                 </div>
                 <div class="flex items-center gap-1.5 shrink-0">
-                  <span class="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                  <span class="px-2.5 py-1 rounded-full text-xs font-black bg-red-50 text-[#B91C1C] border border-red-200">
                     27 Open
                   </span>
-                  <span class="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  <span class="px-2.5 py-1 rounded-full text-xs font-black bg-emerald-50 text-[#047857] border border-emerald-200">
                     206 Closed
                   </span>
                 </div>
@@ -354,13 +783,13 @@
               <!-- Resolution Metrics & Quick Actions (Non-scrollable, fully visible covering page area) -->
               <div class="pt-3 border-t border-slate-100 space-y-3">
                 <div class="flex items-center justify-between text-xs">
-                  <span class="font-bold text-slate-700">Resolution Ratio: <strong class="text-emerald-700 font-mono">88% Closed (${closedPLRs}/${totalPLRs})</strong></span>
-                  <span class="text-xs text-slate-500 font-medium">Pending: <strong class="text-rose-600 font-mono">12% Open (${openPLRs})</strong></span>
+                  <span class="font-bold text-slate-700">Resolution Ratio: <strong class="text-[#047857] font-sans font-extrabold">88% Closed (${closedPLRs}/${totalPLRs})</strong></span>
+                  <span class="text-xs text-slate-500 font-medium">Pending: <strong class="text-[#B91C1C] font-sans font-extrabold">12% Open (${openPLRs})</strong></span>
                 </div>
-                <!-- Closure Progress Bar -->
-                <div class="w-full h-2 rounded-full bg-slate-100 overflow-hidden flex">
-                  <div class="h-full bg-[#10b981]" style="width: ${plrClosureRate}%;"></div>
-                  <div class="h-full bg-[#f43f5e]" style="width: ${100 - plrClosureRate}%;"></div>
+                <!-- Closure Progress Bar with Darker Corporate Tones -->
+                <div class="w-full h-2.5 rounded-full bg-slate-100 overflow-hidden flex">
+                  <div class="h-full bg-[#047857]" style="width: ${plrClosureRate}%;"></div>
+                  <div class="h-full bg-[#B91C1C]" style="width: ${100 - plrClosureRate}%;"></div>
                 </div>
                 <!-- Action Buttons Filter -->
                 <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
@@ -373,14 +802,14 @@
                     </button>
                     <button
                       onclick="portalApp.filterPlrByStatus('Closed')"
-                      class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer border ${s.selectedStatus === 'Closed' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-200'}"
+                      class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer border ${s.selectedStatus === 'Closed' ? 'bg-[#047857] text-white border-[#047857]' : 'bg-emerald-50 hover:bg-emerald-100 text-[#047857] border-emerald-200'}"
                     >
                       Closed (${closedPLRs})
                     </button>
                   </div>
                   <button
                     onclick="portalApp.filterPlrByStatus('Open')"
-                    class="px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 border ${s.selectedStatus === 'Open' ? 'bg-rose-600 text-white border-rose-600' : 'bg-rose-50 hover:bg-rose-100 text-rose-700 border-rose-200'}"
+                    class="px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 border shadow-xs ${s.selectedStatus === 'Open' ? 'bg-[#991B1B] text-white border-[#991B1B]' : 'bg-[#B91C1C] hover:bg-[#991B1B] text-white border-[#B91C1C]'}"
                   >
                     <i data-lucide="alert-circle" class="w-3.5 h-3.5"></i>
                     <span>Inspect 27 Open PLRs</span>
@@ -561,7 +990,7 @@
   };
 
   /**
-   * 1. Machine Breakdown Donut (Light Theme, crisp contrast)
+   * 1. Machine Breakdown Donut (Light Theme, crisp contrast & professional typography)
    */
   portalApp.renderMachineDonut = function () {
     const container = document.getElementById('plr-machine-donut-container');
@@ -570,13 +999,13 @@
 
     const s = getPlrState();
     const machines = [
-      { name: 'STG # 4', count: 155, pct: 67, color: '#2E6DA4' },
-      { name: 'STG # 3', count: 17, pct: 7, color: '#10b981' },
-      { name: 'STG # 1', count: 13, pct: 6, color: '#3b82f6' },
-      { name: 'STG # 2', count: 12, pct: 5, color: '#06b6d4' },
-      { name: 'CFB-1', count: 10, pct: 4, color: '#8b5cf6' },
-      { name: 'CFB-2', count: 8, pct: 3, color: '#f59e0b' },
-      { name: 'Other Equipment', count: 18, pct: 8, color: '#64748b' }
+      { name: 'STG # 4', count: 155, pct: 67, color: '#1e40af' },
+      { name: 'STG # 3', count: 17, pct: 7, color: '#047857' },
+      { name: 'STG # 1', count: 13, pct: 6, color: '#0284c7' },
+      { name: 'STG # 2', count: 12, pct: 5, color: '#0891b2' },
+      { name: 'CFB-1', count: 10, pct: 4, color: '#7c3aed' },
+      { name: 'CFB-2', count: 8, pct: 3, color: '#d97706' },
+      { name: 'Other Equipment', count: 18, pct: 8, color: '#475569' }
     ];
 
     const total = 233;
@@ -609,7 +1038,7 @@
           fill="none"
           stroke="${m.color}"
           stroke-width="${isSelected ? strokeWidth + 6 : strokeWidth}"
-          class="cursor-pointer transition-all duration-300 hover:opacity-80"
+          class="cursor-pointer transition-all duration-300 hover:opacity-85"
           onclick="portalApp.filterPlrByMachine('${m.name}')"
         >
           <title>${m.name}: ${m.count} Outages (${m.pct}%)</title>
@@ -617,17 +1046,29 @@
       `);
     });
 
-    const activeMachine = machines.find(m => m.name === s.selectedMachine) || { name: 'STG # 4 (Majority)', count: 155, pct: 67 };
+    const activeMachine = machines.find(m => m.name === s.selectedMachine) || { name: 'STG # 4', count: 155, pct: 67 };
+    const isSTG4 = activeMachine.name.includes('STG # 4');
 
     container.innerHTML = `
       <div class="relative w-[260px] h-[260px]">
         <svg viewBox="0 0 260 260" class="w-full h-full select-none">
+          <!-- Soft Background Track Ring -->
+          <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#f1f5f9" stroke-width="${strokeWidth}" />
           ${paths.join('')}
         </svg>
-        <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
-          <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">${activeMachine.name}</span>
-          <span class="text-3xl font-black font-mono text-slate-900 tracking-tight">${activeMachine.count}</span>
-          <span class="text-xs font-bold font-mono text-[#2E6DA4]">(${activeMachine.pct}% Outages)</span>
+        <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center px-4 font-sans">
+          <span class="text-xs font-extrabold text-slate-600 uppercase tracking-wider leading-tight font-sans">${activeMachine.name}</span>
+          ${isSTG4 ? `
+            <span class="inline-flex items-center text-[10px] font-bold text-[#1e40af] bg-blue-50/90 px-2 py-0.5 rounded-full border border-blue-200/80 mt-0.5 font-sans">
+              Primary Outage Driver
+            </span>
+          ` : `
+            <span class="inline-flex items-center text-[10px] font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200 mt-0.5 font-sans">
+              Equipment Unit
+            </span>
+          `}
+          <span class="text-4xl sm:text-[44px] font-black text-slate-900 tracking-tight leading-none my-1 font-sans">${activeMachine.count}</span>
+          <span class="text-xs font-bold text-slate-600 font-sans tracking-tight">${activeMachine.pct}% of Total Outages</span>
         </div>
       </div>
     `;
@@ -641,19 +1082,19 @@
             onclick="portalApp.filterPlrByMachine('${m.name}')"
             class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 border ${
               isSel
-                ? 'bg-[#2E6DA4] text-white border-[#2E6DA4] font-black shadow-xs'
+                ? 'bg-[#1e40af] text-white border-[#1e40af] font-black shadow-xs'
                 : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
             }"
           >
             <span class="w-2 h-2 rounded-full" style="background-color: ${m.color}"></span>
             <span>${m.name}</span>
-            <span class="font-mono text-[11px] opacity-80">(${m.count})</span>
+            <span class="font-sans font-semibold text-[11px] opacity-80">(${m.count})</span>
           </button>
         `;
       }).join('') + (s.selectedMachine !== 'all' ? `
         <button
           onclick="portalApp.filterPlrByMachine('all')"
-          class="px-2.5 py-1 rounded-lg text-xs font-bold text-[#2E6DA4] bg-white hover:bg-slate-50 border border-[#2E6DA4] cursor-pointer"
+          class="px-2.5 py-1 rounded-lg text-xs font-bold text-[#1e40af] bg-white hover:bg-slate-50 border border-[#1e40af] cursor-pointer"
         >
           Clear Selection
         </button>
@@ -837,7 +1278,7 @@
   };
 
   /**
-   * 3. Overall Incident Resolution Pie Chart (Light Theme, crisp contrast)
+   * 3. Overall Incident Resolution Pie Chart (Executive corporate styling, darker tones, large clear readable numbers)
    */
   portalApp.renderResolutionPie = function () {
     const container = document.getElementById('plr-resolution-pie-container');
@@ -847,7 +1288,7 @@
     const open = 27;    // 12%
     const total = closed + open; // 233
 
-    const r = 85;
+    const r = 96;
     const cx = 130;
     const cy = 130;
 
@@ -866,53 +1307,107 @@
     const dOpen = `M ${cx} ${cy} L ${x2} ${y2} A ${r} ${r} 0 0 1 ${x1} ${y1} Z`;
 
     // Midpoints for labels
+    // Closed slice (88%): midClosed points comfortably into the bottom-right quadrant
     const midClosed = startAngle + closedAngle / 2;
-    const lxClosed = cx + (r * 0.55) * Math.cos(midClosed);
-    const lyClosed = cy + (r * 0.55) * Math.sin(midClosed);
+    const lxClosed = cx + (r * 0.52) * Math.cos(midClosed);
+    const lyClosed = cy + (r * 0.52) * Math.sin(midClosed);
 
+    // Open slice (12%): midOpen points into the top-left quadrant
     const midOpen = endClosed + ((2 * Math.PI - closedAngle) / 2);
-    const lxOpen = cx + (r * 0.65) * Math.cos(midOpen);
-    const lyOpen = cy + (r * 0.65) * Math.sin(midOpen);
+    const lxOpen = cx + (r * 0.72) * Math.cos(midOpen);
+    const lyOpen = cy + (r * 0.72) * Math.sin(midOpen);
+
+    // Professional darker colors:
+    const darkClosedColor = '#047857'; // Deep dark corporate emerald
+    const darkOpenColor = '#B91C1C';   // Deep dark rich crimson
 
     container.innerHTML = `
       <div class="relative w-[260px] h-[260px]">
-        <svg viewBox="0 0 260 260" class="w-full h-full select-none">
-          <!-- Closed Slice -->
+        <svg viewBox="0 0 260 260" class="w-full h-full select-none filter drop-shadow-sm">
+          <defs>
+            <filter id="plrTextShadow" x="-20%" y="-20%" width="140%" height="140%">
+              <feDropShadow dx="0" dy="1" stdDeviation="1.5" flood-color="#000000" flood-opacity="0.45"/>
+            </filter>
+          </defs>
+
+          <!-- Closed Slice (Deep Dark Emerald) -->
           <path
             d="${dClosed}"
-            fill="#10b981"
-            class="cursor-pointer transition-all hover:opacity-90"
+            fill="${darkClosedColor}"
+            class="cursor-pointer transition-all hover:brightness-110"
             onclick="portalApp.filterPlrByStatus('Closed')"
           >
-            <title>Closed: ${closed} (88%)</title>
+            <title>Closed: ${closed} Outages (88%)</title>
           </path>
-          <!-- Open Slice -->
+
+          <!-- Open Slice (Deep Dark Crimson) -->
           <path
             d="${dOpen}"
-            fill="#f43f5e"
-            class="cursor-pointer transition-all hover:opacity-90"
+            fill="${darkOpenColor}"
+            class="cursor-pointer transition-all hover:brightness-110"
             onclick="portalApp.filterPlrByStatus('Open')"
           >
-            <title>Open: ${open} (12%)</title>
+            <title>Open: ${open} Outages (12%)</title>
           </path>
-          <!-- Slices Divider Line -->
+
+          <!-- Clean White Slices Divider Lines -->
           <line x1="${cx}" y1="${cy}" x2="${x1}" y2="${y1}" stroke="#ffffff" stroke-width="2.5"/>
           <line x1="${cx}" y1="${cy}" x2="${x2}" y2="${y2}" stroke="#ffffff" stroke-width="2.5"/>
           
-          <!-- Closed text -->
-          <text x="${lxClosed}" y="${lyClosed - 4}" fill="#ffffff" font-size="13" font-weight="900" font-family="monospace" text-anchor="middle">206</text>
-          <text x="${lxClosed}" y="${lyClosed + 10}" fill="#ffffff" font-size="9.5" font-weight="bold" font-family="monospace" text-anchor="middle">(88%)</text>
+          <!-- Closed slice labels: Large, bold, highly legible font -->
+          <text
+            x="${lxClosed}"
+            y="${lyClosed - 6}"
+            fill="#ffffff"
+            font-size="24"
+            font-weight="900"
+            font-family="'Plus Jakarta Sans', system-ui, sans-serif"
+            text-anchor="middle"
+            filter="url(#plrTextShadow)"
+            class="select-none"
+          >${closed}</text>
+          <text
+            x="${lxClosed}"
+            y="${lyClosed + 12}"
+            fill="#E2E8F0"
+            font-size="13"
+            font-weight="700"
+            font-family="'Plus Jakarta Sans', system-ui, sans-serif"
+            text-anchor="middle"
+            filter="url(#plrTextShadow)"
+            class="select-none tracking-wide"
+          >88% Closed</text>
           
-          <!-- Open text -->
-          <text x="${lxOpen}" y="${lyOpen - 3}" fill="#ffffff" font-size="11" font-weight="900" font-family="monospace" text-anchor="middle">27</text>
-          <text x="${lxOpen}" y="${lyOpen + 9}" fill="#ffffff" font-size="8.5" font-weight="bold" font-family="monospace" text-anchor="middle">(12%)</text>
+          <!-- Open slice labels: Large, clear, highly legible font -->
+          <text
+            x="${lxOpen}"
+            y="${lyOpen - 5}"
+            fill="#ffffff"
+            font-size="19"
+            font-weight="900"
+            font-family="'Plus Jakarta Sans', system-ui, sans-serif"
+            text-anchor="middle"
+            filter="url(#plrTextShadow)"
+            class="select-none"
+          >${open}</text>
+          <text
+            x="${lxOpen}"
+            y="${lyOpen + 11}"
+            fill="#FEE2E2"
+            font-size="11.5"
+            font-weight="700"
+            font-family="'Plus Jakarta Sans', system-ui, sans-serif"
+            text-anchor="middle"
+            filter="url(#plrTextShadow)"
+            class="select-none tracking-wide"
+          >12% Open</text>
         </svg>
       </div>
     `;
   };
 
   /**
-   * 4. Assigned Recommendations Trend: Chips & Bento Cards (Non-scrollable, Covers Page Area)
+   * 4. Assigned Recommendations Trend: Chips & Bento Cards (Dynamic entities from Recommendations tab Column F)
    */
   portalApp.renderEntityChipsAndBento = function () {
     const chipsContainer = document.getElementById('plr-entity-chips-container');
@@ -921,63 +1416,35 @@
 
     const s = getPlrState();
 
-    // Data corresponding to action entities across recommendations:
-    const entityList = [
-      { name: 'E&I', items: 170, open: 15, closed: 155 },
-      { name: 'FPCL-KE O/C', items: 56, open: 0, closed: 56 },
-      { name: 'Mechanical', items: 34, open: 2, closed: 32 },
-      { name: 'Finance / FPCL-KE O/C', items: 25, open: 13, closed: 12 },
-      { name: 'Operation', items: 24, open: 0, closed: 24 },
-      { name: 'Inspection', items: 16, open: 0, closed: 16 },
-      { name: 'FPCL – KE O/C', items: 13, open: 0, closed: 13 },
-      { name: 'Operations', items: 12, open: 0, closed: 12 },
-      { name: 'Financ/Tech-HO/SCM', items: 9, open: 0, closed: 9 },
-      { name: 'PE', items: 8, open: 0, closed: 8 },
-      { name: 'FPCL - KE Operating Committee', items: 6, open: 0, closed: 6 },
-      { name: 'I/C', items: 6, open: 0, closed: 6 },
-      { name: 'Electrical', items: 5, open: 0, closed: 5 },
-      { name: 'KE', items: 5, open: 0, closed: 5 },
-      { name: 'FPCL - KE O/C', items: 4, open: 0, closed: 4 },
-      { name: 'Planning', items: 2, open: 1, closed: 1 },
-      { name: 'PE/Operation', items: 4, open: 0, closed: 4 },
-      { name: 'Unassigned', items: 4, open: 0, closed: 4 },
-      { name: 'I&C', items: 3, open: 0, closed: 3 },
-      { name: 'Mech / Insp', items: 3, open: 0, closed: 3 },
-      { name: 'All', items: 2, open: 0, closed: 2 },
-      { name: 'FFBL-Finance', items: 2, open: 0, closed: 2 },
-      { name: 'Maintenance', items: 2, open: 0, closed: 2 },
-      { name: 'Operations / PE', items: 2, open: 0, closed: 2 },
-      { name: 'OPRS/E&I', items: 3, open: 0, closed: 3 },
-      { name: 'SCM', items: 2, open: 0, closed: 2 },
-      { name: 'HSE', items: 1, open: 0, closed: 1 }
-    ];
+    // Data dynamically calculated from action entities in recommendations:
+    const entityList = getEntityAnalyticsList();
 
     // Chips at the top (Non-scrollable flex wrap, completely visible across page area)
     chipsContainer.innerHTML = entityList.map(e => {
       const isSel = s.recSelectedEntity === e.name;
       return `
         <button
-          onclick="portalApp.filterRecByDeptDirect('${e.name}')"
+          onclick="portalApp.filterRecByDeptDirect('${e.name.replace(/'/g, "\\'")}')"
           class="px-3 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 border cursor-pointer ${
             isSel
-              ? 'bg-[#2E6DA4] text-white border-[#2E6DA4] font-black shadow-xs'
+              ? 'bg-[#1e40af] text-white border-[#1e40af] font-black shadow-xs'
               : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
           }"
         >
           <span>${e.name}</span>
           ${e.open > 0 ? `
-            <span class="px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold bg-rose-100 text-rose-700">
+            <span class="px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold bg-red-100 text-[#B91C1C]">
               ${e.open} open
             </span>
           ` : `
-            <span class="w-3.5 h-3.5 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-[9px] font-bold">✓</span>
+            <span class="w-3.5 h-3.5 rounded-full bg-emerald-100 text-[#047857] flex items-center justify-center text-[9px] font-bold">✓</span>
           `}
         </button>
       `;
     }).join('') + (s.recSelectedEntity !== 'all' ? `
       <button
         onclick="portalApp.filterRecByDeptDirect('all')"
-        class="px-3 py-1 rounded-full text-xs font-bold text-[#2E6DA4] bg-white hover:bg-slate-50 border border-[#2E6DA4] cursor-pointer"
+        class="px-3 py-1 rounded-full text-xs font-bold text-[#1e40af] bg-white hover:bg-slate-50 border border-[#1e40af] cursor-pointer"
       >
         Clear Filter
       </button>
@@ -986,34 +1453,34 @@
     // Bento Grid Cards (Top 16 entities displayed in 4-column responsive grid covering the page area)
     bentoContainer.innerHTML = entityList.slice(0, 16).map(e => {
       const isSel = s.recSelectedEntity === e.name;
-      const openPct = ((e.open / e.items) * 100).toFixed(0);
+      const openPct = e.items > 0 ? ((e.open / e.items) * 100).toFixed(0) : 0;
       const closedPct = 100 - openPct;
 
       return `
         <div
-          onclick="portalApp.filterRecByDeptDirect('${e.name}')"
+          onclick="portalApp.filterRecByDeptDirect('${e.name.replace(/'/g, "\\'")}')"
           class="bg-white hover:bg-slate-50 border ${
-            isSel ? 'border-[#2E6DA4] ring-1 ring-[#2E6DA4] bg-blue-50/20' : 'border-slate-200'
+            isSel ? 'border-[#1e40af] ring-1 ring-[#1e40af] bg-blue-50/20' : 'border-slate-200'
           } rounded-xl p-3.5 shadow-xs space-y-2.5 transition-all cursor-pointer group"
         >
           <div class="flex items-center justify-between gap-2">
-            <span class="text-xs font-bold text-slate-900 truncate group-hover:text-[#2E6DA4] transition-colors">${e.name}</span>
-            <span class="text-[11px] font-mono text-slate-500 shrink-0 font-semibold">${e.items} items</span>
+            <span class="text-xs font-bold text-slate-900 truncate group-hover:text-[#1e40af] transition-colors">${e.name}</span>
+            <span class="text-[11px] font-sans text-slate-500 shrink-0 font-semibold">${e.items} items</span>
           </div>
           
-          <!-- Split Progress Bar (Rose for Open, Emerald for Closed) -->
+          <!-- Split Progress Bar (Darker tones: Crimson for Open, Corporate Emerald for Closed) -->
           <div class="w-full h-2 rounded-full bg-slate-100 overflow-hidden flex">
-            ${e.open > 0 ? `<div class="h-full bg-[#f43f5e]" style="width: ${openPct}%;"></div>` : ''}
-            <div class="h-full bg-[#10b981]" style="width: ${closedPct}%;"></div>
+            ${e.open > 0 ? `<div class="h-full bg-[#B91C1C]" style="width: ${openPct}%;"></div>` : ''}
+            <div class="h-full bg-[#047857]" style="width: ${closedPct}%;"></div>
           </div>
 
-          <div class="flex items-center justify-between text-[11px] font-mono font-bold pt-0.5">
-            <span class="flex items-center gap-1 ${e.open > 0 ? 'text-rose-600' : 'text-slate-400'}">
-              <span class="w-1.5 h-1.5 rounded-full ${e.open > 0 ? 'bg-[#f43f5e]' : 'bg-slate-300'}"></span>
+          <div class="flex items-center justify-between text-[11px] font-sans font-bold pt-0.5">
+            <span class="flex items-center gap-1 ${e.open > 0 ? 'text-[#B91C1C]' : 'text-slate-400'}">
+              <span class="w-1.5 h-1.5 rounded-full ${e.open > 0 ? 'bg-[#B91C1C]' : 'bg-slate-300'}"></span>
               ${e.open} Open
             </span>
-            <span class="flex items-center gap-1 text-emerald-700">
-              <span class="w-1.5 h-1.5 rounded-full bg-[#10b981]"></span>
+            <span class="flex items-center gap-1 text-[#047857]">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#047857]"></span>
               ${e.closed} Closed
             </span>
           </div>
@@ -1043,33 +1510,11 @@
    * Incidents Master Log Table (Light Theme)
    */
   portalApp.renderIncidentsTable = function (toolbar, tableBody, pagination) {
-    const raw = getPlrData();
     const s = getPlrState();
     const recsMap = getRecsMapByPlr();
 
-    // Filter Incidents
-    const filtered = raw.filter(item => {
-      if (s.selectedMachine !== 'all' && !String(item.machine || '').toLowerCase().includes(s.selectedMachine.toLowerCase())) {
-        return false;
-      }
-      if (s.selectedDept !== 'all' && String(item.dept || '').toLowerCase() !== s.selectedDept.toLowerCase()) {
-        return false;
-      }
-      if (s.selectedStatus !== 'all' && (item.status || '').toLowerCase() !== s.selectedStatus.toLowerCase()) {
-        return false;
-      }
-      if (s.searchQuery) {
-        const q = s.searchQuery.toLowerCase();
-        const match =
-          String(item.plrNo || '').toLowerCase().includes(q) ||
-          String(item.incident || '').toLowerCase().includes(q) ||
-          String(item.machine || '').toLowerCase().includes(q) ||
-          String(item.dept || '').toLowerCase().includes(q) ||
-          String(item.priority || '').toLowerCase().includes(q);
-        if (!match) return false;
-      }
-      return true;
-    });
+    // Use unified filtered dataset
+    const filtered = getFilteredPlrData();
 
     const totalFiltered = filtered.length;
     const totalPages = Math.ceil(totalFiltered / s.pageSize) || 1;
@@ -1275,29 +1720,12 @@
    * Recommendations Tab Table (Light Theme, 451 Recs linked via PLR #)
    */
   portalApp.renderRecommendationsTable = function (toolbar, tableBody, pagination) {
-    const raw = getPlrRecs();
     const plrsMap = getPlrsMap();
     const s = getPlrState();
 
-    const filtered = raw.filter(item => {
-      if (s.recSelectedEntity !== 'all' && String(item.actionBy || '').toLowerCase() !== s.recSelectedEntity.toLowerCase()) {
-        return false;
-      }
-      if (s.recSelectedStatus !== 'all' && (item.status || '').toLowerCase() !== s.recSelectedStatus.toLowerCase()) {
-        return false;
-      }
-      if (s.recSearchQuery) {
-        const q = s.recSearchQuery.toLowerCase();
-        const match =
-          String(item.plrNo || '').toLowerCase().includes(q) ||
-          String(item.recommendation || '').toLowerCase().includes(q) ||
-          String(item.actionBy || '').toLowerCase().includes(q) ||
-          String(item.status || '').toLowerCase().includes(q);
-        if (!match) return false;
-      }
-      return true;
-    });
+    const filtered = getFilteredPlrRecs();
 
+    const totalRaw = getPlrRecs().length;
     const totalFiltered = filtered.length;
     const totalPages = Math.ceil(totalFiltered / s.recPageSize) || 1;
     if (s.recPage > totalPages) s.recPage = totalPages;
@@ -1334,15 +1762,7 @@
               onchange="portalApp.filterRecByDeptDirect(this.value)"
               class="text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#2E6DA4] cursor-pointer"
             >
-              <option value="all" ${s.recSelectedEntity === 'all' ? 'selected' : ''}>All Entities (451 Recs)</option>
-              <option value="E&I" ${s.recSelectedEntity === 'E&I' ? 'selected' : ''}>E&amp;I (170 items)</option>
-              <option value="FPCL-KE O/C" ${s.recSelectedEntity === 'FPCL-KE O/C' ? 'selected' : ''}>FPCL-KE O/C (56 items)</option>
-              <option value="Mechanical" ${s.recSelectedEntity === 'Mechanical' ? 'selected' : ''}>Mechanical (34 items)</option>
-              <option value="Finance / FPCL-KE O/C" ${s.recSelectedEntity === 'Finance / FPCL-KE O/C' ? 'selected' : ''}>Finance / FPCL-KE O/C (25 items)</option>
-              <option value="Operation" ${s.recSelectedEntity === 'Operation' ? 'selected' : ''}>Operation (24 items)</option>
-              <option value="Inspection" ${s.recSelectedEntity === 'Inspection' ? 'selected' : ''}>Inspection (16 items)</option>
-              <option value="Operations" ${s.recSelectedEntity === 'Operations' ? 'selected' : ''}>Operations (12 items)</option>
-              <option value="Planning" ${s.recSelectedEntity === 'Planning' ? 'selected' : ''}>Planning (2 items)</option>
+              ${renderActionEntitySelectOptions(s.recSelectedEntity)}
             </select>
           </div>
 
@@ -1352,13 +1772,13 @@
               onchange="portalApp.filterRecByStatusDirect(this.value)"
               class="text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#2E6DA4] cursor-pointer"
             >
-              <option value="all" ${s.recSelectedStatus === 'all' ? 'selected' : ''}>All (451)</option>
+              <option value="all" ${s.recSelectedStatus === 'all' ? 'selected' : ''}>All (${totalRaw})</option>
               <option value="Closed" ${s.recSelectedStatus === 'Closed' ? 'selected' : ''}>Closed (420)</option>
               <option value="Open" ${s.recSelectedStatus === 'Open' ? 'selected' : ''}>Open (31)</option>
             </select>
           </div>
 
-          <span class="text-xs font-mono text-slate-500">Showing <strong class="text-slate-900">${totalFiltered}</strong> of ${raw.length}</span>
+          <span class="text-xs font-sans text-slate-500">Showing <strong class="text-slate-900">${totalFiltered}</strong> of ${totalRaw}</span>
         </div>
       </div>
     `;
