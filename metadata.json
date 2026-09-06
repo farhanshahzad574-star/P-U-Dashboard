@@ -1,6 +1,6 @@
 {
   "name": "Executive Operations & Compliance Portal",
-  "description": "FPCL Executive Operations & Compliance Portal featuring Sub HSE - PSM Internal Audit Findings Executive BI dashboard (121 observations across 13 Action Departments, resolution tracking, PSM elements breakdown), 3D orbiting emblem, and Plant Loss Reports (PLR).",
+  "description": "FPCL Executive Operations & Compliance Portal featuring synchronized Overview, Plant Loss Recommendations (PLR with standardized machines & departments), and Sub HSE - PSM dashboards, with tab-color configured AI Assistants strictly scoped to dashboard metrics.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

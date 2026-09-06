@@ -1,0 +1,339 @@
+S_No,PLR #,Year,Date,Incident,Status,Machine,Priority,Responsible Department,,,
+1,213,2025,01/Jan/2025,"Shut down of STG # 04 due to “No Demand” by KE from January 01 to 04, 2025.",Open,STG#4,Low,KE,,,
+2,214,2025,03/02/2025,"On 3 February 2025, steam leakage started from the insulating gasket flange of the 18” MPS Export Line at the FPCL – FFC-PQ battery limit, causing a drop in MPS header pressure. The leakage led to STG-3 tripping on low MPS header pressure, and MPS export was subsequently cut off, interrupting the startup of Ammonia plant at FFC-PQ.",Closed,STG#3,High,Mechanical,,,B#1
+3,215,2025,04/02/2025,"Planned shutdown of STG-02 was carried out on 4th February 2025 at 1133 hrs. for the installation of an additional feeder on the existing 13.8 kV Bus-B switchgear to fulfill the power requirement for the Data Center Project. After completion of the installation, STG-02 was restarted on 5th February 2025 at 1657 hrs. and synchronized at 1759 hrs.",Closed,STG#2,Low,E&I,,,B#2
+4,216,2025,3-Jun-2025,"1. STG # 01 tripped due to Servo Position Controller (SPC to probable failure of SPC I/O signal.
+ 2. After troubleshooting SPC signals and replacing I/O card, machine started 04 times but stopped due to increasing trend of radial vibrations on turbine DE bearings.",Closed,STG#1,High,E&I,,,STG#1
+5,217,2025,24/03/2025,"Tripping of STG-04 and Urea Plant due to actuation of Master Fuel Trip (MFT) on Boiler-02, triggered by a high-high furnace pressure condition.",Closed,B#2,High,OPS-PSG,,,STG#2
+6,218,2025,31/03/2025,STG # 04 load was reduced as per KE instructions during February & March 2025.,Open,STG#4,Low,KE,,,STG#3
+7,219,2025,4-Feb-2025,"1. STG-04 was shut down at 0737 hrs. due to “No Demand” from K.E.
+ 2. At 1505 hrs., after K.E power requirement, STG-04 startup was delayed due to a turbine trip valve opening failure. After rectification, the machine synchronized on 03 April at 0030 hrs.",Open,STG#4,Low,"KE , E&I",,,STG#4
+8,220,2025,30/04/2025,"STG # 04 load was reduced as per KE instructions during Apr, 2025",Open,STG#4,Low,KE,,,Total Power Failure 
+9,221,2025,18/05/2025,"Due to disturbance in KE 132 KV network, frequency & voltage surges were observed & consequently at 0446 hrs generator & turbine tripped on G60 relay loss of excitation protection followed by over frequency protection. After KE go-ahead the machine was synchronized at 0613 hrs.",Closed,STG#4,High,KE,,,
+10,222,2025,25/05/2025,Disturbance in KE network resulted in STG # 04 Breaker opening on over frequency at 0251 & machine remained on FSNL. After KE the go-ahead machine was synchronized at 0314 hrs. and reached full load at 0410 hrs.,Open,STG#4,Low,KE,,,
+11,223,2025,31/05/2025,"STG # 04 load was reduced as per KE instructions during May, 2025.",Open,STG#4,Low,KE,,,
+12,224,2025,6-Mar-2025,"Due to disturbance in KE 132 KV network, G60 Relay started to pick unbalance condition in voltages and in current, resulting in a trip of the generator and turbine on loss-of-excitation protection at 2056 Hrs. After KE go-ahead the machine was synchronized at 2223 hrs.",Closed,STG#4,High,KE,,,
+13,225,2025,18/06/2025,"STG-01 tripped at 0859 Hrs. with alarm “SPC Trip” during PLC switching from Primary to Secondary Controller. After troubleshooting and replacing the Governor AO card switching relay, the machine was synchronized at 1045 Hrs.",Closed,STG#1,High,E&I,,,
+14,226,2025,30/06/2025,"STG # 04 load was reduced as per KE instructions during June, 2025.",Open,STG#4,Low,KE,,,
+15,227,2025,31/07/2025,"STG # 04 load was reduced as per KE instructions during July, 2025.",Open,STG#4,Low,KE,,,
+16,228,2025,31/08/2026,"STG # 04 load was reduced as per KE instructions during Aug, 2025.",Open,STG#4,Low,KE,,,
+17,229,2025,30/09/2025,"STG # 04 load was reduced as per KE instructions during Sep, 2025.",Open,STG#4,Low,KE,,,
+18,230,2025,31/10/2025,"STG # 04 load was reduced as per KE instructions during Oct, 2025.",Open,STG#4,Low,KE,,,
+19,231,2025,30/11/2025,"STG # 04 load was reduced as per KE instructions during Nov, 2025.",Open,STG#4,Low,KE,,,
+20,232,2025,12-Nov-2025,Boiler-1 tripped on High Draft Security due to tube leakage during load increase for Boiler-2 shutdown for the planned UREA Plant outage.,Open,B#1,High,,,,
+21,233,2025,31/12/2025,"STG # 04 load was reduced as per KE instructions during Dec, 2025.",Open,STG#4,Low,KE,,,
+22,194,2024,27/02/2024,Manual opening of K-08 breaker as per FFBL request resulted in tripping of K-16 breaker (FFBL/FPCL power lines interconnection breakers) which caused power black-out in FFBL and STG - 02 de-synchronization (52-G breaker opening) at FPCL.,Closed,STG#2,High,Ffbl E&I,,,
+23,195,2024,28/02/2024,"Ash leakage from the gap between the furnace floor refractory and Bed Ash Chute B resulted in damage to the sleeve of Bed Ash Chute B, leading to ash leakage into the windbox's west side hopper. The hot ash subsequently damaged the west side hopper of the windbox, resulting in ash leakage out of the boiler",,Boiler # 1 / 2,High,Mechanical,,,
+24,196,2024,Feb'23,"STG # 04 load was reduced as per KE instructions during February, 2024",Closed,STG#4,Low,KE,,,
+25,197,2024,March,"STG # 04 load was reduced as per KE instructions during March, 2024",Closed,STG#4,Low,KE,,,
+26,198,2024,01/04/2024,"STG # 04 got tripped at 1152 hrs. ,Upon investigation during Loop testing, it was discovered that the fuse in TB-5 had blown out, disrupting the power supply from the card to the servo valve. The fused was replaced and at 1701 start command was given to the turbine. At 1728 machine was synchronized with the grid and reached full load at 1850 hrs.",Closed,STG#4,Low,FPCL E&I Department,,,
+27,199,2024,April,"STG # 04 load was reduced as per KE instructions during April, 2024",Closed,STG#4,Low,KE,,,
+28,200,2024,21/05/2024,Tripping of STG-04 and Urea Plant due to actuation of Master Fuel Trip (MFT) on Boiler-02 on Primary Air Low-Low Flow Security.,Closed,B#2,High,Operations,,,
+29,201,2024,May,"STG # 04 load was reduced as per KE instructions during May, 2024",Closed,STG#4,Low,KE,,,
+30,202,2024,June,"STG # 04 load was reduced as per KE instructions during June, 2024",Closed,STG#4,Low,KE,,,
+31,203,2024,06/07/2024,"Planned shutdown of STG # 1 was carried out on July 6, 2024 at 1957 Hrs. due to high seismic vibrations observed at Generator side of the turbine. Accordingly, rotor was replaced with available spare rotor at site. Machine was restarted at 0737 Hrs. on July 13, 2024 after completion of rotor replacement job and turbine was synchronized at 1807 hrs.",Closed,STG#1,High,E&I,,,
+32,204,2024,July,"STG # 04 load was reduced as per KE instructions during July, 2024",Closed,STG#4,Low,KE,,,
+33,205,2024,August,"STG # 04 load was reduced as per KE instructions during August, 2024",Closed,STG#4,Low,KE,,,
+34,206,2024,Seotember,"STG # 04 load was reduced as per KE instructions during September, 2024",Closed,STG#4,Low,KE,,,
+35,207,2024,October,"STG # 04 load was reduced as per KE instructions during October, 2024",Closed,STG#4,Low,KE,,,
+36,208,2024,16/11/2024,Tripping of STG-04 and Urea Plant due to actuation of Master Fuel Trip (MFT) on Boiler-01 on Primary Air Low-Low Flow Security.,Closed,B#1,High,Operations,,,
+37,209,2024,12-Jan-24,Manual stoppage of STG # 01 to attend / clean leaked bearing oil from generator,Open,STG#1,High,Mechanical,,,
+38,210,2024,November,"STG # 04 load was reduced as per KE instructions during November, 2024.",Closed,STG#4,Low,KE,,,
+39,211,2024,01/12/2024,"STG # 04 load was reduced as per KE instructions from December 01 to 04, 2024.",Closed,STG#4,Low,KE,,,
+40,212,2024,05/12/2024,"Shut down of STG # 04 due to “No Demand” by KE from December 05 to 31, 2024.",Closed,STG#4,Low,KE,,,
+41,175,2023,Jan-23,ATA 2023 Budgeted vs Actual Production & Impact owing to delay in Boilers start-up,Open,STG#4,Low,KE,,,
+42,176,2023,17-Feb-23,STG # 04 Breaker opened at 1235 hrs due to over frequency (51.01 Hz) at KE circuit & machine remained on FSNL. After KE go-ahead machine was synchronized at 1305 hrs and reached full load at 1401 hrs (55.14 MW).,Closed,STG#4,Low,KE,,,
+43,177,2023,25th Feb 2023,STG-03 stopped at 1121 hrs & steam export to FFBL stopped at 1141 hrs.,Closed,STG#3,High,Maintenance,,,
+44,178,2023,Feb'23,"STG # 04 load was reduced as per KE instructions during 18 ~ 28 Feb, 2023",Closed,STG#4,Low,KE,,,
+45,179,2023,7th March 2023,"The total power failure that occurred at FPCL and FFBL plants on March 7, 2023, caused by the tripping of STG-02, due to the actuation of G-60 protection due to a ground fault measured by the Neutral Earthing Transformer (NET) following this STG-03 tripped on overcurrent, and STG-01 tripped on under-frequency and under-voltage resulting in total power failure at FFBL / FPCL complex. The power was restored at the complex by starting gas turbines at FFBL.",Closed,STG#2,High,E&I,,,
+46,180,2023,"March, 2023","STG # 04 load was reduced as per KE instructions during March, 2023",Closed,STG#4,Low,KE,,,
+47,181,2023,"April, 2023","STG # 04 load was reduced as per KE instructions during April, 2023",Closed,STG#4,Low,KE,,,
+48,182,2023,"3rd May, 2023","FPCL plant planned shutdown was taken on 3rd May 2023 for inspection of STG # 1 generator rotor. However, during STG # 01 rotor rigging / pulling activity from the Stator, Rotor slipped from the Hydraulic Jack arrangements and damaged the Stator winding on 5th May 2023 at 0030 hrs.
+ Plant was started again on 11th May 2023, Boiler # 01 production resumed at 1921 hrs, MPS export started at 1921 hrs and KE power export resumed at 2230 hrs.",Closed,"STG # 1
+ STG # 2 
+ STG # 3",High,Mechanical Maintenance,,,
+49,183,2023,15-Jun-23,Disturbance in KE network resulted in STG # 04 Breaker opening on over frequency at 0701 & machine remained on FSNL.,Closed,STG#4,Low,KE,,,
+50,184,2023,"June,2023","STG # 04 load was reduced / adjusted owing to operation of single boiler due to unavailability of STG # 01 & 02, June 2023.",Closed,STG#4,Low,Mechanical Maintenance,,,
+51,185,2023,"July, 2023","STG # 04 load was reduced / adjusted owing to operation of single boiler due to unavailability of STG # 01 & 02, July 2023",Closed,STG#4,Low,Mechanical Maintenance,,,
+52,186,2023,"August,2023","STG # 04 load was reduced as per KE instructions & owing to operation of single boiler due to unavailability of STG # 01 & 02. during August, 2023",Closed,STG#4,Low,Mechanical Maintenance & KE,,,
+53,187,2023,"24th August, 2023",Breaker opening (86 G1) on over-frequency due to KE network disturbance,Closed,STG#4,Low,KE & FPCL,,,
+54,188,2023,"September,2023","STG # 04 load was reduced as per KE instructions during September, 2023",Closed,STG#4,Low,KE,,,
+55,189,2023,30-Sep-23,Voltage loss on Dhabeji & Protection Relay Operated at BOC lines resulted into STG # 04 breaker opening and shifting of machine to FSNL.,Closed,STG#4,Low,KE,,,
+56,190,2023,3rd-Oct-2023,Voltage loss on BOC & Protection Relay Operated at Dhabeji lines resulted into STG # 04 breaker opening and shifting of machine to FSNL,Closed,STG#4,Low,KE,,,
+57,191,2023,"November,2023","STG # 04 load was reduced as per KE instructions during November, 2023",Closed,STG#4,Low,KE,,,
+58,192,2023,5th Nov-2023,Disturbance in KE network resulted in STG # 04 Breaker opening on over frequency at 0651 & machine remained on FSNL. After KE go-ahead machine was synchronized at 0712 hrs. and reached full load at 0808 hrs.,Closed,STG#4,Low,KE,,,
+59,193,2023,"December,2023","STG # 04 load was reduced as per KE instructions during December, 2023",Closed,STG#4,Low,KE,,,
+60,148,2022,Jan-22,STG # 04 Low Load as per KE instructions (Jan-22),Closed,STG#4,Low,KE,,,
+61,149,2022,31-Jan-22,Delay in STG # 04 start-up owing to high vibration at Turbine DE side bearings during start up.,Closed,STG#4,High,Ops,,,
+62,150,2022,Feb-22,STG # 04 Low Load as per KE instructions (Feb-22),Closed,STG#4,Low,KE,,,
+63,151,2022,28-Feb-22,Planned stoppage of STG-03 to inspect both bearings of turbine due to frequent high vibration at Turbine Drive End (DE) / Non-Drive End (NDE) side.,Closed,STG#3,High,BHGE /Mechanical,,,
+64,152,2022,9-Mar-22,STG # 04 Breaker opened at 1810 hrs due to over frequency at KE grid & machine remained on FSNL. After KE go-ahead machine was synchronized at 1824 hrs and reached full load at 1920 hrs.,Closed,STG#4,Low,KE,,,
+65,153,2022,22-Mar-22,STG # 04 Breaker opened at 1019 hrs due to over frequency at KE circuit (500 kV Jamshoro circuit) & machine remained on FSNL. After KE go-ahead machine was synchronized at 1105 hrs and reached full load at 1200 hrs.,Closed,STG#4,Low,KE,,,
+66,154,2022,Mar-22,STG # 04 load was reduced for Coal Inventory Management as per management decision to ensure Power & Steam (MPS) availability for FFBL.,Closed,STG#4,Low,SCM,,,
+67,155,2022,13-May-22,Inadvertently touching interlock key during routine cleaning of panel (UCP-04) resulting in closure of trip valve and consequently tripping of STG # 04.,Closed,STG#4,Low,E&I,,,
+68,156,2022,22-May-22,"1. Halting of control input to governor valve & feedback was found constant / held at 33 % and consequently shutdown of STG # 02.
+ 2. After troubleshooting & rectification (replacement of Redundant Module of Rack A & Analog output card of Rack B), machine was started at 1257 hrs & synchronized at 1325 hrs.",Closed,STG#2,High,E&I,,,
+69,157,2022,11-Jun-22,STG # 04 Breaker opened at 1854 due to over frequency & then turbine tripped on over voltage. After KE go-ahead machine was synchronized at 1950 hrs and reached full load at 2117 hrs.,Closed,STG#4,High,KE / E&I,,,
+70,158,2022,28-Jun-22,STG # 04 Breaker opened at 0527 hrs due to loss of voltage of both lines (BOC & Dhabeji) at KE circuit & machine remained on FSNL. After KE go-ahead machine was synchronized at 0634 hrs and reached full load at 0730 hrs.,Closed,STG#4,Low,KE,,,
+71,159,2022,3-Jul-22,STG # 04 load was reduced as per KE instructions on 03rd July 2022 at 1047 hrs. After KE go-ahead load was normalized at 2134 hrs,Closed,STG#4,Low,KE,,,
+72,160,2022,8~13 Jul-22,"a. STG # 04 power dispatch was reduced on 08th July 2022 & later it was stopped on 9th July 2022 as per KE demand.
+ b. After KE go-ahead machine was started and load was normalized on 12th July 2022.
+ c. Again the load was reduced on 13th July from 0342 ~ 0855 hrs as per KE instructions.",Closed,STG#4,Low,KE,,,
+73,161,2022,24 & 28 Jul 22,"July 24, 2022:
+ i. Tripping of Boiler-02 coal volumetric feeders (C&D) occurred owning to high moisture and increased coal consumption due to low LHV in Thar & 14th Indo Coal blend. Consequently, Boiler-02 load was reduced from 203 to 133 Met/hr, STG-04 load was reduced from 55 to 20 MW and 02 NG burners (C & D) were light up resulting in NG consumption of 0.08 MMSCF. 
+ July 28, 2022:
+ i. STG-04 load was varied due to variation in HPS header pressure owing to tripping of coal feeders of Boiler-01 & Boiler-02. Consequently, actual power export to KE was 1,280 MW vs budgeted 1,310 MW",Closed,Boiler # 1 / 2,Low,-,,,
+74,162,2022,25-Jul-22,"1- Due to disturbance in KE network, power, frequency & voltage surges observed at STG # 04 generator, 86 G1 & 86 G2 actuated and consequently machine tripped on V/Hz security. After KE go-ahead machine was synchronized at 0420 hrs.
+ 2- E-mail received from KE to maintain load at 20 MW at 0429 hrs & machine load reached 20 MW at 0512 hrs.
+ 3- After KE go-ahead load increment started at 0806 hrs & reached 55 MW at 0844 hrs",Closed,STG#4,High,KE,,,
+75,163,2022,24-Aug-22,"Due to disturbance in KE network, power, frequency & voltage surges observed at STG # 04 generator, 86 G1 & 86 G2 actuated and consequently machine tripped on 59P security(over voltage). After KE go-ahead machine was synchronized at 0255 hrs & reached 55 MW at 0420 hrs,",Closed,STG#4,Low,KE,,,
+76,164,2022,3-Aug-22,"i. Tripping of Boiler-01 coal volumetric feeders (B, C & D) occurred. Consequently, Boiler-01 load was reduced from 237 to 183 Met/hr, STG-04 load was reduced from 55 to 25 MW.",Closed,B#1,Medium,Mechanical,,,
+77,165,2022,13-Sep-22,Outage of Boiler # 1 to attend tube leakage and accordingly shutdown of STG # 4 suspension of power export to KE.,CLOSED,B#1,High,Mechanical,,,
+78,166,2022,4-Oct-22,"Failure of MCC control supply due to faulty under voltage coil resulting in stoppage of Auxiliary motors of STG # 4 (HP oil pump, Condensate pump & demister fan motors)",Closed,STG#4,High,E&I,,,
+79,167,2022,13-Oct-22,"Breaker opening (86 G1) twice due to KE network disturbance (frequency disturbance) but machine remained on FSNL. However, machine tripped on high high exhaust temperature afterwards",Closed,STG#4,High,KE,,,
+80,168,2022,22-Oct-22,"On October 21, 2022 50 Hz Purchaser energy meter screen got black at ~ 0600 hrs. and KE was informed. Accordingly, for replacement of purchaser energy meter by KE team machine breaker was opened and machine remained at FSNL due for planned activity.",Closed,STG#4,Low,-,,,
+81,169,2022,"9,15,16,23,30,31 Oct-2022","STG # 04 load was reduced as per KE instructions during Oct, 2022",Closed,STG#4,Low,KE,,,
+82,170,2022,20-Noc-22,"Due to disturbance in KE network, STG # 04 breaker opened on over frequency (Max frequency observed is 52.55 Hz), machine also tripped on over-voltage.",Closed,STG#4,Low,KE,,,
+83,171,2022,"6,8,91,13 Nov -2022","STG # 04 load was reduced as per KE instructions during Oct, 2022",Closed,STG#4,Low,KE,,,
+84,172,2022,2-Dec-22,"Due to disturbance in KE network, STG # 04 breaker opened on over frequency (Max frequency observed is 53.67 Hz), machine also tripped on over-voltage.",Closed,STG#4,Low,KE,,,
+85,173,2022,"(Except 1,8) Dec-22","STG # 04 load was reduced as per KE instructions during Oct, 2022",Closed,STG#4,Low,KE,,,
+86,174,2022,21st Dec 2022 ~ 4th Jan 2023,STG # 04 low load operation & shutdown of machine for 05 days due to lower ranking in merit order preference & lower demand in Dec / Jan 2023,Closed,STG#4,Low,Finance / Technical HO,,,
+87,118,2021,26-Jan-21,"1. All VFD drives of 04 coal feeders, lime feeder & bed ash link conveyor of Boiler # 01 got trip simultaneously at 2038 hrs upon start-up of boiler # 02 Loop Seal Blower (CSK-2021 S). The Loop Seal Blower S was tripped on grounding fault due to dropped in voltage on 480 Volts bus bar.
+ 2. To save from Total Power Failure of FPCL / FFBL, STG # 04 was stopped as boiler # 01 steam generation was decreasing fast (254 to 49 Met/hr) and could result in tripping of STG # 01 & 02.",Open,B#1,High,Elect.,,,
+88,119,2021,18-Mar-21,"On 18 Mar, 2021 Boiler # 02 Coal feeders (B&C) tripped at same time due to wet coal received from outh Africa (29th Shipment MV Top Weather). Owing to unavailability of 02 coal feeders at the same time NG burners were fired in Boiler # 02 which resulted in 0.13 MMSCF NG consumption.",Closed,B#2,High,SCM,,,
+89,120,2021,18-May-21,"On May 18, 2021, surge/ heavy disturbance observed in KE Grid causing variation in electrical parameter (Current, Voltage, Frequency, etc) and subsequent disturbance also occurred on STG # 04 resulting in tripping of machine at 0349 hrs on V/Hz over-flux protection (24) actuation on G-60 generator protection.",Closed,STG#4,High,KE / Electrical,,,
+90,121,2021,22-May-21,"i. On May 22, 2021, 02 x 220 KV high tension lines of K-Electric i.e NKIBaldia 01 & 02 were tripped which affected 45 grid stations across Karachi.
+ ii. Disturbance in KE grid caused variation in electrical parameter (Current,Voltage, Frequency, etc) and zero voltage in Dhabeji & BOC lines.
+ iii. FPCL 132 KV breaker opened on transformer over current protection resulting in tripping of STG # 04 at 1327 hrs.",Closed,STG#4,High,KE / Electrical,,,
+91,122,2021,23-May-21,"Disturbance in KE network caused load fluctuation on STG # 04 load (Max. 64.13 & Min. 49.92 MW). Afterwards, 86 G1 breaker opening on over frequency protection & subsequent tripping of machine on over-voltage (59 P) G-60 generator protection due to AVR not controlling the voltage after breaker opening.",closed,STG#4,High,KE / Electrical,,,
+92,123,2021,3-Jul-21,"STG # 04 was shut-down at 1721 hrs to attend high temperature problem at flexible joints of 11 KV transformer. After rectification, machine started at 2128 hrs, synchronized at 2152 hrs and reached full load at 2319 hrs.",Closed,STG#4,High,Elect.,,,
+93,124,2021,10-Jul-21,Voltage loss on Dhabeji & BOC lines resulted in 52 G breaker opening and machine shifted to FSNL. After voltage restoration & KE go-ahead machine was synchronized.,Closed,STG#4,Low,KE,,,
+94,125,2021,11-Jul-21,Voltage loss on Dhabeji & BOC lines resulted in 52 G breaker opening and machine shifted to FSNL. After voltage restoration & KE go-ahead machine was synchronized.,Closed,STG#4,Low,KE,,,
+95,126,2021,12-Jul-21,Voltage loss on Dhabeji & BOC lines resulted in 52 G breaker opening and machine shifted to FSNL. After voltage restoration & KE go-ahead machine was synchronized.,Closed,STG#4,Low,KE,,,
+96,127,2021,12-Jul-21,Voltage loss on Dhabeji & BOC lines resulted in 52 G breaker opening and machine shifted to FSNL. After voltage restoration & KE go-ahead machine was synchronized.,Closed,STG#4,Low,KE,,,
+97,128,2021,18-Jul-21,STG # 04 Load reduction as per KE demand & Load increased after KE go-ahead,Closed,STG#4,Low,KE,,,
+98,129,2021,19-Jul-21,Boiler # 02 tripping on VFD failure resulting in tripping of STG # 04 & Urea plant as per logic,Open,B#2,High,Elect.,,,
+99,130,2021,23-Jul-21,Boiler # 02 manual stoppage for ID fan start-up on VFD mode instead of by-pas mode. STG # 04 load reduction & stopped due to Boiler SD.,Open,B#2,Low,Elect.,,,
+100,131,2021,9-Aug-21,"STG # 04 was stopped to attend high temperature problem of 11KV transformer joints
+ 
+ (same as PLR # 123)",Closed,STG#4,High,KE,,,
+101,132,2021,31-Aug-21,STG # 04 load was reduced as per KE instructions,Closed,STG#4,Low,KE,,,
+102,133,2021,1-Sep-21,STG # 04 breaker opening due to KE network issues (500 KV Jamshoro line tripping).,Closed,STG#4,Low,KE,,,
+103,134,2021,7-Sep-21,Outage of Boiler # 1 to attend tube leakage and accordingly shutdown of STG # 4 suspension of power export to KE along with reduction in Steam and Power export to FFBL.,Closed,B#1,High,Mech / Insp,,,
+104,135,2021,20-Sep-21,Total Power Failure,Closed,Total Power Failure ,High,-,,,
+105,136,2021,1-Oct-21,"Tripping of all 04 coal feeders and hanging of MOVs at 03:03:57 hrs, subsequently at 0308 hrs, CFB Boiler-01 Master Fuel Trip (MFT) was applied, as a result Urea plant and STG-04 shutdown as per logic.",Closed,B#1,High,E&I,,,
+106,137,2021,3-Oct-21,STG # 04 Low Load as per KE instructions,Closed,STG#4,Low,KE,,,
+107,138,2021,5-Oct-21,"Tripping of all 04 coal feeders and hanging of MOVs at 23:41:50 hrs, subsequently at 2342 hrs, CFB Boiler-01 Master Fuel Trip (MFT) was applied, as a result Urea plant and STG-04 shutdown as per logic.",Closed,B#1,High,E&I,,,
+108,139,2021,15-Oct-21,STG # 04 Low Load as per KE instructions,Closed,STG#4,Low,KE,,,
+109,140,2021,16-Oct-21,STG # 04 Low Load as per KE instructions,Closed,STG#4,Low,KE,,,
+110,141,2021,17-Oct-21,STG # 04 Low Load as per KE instructions,Closed,STG#4,Low,KE,,,
+111,142,2021,17-Oct-21,Boiler # 01 Tripping due to communication card failure in PCS-01 martelling cabinet of DCS.,Closed,B#1,High,E&I,,,
+112,143,2021,18-Oct-21,STG # 04 Low Load as per KE instructions,Closed,STG#4,Low,KE,,,
+113,144,2021,19-Oct-21,STG # 04 Low Load as per KE instructions,Closed,STG#4,Low,KE,,,
+114,145,2021,Nov-21,STG # 04 Low Load as per KE instructions (Nov-21),Closed,STG#4,Low,KE,,,
+115,146,2021,Dec-21,STG # 04 Low Load as per KE instructions (Dec-21),Closed,STG#4,Low,KE,,,
+116,147,2021,28-Dec-21,Boiler # 02 Outage to attend tube leakage in furnace front wall,Closed,B#2,High,Construction Contractor,,,
+117,94,2020,"01-Jan-20 
+ to 
+ 31-Jan-20",Lower Steam and Power exports to FFBL and KE as compared to approved production plan in the month of January 2020.,Closed,Low Load,Nil,FFBL,,,
+118,95,2020,4-Mar-20,"STG-4 BOC line tripping on distance protection relay and afterwards load reduction owing to fault identification and provision of jumper / by-pass line to energize the BOC line from Dhabeji Line by-pass till the fault rectification from
+ FPCL grid.
+ After by-pass jumper, KE didn’t give go ahead for machine start-up resulted in 15.8 hrs loss out of total 25.9 hrs shutdown.",Open,STG#4,Critical,KE / Electrical,,,
+119,96,2020,"01-Feb-20 
+ to 
+ 29-Feb-20","Lower Power export off-take by FFBL as compared to approved production plan in
+ the month of Feb 2020 and operation of PRDS line for steam export to FFBL.",Closed,Low Load,Nil,FFBL,,,
+120,97,2020,"01-Mar-20 
+ to 
+ 31-Mar-20",Low power and steam off-take by FFBL as per FFBL complex demand.,Closed,Low Load,Nil,FFBL,,,
+121,98,2020,"01-Apr-20 
+ to 
+ 30-Apr-20",Low power and steam off-take by FFBL as per FFBL complex demand.,Closed,Low Load,Nil,FFBL,,,
+122,99,2020,12-May-20,"STG-1 tripped at 0516 hrs due to malfunction of S2 Safety Relay, After replacement of Safety Relay the Machine started at 0750 hrs and synchronized at 0808 hrs.",Closed,STG#1,Critical,E&I,,,
+123,100,2020,"01-May-20 
+ to 
+ 31-May-20",STG-4 Load reduction as per KE demand.,Closed,STG#4,Low,KE,,,
+124,101,2020,20-May-20,"STG-04, Tripped at 0215 hrs on ""Overspeed Distance relay protection"" due to Fault in KE network, After rectification the machine started at 0410 hrs and synchronized at 0436 hrs. Again machine was stopped 0524 hrs due to same fault. After go ahead from KE the Machine started at 0648 hrs, synchronized at 0718 hrs and reached full load at 0842 hrs.",Closed,STG#4,Critical,E&I,,,
+125,102,2020,21-Jun-20,"STG-04, Breaker Opened at 0822 hrs & Machine stopped 0823 hrs due to gas replacement (rectification job) on E-01& E-02 Bay on KE Grid (FPCL-Side). 
+ 
+ After gas replacement (rectification job) on E-01& E-02 Bay , the Machine started on 22nd July 2020 at 0947 hrs, synchronized at 1012 hrs & reached full load at 1137 hrs.",Open,STG#4,Critical,E&I,,,
+126,103,2020,26-Jul-20,"On July 26 during raining, KE requested to reduce load on STG # 04 owing to reduced demand owing to feeders tripping at their end. Accordingly, the load on
+ machine was reduced to 26.2 MW at 1320 hrs however at the same time, line voltage became zero and machine tripped.
+ After go ahead from KE machine started at 1432 hrs and synchronized at 1457 hrs. The power load on machine was started to increase at 1653 hrs after KE go
+ ahead and full load i.e. 55 MW was reached at 1719 hrs.",Closed,STG#4,Low,KE/ E&I,,,
+127,104,2020,27-Aug-20,"Tripping of 03 coal feeders of Boiler # 01 due to high moisture in coal owing to heavy rain and non –availability of sufficient mechanical crew to attend the feeders de-choking activities.
+ As a result, following actions were taken
+ - Gas Turbine was taken in service at FFBL at 0913 hrs
+ - Natural Gas burners were also ignited in Boiler # 01.
+ - Load on STG # 04 reduced to minimum 14.2 MW
+ After rectification of coal feeders cleaning, GT was taken out of service at 1257 hrs & STG # 04 load was increased to full load at 1330hrs",Closed,B#1,High,Mechanical / Operations,,,
+128,105,2020,27-Aug-20,STG # 04 load reduction as per KE request owing to tripping of various KE feeders due to heavy rain in Karachi city,Closed,STG#4,Nil,KE,,,
+129,106,2020,29-Aug-20,Opening of STG # 04 breaker (52 G) on over-frequency protection (81OP) due to disturbance in KE network owing to flash in KE Dhabeji line resulted in distance relay actuation. Machine remained on FSNL,Closed,STG#4,High,KE,,,
+130,107,2020,11-Sep-20,Tripping of STG # 4 machine on Over-flux (Volts/Hz) security (24) due to frequency and current variations / disturbance in KE network. No over speed observed,Open,STG#4,Critical,E&I,,,
+131,108,2020,13-Sep-20,"STG # 04 breaker opened and machine went on FSNL due to disturbance in KE network at 0124 hrs. Generator lockout relay 86G-1 operated and turbine shifted to speed mode and remained at FSNL. Thermal overload and OF alarm were also appeared.
+ 
+ After go ahead from KE,machine re-synchronized at 0145 hrs.",Closed,STG#4,High,KE,,,
+132,109,2020,23-Sep-20,"1. On Sept 23rd, 2020, voltage & frequency disturbance occurred in KE network, which resulted into voltage loss (zero voltage) on Dhabeji line and distance protection relay actuated (Zone 2, distance 61.8 Km).
+ 2. STG # 04 breaker (52G) opened at 0907 hrs on over-frequency (81) and machine switched to FSNL mode.
+ 3. The machine remained in FSNL mode till 1159 hrs, however, owing to delay in go-ahead by KE for re-synchronization machine stopped at1159 hrs.
+ 4. After go-ahead from KE, machine was started at 1509 hrs, synchronized at 1559 hrs and load was normalized (55 MWh) at 1724 hrs.",Closed,STG#4,High,KE,,,
+133,110,2020,18-Oct-20,"1. On Oct 18, planned shutdown of STG # 04 was taken to energize BOC E05 line after rehabilitation.
+ 2. Boiler # 2 was also shut down at 1023 hrs to inspect PA fan dampers link inspection & rectification.
+ 3. After energization of BOC E05 line, STG # 04 was started at 1352 hrs, reached FSNL at 1415 hrs and synchronized at 1458 hrs and reached full load (55.4 MWH) at 1624 hrs.
+ 4. After PA fan damper inspection & rectification, Boiler # 02 ID fan was started at 1411 hrs and boiler was connected with main HPS header at 1504 hrs.",Open,STG#4,Low,Alstom / Electrical / Mechanical,,,
+134,111,2020,1-Nov-20,"1. On Nov 01, 2020 planned shutdown of STG # 04 was taken for insulator replacement job on E02, G9 compartment Dhabeji line.
+ 2. Machine was stopped at 1107 hrs, after job completion and KE go-ahead STG # 04 was synchronized at 1554 hrs and reached full load at 1719 hrs.",Closed,STG#4,Low,Alstom / Electrical,,,
+135,112,2020,21-Nov-20,"1. On Nov 21, 2020 KE requested to decrease power load as per their system requirement. Accordingly, load reduction was started at 2220 hrs and machine reached at 24.6 MW at 2253 hrs and remained at 24.6 MW till 0910 hrs on 23 Nov, 2020.
+ 2. Load was started to increase after KE go-ahead on 23 Nov, 2020 at 0910 hrs. STG # 04 load was normalized (55 MW) at 0942 hrs.",Closed,STG#4,Low,KE,,,
+136,113,2020,24-Nov-20,"1. On 24 Nov, 2020 STG # 04 load was decreased as per KE demand. The load was started to decrease at 0108 hrs and reached 24.5 MW at 0142 hrs.
+ 2. Load on machine was started to increase on at 0757 (24 Nov, 2020) hrs after go-ahead from KE and load was normalized (55MW) at 0833 hrs.
+ 3. Again KE requested to reduce Load on machine at 1947 hrs and load was reduced to 30 MW at 2013 hrs.
+ 4. After KE go-ahead, load on machine started to increase at 0812 hrs (25 Nov, 2020) and normalized (55MW) at 0841 hrs.",Closed,STG#4,Low,KE,,,
+137,114,2020,26-Nov-20,"1. On 26 Nov, 2020 STG # 04 load was decreased as per KE demand. The load was started to decrease at 0158 hrs and reached 30 MW at 0225 hrs.
+ 2. Load on machine was started to increase on at 0806 hrs after go-ahead from KE and load was normalized (55MW) at 0836 hrs.",Closed,STG#4,Low,KE,,,
+138,115,2020,27-Nov-20,"1. On 27 Nov, 2020 STG # 04 load was decreased as per KE demand. The load was started to decrease at 0014 hrs and reached 24.5 MW at 0045 hrs.
+ 2. Load on machine was started to increase at 0914 hrs after go-ahead from KE
+ and load was normalized (55MW) at 0948 hrs.
+ 3. Again KE requested to decrease load on machine, the load was started to
+ decrease at 2209 hrs and reached 24.5 MW at 2242 hrs.
+ 4. After go-ahead from KE load on machine was started to increase at 1709 hrs
+ (28-11-2020) and normalized at 1742 hrs.",Closed,STG#4,Low,KE,,,
+139,116,2020,17-Dec-20,"1. On 17th Dec 2020 Boiler # 01 tripped at 1737 hrs due to ID Fan Inverter (VFD) failure, MFT actuated after main VCB breaker tripping.
+ 2. STG # 04 & FFBL Urea plants also tripped as per logic.
+ 3. GT was taken in service at FFBL.
+ 4. MPS export was also decreased from 188 Met/h to ~140 Met/h.
+ 5. After go-ahead from Electrical team, ID fan started on by-pass mode at 1849 hrs. Coal feeding started at 1855 hrs and Boiler was connected with main steam header at 1956 hrs.",Open,B#1,High,E&I,,,
+140,117,2020,23-Dec-20,"1. On 23 Dec, 2020 STG # 04 tripped, first out on HMI indicated 86 G2 (generator lockout relay actuation) and K-4 Trip B (trip command from protection relay B). On G 60-B voltage transformer failure (VTF) fault was observed whereas this was not observed on G 60-A.
+ 2. Electrical team carried out inspection of VTs & fuses, connections tightness verification between VT & relay and two VT module cards were replaced in protection relay B.
+ 3. After taking remedial actions & loop checking and go-ahead for start-up by Electrical machine was started at 1024 hrs, synchronized at 1055 hrs & load
+ was normalized at 1222 hrs.",Open,STG#4,High,Elect. / BHGE,,,
+141,66,2019,16-Jan-19,"STG-04 tripped at 0613 hrs due to malfunctioning of ""Safety Relay"". After replacement of the faulty relay with new one, the machine started at 0741 hrs, 
+ synchronized at 0805 hrs & reached 52 MW at 0927 hrs.",Closed,STG#4,Critical,E&I,,,
+142,67,2019,25-Jan-19,"STG-04 breaker opened at 0922 hrs on 25th Jan 2019 due to outage of both BOC and Dhabeji lines. Machine remained on FSNL for 174 minutes
+ 
+ After normalization & go ahead from KE, machine was resynchronized at 1216 hrs and reached peak load of 55MW at 1316 hrs.",Closed,STG#4,Low,KE,,,
+143,68,2019,2-Feb-19,STG-04 breaker opened and machine was stopped manually due to steam availability issue as CFB-1 was shut-down due to maintenance jobs.,Closed,STG#4,No,Mechanical,,,
+144,69,2019,4-Feb-19,STG-04 stopped to attend GIS cylinder filling job at grid station,Closed,STG#4,Nil,Electrical,,,
+145,70,2019,14-Feb-19,"STG-04 stopped manually due to non availability of boiler # 01 and demand of steam by FFBL for Urea plant start up
+ (0914 hrs 14th Feb ~ 1726 hrs 17th Feb)",Closed,STG#4,Nil,Mechanical,,,
+146,71,2019,21-Feb-19,STG-04 breaker opened to test modified logic of bypass opening at 1249 hrs,Closed,STG#4,Nil,BHGE,,,
+147,72,2019,6-Apr-19,"STG-01 tripped at 1324 hrs due to issue governor control card “SPC Trip”. After preventive replacement of two safety relays and one digital input card, machine was re-started at 1817 hrs and synchronized at 1838 hrs.",Closed,STG#1,Critical,E&I,,,
+148,73,2019,3-Apr-19,"STG-04 tripped at 2218 hrs due to malfunctioning of ""Safety Relay"". After replacement of the faulty relay with new one, the machine started at 0111 hrs, Synchronized at 0137 hrs & reached 52 MW at 0305 hrs.",Closed,STG#4,Critical,E&I,,,
+149,74,2019,20-Apr-19,Planned shutdown of Boiler # 1 to attend noise coming ID Fan coupling side and subsequent increase in vibration,Closed,B#1,Critical,Mechanical,,,
+150,75,2019,4-May-19,CFB Boiler # 1 was tripped upon actuation of the MFT on Furnace Pressure HH +350mmH2O during change over to by pass mode from VFD.,Closed,B#1,Low,Operations,,,
+151,76,2019,9-Jun-19,"STG-4 breaker opened at 1724hrs due to disturbance at KE Grid and machine
+ remained at FSNL for 24 minutes. On initial investigation, it was revealed that
+ the incident occurred after heavy surge observed at 132 KV network, whereas
+ voltage swing was recorded from 131KV to 122K.",Closed,STG#4,Low,KE,,,
+152,77,2019,6-Jul-19,"STG-04 tripped at 0216 hrs due to disturbance/fault in KE network. After go-ahead from KE, the machine started at 0247 hrs, synchronized at 0311 hrs and reached 54MW at 0433 hrs",Closed,STG#4,Critical,KE,,,
+153,78,2019,9-Jul-19,STG-03 Shut down due to governer hunting issue. Servo valve of machine was replaced.,Closed,STG#3,High,E&I,,,
+154,79,2019,20-Jul-19,"STG-04 tripped at 0357 hrs due to outage of both ""BOC & DHABEJI"" Lines. After go-ahead from KE, the machine started at 0437hrs, synchronized at 0500 hrs and reached 54MW at 0625 hrs.",Closed,STG#4,Critical,KE / E&I,,,
+155,80,2019,22-Jul-19,"STG-04, tripped at 2142 hrs due to outage of both ""BOC & DHABEJI"" Lines. After go-ahead from KE, the machine started at 0009 hr (23-07-19) synchronized at 0033 hr and reached 54 MW at 0202 hr.",Closed,STG#4,Critical,KE,,,
+156,81,2019,29-Jul-19,"STG-04, tripped at 0743 hrs due to outage of KE network (Heavy Rainfall). The machine again synchronized twice (1023 hrs & 1310 hrs) but each time
+ the breaker opened due to continuous disturbance in the network. Finally as per advise of K.E official, the machine stopped at 1326 hrs. After clearance from K.E the machine started at 0045hrs (30-07-19), synchronized at 0110hrs & reached 54.6 MW at 0236hrs.",Closed,STG#4,Critical,KE / E&I,,,
+157,82,2019,5-Aug-19,"Tripping of CFB boiler # 2 due to high vibration security actuation of Secondary
+ Air (SA) fan",Closed,B#2,Critical,I&C,,,
+158,83,2019,11-Aug-19,"STG-04 tripped twice as a result of outage of both K.E lines at 0258 hrs and again at 0747 hrs. After go-ahead from KE, the machine started/ synchronized/ reached at peak load in both the cases at 0410 hrs/ 0431 hrs/ 0557 hrs and 0840 hrs/ 0908 hrs/ 1034 hrs respectively",Closed,STG#4,Critical,KE / E&I,,,
+159,84,2019,17-Aug-19,Outage of Boiler # 1 to attend 02 tube leakages (tube # 64 & 65 on front wall) at lower weld joint elevation EL +16.35 meter. STG # 4 shutdown also along with reduction in steam and power export to FFBL,Closed,B#1,Critical,Maintenance / Technical,,,
+160,85,2019,11-Sep-19,Outage of Boiler # 1 to attend 02 tube leakages (tube # 51 & 52 on front wall) at lower weld joint elevation EL +16.35 meter. STG # 4 shutdown also along with reduction in steam and power export to FFBL,Closed,B#1,Critical,Maintenance / Technical (Inspection),,,
+161,86,2019,21-Sep-19,Boiler 2 tripped on high furnace pressure due to unintentional wrong command from Boardman to ID fan damper. PA fan west side link bolt found damaged & repaired.,Closed,B#2,Critical,Operations / Mechanical,,,
+162,87,2019,7-Oct-19,"CFB Boiler # 01 tripped due to actuation of furnace (draft) ""High Pressure Security"" upon changeover of ID fan from VFD to Bypass mode (sound and area bearing vibrations found increased), which caused the MFT to actuate.",Closed,B#1,Critical,Operations / E & I / Mechanical,,,
+163,88,2019,14-Oct-19,CFB Boiler # 02 ID fan VFD panel input breaker fuses blown out and main breaker tripped due to high inrush current owing to short circuiting in VFD panel transformer windings.,Closed,B#2,Critical,E&I / Operations,,,
+164,89,2019,8-Nov-19,Outage of Boiler # 2 to attend tube leakages and buildups on eroded tubes. STG # 4 also shut down along with reduction in steam and power export to FFBL.,Closed,B#2,Critical,Mechanical / Inspection / HHI,,,
+165,90,2019,3-Dec-19,Due to high circulating current at FFBL & FPCL interconnecting breakers (K-08 & K-16) Gas Turbine Generator (GTG-2) was started at FFBL resulting in low load operation of STG-1 & 2 at FPCL and less power export resulting in CPP loss to FPCL,Open,STG-1 & STG-2,Critical,E&I,,,
+166,91,2019,6-Dec-19,Planned outage of Boiler # 1 to attend tube leakages. STG # 4 also shut down along with reduction in steam and power export to FFBL.,Closed,"CFB-1
+ STG # 04",Low,Mechanical / Inspection / HHI,,,
+167,92,2019,24-Dec-19,"Boiler # 02 tripped on steam drum high level owing to failure of level control valves (LCVs) I/O card failure resulting in full opening of valves. Resultantantly, low BFW flow towards Boiler # 01 and it tripped on steam drum level low. Total Power Failureoccured on plant.",Closed,Total Power Failure ,Critical,E&I,,,
+168,93,2019,30-Dec-19,STG-3 tripped on “control oil pressure low low” indication due to malfunctioning of the control oil system “Safety Relay”.,Closed,STG#3,High,E&I,,,
+169,37,2018,9-Jan-18,STG-4 tripped at 1653 hrs due to differential Pressure Security (PDI -CE-4010-09) as extraction control was put on auto mode.,Closed,STG#4,Low,OPRS /E&I,,,
+170,38,2018,7-Feb-18,"STG-4 tripped at 2114 hrs due to malfunctioning of turbine thrust bearing temperature indication. The faulty indication was bypassed and machine restarted. But it was stopped manually due to increasing trend of Gearbox bearing temperatures observed. 
+ 
+ Tripping due to malfunctioning of turbine thrust bearing temperature & main lube oil pump damage",Closed,STG#4,High,Mechanical,,,
+171,39,2018,16-Feb-18,"STG-04 tripped on faulty indication for temperature transmitter (TT-CE-4050-48A/B) for turbine thrust bearing temperature. 
+ 
+ Machine was restarted after bypassing faulty indication (TT-CE-4050-48 A/B).",Closed,STG#4,High,E&I,,,
+172,40,2018,19-Feb-18,"STG-4 tripped at 0818 hrs due to actuation of ""long distance"" protection at KE end owing to problem in BOC network and its breaker was opened accordingly.",Closed,STG#4,Critical,E&I,,,
+173,41,2018,6-Mar-18,STG-4 tripped on actuation of voltage restraint overcurrent (51V) security on G60 resulting breaker opening and machine tripping by actuation of lock out relay K-86G2A&B,Closed,STG#4,Critical,E&I,,,
+174,42,2018,18-Mar-18,"STG-4 tripped STG-4 tripped at 1153 hrs on ""Overspeed"" security due to outage of both (BOC & Dhabeji) lines in K.E network",Closed,STG#4,Critical,E&I,,,
+175,43,2018,28-Mar-18,STG#04 tripped on fluctuation in control oil pressure,Closed,STG#4,High,Mechanical,,,
+176,44,2018,30-Mar-18,STG#04 breaker opened on Thermal Overload due to BOC line fault but remained on FSNL,Closed,STG#4,Critical,KE,,,
+177,45,2018,3-May-18,"STG-4 tripped at 0405 hrs on actuation of Generator Lockout Relay - 86G2 A/B, caused by surge in the K.E Grid.",Closed,STG#4,Critical,KE,,,
+178,46,2018,13-May-18,STG-4 tripped at 0555 hrs on actuation of Generator Lockout Relay - 86G2 A/B and CFB Stage-02 Trip from Grid caused by surge in the K.E Grid.,Closed,STG#4,Critical,E&I,,,
+179,47,2018,"14-May-18
+ to
+ 21-May-18","Machine had to be manually stopped due to problems in its control system and
+ discrepancy between Governor feedback and Command.",Closed,STG#3,Nil,E&I / Mechanical,,,
+180,48,2018,20-May-18,"STG-4 tripped at 0308 hrs on “Line distance Relay Protection”. Also, “CFB Stage-02 Trip from Grid” indication appeared on Event Log",Closed,STG#4,Critical,E&I,,,
+181,49,2018,6-Jun-18,"Planned shutdown of STG-04 was taken to rectifY difference in temperatures of
+ the termination points of 11 KV to 132KV A Transformer. In parallel, modification
+ in control system and signal verification to rectify false indication of earthing
+ switch was carried out",Closed,STG#4,Nil,E&I,,,
+182,50,2018,29-Jun-18,STG-04 tripped on over speed protection due to sudden tripping of both BOC and Dhabeji circuits.,Closed,STG#4,Critical,E&I,,,
+183,51,2018,8-Jul-18,"STG-3, tripped at 2118 hrs on “control oil pressure low low” indication due to malfunctioning of the control oil system “Safety Relay”.",Closed,STG#3,High,E&I,,,
+184,52,2018,19-Jul-18,STG-04 breaker opened due to actuation of Thermal overload 49OP and 81OP at G60 panel and machine was at FSNL. On resynchronization STG-04 tripped on over speed protection (Max speed 4696 rpm) due to surge in KE Grid once again.,Closed,STG#4,Critical,E&I,,,
+185,53,2018,10-Aug-18,"STG-04 tripped at 0240 hrs due to outage of both BOC and Dhabeji lines. After normalization & go ahead from KE, machine was restarted at 0307 hrs and re-synchronized at 0342 hrs and reached peak load of 55MW at 0507 hrs. 
+ 
+ Machine again tripped at 0511 hrs due to outage of both BOC and Dhabeji lines. After normalization & go ahead from KE, machine was restarted at 0545 hrs and re-synchronized at 0610 hrs and reached peak load of 55MW at 0735 hrs. 
+ 
+ On both occasions tripping occurred on over-speed protection.",Closed,STG#4,Critical,E&I,,,
+186,54,2018,"11-Aug-18
+ 12-Aug-18","STG-4, the electrical breaker opened at 2236 hrs due to loss of voltage in both (BOC & Dhabeji) lines followed by turbine tripping at 2240 hrs on actuation of generator lockout relay due (V/Hz) protection actuation on G-60. Machine rolled at 2322 hrs and synchronized at 0147 hrs (18-08-2018) due to delayed KE go-ahead. The Electrical breaker again opened at 0252 hrs due to loss of only available BOC line. Machine again synchronized at 0317 hrs, however breaker again opened at 0320 hrs due to loss of BOC line. Machine re-synchronized at 0347 hrs. The machine reached at peak load at 0439 hrs.",Closed,STG#4,Critical,E&I,,,
+187,55,2018,"17-Aug-18
+ 18-Aug-18","STG-4, the electrical breaker opened at 2236 hrs due to loss of voltage in both (BOC & Dhabeji) lines followed by turbine tripping at 2240 hrs on actuation of generator lockout relay due (V/Hz) protection actuation on G-60. Machine rolled at 2322 hrs and synchronized at 0147 hrs (18-08-2018) due to delayed KE go-ahead. The Electrical breaker again opened at 0252 hrs due to loss of only available BOC line. Machine again synchronized at 0317 hrs, however breaker again opened at 0320 hrs due to loss of BOC line. Machine re-synchronized at 0347 hrs. The machine reached at peak load at 0439 hrs.",Closed,STG#4,Critical,E&I,,,
+188,56,2018,6-Sep-18,Due to tripping of CFB Boiler-1 due to tube failure owing to erosion. Over pressurization & Deformation. Weld over failure due to poor workmanship,Closed,B#1,Critical,Tech /Oprs/Mechanical,,,
+189,57,2018,5-Oct-18,STG-04 breaker opened at 1245 hrs due to outage of both BOC and Dhabeji lines. After normalization machine was re-synchronized at 1415 hrs and reached peak load of 55MW at 1511 hrs. Machine remained on FSNL for 90 minutes.,Closed,STG#4,Nil,E&I,,,
+190,58,2018,11-Oct-18,Boiler # 02 Planned SD for tubes inspection,Closed,B#2,,,,,
+191,59,2018,18-Oct-18,STG-04 breaker opened at 1245 hrs due to outage of both BOC and Dhabeji lines. After normalization machine was re-synchronized at 1415 hrs and reached peak load of 55MW at 1511 hrs. Machine remained on FSNL for 90 minutes.,Closed,STG#4,Critical,E&I,,,
+192,60,2018,20-Oct-18,STG-04 breaker opened at 1245 hrs due to outage of both BOC and Dhabeji lines. After normalization machine was re-synchronized at 1415 hrs and reached peak load of 55MW at 1511 hrs. Machine remained on FSNL for 90 minutes.,Closed,STG#4,Critical,KE,,,
+193,61,2018,12-Nov-18,STG-04 breaker opened at 0623 hrs due to outage of both BOC and Dhabeji lines. After normalization machine was re-synchronized at 0809 hrs and reached peak load of 55MW at 0905 hrs. Machine remained on FSNL for 106 min,Closed,STG#4,Critical,KE,,,
+194,62,2018,18-Nov-18,"STG-04 tripped at 0629 hrs due to outage of both BOC and Dhabeji lines. After normalization & go ahead from KE, machine was restarted at 0812 hrs and re-synchronized at 0837 hrs and reached peak load of 55MW at 1002 hrs. Machine remained tripped for 103 min
+ 
+ Voltages on Dhabeji and BOC Circuits becomes dead while STG # 4 tripped on over-speed (4752 rpm) security with breaker open after tripping as AVR not perform.",Closed,STG#4,Critical,E&I,,,
+195,63,2018,19-Nov-18,"STG-04 tripped on over speed security at 0352 hrs due to outage of both BOC and Dhabeji lines. After normalization & go ahead from KE, machine was restarted at 0755 hrs, re-synchronized at 0821 hrs and reached peak load of 55MW at 0945 hrs. Machine remained tripped for 243 min, of which 151 min delay was due to KE go ahead.
+ 
+ 
+ Voltages on Dhabeji and BOC Circuits becomes dead while STG # 4 tripped on over-speed (4752 rpm) security with breaker open after tripping as AVR not perform.",Closed,STG#4,Critical,E&I,,,
+196,64,2018,2-Dec-18,"STG-2, tripped at 2053 hrs due to malfunctioning of the “Safety Relay”. DAP Plant & Urea Granulation section tripped on actuation of ELSS as per logic. STG-1, reached up to 19 MW with all parameters remaining normal.STG-2 restarted at 2313 hrs and synchronized at 2328 hrs after replacement of safety relay.",Closed,STG#2,Critical,E&I,,,
+197,65,2018,29-Dec-18,STG-1 manually stopped at 2255 hrs on 29th Dec 2018 due to high vibration of the generator DE side bearing (VTX-CE-1080-55). The machine restarted at 0048 hrs and synchronized at 0101 hrs on 30th Dec 2018,Closed,STG#1,Low,BHGE,,,
+198,1,2017,13-May-17,"The machine tripped on ""Over flux"" protection during Reliability Run test at 2159 hours.",Closed,STG#4,Low,KE,,,
+199,2,2017,26-May-17,"STG 4 breaker opened due to extensive fluctuation in KE distribution network, the Electrical Breaker of the machine opened at 0847 Hrs on ""Thermal Overload"" protection.Machine resynchronized at 0924 Hrs and reached peak load at 1017 Hrs.",Closed,STG#4,Critical,KE,,,
+200,3,2017,28-May-17,STG4 (60 MW) breaker opened on “under frequency protection” due to reason of trip was due to huge disturbance in K.E grid system which resulted in opening of the breaker,Closed,STG#4,Critical,KE,,,
+201,4,2017,28-May-17,"STG4 (60 MW) tripped on “overflux protection” and reason of trip was due to short circuiting at ""Airport & Gul Ahmed"" Grid.All process parameters were normal.",Closed,STG#4,Critical,KE,,,
+202,5,2017,26-May-17,STG-2 planned shutdown to install trip multiplier and dump tube logic.,Closed,STG#2,Nil,OPRS/E&I,,,
+203,6,2017,29-May-17,STG-1 planned shutdown to install trip multiplier and dump tube logic.,Closed,STG#4,Nil,OPRS/E&I,,,
+204,7,2017,30-May-17,STG4 machine tripped on “over-speed protection”. Machine was operating at 54.6 MW.,Closed,STG#4,Critical,OPRS/E&I,,,
+205,8,2017,9-Jun-17,STG3 machine tripped on high vibration of Turbine NDE side bearing (VT-CE-3050 52X) while operating at 9.8MW.,Closed,STG#3,High,Mechanical,,,
+206,9,2017,15-Jun-17,STG4 (60 MW) machine tripped twice on “Turbine Thrust Bearing Temp High High”. Machine was operating at 53 MW. Malfunctioning of turbine thrust bearing (active side) temperature indication (TT-CE-4050-45A/B),Closed,STG#4,High,BHGE,,,
+207,10,2017,16-Jun-17,Planned shutdown to attend oil leakage at generator side seals,Closed,STG#2,Nil,BHGE,,,
+208,11,2017,17-Jun-17,"STG-1 machine breaker was manually shutdown at 2200 hrs to check cause of high temperature at thrust bearing of the turbine.
+ Planned shutdown to attend high temperature issue at turbine thrust bearing and TTV passing issues",Closed,STG#1,Nil,BHGE,,,
+209,12,2017,20-Jun-17,"Sequential tripping of STG 1, GT 1 and STG 2 resulted in Total Power Failure.",Closed,Total Power Failure ,Critical,BHGE,,,
+210,13,2017,28-Jun-17,"Machine tripped on ""Generator Lockout Relay K86G2-A &B”",Closed,STG#4,High,E&I,,,
+211,14,2017,30-Jun-17,STG4 machine tripped on “over-speed protection”. Machine was operating at Machine was operating at 53 MW.,Closed,STG#4,Critical,E&I,,,
+212,15,2017,3-Jul-17,STG2 machine breaker was manually opened at 1054 hrs to collect reference data for STG-1.,Closed,STG#2,Nil,BHGE,,,
+213,16,2017,17-Jul-17,STG3 machine tripped on momentarily high radial vibration of Gearbox high speed shaft (VT-3050-76Y). Machine was operating at 9.8MW.,Closed,STG#3,Low,BHGE,,,
+214,17,2017,24-Jul-17,STG2 machine tripped on safety relay status due to “Excitation Off” indication.,Closed,STG#2,Critical,BHGE,,,
+215,18,2017,26-Jul-17,STG4 (60 MW) machine tripped on “Turbine Journal Bearing Temp High High”. Machine was operating at 53 MW. Machine tripped on malfunctioning of TE-CE-4050-44 A,Closed,STG#4,High,BHGE,,,
+216,19,2017,6-Aug-17,"Sequential Tripping of STG 1, GT 1 and STG 2 resulted in Total Power Failure due to fire on bus duct in MEB
+ resulted in Total Power Failure at FPCL and FFBL. (Initiated after fire on bus duct in MEB)",Closed,Total Power Failure ,Critical,Schneider / E&I,,,
+217,20,2017,22-Aug-17,STG4 (60 MW) machine tripped on “Generator Lock out Relay Protection K86G2 A/B”,Closed,STG#4,High,BHGE,,,
+218,21,2017,28-Aug-17,STG3 machine tripped on “Cumulative Radial Vibration” caused by momentarily high radial vibration of Gearbox high speed shaft (VT-3050-76Y). Machine was operating at 7.2 MW.,Closed,STG#3,High,I/C,,,
+219,22,2017,1-Sep-17,STG4 (60 MW) machine tripped on “Generator Lock out Relay Protection K86G2 A/B”,Closed,STG#4,High,BHGE,,,
+220,23,2017,8-Sep-17,STG-1 manually stopped to attend job,Closed,STG#1,Nil,BHGE,,,
+221,24,2017,8-Sep-17,"Machine tripped on actuation of ""Generator Lockout Relay"".",Closed,STG#1,Low,BHGE,,,
+222,25,2017,13-Sep-17,Planned stoppage to incorporate logic with electrical breaker opening,Closed,STG#2,Nil,BHGE / E&I,,,
+223,26,2017,23-Sep-17,STG1 machine tripped on actuation of high vibration security of turbine NDE Bearing (VT-CE-1080-35).,Closed,STG#2,High,BHGE / E&I,,,
+224,27,2017,26-Sep-17,"STG-3, 03 Cooling Tower fans(B,D,S), 01 closed loop cooling water pump (A) & 01 side stream pump (A) tripped due to Electrical Grounding fault in 01 spare cubical of LV switch gear in Main Electrical Substation.
+ 
+ (ON 26th Sept, at 11:oo PM ground fault occurred in 480V Low Voltage Switchgaer causing LV incoming protection operated on Ground fault sensing , resulting in tripping of Steam Turbine #3 and BOP section of Plant.
+ 
+ Fault occurred in spare cubical section where no breaker was in service i.e. No Load was feeding from faulty section)",Closed,STG#3,Critical,Schneider / E&I,,,
+225,28,2017,27-Sep-17,"Tripped on ""Generator Lock out relay""(K-86G2-A/B)",Closed,STG#3,High,E&I,,,
+226,29,2017,27-Sep-17,"Tripped on ""Generator Lock out relay""(K-86G2-A/B)",Closed,STG#3,High,E&I,,,
+227,30,2017,29-Sep-17,"Tripped on ""Generator Lock out relay""(K-86G2-A/B)",Closed,STG#3,High,E&I,,,
+228,31,2017,31-Oct-17,"Tripped on ""Generator Lock out relay""(K-86G2-A/B)",Closed,STG#3,High,E&I,,,
+229,32,2017,7-Nov-17,"STG-2 & 3 tripped on actuation of ""Generator Lock out relay""(K-86G2-A/B) due to grounding fault in breaker in SRB substation.",Closed,STG#3,Critical,E&I,,,
+230,33,2017,7-Nov-17,"STG-2 tripped on actuation of ""Generator Lock out relay""(K-86G2-A/B)",Closed,STG#3,High,E&I,,,
+231,34,2017,1-Dec-17,STG # 4 Machine tripped due to surge in 132 KV pipri line.,Closed,STG#4,High,E&I,,,
+232,35,2017,2-Dec-17,Machine tripped due to drop / fluctuations in control oil pressure. Spare parts of control system was not available at site,Closed,STG#4,High,Mechanical,,,
+233,36,2017,19-Dec-17,STG # 4 machine breaker opened due to fault in KE network however the machine remained at FSNL,Closed,STG#4,Low,KE,,,
