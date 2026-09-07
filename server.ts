@@ -262,6 +262,84 @@ ${config.context}
   }
 });
 
+// POST /api/sheets/fetch - Live Google Sheets Tab CSV Proxy (supports tab 'Recommendations' and column E)
+app.post('/api/sheets/fetch', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { url, sheetTab = 'Recommendations' } = req.body;
+    if (!url || typeof url !== 'string') {
+      res.status(400).json({ success: false, error: 'A valid Google Sheet URL is required.' });
+      return;
+    }
+
+    const trimmedUrl = url.trim();
+    let spreadsheetId = trimmedUrl;
+    const match = trimmedUrl.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+    if (match) {
+      spreadsheetId = match[1];
+    }
+
+    const candidateUrls: string[] = [];
+
+    // If a direct CSV or published link was given, try that first
+    if (trimmedUrl.includes('output=csv') || trimmedUrl.includes('format=csv') || trimmedUrl.includes('/pub?')) {
+      candidateUrls.push(trimmedUrl);
+    }
+
+    // Google Visualization API CSV export for specific tab (e.g. Recommendations)
+    candidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetTab)}`);
+    // Standard Google Drive export URL
+    candidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&sheet=${encodeURIComponent(sheetTab)}`);
+
+    let csvText = '';
+    let successUrl = '';
+    let lastError = '';
+
+    for (const fetchUrl of candidateUrls) {
+      try {
+        const response = await fetch(fetchUrl, {
+          method: 'GET',
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'text/csv,text/plain,*/*'
+          },
+          redirect: 'follow'
+        });
+
+        if (response.ok) {
+          const text = await response.text();
+          // Check if response is valid CSV rather than an HTML login / permission error
+          if (text && !text.includes('<!DOCTYPE html>') && !text.includes('<html')) {
+            csvText = text;
+            successUrl = fetchUrl;
+            break;
+          }
+        }
+      } catch (err: any) {
+        lastError = err?.message || 'Network request failed';
+      }
+    }
+
+    if (!csvText) {
+      res.status(400).json({
+        success: false,
+        error: `Could not retrieve CSV from Google Sheet tab "${sheetTab}". Please make sure the sheet is shared with "Anyone with the link can view" or published to the web. (${lastError})`
+      });
+      return;
+    }
+
+    res.json({
+      success: true,
+      sheetTab,
+      spreadsheetId,
+      csvText,
+      fetchedFrom: successUrl
+    });
+  } catch (err: any) {
+    console.error('Error in /api/sheets/fetch:', err);
+    res.status(500).json({ success: false, error: err?.message || 'Internal server error fetching Google Sheet.' });
+  }
+});
+
 // Setup Vite development middleware or static serving in production
 async function startServer() {
   if (process.env.NODE_ENV !== 'production') {

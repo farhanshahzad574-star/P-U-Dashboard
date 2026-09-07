@@ -11,7 +11,7 @@
  * - 4 Executive KPI Cards: Total PLRs (233), Open PLRs (27), Total Recommendations (451), Open Recommendations (31)
  * - Row 1 Visuals:
  *     - Incident Breakdown by Machine (Col B & Col G | 233 Outages) (Donut + Clean Quick-Select Pills)
- *     - Overall Incident Resolution & Status (Pie Chart: 206 Closed / 27 Open + Resolution Ratio + Direct Filter Actions)
+ *     - Overall recommendations Resolution & Status (Pie Chart: 420 Closed / 31 Open Recommendations or 206/27 Incidents + Resolution Ratio + Direct Filter Actions)
  * - Row 2 Visuals:
  *     - Action Recommendations Per Dept (451 Recs) (Stacked / Side-by-Side / Trend Bar Chart, full width covering page area)
  * - Row 3 Visuals:
@@ -68,6 +68,24 @@
     return window.portalApp.state.plrState;
   }
 
+  // Baseline snapshot of preloaded recommendations for resetting
+  window.FPCL_PLR_RECOMMENDATIONS_BASELINE = Array.isArray(window.FPCL_PLR_RECOMMENDATIONS)
+    ? JSON.parse(JSON.stringify(window.FPCL_PLR_RECOMMENDATIONS))
+    : [];
+
+  // Restore modified recommendations from localStorage if present
+  try {
+    const savedRecs = localStorage.getItem('FPCL_PLR_RECOMMENDATIONS_UPDATED');
+    if (savedRecs) {
+      const parsedSaved = JSON.parse(savedRecs);
+      if (Array.isArray(parsedSaved) && parsedSaved.length > 0) {
+        window.FPCL_PLR_RECOMMENDATIONS = parsedSaved;
+      }
+    }
+  } catch (err) {
+    console.warn('Could not restore cached recommendations from localStorage:', err);
+  }
+
   // Initialize PLR state immediately
   window.portalApp.state.plrState = window.portalApp.state.plrState || getDefaultPlrState();
 
@@ -78,6 +96,172 @@
   function getPlrRecs() {
     return Array.isArray(window.FPCL_PLR_RECOMMENDATIONS) ? window.FPCL_PLR_RECOMMENDATIONS : [];
   }
+
+  /**
+   * Synchronize current PLR metrics to the Overview Dashboard registry and rollups
+   */
+  portalApp.syncPlrStatsToOverview = function () {
+    const recs = getPlrRecs();
+    const total = recs.length;
+    const open = recs.filter(r => (r.status || '').toLowerCase() === 'open').length;
+    const closed = total - open;
+    const rate = total > 0 ? ((closed / total) * 100).toFixed(1) + '%' : '0.0%';
+
+    if (window.DASHBOARD_REGISTRY) {
+      const plrEntry = window.DASHBOARD_REGISTRY.find(d => d.id === 'plr');
+      if (plrEntry) {
+        plrEntry.kpis = { total, closed, inProgress: open, overdue: 0, compliance: rate };
+        plrEntry.punchList = { open, closed, total, rate };
+        plrEntry.statusComment = `${total} Recommendations across standardized departments: ${closed} Closed, ${open} Open (${rate} Closure) • 233 PLR Incidents across standardized machines: 206 Closed, 27 Open (88.4% Resolution).`;
+      }
+    }
+    if (window.portalApp && typeof window.portalApp.updateRollupStats === 'function') {
+      window.portalApp.updateRollupStats();
+    }
+    if (window.portalApp && typeof window.portalApp.renderCards === 'function') {
+      window.portalApp.renderCards();
+    }
+    if (window.portalApp && typeof window.portalApp.renderComparisonChart === 'function') {
+      window.portalApp.renderComparisonChart();
+    }
+  };
+
+  // Run initial sync on load
+  portalApp.syncPlrStatsToOverview();
+
+  /**
+   * RFC-4180 Compliant CSV Parser specifically tailored for Google Sheet Tab "Recommendations"
+   * Picks recommendation text from Column E named "Recommendations" (or index 4)
+   */
+  window.parsePLRRecommendationsCSV = function (csvText) {
+    if (!csvText || typeof csvText !== 'string') return [];
+
+    const rows = [];
+    let currentRow = [];
+    let currentVal = '';
+    let inQuotes = false;
+
+    for (let i = 0; i < csvText.length; i++) {
+      const char = csvText[i];
+      const nextChar = csvText[i + 1];
+
+      if (char === '"') {
+        if (inQuotes && nextChar === '"') {
+          currentVal += '"';
+          i++; // skip escaped quote
+        } else {
+          inQuotes = !inQuotes;
+        }
+      } else if (char === ',' && !inQuotes) {
+        currentRow.push(currentVal.trim());
+        currentVal = '';
+      } else if ((char === '\r' || char === '\n') && !inQuotes) {
+        if (char === '\r' && nextChar === '\n') {
+          i++; // handle CRLF
+        }
+        currentRow.push(currentVal.trim());
+        currentVal = '';
+        if (currentRow.some(val => val.length > 0)) {
+          rows.push(currentRow);
+        }
+        currentRow = [];
+      } else {
+        currentVal += char;
+      }
+    }
+
+    // Push trailing value if present
+    if (currentVal.length > 0 || currentRow.length > 0) {
+      currentRow.push(currentVal.trim());
+      if (currentRow.some(val => val.length > 0)) {
+        rows.push(currentRow);
+      }
+    }
+
+    if (rows.length < 2) return [];
+
+    // Clean headers for index matching
+    const headers = rows[0].map(h => h.trim().toLowerCase().replace(/[^a-z0-9]/g, ''));
+
+    const findCol = (keywords) => {
+      return headers.findIndex(h => keywords.some(k => h.includes(k)));
+    };
+
+    // Specifically detect Column E (index 4) named "Recommendations"
+    let colRec = findCol(['recommendation', 'recommendations', 'rec', 'actionrecommendation', 'correctiveaction']);
+    if (colRec === -1 && rows[0].length >= 5) {
+      colRec = 4; // Column E (0-indexed 4)
+    }
+
+    // S_No (Col A)
+    let colSNo = findCol(['sno', 'sr', 's_no', 'serial', 'number']);
+    if (colSNo === -1) colSNo = 0;
+
+    // PLR # (Col B)
+    let colPlr = findCol(['plr', 'plrno', 'ref', 'incidentno', 'incidentref']);
+    if (colPlr === -1 && rows[0].length > 1) colPlr = 1;
+
+    // Year (Col C)
+    let colYear = findCol(['year', 'yr']);
+    if (colYear === -1 && rows[0].length > 2) colYear = 2;
+
+    // Date (Col D)
+    let colDate = findCol(['date', 'dt']);
+    if (colDate === -1 && rows[0].length > 3) colDate = 3;
+
+    // Action Entity / Department (Col F)
+    let colAction = findCol(['actionby', 'actionentity', 'responsibledepartment', 'department', 'dept', 'entity', 'owner', 'responsible']);
+    if (colAction === -1 && rows[0].length > 5) colAction = 5;
+
+    // Status (Col G)
+    let colStatus = findCol(['status', 'openclose', 'state']);
+    if (colStatus === -1 && rows[0].length > 6) colStatus = 6;
+
+    const parsedItems = [];
+
+    for (let r = 1; r < rows.length; r++) {
+      const row = rows[r];
+      if (!row || row.length === 0) continue;
+
+      // Extract recommendation from Column E named Recommendations
+      const rawRec = (colRec !== -1 && row[colRec]) ? row[colRec].trim() : '';
+      if (!rawRec) continue; // Skip empty rows
+
+      const rawStatus = (colStatus !== -1 && row[colStatus]) ? row[colStatus].trim() : 'Open';
+      // Normalize status: "Closed", "Close", "Done", "Resolved" -> "Closed"; others -> "Open"
+      let normStatus = 'Open';
+      const sLower = rawStatus.toLowerCase();
+      if (sLower.includes('close') || sLower.includes('done') || sLower.includes('resolv') || sLower.includes('complet')) {
+        normStatus = 'Closed';
+      } else {
+        normStatus = 'Open';
+      }
+
+      const rawPlr = (colPlr !== -1 && row[colPlr]) ? row[colPlr].trim() : '';
+      const plrMatch = rawPlr.match(/\d+/);
+      const plrNo = plrMatch ? parseInt(plrMatch[0], 10) : (rawPlr || r);
+
+      const rawSNo = (colSNo !== -1 && row[colSNo]) ? row[colSNo].trim() : '';
+      const sNo = rawSNo && !isNaN(parseInt(rawSNo, 10)) ? parseInt(rawSNo, 10) : (parsedItems.length + 1);
+
+      const rawYear = (colYear !== -1 && row[colYear]) ? row[colYear].trim() : '';
+      const rawDate = (colDate !== -1 && row[colDate]) ? row[colDate].trim() : '';
+      const rawAction = (colAction !== -1 && row[colAction]) ? row[colAction].trim() : 'Unassigned';
+
+      parsedItems.push({
+        sNo: sNo,
+        plrNo: plrNo,
+        year: rawYear ? (isNaN(parseInt(rawYear, 10)) ? rawYear : parseInt(rawYear, 10)) : 2025,
+        date: rawDate,
+        recommendation: rawRec, // Picked from Column E named Recommendations in Google Sheet tab Recommendations
+        actionBy: rawAction || 'Unassigned',
+        status: normStatus,
+        category: rawAction || 'General'
+      });
+    }
+
+    return parsedItems;
+  };
 
   /**
    * Dynamic Normalization (Column F: ACTION ENTITY)
@@ -103,6 +287,40 @@
     const cleanTarget = String(targetEntity).trim().toLowerCase();
     const cleanRaw = normalizeActionEntity(rawActionBy).toLowerCase();
     return cleanRaw === cleanTarget;
+  }
+
+  /**
+   * Check if a raw Machine string matches a target machine filter
+   */
+  function matchesMachine(itemMachine, targetMachine) {
+    if (!targetMachine || targetMachine === 'all') return true;
+    if (!itemMachine) return targetMachine.toLowerCase().includes('other');
+
+    const norm = (str) => {
+      return String(str || '')
+        .toLowerCase()
+        .replace(/\s+/g, '')
+        .replace(/#/g, '')
+        .replace(/-/g, '')
+        .replace(/boiler/g, 'b')
+        .replace(/cfb\d*/g, '')
+        .replace(/[()]/g, '');
+    };
+
+    const stripZeros = (s) => s.replace(/([a-z]+)0+(\d+)/, '$1$2');
+
+    const cleanItem = stripZeros(norm(itemMachine));
+    const cleanTarget = stripZeros(norm(targetMachine));
+
+    if (cleanTarget === 'otherequipment' || cleanTarget === 'other') {
+      const mainKnown = ['stg4', 'stg3', 'stg2', 'stg1', 'b1', 'b2'];
+      return !mainKnown.some(m => cleanItem.includes(m));
+    }
+
+    if (cleanItem === cleanTarget) return true;
+    if (cleanItem.includes(cleanTarget) || cleanTarget.includes(cleanItem)) return true;
+
+    return false;
   }
 
   /**
@@ -144,13 +362,7 @@
     return data.filter(item => {
       // Machine filter (COL G)
       if (s.selectedMachine && s.selectedMachine !== 'all') {
-        const itemMachine = String(item.machine || '').toLowerCase();
-        const targetMachine = s.selectedMachine.toLowerCase();
-        if (targetMachine === 'other equipment') {
-          if (['stg # 4', 'stg # 3', 'stg # 1', 'stg # 2', 'boiler # 1', 'boiler # 2'].some(m => itemMachine.includes(m))) {
-            return false;
-          }
-        } else if (itemMachine !== targetMachine && !itemMachine.includes(targetMachine) && !targetMachine.includes(itemMachine)) {
+        if (!matchesMachine(item.machine, s.selectedMachine)) {
           return false;
         }
       }
@@ -236,14 +448,7 @@
 
       // Machine filter via parent PLR
       if (s.selectedMachine && s.selectedMachine !== 'all') {
-        if (!parentPlr) return false;
-        const pMachine = String(parentPlr.machine || '').toLowerCase();
-        const tMachine = s.selectedMachine.toLowerCase();
-        if (tMachine === 'other equipment') {
-          if (['stg # 4', 'stg # 3', 'stg # 1', 'stg # 2', 'boiler # 1', 'boiler # 2'].some(m => pMachine.includes(m))) {
-            return false;
-          }
-        } else if (pMachine !== tMachine && !pMachine.includes(tMachine) && !tMachine.includes(pMachine)) {
+        if (!parentPlr || !matchesMachine(parentPlr.machine, s.selectedMachine)) {
           return false;
         }
       }
@@ -368,28 +573,21 @@
         if (String(itemYear || '') !== String(s.selectedYear)) return false;
       }
 
-      // Machine filter
-      if (s.selectedMachine && s.selectedMachine !== 'all') {
-        if (!parentPlr) return false;
-        const pMachine = String(parentPlr.machine || '').toLowerCase();
-        const tMachine = s.selectedMachine.toLowerCase();
-        if (tMachine === 'other equipment') {
-          if (['stg # 4', 'stg # 3', 'stg # 1', 'stg # 2', 'boiler # 1', 'boiler # 2'].some(m => pMachine.includes(m))) return false;
-        } else if (pMachine !== tMachine && !pMachine.includes(tMachine) && !tMachine.includes(pMachine)) {
-          return false;
-        }
-      }
-
-      // Priority filter
-      if (s.selectedPriority && s.selectedPriority !== 'all') {
-        if (!parentPlr || String(parentPlr.priority || '').toLowerCase() !== s.selectedPriority.toLowerCase()) return false;
-      }
-
       // Resp Dept filter (incident level)
       if (s.selectedDept && s.selectedDept !== 'all') {
         const itemMatches = matchesActionEntity(item.actionBy, s.selectedDept);
         const parentMatches = parentPlr ? matchesActionEntity(parentPlr.dept, s.selectedDept) : false;
         if (!itemMatches && !parentMatches) return false;
+      }
+
+      // Machine filter
+      if (s.selectedMachine && s.selectedMachine !== 'all') {
+        if (!parentPlr || !matchesMachine(parentPlr.machine, s.selectedMachine)) return false;
+      }
+
+      // Priority filter
+      if (s.selectedPriority && s.selectedPriority !== 'all') {
+        if (!parentPlr || String(parentPlr.priority || '').toLowerCase() !== s.selectedPriority.toLowerCase()) return false;
       }
 
       return true;
@@ -487,14 +685,7 @@
 
       // Machine filter
       if (s.selectedMachine && s.selectedMachine !== 'all') {
-        if (!parentPlr) return false;
-        const pMachine = String(parentPlr.machine || '').toLowerCase();
-        const tMachine = s.selectedMachine.toLowerCase();
-        if (tMachine === 'other equipment') {
-          if (['stg # 4', 'stg # 3', 'stg # 1', 'stg # 2', 'boiler # 1', 'boiler # 2'].some(m => pMachine.includes(m))) return false;
-        } else if (pMachine !== tMachine && !pMachine.includes(tMachine) && !tMachine.includes(pMachine)) {
-          return false;
-        }
+        if (!parentPlr || !matchesMachine(parentPlr.machine, s.selectedMachine)) return false;
       }
 
       // Priority filter
@@ -640,18 +831,34 @@
                   <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Connected Sheets Active
                 </span>
                 <span class="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-slate-100 text-slate-700 border border-slate-200">
-                  ${totalPLRs} Incidents • ${totalRecs} Recommendations
+                  ${totalPLRs} Incidents • ${totalRecs} Recommendations (${closedRecs} Closed, ${openRecs} Open)
                 </span>
               </div>
               <p class="text-xs text-slate-500 font-medium mt-0.5">
-                Source Workbook: <span class="font-bold text-slate-700 font-mono">PLRs white dashboard</span> • Dual Tabs: <strong class="text-[#2E6DA4]">PLRStatus</strong> &amp; <strong class="text-emerald-700">Recommendations</strong>
+                Source Workbook: <span class="font-bold text-slate-700 font-mono">PLRs white dashboard</span> • Dual Tabs: <strong class="text-[#2E6DA4]">PLRStatus</strong> &amp; <strong class="text-emerald-700">Recommendations</strong> <span class="text-slate-400">|</span> <span class="text-emerald-800 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">Column E: Recommendations</span>
               </p>
             </div>
           </div>
-          <div class="flex items-center gap-2 shrink-0">
+          <div class="flex items-center gap-2 shrink-0 flex-wrap">
+            <button
+              onclick="portalApp.openPlrSheetSyncModal()"
+              class="px-3.5 py-2 rounded-xl text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+              title="Sync recommendations from Google Sheet tab Recommendations"
+            >
+              <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-600"></i>
+              <span>Google Sheet Sync</span>
+            </button>
+            <button
+              onclick="portalApp.openAddRecommendationModal()"
+              class="px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+              title="Add a new recommendation item to Column E"
+            >
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+              <span>+ Add Recommendation</span>
+            </button>
             <button
               onclick="portalApp.resetAllPlrImageFilters()"
-              class="px-3.5 py-2 rounded-xl text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+              class="px-3 py-2 rounded-xl text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
               title="Reset all filters across both tabs"
             >
               <i data-lucide="rotate-ccw" class="w-3.5 h-3.5 text-[#2E6DA4]"></i>
@@ -659,7 +866,7 @@
             </button>
             <button
               onclick="portalApp.exportPlrCSV()"
-              class="px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-[#2E6DA4] hover:bg-[#235885] shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+              class="px-3 py-2 rounded-xl text-xs font-bold text-white bg-[#2E6DA4] hover:bg-[#235885] shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
             >
               <i data-lucide="download" class="w-3.5 h-3.5"></i>
               <span>Export CSV</span>
@@ -811,10 +1018,14 @@
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
           
           <!-- Card 1: TOTAL PLRs -->
-          <div class="bg-white border border-slate-200 hover:border-blue-300 rounded-2xl p-4 sm:p-5 shadow-sm relative overflow-hidden group transition-all">
+          <div
+            onclick="portalApp.openPlrKpiModal('total-plrs')"
+            class="bg-white border border-slate-200 hover:border-[#2E6DA4] hover:shadow-md hover:-translate-y-0.5 rounded-2xl p-4 sm:p-5 shadow-sm relative overflow-hidden group transition-all cursor-pointer"
+            title="Click to view all ${totalPLRs} Plant Loss Reports in pop-up window"
+          >
             <div class="flex items-center justify-between text-slate-500 text-xs sm:text-sm font-bold uppercase tracking-wider">
               <span>Total PLRs</span>
-              <span class="p-1.5 rounded-lg bg-blue-50 text-[#2E6DA4] border border-blue-100">
+              <span class="p-1.5 rounded-lg bg-blue-50 text-[#2E6DA4] border border-blue-100 group-hover:bg-blue-100 transition-colors">
                 <i data-lucide="file-text" class="w-4 h-4"></i>
               </span>
             </div>
@@ -824,19 +1035,22 @@
             </div>
             <div class="flex items-center justify-between text-xs sm:text-sm text-slate-500 mt-2">
               <span>Historical Scope (2017–2025)</span>
-              <span class="font-bold text-emerald-700 font-mono">${closedPLRs} Closed (${plrClosureRate}%)</span>
+              <span class="font-bold text-[#2E6DA4] group-hover:underline flex items-center gap-1">
+                <span>${closedPLRs} Closed</span>
+                <i data-lucide="chevron-right" class="w-3.5 h-3.5 inline"></i>
+              </span>
             </div>
           </div>
 
           <!-- Card 2: OPEN PLRs -->
           <div
-            onclick="portalApp.filterPlrByStatus('Open')"
-            class="bg-white border border-rose-200 hover:border-rose-400 rounded-2xl p-4 sm:p-5 shadow-sm relative overflow-hidden group transition-all cursor-pointer"
-            title="Click to view all Open PLRs in table"
+            onclick="portalApp.openPlrKpiModal('open-plrs')"
+            class="bg-white border border-rose-200 hover:border-rose-400 hover:shadow-md hover:-translate-y-0.5 rounded-2xl p-4 sm:p-5 shadow-sm relative overflow-hidden group transition-all cursor-pointer"
+            title="Click to inspect all ${openPLRs} Open PLRs in pop-up window"
           >
             <div class="flex items-center justify-between text-slate-500 text-xs sm:text-sm font-bold uppercase tracking-wider">
               <span>Open PLRs</span>
-              <span class="p-1.5 rounded-lg bg-rose-50 text-rose-600 border border-rose-200">
+              <span class="p-1.5 rounded-lg bg-rose-50 text-rose-600 border border-rose-200 group-hover:bg-rose-100 transition-colors">
                 <i data-lucide="alert-circle" class="w-4 h-4"></i>
               </span>
             </div>
@@ -848,19 +1062,22 @@
             </div>
             <div class="flex items-center justify-between text-xs sm:text-sm text-slate-500 mt-2">
               <span>Under Active Investigation</span>
-              <span class="font-bold text-rose-600 hover:underline flex items-center gap-1">Inspect &gt;</span>
+              <span class="font-bold text-rose-600 group-hover:underline flex items-center gap-1">
+                <span>Inspect in Pop-up</span>
+                <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+              </span>
             </div>
           </div>
 
           <!-- Card 3: TOTAL RECOMMENDATIONS -->
           <div
-            onclick="portalApp.setPlrTab('recommendations')"
-            class="bg-white border border-slate-200 hover:border-blue-300 rounded-2xl p-4 sm:p-5 shadow-sm relative overflow-hidden group transition-all cursor-pointer"
-            title="Click to view Recommendations Tab"
+            onclick="portalApp.openPlrKpiModal('total-recs')"
+            class="bg-white border border-slate-200 hover:border-blue-400 hover:shadow-md hover:-translate-y-0.5 rounded-2xl p-4 sm:p-5 shadow-sm relative overflow-hidden group transition-all cursor-pointer"
+            title="Click to view all ${totalRecs} Recommendations in pop-up window"
           >
             <div class="flex items-center justify-between text-slate-500 text-xs sm:text-sm font-bold uppercase tracking-wider">
               <span>Total Recommendations</span>
-              <span class="p-1.5 rounded-lg bg-sky-50 text-sky-600 border border-sky-100">
+              <span class="p-1.5 rounded-lg bg-sky-50 text-sky-600 border border-sky-100 group-hover:bg-sky-100 transition-colors">
                 <i data-lucide="layers" class="w-4 h-4"></i>
               </span>
             </div>
@@ -870,19 +1087,22 @@
             </div>
             <div class="flex items-center justify-between text-xs sm:text-sm text-slate-500 mt-2">
               <span>${closedRecs} Closed (${recClosureRate}%)</span>
-              <span class="font-bold text-[#2E6DA4] hover:underline flex items-center gap-1">View Tab &gt;</span>
+              <span class="font-bold text-[#2E6DA4] group-hover:underline flex items-center gap-1">
+                <span>Inspect in Pop-up</span>
+                <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+              </span>
             </div>
           </div>
 
           <!-- Card 4: OPEN RECOMMENDATIONS -->
           <div
-            onclick="portalApp.filterRecByStatusDirect('Open')"
-            class="bg-white border border-amber-200 hover:border-amber-400 rounded-2xl p-4 sm:p-5 shadow-sm relative overflow-hidden group transition-all cursor-pointer"
-            title="Click to view Open Recommendations"
+            onclick="portalApp.openPlrKpiModal('open-recs')"
+            class="bg-white border border-amber-200 hover:border-amber-400 hover:shadow-md hover:-translate-y-0.5 rounded-2xl p-4 sm:p-5 shadow-sm relative overflow-hidden group transition-all cursor-pointer"
+            title="Click to view all ${openRecs} Open Recommendations in pop-up window"
           >
             <div class="flex items-center justify-between text-slate-500 text-xs sm:text-sm font-bold uppercase tracking-wider">
               <span>Open Recommendations</span>
-              <span class="p-1.5 rounded-lg bg-amber-50 text-amber-600 border border-amber-200">
+              <span class="p-1.5 rounded-lg bg-amber-50 text-amber-600 border border-amber-200 group-hover:bg-amber-100 transition-colors">
                 <i data-lucide="clock" class="w-4 h-4"></i>
               </span>
             </div>
@@ -894,7 +1114,10 @@
             </div>
             <div class="flex items-center justify-between text-xs sm:text-sm text-slate-500 mt-2">
               <span>Active Corrective Actions</span>
-              <span class="font-bold text-amber-700 hover:underline flex items-center gap-1">Inspect &gt;</span>
+              <span class="font-bold text-amber-700 group-hover:underline flex items-center gap-1">
+                <span>Inspect in Pop-up</span>
+                <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+              </span>
             </div>
           </div>
 
@@ -919,7 +1142,7 @@
             <span class="text-xs font-medium text-slate-500">Plant-Wide Historical Scope: 233 Outages</span>
           </div>
 
-          <!-- Row 1: Machine Breakdown & Overall Incident Resolution (Balanced 2-Col Layout) -->
+          <!-- Row 1: Machine Breakdown & Overall recommendations Resolution (Balanced 2-Col Layout) -->
           <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
             
             <!-- Left Card: INCIDENT BREAKDOWN BY MACHINE -->
@@ -1177,6 +1400,11 @@
         <!-- 7. INTERACTIVE DRILLDOWN DATA MODAL CONTAINER                            -->
         <!-- ========================================================================= -->
         <div id="plr-data-modal-container"></div>
+
+        <!-- ========================================================================= -->
+        <!-- 8. GOOGLE SHEET SYNC & ACTION EDIT/ADD MODAL CONTAINER                   -->
+        <!-- ========================================================================= -->
+        <div id="plr-action-modal-container"></div>
 
       </div>
     `;
@@ -1723,22 +1951,77 @@
   };
 
   /**
-   * 3. Overall Incident Resolution Pie Chart (Executive corporate styling, darker tones, large clear readable numbers)
+   * Open Resolution Data Modal for Closed/Open slices in PLR Dashboard
+   */
+  portalApp.openResolutionDataModal = function (status) {
+    const s = getPlrState();
+    const isIncidents = s.resolutionMode === 'incidents';
+    const type = isIncidents ? 'incidents' : 'recommendations';
+    const isClosed = status === 'Closed';
+    const isAll = status === 'all';
+
+    let title, badge, subtitle;
+    if (isIncidents) {
+      if (isAll) {
+        title = 'All Plant Outage Incidents';
+        badge = 'All Incidents';
+        subtitle = '233 Total Plant Loss Outages (206 Closed • 27 Open)';
+      } else if (isClosed) {
+        title = 'Closed Plant Outage Incidents';
+        badge = 'Closed Incidents';
+        subtitle = '206 Resolved Incidents (88.4% Resolution Rate)';
+      } else {
+        title = 'Open Pending Plant Outages';
+        badge = 'Open Incidents';
+        subtitle = '27 Open Unresolved Outages (11.6% Pending Resolution)';
+      }
+    } else {
+      if (isAll) {
+        title = 'All Action Recommendations';
+        badge = 'All Recommendations';
+        subtitle = '451 Total Recommendations (420 Closed • 31 Open)';
+      } else if (isClosed) {
+        title = 'Closed Action Recommendations';
+        badge = 'Closed Recommendations';
+        subtitle = '420 Resolved Recommendations (93.1% Resolution Rate)';
+      } else {
+        title = 'Open Action Recommendations';
+        badge = 'Open Recommendations';
+        subtitle = '31 Open Pending Recommendations (6.9% Pending Resolution)';
+      }
+    }
+
+    portalApp.openPlrDataModal({
+      type: type,
+      title: title,
+      badge: badge,
+      subtitle: subtitle,
+      filterStatus: status
+    });
+  };
+
+  /**
+   * 3. Overall Recommendations / Incidents Resolution Pie Chart
+   * Executive corporate styling, darker tones, large clear readable numbers with click-to-drilldown
    */
   portalApp.renderResolutionPie = function () {
     const container = document.getElementById('plr-resolution-pie-container');
     if (!container) return;
 
-    const closed = 206; // 88%
-    const open = 27;    // 12%
-    const total = closed + open; // 233
+    const s = getPlrState();
+    const isIncidents = s.resolutionMode === 'incidents';
+
+    // Exact official counts
+    const closed = isIncidents ? 206 : 420;
+    const open = isIncidents ? 27 : 31;
+    const total = closed + open; // 233 or 451
+    const closedPct = ((closed / total) * 100).toFixed(1);
+    const openPct = ((open / total) * 100).toFixed(1);
 
     const r = 96;
     const cx = 130;
     const cy = 130;
 
-    // Closed slice: 88% = 318.2 degrees
-    // Open slice: 12% = 43.2 degrees
     const closedAngle = (closed / total) * 2 * Math.PI;
     const startAngle = -Math.PI / 2;
     const endClosed = startAngle + closedAngle;
@@ -1752,19 +2035,19 @@
     const dOpen = `M ${cx} ${cy} L ${x2} ${y2} A ${r} ${r} 0 0 1 ${x1} ${y1} Z`;
 
     // Midpoints for labels
-    // Closed slice (88%): midClosed points comfortably into the bottom-right quadrant
     const midClosed = startAngle + closedAngle / 2;
     const lxClosed = cx + (r * 0.52) * Math.cos(midClosed);
     const lyClosed = cy + (r * 0.52) * Math.sin(midClosed);
 
-    // Open slice (12%): midOpen points into the top-left quadrant
     const midOpen = endClosed + ((2 * Math.PI - closedAngle) / 2);
     const lxOpen = cx + (r * 0.72) * Math.cos(midOpen);
     const lyOpen = cy + (r * 0.72) * Math.sin(midOpen);
 
-    // Professional darker colors:
+    // Dark corporate tones
     const darkClosedColor = '#047857'; // Deep dark corporate emerald
     const darkOpenColor = '#B91C1C';   // Deep dark rich crimson
+
+    const labelNoun = isIncidents ? 'Outages' : 'Recs';
 
     container.innerHTML = `
       <div class="relative w-[260px] h-[260px]">
@@ -1779,27 +2062,31 @@
           <path
             d="${dClosed}"
             fill="${darkClosedColor}"
-            class="cursor-pointer transition-all hover:brightness-110"
-            onclick="portalApp.filterPlrByStatus('Closed')"
+            class="cursor-pointer transition-all hover:brightness-110 hover:opacity-95"
+            onclick="portalApp.openResolutionDataModal('Closed')"
+            onmouseenter="portalApp.showTooltip(event, { title: 'Closed ${isIncidents ? 'Incidents' : 'Recommendations'}', value: '${closed} of ${total} ${labelNoun} (${closedPct}%)', badge: 'RESOLVED', hint: 'Click to open detailed records window' })"
+            onmouseleave="portalApp.hideTooltip()"
           >
-            <title>Closed: ${closed} Outages (88%)</title>
+            <title>Closed: ${closed} ${labelNoun} (${closedPct}%) - Click to open records</title>
           </path>
 
           <!-- Open Slice (Deep Dark Crimson) -->
           <path
             d="${dOpen}"
             fill="${darkOpenColor}"
-            class="cursor-pointer transition-all hover:brightness-110"
-            onclick="portalApp.filterPlrByStatus('Open')"
+            class="cursor-pointer transition-all hover:brightness-110 hover:opacity-95"
+            onclick="portalApp.openResolutionDataModal('Open')"
+            onmouseenter="portalApp.showTooltip(event, { title: 'Open Pending ${isIncidents ? 'Incidents' : 'Recommendations'}', value: '${open} of ${total} ${labelNoun} (${openPct}%)', badge: 'ACTION REQUIRED', hint: 'Click to open detailed records window' })"
+            onmouseleave="portalApp.hideTooltip()"
           >
-            <title>Open: ${open} Outages (12%)</title>
+            <title>Open: ${open} ${labelNoun} (${openPct}%) - Click to open records</title>
           </path>
 
           <!-- Clean White Slices Divider Lines -->
           <line x1="${cx}" y1="${cy}" x2="${x1}" y2="${y1}" stroke="#ffffff" stroke-width="2.5"/>
           <line x1="${cx}" y1="${cy}" x2="${x2}" y2="${y2}" stroke="#ffffff" stroke-width="2.5"/>
           
-          <!-- Closed slice labels: Large, bold, highly legible font -->
+          <!-- Closed slice labels -->
           <text
             x="${lxClosed}"
             y="${lyClosed - 6}"
@@ -1809,7 +2096,7 @@
             font-family="'Plus Jakarta Sans', system-ui, sans-serif"
             text-anchor="middle"
             filter="url(#plrTextShadow)"
-            class="select-none"
+            class="select-none pointer-events-none"
           >${closed}</text>
           <text
             x="${lxClosed}"
@@ -1820,10 +2107,10 @@
             font-family="'Plus Jakarta Sans', system-ui, sans-serif"
             text-anchor="middle"
             filter="url(#plrTextShadow)"
-            class="select-none tracking-wide"
-          >88% Closed</text>
+            class="select-none tracking-wide pointer-events-none"
+          >${closedPct}% Closed</text>
           
-          <!-- Open slice labels: Large, clear, highly legible font -->
+          <!-- Open slice labels -->
           <text
             x="${lxOpen}"
             y="${lyOpen - 5}"
@@ -1833,7 +2120,7 @@
             font-family="'Plus Jakarta Sans', system-ui, sans-serif"
             text-anchor="middle"
             filter="url(#plrTextShadow)"
-            class="select-none"
+            class="select-none pointer-events-none"
           >${open}</text>
           <text
             x="${lxOpen}"
@@ -1844,8 +2131,8 @@
             font-family="'Plus Jakarta Sans', system-ui, sans-serif"
             text-anchor="middle"
             filter="url(#plrTextShadow)"
-            class="select-none tracking-wide"
-          >12% Open</text>
+            class="select-none tracking-wide pointer-events-none"
+          >${openPct}% Open</text>
         </svg>
       </div>
     `;
@@ -2504,7 +2791,11 @@
 
     const filtered = getFilteredPlrRecs();
 
-    const totalRaw = getPlrRecs().length;
+    const rawAll = getPlrRecs();
+    const totalRaw = rawAll.length;
+    const rawOpenCount = rawAll.filter(r => (r.status || '').toLowerCase() === 'open').length;
+    const rawClosedCount = totalRaw - rawOpenCount;
+
     const totalFiltered = filtered.length;
     const totalPages = Math.ceil(totalFiltered / s.recPageSize) || 1;
     if (s.recPage > totalPages) s.recPage = totalPages;
@@ -2533,7 +2824,7 @@
           ` : ''}
         </div>
 
-        <!-- Entity Filter & Status -->
+        <!-- Entity Filter & Status & Actions -->
         <div class="flex flex-wrap items-center gap-2.5">
           <div class="flex items-center gap-1.5 text-xs text-slate-700">
             <span class="font-bold text-slate-500">ACTION ENTITY:</span>
@@ -2552,9 +2843,28 @@
               class="text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#2E6DA4] cursor-pointer"
             >
               <option value="all" ${s.recSelectedStatus === 'all' ? 'selected' : ''}>All (${totalRaw})</option>
-              <option value="Closed" ${s.recSelectedStatus === 'Closed' ? 'selected' : ''}>Closed (420)</option>
-              <option value="Open" ${s.recSelectedStatus === 'Open' ? 'selected' : ''}>Open (31)</option>
+              <option value="Closed" ${s.recSelectedStatus === 'Closed' ? 'selected' : ''}>Closed (${rawClosedCount})</option>
+              <option value="Open" ${s.recSelectedStatus === 'Open' ? 'selected' : ''}>Open (${rawOpenCount})</option>
             </select>
+          </div>
+
+          <div class="flex items-center gap-1.5">
+            <button
+              onclick="portalApp.openAddRecommendationModal()"
+              class="px-2.5 py-1.5 rounded-lg text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-xs transition-colors flex items-center gap-1 cursor-pointer shrink-0"
+              title="Add a new recommendation item to Column E"
+            >
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+              <span>+ Add Rec</span>
+            </button>
+            <button
+              onclick="portalApp.openPlrSheetSyncModal()"
+              class="px-2 py-1.5 rounded-lg text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 shadow-xs transition-colors flex items-center gap-1 cursor-pointer shrink-0"
+              title="Sync recommendations from Google Sheet Tab Recommendations"
+            >
+              <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-emerald-600"></i>
+              <span>Sync Sheet</span>
+            </button>
           </div>
 
           <span class="text-xs font-sans text-slate-500">Showing <strong class="text-slate-900">${totalFiltered}</strong> of ${totalRaw}</span>
@@ -2571,11 +2881,16 @@
             <th class="py-3 px-3 w-28">PLR # (COL B)</th>
             <th class="py-3 px-3 w-20">YEAR</th>
             <th class="py-3 px-3 w-28">DATE</th>
-            <th class="py-3 px-4 min-w-[340px]">ACTION RECOMMENDATION</th>
+            <th class="py-3 px-4 min-w-[340px]">
+              <div class="flex items-center gap-1.5">
+                <span>RECOMMENDATIONS (COL E)</span>
+                <span class="inline-block px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">Tab: Recommendations</span>
+              </div>
+            </th>
             <th class="py-3 px-3 w-36">ACTION ENTITY (COL F)</th>
-            <th class="py-3 px-3 w-28">STATUS (COL G)</th>
+            <th class="py-3 px-3 w-32 text-center">STATUS (COL G)</th>
             <th class="py-3 px-3 w-40">LINKED PLR INCIDENT</th>
-            <th class="py-3 px-3 w-16 text-center">VIEW</th>
+            <th class="py-3 px-3 w-24 text-center">ACTIONS</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-100 font-medium">
@@ -2617,15 +2932,20 @@
                     `).join('')}
                   </div>
                 </td>
-                <td class="py-3 px-3">
-                  <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${
-                    isOpen
-                      ? 'bg-rose-50 text-rose-700 border-rose-200'
-                      : 'bg-emerald-50 text-emerald-800 border-emerald-200'
-                  }">
-                    <i data-lucide="${isOpen ? 'alert-circle' : 'check-circle-2'}" class="w-3 h-3"></i>
-                    ${item.status}
-                  </span>
+                <td class="py-3 px-3 text-center">
+                  <button
+                    onclick="portalApp.toggleRecommendationStatus(${item.sNo})"
+                    class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold border transition-all cursor-pointer shadow-2xs hover:scale-105 active:scale-95 ${
+                      isOpen
+                        ? 'bg-rose-50 text-rose-700 border-rose-300 hover:bg-rose-100'
+                        : 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100'
+                    }"
+                    title="Click to toggle status: currently ${item.status}. Click to change to ${isOpen ? 'Closed' : 'Open'}"
+                  >
+                    <i data-lucide="${isOpen ? 'alert-circle' : 'check-circle-2'}" class="w-3.5 h-3.5 ${isOpen ? 'text-rose-600' : 'text-emerald-600'}"></i>
+                    <span>${item.status}</span>
+                    <i data-lucide="refresh-cw" class="w-2.5 h-2.5 opacity-40 ml-0.5"></i>
+                  </button>
                 </td>
                 <td class="py-3 px-3 text-slate-600 text-xs truncate max-w-xs">
                   ${parentPlr ? `
@@ -2636,13 +2956,29 @@
                   ` : '—'}
                 </td>
                 <td class="py-3 px-3 text-center">
-                  <button
-                    onclick="portalApp.openPlrInspectionModal(${item.plrNo})"
-                    class="p-1.5 rounded-lg text-slate-500 hover:text-[#2E6DA4] hover:bg-blue-50 transition-colors cursor-pointer"
-                    title="View dual-sheet inspection modal"
-                  >
-                    <i data-lucide="eye" class="w-4 h-4"></i>
-                  </button>
+                  <div class="flex items-center justify-center gap-1">
+                    <button
+                      onclick="portalApp.openEditRecommendationModal(${item.sNo})"
+                      class="p-1.5 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+                      title="Edit recommendation text, department, status"
+                    >
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button
+                      onclick="portalApp.deleteRecommendation(${item.sNo})"
+                      class="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                      title="Delete recommendation"
+                    >
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button
+                      onclick="portalApp.openPlrInspectionModal(${item.plrNo})"
+                      class="p-1.5 rounded-lg text-slate-500 hover:text-[#2E6DA4] hover:bg-blue-50 transition-colors cursor-pointer"
+                      title="View dual-sheet inspection modal"
+                    >
+                      <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
                 </td>
               </tr>
             `;
@@ -2803,11 +3139,17 @@
                             <span class="w-5 h-5 rounded-full bg-slate-100 text-[#2E6DA4] flex items-center justify-center text-[10px] font-mono font-bold">${idx + 1}</span>
                             <span class="text-[#2E6DA4]">${r.actionBy}</span>
                           </span>
-                          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
-                            isOp ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-emerald-50 text-emerald-800 border-emerald-200'
-                          }">
-                            ${r.status}
-                          </span>
+                          <button
+                            onclick="portalApp.toggleRecommendationStatus(${r.sNo}, ${plrNo})"
+                            class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border transition-all cursor-pointer hover:scale-105 shadow-2xs ${
+                              isOp ? 'bg-rose-50 text-rose-700 border-rose-300 hover:bg-rose-100' : 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100'
+                            }"
+                            title="Click to toggle status: currently ${r.status}. Click to change to ${isOp ? 'Closed' : 'Open'}"
+                          >
+                            <i data-lucide="${isOp ? 'alert-circle' : 'check-circle-2'}" class="w-3 h-3 ${isOp ? 'text-rose-600' : 'text-emerald-600'}"></i>
+                            <span>${r.status}</span>
+                            <i data-lucide="refresh-cw" class="w-2 h-2 opacity-40 ml-0.5"></i>
+                          </button>
                         </div>
                         <p class="text-xs text-slate-700 leading-relaxed font-normal">
                           ${r.recommendation}
@@ -2822,14 +3164,24 @@
           </div>
 
           <!-- Modal Footer -->
-          <div class="p-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between">
-            <button
-              onclick="portalApp.switchTabAndFilterPlr(${plrNo})"
-              class="px-3.5 py-1.5 rounded-xl text-xs font-bold text-white bg-[#2E6DA4] hover:bg-[#235885] transition-colors cursor-pointer flex items-center gap-1.5 shadow-xs"
-            >
-              <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
-              <span>View All Linked in Recommendations Tab</span>
-            </button>
+          <div class="p-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between flex-wrap gap-2">
+            <div class="flex items-center gap-2">
+              <button
+                onclick="portalApp.switchTabAndFilterPlr(${plrNo})"
+                class="px-3.5 py-1.5 rounded-xl text-xs font-bold text-white bg-[#2E6DA4] hover:bg-[#235885] transition-colors cursor-pointer flex items-center gap-1.5 shadow-xs"
+              >
+                <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                <span>View Linked in Recommendations Tab</span>
+              </button>
+              <button
+                onclick="portalApp.openAddRecommendationModal(${plrNo})"
+                class="px-3.5 py-1.5 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors cursor-pointer flex items-center gap-1.5 shadow-xs"
+                title="Add a new action recommendation linked to PLR #${plrNo}"
+              >
+                <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                <span>+ Add Action</span>
+              </button>
+            </div>
             <button
               onclick="portalApp.closePlrInspectionModal()"
               class="px-4 py-1.5 rounded-xl text-xs font-bold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-100 border border-slate-200 transition-colors cursor-pointer shadow-xs"
@@ -2850,6 +3202,680 @@
     if (modalContainer) modalContainer.innerHTML = '';
   };
 
+  /**
+   * 7. Interactive Drilldown Data Modal (Matching Sub HSE - PSM Dashboard layout and UX)
+   */
+
+  /**
+   * Dedicated entry point for KPI cards click drill-down
+   * Slices data precisely according to the clicked metric
+   */
+  portalApp.openPlrKpiModal = function (kpiType) {
+    const rawData = getPlrData();
+    const rawRecs = getPlrRecs();
+
+    if (kpiType === 'total-plrs') {
+      const openCount = rawData.filter(d => (d.status || '').toLowerCase() === 'open').length;
+      const closedCount = rawData.length - openCount;
+      const closureRate = rawData.length > 0 ? Math.round((closedCount / rawData.length) * 100) : 0;
+      portalApp.openPlrDataModal({
+        type: 'incidents',
+        title: 'Total Plant Loss Reports (PLR Incident Log)',
+        badge: `${rawData.length} Total Incidents (100%)`,
+        subtitle: `Complete historical plant loss and outage reports (2017–2025) across STG, Boilers & Auxiliaries • ${closedCount} Closed (${closureRate}%), ${openCount} Open`,
+        filterStatus: 'all',
+        kpiSource: 'total-plrs'
+      });
+    } else if (kpiType === 'open-plrs') {
+      const openCount = rawData.filter(d => (d.status || '').toLowerCase() === 'open').length;
+      portalApp.openPlrDataModal({
+        type: 'incidents',
+        title: 'Open Plant Loss Reports Under Active Investigation',
+        badge: `${openCount} Open Incidents`,
+        subtitle: 'Plant outages undergoing root-cause investigation, corrective maintenance, or pending closeout sign-off • Columns B to K',
+        filterStatus: 'Open',
+        kpiSource: 'open-plrs'
+      });
+    } else if (kpiType === 'total-recs') {
+      const openRecs = rawRecs.filter(r => (r.status || '').toLowerCase() === 'open').length;
+      const closedRecs = rawRecs.length - openRecs;
+      const closureRate = rawRecs.length > 0 ? Math.round((closedRecs / rawRecs.length) * 100) : 0;
+      portalApp.openPlrDataModal({
+        type: 'recommendations',
+        title: 'Total Corrective Action Recommendations',
+        badge: `${rawRecs.length} Total Recommendations`,
+        subtitle: `Extracted from Google Sheet tab "Recommendations" Column E ("Recommendations") across 16+ Action Entities • ${closedRecs} Closed (${closureRate}%), ${openRecs} Open`,
+        filterStatus: 'all',
+        kpiSource: 'total-recs'
+      });
+    } else if (kpiType === 'open-recs') {
+      const openRecs = rawRecs.filter(r => (r.status || '').toLowerCase() === 'open').length;
+      portalApp.openPlrDataModal({
+        type: 'recommendations',
+        title: 'Open Action Recommendations (Active Corrective Backlog)',
+        badge: `${openRecs} Open Recommendations`,
+        subtitle: 'Active corrective action items awaiting physical completion or engineering sign-off • Tab: Recommendations Column E',
+        filterStatus: 'Open',
+        kpiSource: 'open-recs'
+      });
+    }
+  };
+
+  portalApp.openPlrDataModal = function (opts = {}) {
+    const s = getPlrState();
+    const type = opts.type || 'incidents'; // 'incidents' or 'recommendations'
+    const title = opts.title || (type === 'incidents' ? 'Plant Outage Incidents' : 'Action Recommendations');
+    const badge = opts.badge || (type === 'incidents' ? 'Outage Records' : 'Recommendations');
+    const subtitle = opts.subtitle || 'Detailed operational records';
+    const filterStatus = opts.filterStatus || 'all'; // 'all', 'Open', 'Closed'
+    const filterMachine = opts.filterMachine || 'all';
+    const filterDept = opts.filterDept || opts.filterEntity || 'all';
+    const filterPriority = opts.filterPriority || 'all';
+
+    let allRecords = [];
+
+    if (type === 'incidents') {
+      allRecords = getPlrData();
+    } else {
+      allRecords = getPlrRecs();
+    }
+
+    s.activePlrModal = {
+      type,
+      title,
+      badge,
+      subtitle,
+      filterMachine,
+      filterDept,
+      filterPriority,
+      activeStatusTab: filterStatus,
+      searchQuery: '',
+      allRecords: allRecords,
+      kpiSource: opts.kpiSource || null
+    };
+
+    portalApp.renderPlrDataModal();
+  };
+
+  portalApp.closePlrDataModal = function () {
+    const s = getPlrState();
+    s.activePlrModal = null;
+    const container = document.getElementById('plr-data-modal-container');
+    if (container) container.innerHTML = '';
+  };
+
+  portalApp.setPlrDataModalStatusTab = function (status) {
+    const s = getPlrState();
+    if (!s.activePlrModal) return;
+    s.activePlrModal.activeStatusTab = status;
+    portalApp.renderPlrDataModal();
+  };
+
+  portalApp.setPlrDataModalMachine = function (machine) {
+    const s = getPlrState();
+    if (!s.activePlrModal) return;
+    s.activePlrModal.filterMachine = machine;
+    portalApp.renderPlrDataModal();
+  };
+
+  portalApp.setPlrDataModalPriority = function (priority) {
+    const s = getPlrState();
+    if (!s.activePlrModal) return;
+    s.activePlrModal.filterPriority = priority;
+    portalApp.renderPlrDataModal();
+  };
+
+  portalApp.setPlrDataModalDept = function (dept) {
+    const s = getPlrState();
+    if (!s.activePlrModal) return;
+    s.activePlrModal.filterDept = dept;
+    portalApp.renderPlrDataModal();
+  };
+
+  portalApp.resetPlrDataModalFilters = function () {
+    const s = getPlrState();
+    if (!s.activePlrModal) return;
+    s.activePlrModal.activeStatusTab = 'all';
+    s.activePlrModal.filterMachine = 'all';
+    s.activePlrModal.filterPriority = 'all';
+    s.activePlrModal.filterDept = 'all';
+    s.activePlrModal.searchQuery = '';
+    portalApp.renderPlrDataModal();
+  };
+
+  portalApp.filterPlrDataModalSearch = function (query) {
+    const s = getPlrState();
+    if (!s.activePlrModal) return;
+    s.activePlrModal.searchQuery = query;
+    portalApp.renderPlrDataModal(true);
+  };
+
+  /**
+   * Toggle Recommendation status directly from inside the pop-up modal
+   */
+  portalApp.toggleRecStatusFromModal = function (sNo) {
+    portalApp.toggleRecommendationStatus(sNo);
+  };
+
+  portalApp.getPlrModalFilteredRecords = function () {
+    const s = getPlrState();
+    if (!s.activePlrModal) return [];
+    const m = s.activePlrModal;
+    let records = m.allRecords || [];
+    const plrsMap = getPlrsMap();
+
+    // Filter by status tab
+    if (m.activeStatusTab && m.activeStatusTab !== 'all') {
+      const target = m.activeStatusTab.toLowerCase();
+      records = records.filter(r => (r.status || '').toLowerCase() === target);
+    }
+
+    // Filter by machine
+    if (m.filterMachine && m.filterMachine !== 'all') {
+      if (m.type === 'incidents') {
+        records = records.filter(r => matchesMachine(r.machine, m.filterMachine));
+      } else {
+        records = records.filter(r => {
+          const parent = plrsMap.get(String(r.plrNo).toUpperCase());
+          return parent ? matchesMachine(parent.machine, m.filterMachine) : false;
+        });
+      }
+    }
+
+    // Filter by priority (for incidents)
+    if (m.type === 'incidents' && m.filterPriority && m.filterPriority !== 'all') {
+      records = records.filter(r => (r.priority || '').toLowerCase() === m.filterPriority.toLowerCase());
+    }
+
+    // Filter by department / entity
+    if (m.filterDept && m.filterDept !== 'all') {
+      if (m.type === 'incidents') {
+        records = records.filter(r => matchesActionEntity(r.dept, m.filterDept));
+      } else {
+        records = records.filter(r => matchesActionEntity(r.actionBy, m.filterDept));
+      }
+    }
+
+    // Filter by search query
+    if (m.searchQuery && m.searchQuery.trim()) {
+      const q = m.searchQuery.toLowerCase().trim();
+      if (m.type === 'incidents') {
+        records = records.filter(r =>
+          String(r.plrNo).toLowerCase().includes(q) ||
+          (r.incident && r.incident.toLowerCase().includes(q)) ||
+          (r.machine && r.machine.toLowerCase().includes(q)) ||
+          (r.dept && r.dept.toLowerCase().includes(q)) ||
+          (r.priority && r.priority.toLowerCase().includes(q)) ||
+          (r.status && r.status.toLowerCase().includes(q)) ||
+          String(r.year).includes(q) ||
+          (r.date && r.date.toLowerCase().includes(q))
+        );
+      } else {
+        records = records.filter(r =>
+          String(r.plrNo).toLowerCase().includes(q) ||
+          String(r.sNo).toLowerCase().includes(q) ||
+          (r.recommendation && r.recommendation.toLowerCase().includes(q)) ||
+          (r.actionBy && r.actionBy.toLowerCase().includes(q)) ||
+          (r.status && r.status.toLowerCase().includes(q)) ||
+          String(r.year).includes(q) ||
+          (r.date && r.date.toLowerCase().includes(q))
+        );
+      }
+    }
+
+    return records;
+  };
+
+  portalApp.renderPlrDataModal = function (maintainFocus = false) {
+    const s = getPlrState();
+    if (!s.activePlrModal) return;
+    const m = s.activePlrModal;
+    const container = document.getElementById('plr-data-modal-container');
+    if (!container) return;
+
+    const records = portalApp.getPlrModalFilteredRecords();
+    const allRecords = m.allRecords || [];
+
+    const totalCount = allRecords.length;
+    const openCount = allRecords.filter(r => (r.status || '').toLowerCase() === 'open').length;
+    const closedCount = totalCount - openCount;
+    const closurePct = totalCount > 0 ? Math.round((closedCount / totalCount) * 100) : 0;
+
+    const isIncidents = m.type === 'incidents';
+
+    // Unique machines and departments for dropdown filters
+    const availableMachines = ['all', 'STG-1', 'STG-2', 'Boiler', 'Auxiliary'];
+    let availableDepts = ['all'];
+    if (isIncidents) {
+      const rawData = getPlrData();
+      const depts = new Set();
+      rawData.forEach(d => { if (d.dept) depts.add(d.dept.trim()); });
+      availableDepts = ['all', ...Array.from(depts).sort()];
+    } else {
+      const rawRecs = getPlrRecs();
+      const entities = new Set();
+      rawRecs.forEach(r => { if (r.actionBy) entities.add(r.actionBy.trim()); });
+      availableDepts = ['all', ...Array.from(entities).sort()];
+    }
+
+    container.innerHTML = `
+      <div class="fixed inset-0 z-[60] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5" onclick="if(event.target === this) portalApp.closePlrDataModal()">
+        <div class="bg-white border border-slate-200 rounded-2xl w-full max-w-6xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+          
+          <!-- Modal Header (Corporate Executive Styled) -->
+          <div class="p-5 border-b border-slate-200 bg-slate-50 flex items-center justify-between gap-4">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="w-10 h-10 rounded-xl ${isIncidents ? 'bg-[#2E6DA4]' : 'bg-[#047857]'} text-white flex items-center justify-center shadow-sm shrink-0">
+                <i data-lucide="${isIncidents ? 'cpu' : 'clipboard-check'}" class="w-5 h-5"></i>
+              </div>
+              <div class="min-w-0">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <h3 class="text-base sm:text-lg font-black text-slate-900 tracking-tight truncate">${m.title}</h3>
+                  <span class="px-2.5 py-0.5 rounded-full text-xs font-bold ${isIncidents ? 'bg-blue-100 text-blue-800 border border-blue-200' : 'bg-emerald-100 text-emerald-800 border border-emerald-200'} shrink-0 font-mono">
+                    ${m.badge}
+                  </span>
+                </div>
+                <p class="text-xs text-slate-500 mt-0.5 truncate">${m.subtitle}</p>
+              </div>
+            </div>
+            
+            <div class="flex items-center gap-2 shrink-0">
+              ${!isIncidents ? `
+                <button
+                  onclick="portalApp.openAddRecommendationModal()"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs cursor-pointer transition-colors"
+                  title="Add new recommendation to Column E"
+                >
+                  <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                  <span class="hidden sm:inline">Add Rec</span>
+                </button>
+              ` : ''}
+              <button
+                onclick="portalApp.exportPlrModalCSV()"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 shadow-xs cursor-pointer transition-colors"
+                title="Export filtered records to CSV"
+              >
+                <i data-lucide="download" class="w-3.5 h-3.5 text-[#2E6DA4]"></i>
+                <span class="hidden sm:inline">Export CSV</span>
+              </button>
+              <button
+                onclick="portalApp.closePlrDataModal()"
+                class="w-8 h-8 rounded-xl bg-white hover:bg-slate-200 text-slate-400 hover:text-slate-700 border border-slate-300 flex items-center justify-center cursor-pointer transition-colors"
+                title="Close (Esc)"
+              >
+                <i data-lucide="x" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Metrics & Filter Bar -->
+          <div class="px-5 py-3 border-b border-slate-200 bg-white flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+            <!-- Summary KPIs -->
+            <div class="flex items-center gap-3 flex-wrap text-xs">
+              <span class="font-bold text-slate-600">Total in View: <strong class="text-slate-900 font-mono text-sm">${totalCount}</strong></span>
+              <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                ${openCount} Open
+              </span>
+              <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                ${closedCount} Closed
+              </span>
+              <span class="text-xs font-bold ${isIncidents ? 'text-[#2E6DA4] bg-blue-50 border-blue-200' : 'text-emerald-800 bg-emerald-50 border-emerald-200'} font-mono px-2 py-0.5 rounded border">
+                ${closurePct}% Resolved
+              </span>
+            </div>
+
+            <!-- In-Modal Filters: Status Buttons, Dropdowns & Search -->
+            <div class="flex items-center gap-2 flex-wrap">
+              <!-- Status Filter Buttons -->
+              <div class="inline-flex p-0.5 bg-slate-100 rounded-lg border border-slate-200 text-xs">
+                <button
+                  onclick="portalApp.setPlrDataModalStatusTab('all')"
+                  class="px-2.5 py-1 rounded-md font-bold transition-all cursor-pointer ${m.activeStatusTab === 'all' ? (isIncidents ? 'bg-[#2E6DA4] text-white shadow-2xs' : 'bg-[#047857] text-white shadow-2xs') : 'text-slate-600 hover:text-slate-900'}"
+                >
+                  All (${totalCount})
+                </button>
+                <button
+                  onclick="portalApp.setPlrDataModalStatusTab('Open')"
+                  class="px-2.5 py-1 rounded-md font-bold transition-all cursor-pointer ${m.activeStatusTab.toLowerCase() === 'open' ? 'bg-[#B91C1C] text-white shadow-2xs' : 'text-slate-600 hover:text-slate-900'}"
+                >
+                  Open (${openCount})
+                </button>
+                <button
+                  onclick="portalApp.setPlrDataModalStatusTab('Closed')"
+                  class="px-2.5 py-1 rounded-md font-bold transition-all cursor-pointer ${m.activeStatusTab.toLowerCase() === 'closed' ? 'bg-[#047857] text-white shadow-2xs' : 'text-slate-600 hover:text-slate-900'}"
+                >
+                  Closed (${closedCount})
+                </button>
+              </div>
+
+              <!-- Secondary Filter Dropdowns -->
+              ${isIncidents ? `
+                <select
+                  onchange="portalApp.setPlrDataModalMachine(this.value)"
+                  class="text-xs py-1.5 px-2.5 rounded-lg border border-slate-300 bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#2E6DA4]"
+                  title="Filter by machine"
+                >
+                  <option value="all" ${m.filterMachine === 'all' ? 'selected' : ''}>All Machines</option>
+                  <option value="STG-1" ${m.filterMachine === 'STG-1' ? 'selected' : ''}>STG-1</option>
+                  <option value="STG-2" ${m.filterMachine === 'STG-2' ? 'selected' : ''}>STG-2</option>
+                  <option value="Boiler" ${m.filterMachine === 'Boiler' ? 'selected' : ''}>Boilers</option>
+                  <option value="Auxiliary" ${m.filterMachine === 'Auxiliary' ? 'selected' : ''}>Auxiliary</option>
+                </select>
+                <select
+                  onchange="portalApp.setPlrDataModalPriority(this.value)"
+                  class="text-xs py-1.5 px-2.5 rounded-lg border border-slate-300 bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#2E6DA4]"
+                  title="Filter by priority"
+                >
+                  <option value="all" ${m.filterPriority === 'all' ? 'selected' : ''}>All Priorities</option>
+                  <option value="High" ${m.filterPriority === 'High' ? 'selected' : ''}>High</option>
+                  <option value="Low" ${m.filterPriority === 'Low' ? 'selected' : ''}>Low</option>
+                </select>
+              ` : `
+                <select
+                  onchange="portalApp.setPlrDataModalDept(this.value)"
+                  class="text-xs py-1.5 px-2.5 rounded-lg border border-slate-300 bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-emerald-600 max-w-[150px]"
+                  title="Filter by Action Entity"
+                >
+                  <option value="all" ${m.filterDept === 'all' ? 'selected' : ''}>All Entities (${totalCount})</option>
+                  ${availableDepts.filter(d => d !== 'all').map(d => `
+                    <option value="${d}" ${m.filterDept === d ? 'selected' : ''}>${d}</option>
+                  `).join('')}
+                </select>
+              `}
+
+              <!-- Search Input -->
+              <div class="relative w-40 sm:w-52">
+                <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-slate-400">
+                  <i data-lucide="search" class="w-3.5 h-3.5"></i>
+                </div>
+                <input
+                  id="plr-modal-search-input"
+                  type="text"
+                  value="${m.searchQuery || ''}"
+                  oninput="portalApp.filterPlrDataModalSearch(this.value)"
+                  placeholder="Search..."
+                  class="w-full pl-8 pr-7 py-1.5 text-xs rounded-lg border border-slate-300 bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#2E6DA4]"
+                />
+                ${m.searchQuery ? `
+                  <button onclick="portalApp.filterPlrDataModalSearch('')" class="absolute right-2 top-1.5 text-slate-400 hover:text-slate-600 cursor-pointer">
+                    <i data-lucide="x" class="w-3 h-3"></i>
+                  </button>
+                ` : ''}
+              </div>
+            </div>
+          </div>
+
+          <!-- Table Content -->
+          <div class="overflow-y-auto flex-1 max-h-[60vh]">
+            ${records.length === 0 ? `
+              <div class="py-16 text-center text-slate-400 space-y-2">
+                <i data-lucide="inbox" class="w-8 h-8 mx-auto text-slate-300"></i>
+                <p class="text-xs font-semibold">No records match your filter criteria in this view.</p>
+                <button
+                  onclick="portalApp.resetPlrDataModalFilters()"
+                  class="text-xs text-[#2E6DA4] hover:underline font-semibold cursor-pointer"
+                >
+                  Reset all filters
+                </button>
+              </div>
+            ` : isIncidents ? `
+              <table class="w-full text-left text-xs border-collapse">
+                <thead class="sticky top-0 bg-slate-100/95 backdrop-blur-xs z-10 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[10px]">
+                  <tr>
+                    <th class="py-2.5 px-3 w-12 text-center">#</th>
+                    <th class="py-2.5 px-3 w-20 font-mono">PLR #</th>
+                    <th class="py-2.5 px-3 w-24">Date</th>
+                    <th class="py-2.5 px-3">Loss Narrative & Incident Description</th>
+                    <th class="py-2.5 px-3 w-32">Machine</th>
+                    <th class="py-2.5 px-3 w-24">Entity</th>
+                    <th class="py-2.5 px-3 w-20">Priority</th>
+                    <th class="py-2.5 px-3 w-24 text-center">Status</th>
+                    <th class="py-2.5 px-3 w-20 text-right">Inspect</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-slate-800">
+                  ${records.map((r, idx) => {
+                    const isOpen = (r.status || '').toLowerCase() === 'open';
+                    const isHigh = (r.priority || '').toLowerCase() === 'high';
+                    return `
+                      <tr class="hover:bg-slate-50/80 transition-colors group">
+                        <td class="py-2.5 px-3 font-mono text-center text-slate-400 text-[11px]">${idx + 1}</td>
+                        <td class="py-2.5 px-3 font-mono font-bold text-[#2E6DA4] whitespace-nowrap">
+                          <button
+                            onclick="portalApp.openPlrInspectionModal(${r.plrNo})"
+                            class="hover:underline cursor-pointer flex items-center gap-1 font-bold"
+                            title="Inspect PLR #${r.plrNo} incident and recommendations"
+                          >
+                            <span>#${r.plrNo}</span>
+                          </button>
+                        </td>
+                        <td class="py-2.5 px-3 font-mono text-slate-500 whitespace-nowrap text-[11px]">
+                          ${r.date || ''} <span class="text-slate-400">(${r.year})</span>
+                        </td>
+                        <td class="py-2.5 px-3 max-w-md">
+                          <div class="line-clamp-2 text-slate-800 font-medium leading-relaxed" title="${(r.incident || '').replace(/"/g, '&quot;')}">
+                            ${r.incident}
+                          </div>
+                        </td>
+                        <td class="py-2.5 px-3 whitespace-nowrap">
+                          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-800 border border-slate-200">
+                            <i data-lucide="cpu" class="w-3 h-3 text-[#2E6DA4]"></i>
+                            <span>${r.machine}</span>
+                          </span>
+                        </td>
+                        <td class="py-2.5 px-3 whitespace-nowrap">
+                          <span class="inline-block px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+                            ${r.dept || 'KE'}
+                          </span>
+                        </td>
+                        <td class="py-2.5 px-3 whitespace-nowrap">
+                          <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-bold ${isHigh ? 'bg-rose-50 text-rose-700 border border-rose-200' : 'bg-slate-100 text-slate-600 border border-slate-200'}">
+                            ${r.priority || 'Low'}
+                          </span>
+                        </td>
+                        <td class="py-2.5 px-3 text-center whitespace-nowrap">
+                          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold ${
+                            isOpen ? 'bg-rose-50 text-rose-800 border border-rose-200' : 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                          }">
+                            <span class="w-1.5 h-1.5 rounded-full ${isOpen ? 'bg-rose-500' : 'bg-emerald-500'}"></span>
+                            ${r.status}
+                          </span>
+                        </td>
+                        <td class="py-2.5 px-3 text-right whitespace-nowrap">
+                          <button
+                            onclick="portalApp.openPlrInspectionModal(${r.plrNo})"
+                            class="px-2 py-1 rounded-md text-[11px] font-bold text-[#2E6DA4] bg-blue-50/70 hover:bg-blue-100 border border-blue-200 cursor-pointer inline-flex items-center gap-1 transition-colors"
+                          >
+                            <span>View</span>
+                            <i data-lucide="chevron-right" class="w-3 h-3"></i>
+                          </button>
+                        </td>
+                      </tr>
+                    `;
+                  }).join('')}
+                </tbody>
+              </table>
+            ` : `
+              <table class="w-full text-left text-xs border-collapse">
+                <thead class="sticky top-0 bg-slate-100/95 backdrop-blur-xs z-10 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[10px]">
+                  <tr>
+                    <th class="py-2.5 px-3 w-12 text-center">#</th>
+                    <th class="py-2.5 px-3 w-28 font-mono">Rec Ref</th>
+                    <th class="py-2.5 px-3 w-32">Action Department</th>
+                    <th class="py-2.5 px-3">Recommendation Details (Column E - Recommendations)</th>
+                    <th class="py-2.5 px-3 w-24">Parent PLR</th>
+                    <th class="py-2.5 px-3 w-24">Date</th>
+                    <th class="py-2.5 px-3 w-28 text-center">Status (Click to Toggle)</th>
+                    <th class="py-2.5 px-3 w-28 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-slate-800">
+                  ${records.map((r, idx) => {
+                    const isOpen = (r.status || '').toLowerCase() === 'open';
+                    return `
+                      <tr class="hover:bg-slate-50/80 transition-colors group">
+                        <td class="py-2.5 px-3 font-mono text-center text-slate-400 text-[11px]">${idx + 1}</td>
+                        <td class="py-2.5 px-3 font-mono font-bold text-[#047857] whitespace-nowrap">
+                          <button
+                            onclick="portalApp.openPlrInspectionModal(${r.plrNo})"
+                            class="hover:underline cursor-pointer flex items-center gap-1 font-bold"
+                            title="Inspect recommendation and linked PLR #${r.plrNo}"
+                          >
+                            <span>#${r.plrNo}-R${r.sNo}</span>
+                          </button>
+                        </td>
+                        <td class="py-2.5 px-3 whitespace-nowrap">
+                          <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-800 border border-slate-200">
+                            <span class="w-1.5 h-1.5 rounded-full bg-[#2E6DA4]"></span>
+                            <span>${r.actionBy}</span>
+                          </span>
+                        </td>
+                        <td class="py-2.5 px-3 max-w-lg">
+                          <div class="line-clamp-2 text-slate-800 font-medium leading-relaxed" title="${(r.recommendation || '').replace(/"/g, '&quot;')}">
+                            ${r.recommendation}
+                          </div>
+                        </td>
+                        <td class="py-2.5 px-3 whitespace-nowrap">
+                          <button
+                            onclick="portalApp.openPlrInspectionModal(${r.plrNo})"
+                            class="text-[11px] font-mono font-bold text-[#2E6DA4] hover:underline cursor-pointer"
+                            title="View Incident PLR #${r.plrNo}"
+                          >
+                            PLR #${r.plrNo}
+                          </button>
+                        </td>
+                        <td class="py-2.5 px-3 font-mono text-slate-500 whitespace-nowrap text-[11px]">
+                          ${r.date || ''} <span class="text-slate-400">(${r.year})</span>
+                        </td>
+                        <td class="py-2.5 px-3 text-center whitespace-nowrap">
+                          <button
+                            onclick="portalApp.toggleRecStatusFromModal(${r.sNo})"
+                            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold transition-all cursor-pointer shadow-2xs ${
+                              isOpen ? 'bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-200' : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200'
+                            }"
+                            title="Click to toggle status (Open / Closed)"
+                          >
+                            <span class="w-2 h-2 rounded-full ${isOpen ? 'bg-rose-500 animate-pulse' : 'bg-emerald-500'}"></span>
+                            <span>${r.status}</span>
+                            <i data-lucide="refresh-cw" class="w-3 h-3 text-slate-400 group-hover:text-slate-600"></i>
+                          </button>
+                        </td>
+                        <td class="py-2.5 px-3 text-right whitespace-nowrap space-x-1">
+                          <button
+                            onclick="portalApp.openEditRecommendationModal(${r.sNo})"
+                            class="px-2 py-1 rounded-md text-[11px] font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 cursor-pointer inline-flex items-center gap-1 transition-colors"
+                            title="Edit recommendation details"
+                          >
+                            <i data-lucide="edit-3" class="w-3 h-3 text-slate-600"></i>
+                            <span>Edit</span>
+                          </button>
+                          <button
+                            onclick="portalApp.openPlrInspectionModal(${r.plrNo})"
+                            class="px-2 py-1 rounded-md text-[11px] font-bold text-[#2E6DA4] bg-blue-50/70 hover:bg-blue-100 border border-blue-200 cursor-pointer inline-flex items-center gap-1 transition-colors"
+                            title="Inspect Parent Incident PLR #${r.plrNo}"
+                          >
+                            <span>PLR</span>
+                            <i data-lucide="chevron-right" class="w-3 h-3"></i>
+                          </button>
+                        </td>
+                      </tr>
+                    `;
+                  }).join('')}
+                </tbody>
+              </table>
+            `}
+          </div>
+
+          <!-- Modal Footer -->
+          <div class="p-3.5 border-t border-slate-200 bg-slate-50 flex items-center justify-between text-xs text-slate-500">
+            <span>Showing <strong class="text-slate-800">${records.length}</strong> of <strong class="text-slate-800">${totalCount}</strong> records</span>
+            <div class="flex items-center gap-2">
+              <button
+                onclick="portalApp.exportPlrModalCSV()"
+                class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-100 border border-slate-200 transition-colors cursor-pointer"
+              >
+                Export CSV
+              </button>
+              <button
+                onclick="portalApp.closePlrDataModal()"
+                class="px-4 py-1.5 rounded-lg text-xs font-bold text-white bg-[#2E6DA4] hover:bg-[#235885] transition-colors cursor-pointer shadow-xs"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    `;
+
+    if (window.lucide) window.lucide.createIcons();
+
+    if (maintainFocus) {
+      const input = document.getElementById('plr-modal-search-input');
+      if (input) {
+        input.focus();
+        input.setSelectionRange(input.value.length, input.value.length);
+      }
+    }
+  };
+
+  /**
+   * Export Filtered Modal Data to CSV
+   */
+  portalApp.exportPlrModalCSV = function () {
+    const s = getPlrState();
+    if (!s.activePlrModal) return;
+    const m = s.activePlrModal;
+    const records = portalApp.getPlrModalFilteredRecords();
+    let csv = '';
+    let filename = `FPCL_PLR_${m.type}_drilldown.csv`;
+
+    if (m.type === 'incidents') {
+      csv = 'S_NO,PLR_NO,YEAR,DATE,INCIDENT_DESCRIPTION,MACHINE,ACTION_ENTITY,PRIORITY,STATUS\n';
+      records.forEach((r, idx) => {
+        const row = [
+          idx + 1,
+          r.plrNo,
+          r.year,
+          `"${(r.date || '').replace(/"/g, '""')}"`,
+          `"${(r.incident || '').replace(/"/g, '""')}"`,
+          `"${(r.machine || '').replace(/"/g, '""')}"`,
+          `"${(r.dept || '').replace(/"/g, '""')}"`,
+          `"${(r.priority || '').replace(/"/g, '""')}"`,
+          r.status
+        ];
+        csv += row.join(',') + '\n';
+      });
+    } else {
+      csv = 'S_NO,PLR_NO,REC_NO,YEAR,DATE,ACTION_DEPARTMENT,RECOMMENDATION_DETAILS,STATUS\n';
+      records.forEach((r, idx) => {
+        const row = [
+          idx + 1,
+          r.plrNo,
+          r.sNo,
+          r.year,
+          `"${(r.date || '').replace(/"/g, '""')}"`,
+          `"${(r.actionBy || '').replace(/"/g, '""')}"`,
+          `"${(r.recommendation || '').replace(/"/g, '""')}"`,
+          r.status
+        ];
+        csv += row.join(',') + '\n';
+      });
+    }
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
   portalApp.switchTabAndFilterPlr = function (plrNo) {
     portalApp.closePlrInspectionModal();
     const s = getPlrState();
@@ -2867,6 +3893,19 @@
   portalApp.setPlrTab = function (tab) {
     const s = getPlrState();
     s.activeTab = tab;
+    portalApp.renderPlrSuite();
+  };
+
+  portalApp.setDeptBarViewMode = function (mode) {
+    const s = getPlrState();
+    s.deptBarViewMode = mode;
+    portalApp.renderDeptBarChart();
+    portalApp.renderPlrSuite();
+  };
+
+  portalApp.setResolutionMode = function (mode) {
+    const s = getPlrState();
+    s.resolutionMode = mode;
     portalApp.renderPlrSuite();
   };
 
@@ -3018,5 +4057,844 @@
     a.click();
     document.body.removeChild(a);
   };
+
+  /**
+   * =========================================================================
+   * GOOGLE SHEET RECOMMENDATIONS (COLUMN E) SYNC & DYNAMIC CRUD CONTROLLERS
+   * When data is changed, added, or open/close status is changed, all dashboard
+   * metrics, charts, bento grids, and overview rollups immediately reflect!
+   * =========================================================================
+   */
+
+  portalApp.saveAndReflectRecChanges = function (title, msg) {
+    try {
+      localStorage.setItem('FPCL_PLR_RECOMMENDATIONS_UPDATED', JSON.stringify(window.FPCL_PLR_RECOMMENDATIONS));
+    } catch (err) {
+      console.warn('Could not persist recommendations to localStorage:', err);
+    }
+    portalApp.syncPlrStatsToOverview();
+    portalApp.renderPlrSuite();
+
+    if (title && portalApp.showToast) {
+      portalApp.showToast(title, msg || 'Dashboard metrics and charts updated.', 'success');
+    }
+  };
+
+  /**
+   * Toggle status between Open and Closed directly from table or modal
+   */
+  portalApp.toggleRecommendationStatus = function (sNo, activeInspectionPlrNo) {
+    const recs = getPlrRecs();
+    const item = recs.find(r => r.sNo === sNo);
+    if (!item) return;
+
+    const oldStatus = item.status;
+    const isNowOpen = (oldStatus || '').toLowerCase() === 'closed';
+    item.status = isNowOpen ? 'Open' : 'Closed';
+
+    portalApp.saveAndReflectRecChanges(
+      'Status Updated',
+      `Recommendation #${item.sNo} (PLR #${item.plrNo}) changed from ${oldStatus} to ${item.status}.`
+    );
+
+    // Keep inspection modal open and synchronized if user toggled from inside it
+    if (activeInspectionPlrNo !== undefined && activeInspectionPlrNo !== null) {
+      portalApp.openPlrInspectionModal(activeInspectionPlrNo);
+    }
+  };
+
+  /**
+   * Close Action / Sync Modal
+   */
+  portalApp.closeActionModal = function () {
+    const container = document.getElementById('plr-action-modal-container');
+    if (container) container.innerHTML = '';
+  };
+
+  /**
+   * Open Modal to Add a New Recommendation (Picked into Column E: Recommendations)
+   */
+  portalApp.openAddRecommendationModal = function (prefillPlrNo) {
+    const container = document.getElementById('plr-action-modal-container');
+    if (!container) return;
+
+    const recs = getPlrRecs();
+    const nextSNo = recs.reduce((max, r) => Math.max(max, Number(r.sNo) || 0), 0) + 1;
+    const plrs = getPlrData();
+
+    // Default prefilled values
+    const defPlr = prefillPlrNo || (plrs.length > 0 ? plrs[0].plrNo : 233);
+    const parentPlr = plrs.find(p => String(p.plrNo) === String(defPlr));
+    const defYear = parentPlr ? parentPlr.year : 2025;
+    const defDate = parentPlr ? parentPlr.date : new Date().toLocaleDateString('en-GB');
+    const defDept = parentPlr ? parentPlr.dept : 'E&I';
+
+    container.innerHTML = `
+      <div class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-xl overflow-hidden flex flex-col max-h-[92vh]">
+          
+          <!-- Header -->
+          <div class="p-4 sm:p-5 border-b border-slate-200 flex items-center justify-between bg-gradient-to-r from-emerald-50 to-teal-50">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-xs">
+                <i data-lucide="plus-circle" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h3 class="text-base font-black text-slate-900">Add New Action Recommendation</h3>
+                <p class="text-xs text-emerald-800 font-medium">Mapped directly to Google Sheet Tab: <strong class="font-bold">Recommendations</strong> &bull; <strong class="font-bold">Column E ("Recommendations")</strong></p>
+              </div>
+            </div>
+            <button onclick="portalApp.closeActionModal()" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-white/80 transition-colors cursor-pointer">
+              <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+          </div>
+
+          <!-- Form Body -->
+          <div class="p-5 overflow-y-auto space-y-4 text-xs">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label class="block font-bold text-slate-700 uppercase tracking-wider text-[10px] mb-1">S_No (Col A)</label>
+                <input
+                  type="number"
+                  id="plr-add-sno"
+                  value="${nextSNo}"
+                  class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-slate-50 font-mono text-slate-800 font-bold focus:outline-none focus:border-emerald-600"
+                  readonly
+                />
+              </div>
+              <div>
+                <label class="block font-bold text-slate-700 uppercase tracking-wider text-[10px] mb-1">PLR # (Col B)</label>
+                <input
+                  type="number"
+                  id="plr-add-plrno"
+                  value="${defPlr}"
+                  placeholder="e.g. 214"
+                  class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white font-mono text-slate-900 font-bold focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
+                  required
+                />
+              </div>
+              <div>
+                <label class="block font-bold text-slate-700 uppercase tracking-wider text-[10px] mb-1">Year (Col C)</label>
+                <input
+                  type="number"
+                  id="plr-add-year"
+                  value="${defYear}"
+                  class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white font-mono text-slate-900 font-bold focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
+                />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block font-bold text-slate-700 uppercase tracking-wider text-[10px] mb-1">Date (Col D)</label>
+                <input
+                  type="text"
+                  id="plr-add-date"
+                  value="${defDate}"
+                  placeholder="e.g. 03/02/2025"
+                  class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white font-mono text-slate-900 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
+                />
+              </div>
+              <div>
+                <label class="block font-bold text-slate-700 uppercase tracking-wider text-[10px] mb-1">Action Entity / Dept (Col F)</label>
+                <input
+                  type="text"
+                  id="plr-add-actionby"
+                  value="${defDept}"
+                  placeholder="e.g. Mechanical, E&I, OPS-PSG"
+                  class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white font-bold text-slate-900 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
+                />
+              </div>
+            </div>
+
+            <!-- Column E: Recommendations Field -->
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label class="font-bold text-slate-900 uppercase tracking-wider text-[10px] flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                  <span>Recommendation Description (Column E - Recommendations) *</span>
+                </label>
+                <span class="text-[10px] text-emerald-800 font-mono font-bold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">Required</span>
+              </div>
+              <textarea
+                id="plr-add-rec"
+                rows="4"
+                placeholder="Enter detailed corrective action / maintenance recommendation as recorded in Column E of the Recommendations tab..."
+                class="w-full p-3 rounded-xl border border-slate-300 bg-white text-slate-900 text-xs focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 leading-relaxed font-normal"
+                required
+              ></textarea>
+            </div>
+
+            <!-- Column G: Status Field -->
+            <div>
+              <label class="block font-bold text-slate-700 uppercase tracking-wider text-[10px] mb-1">Status (Col G)</label>
+              <div class="grid grid-cols-2 gap-3">
+                <label class="flex items-center gap-2 p-2.5 rounded-xl border border-slate-200 bg-slate-50 cursor-pointer hover:bg-slate-100 transition-colors">
+                  <input type="radio" name="plr-add-status" value="Open" checked class="text-rose-600 focus:ring-rose-500" />
+                  <span class="flex items-center gap-1.5 font-bold text-rose-700 text-xs">
+                    <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+                    Open
+                  </span>
+                </label>
+                <label class="flex items-center gap-2 p-2.5 rounded-xl border border-slate-200 bg-slate-50 cursor-pointer hover:bg-slate-100 transition-colors">
+                  <input type="radio" name="plr-add-status" value="Closed" class="text-emerald-600 focus:ring-emerald-500" />
+                  <span class="flex items-center gap-1.5 font-bold text-emerald-800 text-xs">
+                    <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+                    Closed
+                  </span>
+                </label>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Footer -->
+          <div class="p-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between">
+            <button
+              type="button"
+              onclick="portalApp.closeActionModal()"
+              class="px-4 py-2 rounded-xl text-xs font-bold text-slate-700 hover:text-slate-900 bg-white border border-slate-200 shadow-xs cursor-pointer hover:bg-slate-100"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onclick="portalApp.saveNewRecommendation()"
+              class="px-5 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-xs cursor-pointer flex items-center gap-1.5 transition-colors"
+            >
+              <i data-lucide="check" class="w-4 h-4"></i>
+              <span>Save Recommendation</span>
+            </button>
+          </div>
+
+        </div>
+      </div>
+    `;
+
+    if (window.lucide) window.lucide.createIcons();
+  };
+
+  /**
+   * Save Newly Added Recommendation and Reflect on Dashboard
+   */
+  portalApp.saveNewRecommendation = function () {
+    const snoEl = document.getElementById('plr-add-sno');
+    const plrnoEl = document.getElementById('plr-add-plrno');
+    const yearEl = document.getElementById('plr-add-year');
+    const dateEl = document.getElementById('plr-add-date');
+    const actionbyEl = document.getElementById('plr-add-actionby');
+    const recEl = document.getElementById('plr-add-rec');
+    const statusRadio = document.querySelector('input[name="plr-add-status"]:checked');
+
+    if (!recEl || !recEl.value.trim()) {
+      alert('Please provide the Recommendation text (Column E).');
+      if (recEl) recEl.focus();
+      return;
+    }
+
+    const sNo = snoEl ? parseInt(snoEl.value, 10) : Date.now();
+    const plrNo = plrnoEl ? parseInt(plrnoEl.value, 10) : 0;
+    const year = yearEl && yearEl.value ? parseInt(yearEl.value, 10) : 2025;
+    const date = dateEl ? dateEl.value.trim() : '';
+    const actionBy = actionbyEl && actionbyEl.value.trim() ? actionbyEl.value.trim() : 'Unassigned';
+    const recommendation = recEl.value.trim();
+    const status = statusRadio ? statusRadio.value : 'Open';
+
+    const newItem = {
+      sNo,
+      plrNo,
+      year,
+      date,
+      recommendation,
+      actionBy,
+      status,
+      category: actionBy
+    };
+
+    window.FPCL_PLR_RECOMMENDATIONS.unshift(newItem);
+    portalApp.closeActionModal();
+
+    portalApp.saveAndReflectRecChanges(
+      'Recommendation Added',
+      `New recommendation #${sNo} for PLR #${plrNo} added with status "${status}". Dashboard metrics and charts updated.`
+    );
+  };
+
+  /**
+   * Open Edit Recommendation Modal
+   */
+  portalApp.openEditRecommendationModal = function (sNo) {
+    const container = document.getElementById('plr-action-modal-container');
+    if (!container) return;
+
+    const recs = getPlrRecs();
+    const item = recs.find(r => r.sNo === sNo);
+    if (!item) return;
+
+    const isOpen = (item.status || '').toLowerCase() === 'open';
+
+    container.innerHTML = `
+      <div class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-xl overflow-hidden flex flex-col max-h-[92vh]">
+          
+          <!-- Header -->
+          <div class="p-4 sm:p-5 border-b border-slate-200 flex items-center justify-between bg-gradient-to-r from-blue-50 to-sky-50">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-[#2E6DA4] text-white flex items-center justify-center shadow-xs">
+                <i data-lucide="edit-3" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h3 class="text-base font-black text-slate-900">Edit Recommendation #${item.sNo}</h3>
+                <p class="text-xs text-[#2E6DA4] font-medium">PLR #${item.plrNo} &bull; Tab: Recommendations &bull; Column E ("Recommendations")</p>
+              </div>
+            </div>
+            <button onclick="portalApp.closeActionModal()" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-white/80 transition-colors cursor-pointer">
+              <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+          </div>
+
+          <!-- Body -->
+          <div class="p-5 overflow-y-auto space-y-4 text-xs">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label class="block font-bold text-slate-700 uppercase tracking-wider text-[10px] mb-1">S_No (Col A)</label>
+                <input
+                  type="number"
+                  value="${item.sNo}"
+                  class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-slate-50 font-mono text-slate-600 font-bold"
+                  disabled
+                />
+              </div>
+              <div>
+                <label class="block font-bold text-slate-700 uppercase tracking-wider text-[10px] mb-1">PLR # (Col B)</label>
+                <input
+                  type="number"
+                  id="plr-edit-plrno"
+                  value="${item.plrNo}"
+                  class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white font-mono text-slate-900 font-bold focus:outline-none focus:border-[#2E6DA4] focus:ring-1 focus:ring-[#2E6DA4]"
+                  required
+                />
+              </div>
+              <div>
+                <label class="block font-bold text-slate-700 uppercase tracking-wider text-[10px] mb-1">Year (Col C)</label>
+                <input
+                  type="number"
+                  id="plr-edit-year"
+                  value="${item.year || 2025}"
+                  class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white font-mono text-slate-900 font-bold focus:outline-none focus:border-[#2E6DA4] focus:ring-1 focus:ring-[#2E6DA4]"
+                />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block font-bold text-slate-700 uppercase tracking-wider text-[10px] mb-1">Date (Col D)</label>
+                <input
+                  type="text"
+                  id="plr-edit-date"
+                  value="${item.date || ''}"
+                  placeholder="e.g. 03/02/2025"
+                  class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white font-mono text-slate-900 focus:outline-none focus:border-[#2E6DA4] focus:ring-1 focus:ring-[#2E6DA4]"
+                />
+              </div>
+              <div>
+                <label class="block font-bold text-slate-700 uppercase tracking-wider text-[10px] mb-1">Action Entity / Dept (Col F)</label>
+                <input
+                  type="text"
+                  id="plr-edit-actionby"
+                  value="${item.actionBy || 'Unassigned'}"
+                  class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white font-bold text-slate-900 focus:outline-none focus:border-[#2E6DA4] focus:ring-1 focus:ring-[#2E6DA4]"
+                />
+              </div>
+            </div>
+
+            <!-- Column E Recommendation Textarea -->
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label class="font-bold text-slate-900 uppercase tracking-wider text-[10px] flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-[#2E6DA4]"></span>
+                  <span>Recommendation Description (Column E - Recommendations) *</span>
+                </label>
+                <span class="text-[10px] text-blue-800 font-mono font-bold bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">Col E</span>
+              </div>
+              <textarea
+                id="plr-edit-rec"
+                rows="4"
+                class="w-full p-3 rounded-xl border border-slate-300 bg-white text-slate-900 text-xs focus:outline-none focus:border-[#2E6DA4] focus:ring-1 focus:ring-[#2E6DA4] leading-relaxed font-normal"
+                required
+              >${item.recommendation || ''}</textarea>
+            </div>
+
+            <!-- Column G Status Options -->
+            <div>
+              <label class="block font-bold text-slate-700 uppercase tracking-wider text-[10px] mb-1">Status (Col G)</label>
+              <div class="grid grid-cols-2 gap-3">
+                <label class="flex items-center gap-2 p-2.5 rounded-xl border border-slate-200 bg-slate-50 cursor-pointer hover:bg-slate-100 transition-colors">
+                  <input type="radio" name="plr-edit-status" value="Open" ${isOpen ? 'checked' : ''} class="text-rose-600 focus:ring-rose-500" />
+                  <span class="flex items-center gap-1.5 font-bold text-rose-700 text-xs">
+                    <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+                    Open
+                  </span>
+                </label>
+                <label class="flex items-center gap-2 p-2.5 rounded-xl border border-slate-200 bg-slate-50 cursor-pointer hover:bg-slate-100 transition-colors">
+                  <input type="radio" name="plr-edit-status" value="Closed" ${!isOpen ? 'checked' : ''} class="text-emerald-600 focus:ring-emerald-500" />
+                  <span class="flex items-center gap-1.5 font-bold text-emerald-800 text-xs">
+                    <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+                    Closed
+                  </span>
+                </label>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Footer -->
+          <div class="p-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between">
+            <button
+              type="button"
+              onclick="portalApp.closeActionModal()"
+              class="px-4 py-2 rounded-xl text-xs font-bold text-slate-700 hover:text-slate-900 bg-white border border-slate-200 shadow-xs cursor-pointer hover:bg-slate-100"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onclick="portalApp.saveEditRecommendation(${item.sNo})"
+              class="px-5 py-2 rounded-xl text-xs font-bold text-white bg-[#2E6DA4] hover:bg-[#235885] shadow-xs cursor-pointer flex items-center gap-1.5 transition-colors"
+            >
+              <i data-lucide="check" class="w-4 h-4"></i>
+              <span>Save Changes</span>
+            </button>
+          </div>
+
+        </div>
+      </div>
+    `;
+
+    if (window.lucide) window.lucide.createIcons();
+  };
+
+  /**
+   * Save Edited Recommendation
+   */
+  portalApp.saveEditRecommendation = function (sNo) {
+    const recs = getPlrRecs();
+    const item = recs.find(r => r.sNo === sNo);
+    if (!item) return;
+
+    const plrnoEl = document.getElementById('plr-edit-plrno');
+    const yearEl = document.getElementById('plr-edit-year');
+    const dateEl = document.getElementById('plr-edit-date');
+    const actionbyEl = document.getElementById('plr-edit-actionby');
+    const recEl = document.getElementById('plr-edit-rec');
+    const statusRadio = document.querySelector('input[name="plr-edit-status"]:checked');
+
+    if (!recEl || !recEl.value.trim()) {
+      alert('Please provide the Recommendation text (Column E).');
+      return;
+    }
+
+    item.plrNo = plrnoEl ? parseInt(plrnoEl.value, 10) : item.plrNo;
+    item.year = yearEl && yearEl.value ? parseInt(yearEl.value, 10) : item.year;
+    item.date = dateEl ? dateEl.value.trim() : item.date;
+    item.actionBy = actionbyEl && actionbyEl.value.trim() ? actionbyEl.value.trim() : item.actionBy;
+    item.recommendation = recEl.value.trim();
+    item.status = statusRadio ? statusRadio.value : item.status;
+    item.category = item.actionBy;
+
+    portalApp.closeActionModal();
+
+    portalApp.saveAndReflectRecChanges(
+      'Recommendation Updated',
+      `Recommendation #${sNo} (PLR #${item.plrNo}) saved. Dashboard recalculated.`
+    );
+  };
+
+  /**
+   * Delete Recommendation
+   */
+  portalApp.deleteRecommendation = function (sNo) {
+    const recs = getPlrRecs();
+    const idx = recs.findIndex(r => r.sNo === sNo);
+    if (idx === -1) return;
+
+    const item = recs[idx];
+    if (!confirm(`Are you sure you want to delete recommendation #${sNo} for PLR #${item.plrNo}? This change will reflect immediately on the dashboard.`)) {
+      return;
+    }
+
+    recs.splice(idx, 1);
+    portalApp.saveAndReflectRecChanges(
+      'Recommendation Deleted',
+      `Recommendation #${sNo} was removed from the dataset.`
+    );
+  };
+
+  /**
+   * Open Google Sheet Recommendations Sync Modal
+   */
+  portalApp.openPlrSheetSyncModal = function () {
+    const container = document.getElementById('plr-action-modal-container');
+    if (!container) return;
+
+    const recs = getPlrRecs();
+    const openCount = recs.filter(r => (r.status || '').toLowerCase() === 'open').length;
+    const closedCount = recs.length - openCount;
+    const defaultUrl = 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit';
+
+    container.innerHTML = `
+      <div class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-xl overflow-hidden flex flex-col max-h-[92vh]">
+          
+          <!-- Header -->
+          <div class="p-4 sm:p-5 border-b border-slate-200 flex items-center justify-between bg-gradient-to-r from-emerald-50 via-teal-50 to-sky-50">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-xs">
+                <i data-lucide="file-spreadsheet" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h3 class="text-base font-black text-slate-900">Google Sheet Tab: Recommendations</h3>
+                <p class="text-xs text-emerald-800 font-medium">Extracts recommendations directly from <strong class="font-bold">Column E ("Recommendations")</strong></p>
+              </div>
+            </div>
+            <button onclick="portalApp.closeActionModal()" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-white/80 transition-colors cursor-pointer">
+              <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+          </div>
+
+          <!-- Body -->
+          <div class="p-5 overflow-y-auto space-y-4 text-xs">
+            <!-- Specification Summary -->
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-slate-900 text-xs flex items-center gap-1.5">
+                  <i data-lucide="database" class="w-4 h-4 text-emerald-600"></i>
+                  <span>Current Active Recommendations Dataset</span>
+                </span>
+                <span class="font-mono text-emerald-800 font-bold bg-emerald-100 px-2 py-0.5 rounded text-[11px]">
+                  ${recs.length} Loaded (${closedCount} Closed, ${openCount} Open)
+                </span>
+              </div>
+              <p class="text-slate-600 text-[11px] leading-relaxed">
+                This integration is configured to read the Google Sheet tab named <strong class="text-slate-900 font-mono">Recommendations</strong> and extract the core action items from <strong class="text-emerald-800 font-mono">Column E (named "Recommendations")</strong>, Action Entity from Column F, and Status from Column G.
+              </p>
+            </div>
+
+            <!-- Sheet URL input -->
+            <div class="space-y-1.5">
+              <label class="block font-bold text-slate-700 uppercase tracking-wider text-[10px]">Google Spreadsheet URL or ID</label>
+              <input
+                type="text"
+                id="plr-sheet-url-input"
+                placeholder="https://docs.google.com/spreadsheets/d/.../edit"
+                value="${defaultUrl}"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white font-mono text-xs text-slate-900 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
+              />
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block font-bold text-slate-700 uppercase tracking-wider text-[10px] mb-1">Target Sheet Tab</label>
+                <input
+                  type="text"
+                  id="plr-sheet-tab-input"
+                  value="Recommendations"
+                  class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-slate-50 font-mono text-xs font-bold text-slate-800 focus:outline-none"
+                  readonly
+                />
+              </div>
+              <div>
+                <label class="block font-bold text-slate-700 uppercase tracking-wider text-[10px] mb-1">Target Column</label>
+                <input
+                  type="text"
+                  value="Column E (Recommendations)"
+                  class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-slate-50 font-mono text-xs font-bold text-emerald-800 focus:outline-none"
+                  readonly
+                />
+              </div>
+            </div>
+
+            <!-- Sync Button -->
+            <div>
+              <button
+                type="button"
+                id="plr-sync-action-btn"
+                onclick="portalApp.syncPlrRecommendationsFromSheet()"
+                class="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <i data-lucide="cloud-download" class="w-4 h-4"></i>
+                <span>Fetch &amp; Sync Recommendations from Google Sheet</span>
+              </button>
+            </div>
+
+            <!-- Divider -->
+            <div class="relative flex py-2 items-center">
+              <div class="flex-grow border-t border-slate-200"></div>
+              <span class="flex-shrink mx-3 text-[10px] font-bold uppercase tracking-wider text-slate-400">Or Manual CSV Ingestion</span>
+              <div class="flex-grow border-t border-slate-200"></div>
+            </div>
+
+            <!-- CSV Upload and Paste Options -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <label class="flex flex-col items-center justify-center p-3 border-2 border-dashed border-slate-200 hover:border-emerald-500 rounded-xl bg-slate-50 hover:bg-emerald-50/50 cursor-pointer transition-colors text-center">
+                <i data-lucide="upload" class="w-5 h-5 text-slate-500 mb-1"></i>
+                <span class="font-bold text-slate-800 text-[11px]">Upload Tab CSV File</span>
+                <span class="text-[10px] text-slate-500 mt-0.5">Exported from Recommendations tab</span>
+                <input
+                  type="file"
+                  accept=".csv,text/csv"
+                  class="hidden"
+                  onchange="portalApp.handlePlrRecommendationsFileUpload(event)"
+                />
+              </label>
+
+              <button
+                type="button"
+                onclick="portalApp.showPlrPasteArea()"
+                class="flex flex-col items-center justify-center p-3 border-2 border-dashed border-slate-200 hover:border-sky-500 rounded-xl bg-slate-50 hover:bg-sky-50/50 cursor-pointer transition-colors text-center"
+              >
+                <i data-lucide="clipboard" class="w-5 h-5 text-slate-500 mb-1"></i>
+                <span class="font-bold text-slate-800 text-[11px]">Paste CSV Raw Text</span>
+                <span class="text-[10px] text-slate-500 mt-0.5">Paste CSV rows directly</span>
+              </button>
+            </div>
+
+            <!-- Hidden Paste Area -->
+            <div id="plr-paste-container" class="hidden space-y-2">
+              <textarea
+                id="plr-paste-textarea"
+                rows="4"
+                placeholder="Paste CSV text here (including header with Column E named Recommendations)..."
+                class="w-full p-2.5 rounded-xl border border-slate-300 font-mono text-[11px] focus:outline-none focus:border-emerald-600"
+              ></textarea>
+              <button
+                type="button"
+                onclick="portalApp.importPlrRecommendationsFromPastedCsv()"
+                class="w-full py-2 rounded-xl text-xs font-bold text-white bg-slate-900 hover:bg-black transition-colors cursor-pointer"
+              >
+                Parse &amp; Ingest Pasted CSV
+              </button>
+            </div>
+
+            <!-- Status Feedback Container -->
+            <div id="plr-sync-status-msg" class="hidden text-xs p-3 rounded-xl"></div>
+
+          </div>
+
+          <!-- Footer -->
+          <div class="p-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between">
+            <button
+              type="button"
+              onclick="portalApp.resetPlrRecommendationsToBaseline()"
+              class="px-3.5 py-2 rounded-xl text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 shadow-xs cursor-pointer transition-colors"
+              title="Reset dataset back to original 451 recommendations"
+            >
+              Reset to Baseline (451 Records)
+            </button>
+            <button
+              type="button"
+              onclick="portalApp.closeActionModal()"
+              class="px-4 py-2 rounded-xl text-xs font-bold text-slate-700 hover:text-slate-900 bg-white border border-slate-200 shadow-xs cursor-pointer hover:bg-slate-100"
+            >
+              Close
+            </button>
+          </div>
+
+        </div>
+      </div>
+    `;
+
+    if (window.lucide) window.lucide.createIcons();
+  };
+
+  portalApp.showPlrPasteArea = function () {
+    const el = document.getElementById('plr-paste-container');
+    if (el) el.classList.toggle('hidden');
+  };
+
+  /**
+   * Fetch from Google Sheet API endpoint or direct export
+   */
+  portalApp.syncPlrRecommendationsFromSheet = async function (customUrl) {
+    const urlInput = document.getElementById('plr-sheet-url-input');
+    const tabInput = document.getElementById('plr-sheet-tab-input');
+    const statusMsg = document.getElementById('plr-sync-status-msg');
+    const btn = document.getElementById('plr-sync-action-btn');
+
+    const url = customUrl || (urlInput ? urlInput.value.trim() : '');
+    const sheetTab = tabInput ? tabInput.value.trim() : 'Recommendations';
+
+    if (!url) {
+      alert('Please provide a Google Sheet URL.');
+      return;
+    }
+
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i><span>Syncing Tab "${sheetTab}"...</span>`;
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    if (statusMsg) {
+      statusMsg.className = 'text-xs p-3 rounded-xl bg-blue-50 text-blue-900 border border-blue-200 block';
+      statusMsg.innerHTML = `Fetching live CSV for tab <strong>${sheetTab}</strong> and extracting <strong>Column E ("Recommendations")</strong>...`;
+    }
+
+    try {
+      // 1. Try server-side proxy
+      let csvData = '';
+      try {
+        const res = await fetch('/api/sheets/fetch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url, sheetTab })
+        });
+        const json = await res.json();
+        if (json.success && json.csvText) {
+          csvData = json.csvText;
+        }
+      } catch (proxyErr) {
+        console.warn('Server proxy fetch failed, attempting client-side fallback:', proxyErr);
+      }
+
+      // 2. Client-side fallback if server proxy was unavailable
+      if (!csvData) {
+        let spreadsheetId = url;
+        const match = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+        if (match) spreadsheetId = match[1];
+
+        const candidateUrls = [
+          `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetTab)}`,
+          `https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&sheet=${encodeURIComponent(sheetTab)}`
+        ];
+
+        for (const candidate of candidateUrls) {
+          try {
+            const fallbackRes = await fetch(candidate);
+            if (fallbackRes.ok) {
+              const text = await fallbackRes.text();
+              if (text && !text.includes('<!DOCTYPE html>') && !text.includes('<html')) {
+                csvData = text;
+                break;
+              }
+            }
+          } catch (e) {
+            // try next
+          }
+        }
+      }
+
+      if (!csvData) {
+        throw new Error(`Unable to download CSV from tab "${sheetTab}". Verify the sheet sharing is set to "Anyone with the link can view".`);
+      }
+
+      // Parse with Column E targeted parser
+      const parsed = window.parsePLRRecommendationsCSV(csvData);
+      if (!parsed || parsed.length === 0) {
+        throw new Error(`CSV downloaded but no recommendations found in Column E of tab "${sheetTab}".`);
+      }
+
+      window.FPCL_PLR_RECOMMENDATIONS = parsed;
+      portalApp.closeActionModal();
+
+      const openCount = parsed.filter(r => (r.status || '').toLowerCase() === 'open').length;
+      const closedCount = parsed.length - openCount;
+      const rate = ((closedCount / parsed.length) * 100).toFixed(1) + '%';
+
+      portalApp.saveAndReflectRecChanges(
+        'Google Sheet Synced',
+        `Successfully loaded ${parsed.length} recommendations from Column E in tab "${sheetTab}". (${closedCount} Closed, ${openCount} Open &bull; ${rate} Resolution)`
+      );
+
+    } catch (err) {
+      console.error('Google Sheet Sync error:', err);
+      if (statusMsg) {
+        statusMsg.className = 'text-xs p-3 rounded-xl bg-rose-50 text-rose-900 border border-rose-200 block';
+        statusMsg.innerHTML = `<strong>Sync Failed:</strong> ${err.message || 'Unknown network error'}. You can also use the "Upload CSV File" or "Paste CSV" button below.`;
+      }
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = `<i data-lucide="cloud-download" class="w-4 h-4"></i><span>Retry Fetch</span>`;
+        if (window.lucide) window.lucide.createIcons();
+      }
+    }
+  };
+
+  /**
+   * Handle CSV File Upload
+   */
+  portalApp.handlePlrRecommendationsFileUpload = function (event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      const text = e.target.result;
+      const parsed = window.parsePLRRecommendationsCSV(text);
+      if (parsed && parsed.length > 0) {
+        window.FPCL_PLR_RECOMMENDATIONS = parsed;
+        portalApp.closeActionModal();
+        portalApp.saveAndReflectRecChanges(
+          'CSV File Ingested',
+          `Parsed ${parsed.length} recommendations from Column E named "Recommendations".`
+        );
+      } else {
+        alert('Could not parse recommendations from the uploaded file. Please ensure Column E contains recommendations.');
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  /**
+   * Handle Pasted CSV Text
+   */
+  portalApp.importPlrRecommendationsFromPastedCsv = function () {
+    const textarea = document.getElementById('plr-paste-textarea');
+    if (!textarea || !textarea.value.trim()) {
+      alert('Please paste CSV text into the box.');
+      return;
+    }
+
+    const parsed = window.parsePLRRecommendationsCSV(textarea.value.trim());
+    if (parsed && parsed.length > 0) {
+      window.FPCL_PLR_RECOMMENDATIONS = parsed;
+      portalApp.closeActionModal();
+      portalApp.saveAndReflectRecChanges(
+        'CSV Text Ingested',
+        `Parsed ${parsed.length} recommendations from pasted text.`
+      );
+    } else {
+      alert('Could not parse any recommendation rows. Please check the CSV formatting.');
+    }
+  };
+
+  /**
+   * Reset to original 451 recommendations
+   */
+  portalApp.resetPlrRecommendationsToBaseline = function () {
+    if (!confirm('Are you sure you want to reset recommendations to the original 451 records? Any manual additions or edits will be reverted.')) {
+      return;
+    }
+
+    localStorage.removeItem('FPCL_PLR_RECOMMENDATIONS_UPDATED');
+    window.FPCL_PLR_RECOMMENDATIONS = Array.isArray(window.FPCL_PLR_RECOMMENDATIONS_BASELINE) && window.FPCL_PLR_RECOMMENDATIONS_BASELINE.length > 0
+      ? JSON.parse(JSON.stringify(window.FPCL_PLR_RECOMMENDATIONS_BASELINE))
+      : getPlrRecs();
+
+    portalApp.closeActionModal();
+    portalApp.saveAndReflectRecChanges(
+      'Baseline Restored',
+      'Original 451 recommendations restored and reflected across the portal.'
+    );
+  };
+
+  // Keyboard shortcut: Close PLR modals on Escape key
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+      if (portalApp.closePlrDataModal) portalApp.closePlrDataModal();
+      if (portalApp.closePlrInspectionModal) portalApp.closePlrInspectionModal();
+      if (portalApp.closeActionModal) portalApp.closeActionModal();
+    }
+  });
 
 })();
