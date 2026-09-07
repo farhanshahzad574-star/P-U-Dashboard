@@ -11,6 +11,10 @@ const PORT = 3000;
 
 app.use(express.json({ limit: '5mb' }));
 
+app.get('/api/health', (_req: Request, res: Response) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 // Lazy initialization of Gemini client
 let aiClient: GoogleGenAI | null = null;
 function getAIClient(): GoogleGenAI | null {
@@ -56,20 +60,18 @@ Portal Summary:
     scopeKeywords: ['plr', 'plant loss', 'recommendation', 'incident', 'outage', 'machine', 'stg', 'boiler', 'cfb', 'power failure', 'mwh', 'loss', 'department', 'e&i', 'mechanical', 'operations', 'plant engineering', 'finance', 'fpcl-ke', 'scm', 'ke', 'trip', 'status', 'action'],
     context: `
 You are the PLR Assistant for the Plant Loss Recommendations (PLR) dashboard on the FPCL Portal.
+Responsible Unit: Process.
 PLR Data Summary (linked to Google Sheet tabs PLRstatus & Recommendations):
 1. PLR Incidents (233 total records):
    - 206 Closed, 27 Open (88.4% Resolution Rate).
-   - Standardized Machine Breakdown (Column G in PLRstatus):
-     * STG # 4: 155 outages (Primary outage driver, ~66.5% of all plant losses).
-     * STG # 3: 19 outages.
-     * Boiler # 1 (CFB-1): 16 outages.
-     * STG # 2: 13 outages.
+   - Standardized Machine Breakdown (Column G in PLR tab):
+     * STG # 4: 154 outages (Primary outage driver, ~66.1% of all plant losses).
+     * STG # 3: 17 outages.
+     * Boiler # 1 (CFB-1): 17 outages.
+     * STG # 2: 11 outages.
      * Boiler # 2 (CFB-2): 11 outages.
      * STG # 1: 10 outages.
-     * Grid Demand / Low Load: 4 outages.
-     * Total Power Failure: 2 outages.
-     * Boiler # 1 & 2 (Combined): 2 outages.
-     * Multiple Units (STG 1-3): 1 outage.
+     * Other Equipment / Multi-Unit: 13 outages (Total Power Failure 4, Low Load 4, Boiler 1&2 Combined 2, Multi-Unit STG 3).
    - Total generation loss exceeds 1,100,000 MWh.
 2. PLR Recommendations (451 total action records):
    - 420 Closed, 31 Open (93.1% Closure Rate).
@@ -223,7 +225,7 @@ ${config.context}
     let reply = '';
     if (key === 'plr') {
       if (lowerMsg.includes('machine') || lowerMsg.includes('stg') || lowerMsg.includes('boiler') || lowerMsg.includes('outage') || lowerMsg.includes('equipment')) {
-        reply = `**PLR Standardized Machine Breakdown (233 Total Outages):**\n\n- **STG # 4**: 155 outages (Primary outage driver • 66.5% of total losses)\n- **STG # 3**: 19 outages\n- **Boiler # 1 (CFB-1)**: 16 outages\n- **STG # 2**: 13 outages\n- **Boiler # 2 (CFB-2)**: 11 outages\n- **STG # 1**: 10 outages\n- **Grid Demand / Low Load**: 4 outages\n- **Total Power Failure**: 2 outages\n- **Boiler # 1 & 2 Combined**: 2 outages\n- **Multiple Units (STG 1-3)**: 1 outage\n\n*Overall PLR Incident Resolution: 206 Closed, 27 Open (88.4% Resolution Rate).*`;
+        reply = `**PLR Standardized Machine Breakdown (233 Total Outages):**\n\n- **STG # 4**: 154 outages (Primary outage driver • 66.1% of total losses)\n- **STG # 3**: 17 outages\n- **Boiler # 1 (CFB-1)**: 17 outages\n- **STG # 2**: 11 outages\n- **Boiler # 2 (CFB-2)**: 11 outages\n- **STG # 1**: 10 outages\n- **Other Equipment / Multi-Unit**: 13 outages\n\n*Overall PLR Incident Resolution: 206 Closed, 27 Open (88.4% Resolution Rate).*`;
       } else if (lowerMsg.includes('department') || lowerMsg.includes('e&i') || lowerMsg.includes('mechanical') || lowerMsg.includes('operations') || lowerMsg.includes('recommendation') || lowerMsg.includes('action')) {
         reply = `**PLR Recommendations by Standardized Department (451 Total Records):**\n\n- **E&I**: 196 items (182 closed, 14 open • 92.9% rate)\n- **FPCL-KE Operating Committee**: 79 items (77 closed, 2 open)\n- **Operations**: 45 items (41 closed, 4 open)\n- **Mechanical**: 38 items (34 closed, 4 open)\n- **Plant Engineering (PE)**: 28 items (26 closed, 2 open)\n- **Finance / FPCL-KE O/C**: 25 items (24 closed, 1 open)\n- **SCM**: 11 items (11 closed, 0 open)\n- **KE**: 5 items (5 closed, 0 open)\n- **Mechanical & Inspection**: 4 items (4 closed, 0 open)\n- **Planning**: 2 items (2 closed, 0 open)\n- **HSE**: 1 item (1 closed, 0 open)\n- **Unassigned**: 10 items (6 closed, 4 open)\n\n*Overall Recommendation Status: 420 Closed, 31 Open (93.1% Closure Rate).*`;
       } else if (lowerMsg.includes('open') || lowerMsg.includes('status') || lowerMsg.includes('closure')) {

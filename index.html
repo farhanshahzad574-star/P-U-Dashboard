@@ -1506,7 +1506,7 @@
           status: 'Active',
           hasSheetLink: true,
           category: 'Plant Integrity & Incident Analytics',
-          department: 'Plant Reliability & Loss Prevention',
+          department: 'Process',
           cadence: 'Continuous / Incident Driven',
           description: 'Official Plant Loss Recommendations tracking 451 engineering and operational action items across 13 standardized departments (420 Closed, 31 Open, 93.1% Closure Rate), linked to 233 generation loss incidents across standardized machine classes (206 Closed, 27 Open, 88.4% Resolution).',
           color: {
@@ -1841,7 +1841,7 @@
         statusFilter: 'all', // 'all', 'Active', 'Awaiting Sheet Data'
         categoryFilter: 'all', // 'all', 'Executive & Governance', etc.
         activeDashboardId: null,
-        connectedSheetUrl: 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit',
+        connectedSheetUrl: (typeof localStorage !== 'undefined' && localStorage.getItem('FPCL_CONNECTED_SHEET_URL')) || 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit',
       }, window.portalApp.state || {});
 
       // Preserve or initialize plrState safely
@@ -1878,6 +1878,13 @@
           this.renderPaletteSpecs();
           this.initChatbot();
           this.checkUrlHash();
+
+          // Auto-sync live Google Sheet tabs (Recommendations & PLR) permanently embedded on page load/refresh
+          setTimeout(() => {
+            if (typeof this.syncAllPlrSheets === 'function') {
+              this.syncAllPlrSheets({ silent: true });
+            }
+          }, 600);
 
           window.addEventListener('popstate', () => {
             this.checkUrlHash();
@@ -2865,7 +2872,13 @@
           document.getElementById('detail-title').style.color = '#1E293B';
           
           const descEl = document.getElementById('detail-description');
-          descEl.textContent = dashboard.description;
+          if (dashboardId === 'plr' && typeof portalApp.getPlrDynamicDescription === 'function') {
+            const dynamicDesc = portalApp.getPlrDynamicDescription();
+            descEl.textContent = dynamicDesc;
+            dashboard.description = dynamicDesc;
+          } else {
+            descEl.textContent = dashboard.description;
+          }
           descEl.style.color = '#475569';
 
           document.getElementById('detail-cadence').textContent = dashboard.cadence;
@@ -3171,6 +3184,9 @@
           const input = document.getElementById('sheet-url-input');
           if (input && input.value) {
             this.state.connectedSheetUrl = input.value;
+            try {
+              localStorage.setItem('FPCL_CONNECTED_SHEET_URL', input.value);
+            } catch (e) {}
             this.closeIntegrationModal();
             this.showToast('Connection Saved', 'Google Sheet link updated and validated.', 'success');
           }
