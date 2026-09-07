@@ -270,10 +270,10 @@ ${config.context}
   }
 });
 
-// POST /api/sheets/fetch - Live Google Sheets Tab CSV Proxy (supports tab 'Recommendations' and column E)
+// POST /api/sheets/fetch - Live Google Sheets Tab CSV Proxy (supports Recommendations and PLR tabs)
 app.post('/api/sheets/fetch', async (req: Request, res: Response): Promise<void> => {
   try {
-    const { url, sheetTab = 'Recommendations' } = req.body;
+    const { url, sheetTab = 'Recommendations', gid: customGid } = req.body;
     if (!url || typeof url !== 'string') {
       res.status(400).json({ success: false, error: 'A valid Google Sheet URL is required.' });
       return;
@@ -281,9 +281,38 @@ app.post('/api/sheets/fetch', async (req: Request, res: Response): Promise<void>
 
     const trimmedUrl = url.trim();
     let spreadsheetId = trimmedUrl;
-    const match = trimmedUrl.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
-    if (match) {
-      spreadsheetId = match[1];
+    let isPublished = false;
+    let pubBase = '';
+
+    const pubMatch = trimmedUrl.match(/\/spreadsheets\/d\/e\/([a-zA-Z0-9-_]+)/);
+    if (pubMatch) {
+      isPublished = true;
+      spreadsheetId = pubMatch[1];
+      pubBase = `https://docs.google.com/spreadsheets/d/e/${spreadsheetId}/pub`;
+    } else {
+      const match = trimmedUrl.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+      if (match) {
+        spreadsheetId = match[1];
+      }
+    }
+
+    // Extract GID from URL if present
+    const gidMatch = trimmedUrl.match(/[#?&]gid=([0-9]+)/);
+    const gid = customGid || (gidMatch ? gidMatch[1] : null);
+
+    // Build list of candidate sheet tabs to query
+    const candidateTabs: string[] = [sheetTab];
+    const sLower = (sheetTab || '').toLowerCase();
+    if (sLower === 'plr' || sLower.includes('plr')) {
+      const extraPlrTabs = ['PLRstatus', 'PLRStatus', 'PLR', 'PLRs', 'PLR status', 'PLR Status', 'PLRs status', 'PLRs Status', 'PLR Incident', 'PLR Incidents', 'Incidents', 'Incident', 'Outages', 'Plant Records'];
+      extraPlrTabs.forEach(t => {
+        if (!candidateTabs.includes(t)) candidateTabs.push(t);
+      });
+    } else if (sLower === 'recommendations' || sLower.includes('rec')) {
+      const extraRecTabs = ['Recommendations', 'Recommendation', 'Recs', 'PunchList', 'Actions'];
+      extraRecTabs.forEach(t => {
+        if (!candidateTabs.includes(t)) candidateTabs.push(t);
+      });
     }
 
     const candidateUrls: string[] = [];
@@ -291,12 +320,31 @@ app.post('/api/sheets/fetch', async (req: Request, res: Response): Promise<void>
     // If a direct CSV or published link was given, try that first
     if (trimmedUrl.includes('output=csv') || trimmedUrl.includes('format=csv') || trimmedUrl.includes('/pub?')) {
       candidateUrls.push(trimmedUrl);
+    } else if (trimmedUrl.includes('/pubhtml')) {
+      candidateUrls.push(trimmedUrl.replace('/pubhtml', '/pub?output=csv'));
     }
 
-    // Google Visualization API CSV export for specific tab (e.g. Recommendations)
-    candidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetTab)}`);
-    // Standard Google Drive export URL
-    candidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&sheet=${encodeURIComponent(sheetTab)}`);
+    if (isPublished) {
+      if (gid) {
+        candidateUrls.push(`${pubBase}?output=csv&gid=${gid}`);
+      }
+      for (const tab of candidateTabs) {
+        candidateUrls.push(`${pubBase}?output=csv&sheet=${encodeURIComponent(tab)}`);
+      }
+      candidateUrls.push(`${pubBase}?output=csv`);
+    } else {
+      // If GID is available from URL or params, prioritize direct gid queries
+      if (gid) {
+        candidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&gid=${gid}`);
+        candidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&gid=${gid}`);
+      }
+
+      // Google Visualization API and export queries for candidate tabs
+      for (const tab of candidateTabs) {
+        candidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tab)}`);
+        candidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&sheet=${encodeURIComponent(tab)}`);
+      }
+    }
 
     let csvText = '';
     let successUrl = '';
@@ -316,7 +364,7 @@ app.post('/api/sheets/fetch', async (req: Request, res: Response): Promise<void>
         if (response.ok) {
           const text = await response.text();
           // Check if response is valid CSV rather than an HTML login / permission error
-          if (text && !text.includes('<!DOCTYPE html>') && !text.includes('<html')) {
+          if (text && !text.includes('<!DOCTYPE html>') && !text.includes('<html') && !text.includes('google-site-verification')) {
             csvText = text;
             successUrl = fetchUrl;
             break;

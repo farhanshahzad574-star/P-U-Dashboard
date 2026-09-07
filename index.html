@@ -1307,7 +1307,7 @@
             <input
               id="sheet-url-input"
               type="text"
-              value="https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit"
+              value="https://docs.google.com/spreadsheets/d/1LJOdN8T7UUjaZbSfsCrO_Hdg1eoAgqnuE7mJDGtB8qo/export?format=csv&gid=0"
               class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-[#2B2E33] text-xs font-mono focus:ring-1 focus:ring-[#2E6DA4] focus:outline-none"
             />
           </div>
@@ -1841,7 +1841,8 @@
         statusFilter: 'all', // 'all', 'Active', 'Awaiting Sheet Data'
         categoryFilter: 'all', // 'all', 'Executive & Governance', etc.
         activeDashboardId: null,
-        connectedSheetUrl: (typeof localStorage !== 'undefined' && localStorage.getItem('FPCL_CONNECTED_SHEET_URL')) || 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit',
+        connectedSheetUrl: (typeof localStorage !== 'undefined' && localStorage.getItem('FPCL_CONNECTED_SHEET_URL')) || 'https://docs.google.com/spreadsheets/d/1LJOdN8T7UUjaZbSfsCrO_Hdg1eoAgqnuE7mJDGtB8qo/export?format=csv&gid=1344438021',
+        connectedPlrStatusSheetUrl: (typeof localStorage !== 'undefined' && localStorage.getItem('FPCL_CONNECTED_PLR_STATUS_SHEET_URL')) || 'https://docs.google.com/spreadsheets/d/1LJOdN8T7UUjaZbSfsCrO_Hdg1eoAgqnuE7mJDGtB8qo/export?format=csv&gid=0',
       }, window.portalApp.state || {});
 
       // Preserve or initialize plrState safely
@@ -1879,7 +1880,7 @@
           this.initChatbot();
           this.checkUrlHash();
 
-          // Auto-sync live Google Sheet tabs (Recommendations & PLR) permanently embedded on page load/refresh
+          // Auto-sync live Google Sheet tabs (Recommendations & PLR) using hardcoded sheet config on page load/refresh
           setTimeout(() => {
             if (typeof this.syncAllPlrSheets === 'function') {
               this.syncAllPlrSheets({ silent: true });

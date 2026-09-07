@@ -10,7 +10,7 @@
  * Layout & Visuals:
  * - 4 Executive KPI Cards: Total PLRs (233), Open PLRs (27), Total Recommendations (451), Open Recommendations (31)
  * - Row 1 Visuals:
- *     - Incident Breakdown by Machine (Col B & Col G | 233 Outages) (Donut + Clean Quick-Select Pills)
+ *     - PLR by Machine (Column G of PLR tab | 233 Outages) (Donut + Clean Quick-Select Pills)
  *     - Overall recommendations Resolution & Status (Pie Chart: 420 Closed / 31 Open Recommendations or 206/27 Incidents + Resolution Ratio + Direct Filter Actions)
  * - Row 2 Visuals:
  *     - Action Recommendations Per Dept (451 Recs) (Stacked / Side-by-Side / Trend Bar Chart, full width covering page area)
@@ -77,13 +77,23 @@
     ? JSON.parse(JSON.stringify(window.FPCL_PLR_DATA))
     : [];
 
+  // HARDCODED PERMANENT GOOGLE SHEET CONFIGURATION
+  // Pre-configured, permanent URLs for Recommendations and PLR tabs so user does not need to re-enter them
+  const HARDCODED_RECOMMENDATIONS_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1LJOdN8T7UUjaZbSfsCrO_Hdg1eoAgqnuE7mJDGtB8qo/export?format=csv&gid=1344438021';
+  const HARDCODED_PLR_STATUS_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1LJOdN8T7UUjaZbSfsCrO_Hdg1eoAgqnuE7mJDGtB8qo/export?format=csv&gid=0';
+
+  window.FPCL_HARDCODED_RECOMMENDATIONS_SHEET_URL = HARDCODED_RECOMMENDATIONS_SHEET_URL;
+  window.FPCL_HARDCODED_PLR_STATUS_SHEET_URL = HARDCODED_PLR_STATUS_SHEET_URL;
+
   // Restore modified recommendations and incidents from localStorage if present
   try {
     const savedRecs = localStorage.getItem('FPCL_PLR_RECOMMENDATIONS_UPDATED');
     if (savedRecs) {
       const parsedSaved = JSON.parse(savedRecs);
-      if (Array.isArray(parsedSaved) && parsedSaved.length > 0) {
+      if (Array.isArray(parsedSaved) && parsedSaved.length >= 50) {
         window.FPCL_PLR_RECOMMENDATIONS = parsedSaved;
+      } else {
+        localStorage.removeItem('FPCL_PLR_RECOMMENDATIONS_UPDATED');
       }
     }
   } catch (err) {
@@ -94,8 +104,18 @@
     const savedIncidents = localStorage.getItem('FPCL_PLR_INCIDENTS_UPDATED');
     if (savedIncidents) {
       const parsedInc = JSON.parse(savedIncidents);
-      if (Array.isArray(parsedInc) && parsedInc.length > 0) {
+      // Validate that cached incidents are authentic plant records and not corrupt dummy rows
+      const hasPlantMachines = Array.isArray(parsedInc) && parsedInc.some(i => {
+        const m = String(i.machine || '').toLowerCase();
+        return m.includes('stg') || m.includes('boiler') || m.includes('cfb') || m.includes('b#');
+      });
+      if (Array.isArray(parsedInc) && parsedInc.length >= 50 && hasPlantMachines) {
         window.FPCL_PLR_DATA = parsedInc;
+      } else {
+        localStorage.removeItem('FPCL_PLR_INCIDENTS_UPDATED');
+        if (window.FPCL_PLR_DATA_BASELINE) {
+          window.FPCL_PLR_DATA = JSON.parse(JSON.stringify(window.FPCL_PLR_DATA_BASELINE));
+        }
       }
     }
   } catch (err) {
@@ -397,8 +417,18 @@
     const rows = parseRawCSVMatrix(csvText);
     if (!rows || rows.length < 2) return [];
 
-    // Header row is strictly rows[0]. Data starts strictly at row index 1 (Row 2 in Google Sheet)
-    const headerRow = rows[0].map(h => String(h || '').trim().toLowerCase());
+    // Find header row dynamically across the first 5 rows
+    let headerRowIdx = 0;
+    for (let i = 0; i < Math.min(rows.length, 5); i++) {
+      const rowStrings = rows[i].map(c => String(c || '').toLowerCase().trim());
+      const hasKeyHeaders = rowStrings.some(c => c.includes('plr') || c.includes('incident') || c.includes('machine') || c.includes('s_no') || c.includes('status'));
+      if (hasKeyHeaders) {
+        headerRowIdx = i;
+        break;
+      }
+    }
+
+    const headerRow = rows[headerRowIdx].map(h => String(h || '').trim().toLowerCase());
 
     const findCol = (terms) => {
       for (let i = 0; i < headerRow.length; i++) {
@@ -409,51 +439,58 @@
     };
 
     let colSNo = findCol(['s_no', 's.no', 'sno', 'serial']);
-    if (colSNo === -1 && rows[0].length > 0) colSNo = 0;
+    if (colSNo === -1 && rows[headerRowIdx].length > 0) colSNo = 0;
 
     let colPlr = findCol(['plr', 'finding', 'loss']);
-    if (colPlr === -1 && rows[0].length > 1) colPlr = 1;
+    if (colPlr === -1 && rows[headerRowIdx].length > 1) colPlr = 1;
 
     let colYear = findCol(['year']);
-    if (colYear === -1 && rows[0].length > 2) colYear = 2;
+    if (colYear === -1 && rows[headerRowIdx].length > 2) colYear = 2;
 
     let colDate = findCol(['date']);
-    if (colDate === -1 && rows[0].length > 3) colDate = 3;
+    if (colDate === -1 && rows[headerRowIdx].length > 3) colDate = 3;
 
     let colIncident = findCol(['incident', 'description', 'title', 'event']);
-    if (colIncident === -1 && rows[0].length > 4) colIncident = 4;
+    if (colIncident === -1 && rows[headerRowIdx].length > 4) colIncident = 4;
 
     let colStatus = findCol(['status', 'state', 'openclose']);
-    if (colStatus === -1 && rows[0].length > 5) colStatus = 5;
+    if (colStatus === -1 && rows[headerRowIdx].length > 5) colStatus = 5;
 
+    // Strictly use Column G (index 6) of PLR tab of Google Sheet for Machine
     let colMachine = findCol(['machine', 'equipment', 'unit', 'asset']);
-    if (colMachine === -1 && rows[0].length > 6) colMachine = 6;
+    if (colMachine === -1 && rows[headerRowIdx].length > 6) colMachine = 6;
+    if (colMachine === -1) colMachine = 6; // strictly Column G
 
     let colPriority = findCol(['priority', 'severity']);
-    if (colPriority === -1 && rows[0].length > 7) colPriority = 7;
+    if (colPriority === -1 && rows[headerRowIdx].length > 7) colPriority = 7;
 
     let colDept = findCol(['department', 'dept', 'action by', 'responsible']);
-    if (colDept === -1 && rows[0].length > 8) colDept = 8;
+    if (colDept === -1 && rows[headerRowIdx].length > 8) colDept = 8;
 
     const parsedIncidents = [];
 
-    // STRICT: Start from r = 1 (Row 2 in Google Sheet). Never count Row 1 (header).
-    for (let r = 1; r < rows.length; r++) {
+    // STRICT: Start immediately after the detected header row. Never count header row in dataset.
+    for (let r = headerRowIdx + 1; r < rows.length; r++) {
       const row = rows[r];
       if (!row || row.length === 0) continue;
 
-      // Ensure this row is not a repeated header row by checking keywords
+      // Ensure this row is not a repeated header row or total/summary row
       const firstColLower = String(row[0] || '').trim().toLowerCase();
       const secondColLower = String(row[1] || '').trim().toLowerCase();
-      if (firstColLower === 's_no' || firstColLower === 's.no' || secondColLower.includes('plr #') || secondColLower === 'plr') {
-        continue; // skip repeated header
+      if (
+        firstColLower === 's_no' || firstColLower === 's.no' || secondColLower.includes('plr #') || secondColLower === 'plr' ||
+        firstColLower.startsWith('total') || secondColLower.startsWith('total') || firstColLower.startsWith('count')
+      ) {
+        continue;
       }
 
       // Extract Incident description (Column E / index 4)
       const rawIncident = (colIncident !== -1 && row[colIncident]) ? String(row[colIncident]).trim() : (row.length > 4 ? String(row[4] || '').trim() : '');
 
-      // Extract Machine (Column G / index 6)
-      const rawMachine = (colMachine !== -1 && row[colMachine]) ? String(row[colMachine]).trim() : (row.length > 6 ? String(row[6] || '').trim() : '');
+      // Extract Machine strictly from Column G (index 6) of PLR tab of Google Sheet
+      const rawMachine = (colMachine !== -1 && row[colMachine] !== undefined && row[colMachine] !== null && String(row[colMachine]).trim() !== '')
+        ? String(row[colMachine]).trim()
+        : (row.length > 6 && row[6] !== undefined && row[6] !== null ? String(row[6]).trim() : 'Other Equipment');
 
       // Extract Status (Column F / index 5)
       let rawStatus = (colStatus !== -1 && row[colStatus] !== undefined && row[colStatus] !== null) ? String(row[colStatus]).trim() : (row.length > 5 ? String(row[5] || '').trim() : '');
@@ -493,6 +530,18 @@
         priority: rawPriority,
         dept: rawDept
       });
+    }
+
+    // Sanity check: Ensure the parsed data contains recognizable plant outage records
+    const hasPlantData = parsedIncidents.some(i => {
+      const m = String(i.machine || '').toLowerCase();
+      const inc = String(i.incident || '').toLowerCase();
+      return m.includes('stg') || m.includes('boiler') || m.includes('cfb') || m.includes('b#') || inc.includes('stg') || inc.includes('boiler') || inc.includes('trip') || inc.includes('outage');
+    });
+
+    if (parsedIncidents.length > 5 && !hasPlantData) {
+      console.warn('parsePLRIncidentsCSV: Parsed sheet rows do not appear to be plant outage records.');
+      return [];
     }
 
     return parsedIncidents;
@@ -614,18 +663,33 @@
   function getMachineCategory(rawMachine) {
     if (!rawMachine) return 'Other Equipment';
     const str = String(rawMachine).trim();
-    
-    // Check STG units
-    if (/^stg\s*[#\-]?\s*4$/i.test(str) || str === 'STG#4' || str === 'STG-04') return 'STG # 4';
-    if (/^stg\s*[#\-]?\s*(0?3)$/i.test(str) || str === 'STG#3' || str === 'STG-03') return 'STG # 3';
-    if (/^stg\s*[#\-]?\s*(0?2)$/i.test(str) || str === 'STG#2' || str === 'STG-02') return 'STG # 2';
-    if (/^stg\s*[#\-]?\s*(0?1)$/i.test(str) || str === 'STG#1' || str === 'STG-01') return 'STG # 1';
+    const lower = str.toLowerCase();
 
-    // Check Boilers / CFB
-    // Column G has "B#1" for Boiler 1 / CFB-1 (17 records)
-    if (/^(b\s*[#\-]?\s*1|cfb\s*[#\-]?\s*1|boiler\s*[#\-]?\s*1)$/i.test(str) || str === 'B#1') return 'Boiler # 1 (CFB-1)';
-    // Column G has "B#2" for Boiler 2 / CFB-2 (11 records)
-    if (/^(b\s*[#\-]?\s*2|cfb\s*[#\-]?\s*2|boiler\s*[#\-]?\s*2)$/i.test(str) || str === 'B#2') return 'Boiler # 2 (CFB-2)';
+    // Multi-unit, grid, or general outage events belong to Other Equipment
+    if (
+      lower.includes('total power failure') ||
+      lower.includes('low load') ||
+      lower.includes('boiler # 1 / 2') ||
+      lower.includes('boiler 1 / 2') ||
+      lower.includes('boiler-1 / 2') ||
+      lower.includes('boiler 1 & 2') ||
+      lower.includes('stg-1 & stg-2') ||
+      lower.includes('all machines') ||
+      lower.includes('& stg') ||
+      (str.includes('\n') && (lower.includes('stg') || lower.includes('cfb')))
+    ) {
+      return 'Other Equipment';
+    }
+
+    // Check STG units (handles STG#4, STG # 4, STG - 4, STG-4, STG-04, STG # 04, etc.)
+    if (/\bstg\s*[#\-]?\s*0?4\b/i.test(str) || /^stg\s*[#\-]?\s*0?4$/i.test(str) || str === 'STG#4' || str === 'STG-04') return 'STG # 4';
+    if (/\bstg\s*[#\-]?\s*0?3\b/i.test(str) || /^stg\s*[#\-]?\s*0?3$/i.test(str) || str === 'STG#3' || str === 'STG-03') return 'STG # 3';
+    if (/\bstg\s*[#\-]?\s*0?2\b/i.test(str) || /^stg\s*[#\-]?\s*0?2$/i.test(str) || str === 'STG#2' || str === 'STG-02') return 'STG # 2';
+    if (/\bstg\s*[#\-]?\s*0?1\b/i.test(str) || /^stg\s*[#\-]?\s*0?1$/i.test(str) || str === 'STG#1' || str === 'STG-01') return 'STG # 1';
+
+    // Check Boilers / CFB (handles B#1, CFB-1, Boiler # 1, Boiler-1, Boiler 1, CFB 1, etc.)
+    if (/^(?:cfb|boiler|b)\s*[#\-]?\s*0?1$/i.test(str) || /^(?:cfb|boiler|b)\s*[#\-]?\s*0?1\b/i.test(str) || str === 'B#1') return 'Boiler # 1 (CFB-1)';
+    if (/^(?:cfb|boiler|b)\s*[#\-]?\s*0?2$/i.test(str) || /^(?:cfb|boiler|b)\s*[#\-]?\s*0?2\b/i.test(str) || str === 'B#2') return 'Boiler # 2 (CFB-2)';
 
     return 'Other Equipment';
   }
@@ -1232,14 +1296,6 @@
               <span>Sheet Config</span>
             </button>
             <button
-              onclick="portalApp.openAddRecommendationModal()"
-              class="px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
-              title="Add a new recommendation item to Column E"
-            >
-              <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-              <span>+ Add Recommendation</span>
-            </button>
-            <button
               onclick="portalApp.resetAllPlrImageFilters()"
               class="px-3 py-2 rounded-xl text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
               title="Reset all filters across both tabs"
@@ -1522,7 +1578,7 @@
                 Interactive Boardroom Analytics: Hover &amp; Click Any Element
               </span>
             </div>
-            <span class="text-xs font-medium text-slate-500">Plant-Wide Historical Scope: 233 Outages</span>
+            <span class="text-xs font-medium text-slate-500">Plant-Wide Historical Scope: ${totalPLRs} Outages (${closedPLRs} Closed • ${openPLRs} Open)</span>
           </div>
 
           <!-- Row 1: Machine Breakdown & Overall recommendations Resolution (Balanced 2-Col Layout) -->
@@ -1537,16 +1593,16 @@
                   </div>
                   <div>
                     <div class="flex items-center gap-2 flex-wrap">
-                      <h4 class="text-xs sm:text-sm font-extrabold text-slate-900 tracking-wide uppercase">Incident Breakdown by Machine</h4>
-                      <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-slate-100 text-slate-600 border border-slate-200">
-                        Columns B &amp; G
+                      <h4 class="text-xs sm:text-sm font-extrabold text-slate-900 tracking-wide uppercase">PLR by Machine</h4>
+                      <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-blue-50 text-[#1e40af] border border-blue-200">
+                        PLR Tab • Column G
                       </span>
                     </div>
-                    <p class="text-[11px] text-slate-500 mt-0.5">Outages across STG units, Boilers &amp; Auxiliary Equipment</p>
+                    <p class="text-[11px] text-slate-500 mt-0.5">Outages across STG units, Boilers &amp; Auxiliary Equipment (from Column G of PLR tab)</p>
                   </div>
                 </div>
                 <span class="px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-[#1e40af] border border-blue-200 shrink-0">
-                  233 Outages
+                  ${totalPLRs} Outages
                 </span>
               </div>
 
@@ -1660,7 +1716,7 @@
                 </div>
                 <div>
                   <h4 class="text-xs sm:text-sm font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
-                    <span>OPEN VS. CLOSED FINDINGS BY ACTION DEPARTMENT</span>
+                    <span>OPEN VS. CLOSED FINDINGS BY RECOMMENDATIONS DEPARTMENT</span>
                   </h4>
                   <p class="text-[11px] text-slate-500 mt-0.5">Click any bar or table row to open detailed data records • <span class="font-mono font-bold text-slate-700">${totalRecs}</span> Total Recommendations (<span class="text-emerald-700 font-mono font-bold">${closedRecs} Closed</span> • <span class="text-rose-600 font-mono font-bold">${openRecs} Open</span>)</p>
                 </div>
@@ -2388,7 +2444,7 @@
         <div class="px-4 py-3 bg-slate-50/90 border-b border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
           <div class="flex items-center gap-2">
             <span class="w-2.5 h-2.5 rounded-full bg-[#2E6DA4]"></span>
-            <span class="text-xs font-black text-slate-800 tracking-wider uppercase font-sans">TABLE 1: FINDINGS STATUS BY ACTION DEPARTMENT</span>
+            <span class="text-xs font-black text-slate-800 tracking-wider uppercase font-sans">TABLE 1: FINDINGS STATUS BY RECOMMENDATIONS DEPARTMENT</span>
           </div>
           <span class="text-[11px] text-slate-500 font-medium">Click any row, open or closed number to view relevant items</span>
         </div>
@@ -2512,34 +2568,48 @@
     const isClosed = status === 'Closed';
     const isAll = status === 'all';
 
+    const activeIncidents = getPlrData();
+    const activeRecs = getPlrRecs();
+    const incOpenCount = activeIncidents.filter(i => (i.status || '').toLowerCase() === 'open').length;
+    const incClosedCount = activeIncidents.length - incOpenCount;
+    const incTotalCount = activeIncidents.length || 1;
+    const incClosedPct = Math.round((incClosedCount / incTotalCount) * 100);
+    const incOpenPct = Math.round((incOpenCount / incTotalCount) * 100);
+
+    const recOpenCount = activeRecs.filter(r => (r.status || '').toLowerCase() === 'open').length;
+    const recClosedCount = activeRecs.length - recOpenCount;
+    const recTotalCount = activeRecs.length || 1;
+    const recClosedPct = Math.round((recClosedCount / recTotalCount) * 100);
+    const recOpenPct = Math.round((recOpenCount / recTotalCount) * 100);
+
     let title, badge, subtitle;
     if (isIncidents) {
       if (isAll) {
         title = 'All Plant Outage Incidents';
         badge = 'All Incidents';
-        subtitle = '233 Total Plant Loss Outages (206 Closed • 27 Open)';
+        subtitle = `${activeIncidents.length} Total Plant Loss Outages (${incClosedCount} Closed • ${incOpenCount} Open)`;
       } else if (isClosed) {
         title = 'Closed Plant Outage Incidents';
         badge = 'Closed Incidents';
-        subtitle = '206 Resolved Incidents (88.4% Resolution Rate)';
+        subtitle = `${incClosedCount} Resolved Incidents (${incClosedPct}% Resolution Rate)`;
       } else {
         title = 'Open Pending Plant Outages';
         badge = 'Open Incidents';
-        subtitle = '27 Open Unresolved Outages (11.6% Pending Resolution)';
+        subtitle = `${incOpenCount} Open Unresolved Outages (${incOpenPct}% Pending Resolution)`;
       }
     } else {
       if (isAll) {
         title = 'All Action Recommendations';
         badge = 'All Recommendations';
-        subtitle = '451 Total Recommendations (420 Closed • 31 Open)';
+        subtitle = `${activeRecs.length} Total Recommendations (${recClosedCount} Closed • ${recOpenCount} Open)`;
       } else if (isClosed) {
         title = 'Closed Action Recommendations';
         badge = 'Closed Recommendations';
-        subtitle = '420 Resolved Recommendations (93.1% Resolution Rate)';
+        subtitle = `${recClosedCount} Resolved Recommendations (${recClosedPct}% Resolution Rate)`;
       } else {
         title = 'Open Action Recommendations';
         badge = 'Open Recommendations';
-        subtitle = '31 Open Pending Recommendations (6.9% Pending Resolution)';
+        subtitle = `${recOpenCount} Open Pending Recommendations (${recOpenPct}% Pending Resolution)`;
       }
     }
 
@@ -2563,10 +2633,17 @@
     const s = getPlrState();
     const isIncidents = s.resolutionMode === 'incidents';
 
-    // Exact official counts
-    const closed = isIncidents ? 206 : 420;
-    const open = isIncidents ? 27 : 31;
-    const total = closed + open; // 233 or 451
+    // Dynamic counts from active datasets
+    const curIncidents = getPlrData();
+    const curRecs = getPlrRecs();
+    const dynIncOpen = curIncidents.filter(i => (i.status || '').toLowerCase() === 'open').length;
+    const dynIncClosed = curIncidents.length - dynIncOpen;
+    const dynRecOpen = curRecs.filter(r => (r.status || '').toLowerCase() === 'open').length;
+    const dynRecClosed = curRecs.length - dynRecOpen;
+
+    const closed = isIncidents ? dynIncClosed : dynRecClosed;
+    const open = isIncidents ? dynIncOpen : dynRecOpen;
+    const total = (closed + open) || 1;
     const closedPct = ((closed / total) * 100).toFixed(1);
     const openPct = ((open / total) * 100).toFixed(1);
 
@@ -3137,6 +3214,9 @@
 
     // Use unified filtered dataset
     const filtered = getFilteredPlrData();
+    const allInc = getPlrData();
+    const allOpen = allInc.filter(i => (i.status || '').toLowerCase() === 'open').length;
+    const allClosed = allInc.length - allOpen;
 
     const totalFiltered = filtered.length;
     const totalPages = Math.ceil(totalFiltered / s.pageSize) || 1;
@@ -3187,8 +3267,8 @@
               class="text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#2E6DA4] cursor-pointer"
             >
               <option value="all" ${s.selectedStatus === 'all' ? 'selected' : ''}>All Statuses</option>
-              <option value="Closed" ${s.selectedStatus === 'Closed' ? 'selected' : ''}>Closed (206)</option>
-              <option value="Open" ${s.selectedStatus === 'Open' ? 'selected' : ''}>Open (27)</option>
+              <option value="Closed" ${s.selectedStatus === 'Closed' ? 'selected' : ''}>Closed (${allClosed})</option>
+              <option value="Open" ${s.selectedStatus === 'Open' ? 'selected' : ''}>Open (${allOpen})</option>
             </select>
           </div>
 
@@ -3401,14 +3481,6 @@
           </div>
 
           <div class="flex items-center gap-1.5">
-            <button
-              onclick="portalApp.openAddRecommendationModal()"
-              class="px-2.5 py-1.5 rounded-lg text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-xs transition-colors flex items-center gap-1 cursor-pointer shrink-0"
-              title="Add a new recommendation item to Column E"
-            >
-              <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-              <span>+ Add Rec</span>
-            </button>
             <button
               onclick="portalApp.openPlrSheetSyncModal()"
               class="px-2 py-1.5 rounded-lg text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 shadow-xs transition-colors flex items-center gap-1 cursor-pointer shrink-0"
@@ -3724,14 +3796,6 @@
               >
                 <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
                 <span>View Linked in Recommendations Tab</span>
-              </button>
-              <button
-                onclick="portalApp.openAddRecommendationModal(${plrNo})"
-                class="px-3.5 py-1.5 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors cursor-pointer flex items-center gap-1.5 shadow-xs"
-                title="Add a new action recommendation linked to PLR #${plrNo}"
-              >
-                <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-                <span>+ Add Action</span>
               </button>
             </div>
             <button
@@ -4070,16 +4134,6 @@
             </div>
             
             <div class="flex items-center gap-2 shrink-0">
-              ${!isIncidents ? `
-                <button
-                  onclick="portalApp.openAddRecommendationModal()"
-                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs cursor-pointer transition-colors"
-                  title="Add new recommendation to Column E"
-                >
-                  <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-                  <span class="hidden sm:inline">Add Rec</span>
-                </button>
-              ` : ''}
               <button
                 onclick="portalApp.exportPlrModalCSV()"
                 class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 shadow-xs cursor-pointer transition-colors"
@@ -5120,9 +5174,9 @@
 
   /**
    * Open Google Sheet Recommendations & PLR Status Sync Modal
-   * Displays permanently embedded Google Sheet integration with dual tabs:
-   * 1. Recommendations (Column E: Recommendations, Column F: Department, Column G: Status)
-   * 2. PLR (Incidents: Column F Status, Column G Machine Breakdown)
+   * Displays permanently embedded Google Sheet integration with dual rows:
+   * 1. Already Embedded: Recommendations Google Sheet (Column E: Recommendations, Column F: Department, Column G: Status)
+   * 2. Newly Embedded: PLRs Status & Incidents Google Sheet (Column E: Incident, Column F: Status, Column G: Machine, Column H: Priority, Column I: Dept)
    * Strict Row 2 start: Never counts Row 1 header.
    */
   portalApp.openPlrSheetSyncModal = function () {
@@ -5137,11 +5191,12 @@
     const openIncCount = incidents.filter(i => (i.status || '').toLowerCase() === 'open').length;
     const closedIncCount = incidents.length - openIncCount;
 
-    const defaultUrl = (typeof localStorage !== 'undefined' && localStorage.getItem('FPCL_CONNECTED_SHEET_URL')) || (portalApp.state && portalApp.state.connectedSheetUrl) || 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit';
+    const defaultRecsUrl = (typeof localStorage !== 'undefined' && localStorage.getItem('FPCL_CONNECTED_SHEET_URL')) || (portalApp.state && portalApp.state.connectedSheetUrl) || HARDCODED_RECOMMENDATIONS_SHEET_URL;
+    const defaultStatusUrl = (typeof localStorage !== 'undefined' && localStorage.getItem('FPCL_CONNECTED_PLR_STATUS_SHEET_URL')) || (portalApp.state && portalApp.state.connectedPlrStatusSheetUrl) || HARDCODED_PLR_STATUS_SHEET_URL;
 
     container.innerHTML = `
       <div class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
-        <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-xl overflow-hidden flex flex-col max-h-[92vh]">
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-2xl overflow-hidden flex flex-col max-h-[94vh]">
           
           <!-- Header -->
           <div class="p-4 sm:p-5 border-b border-slate-200 flex items-center justify-between bg-gradient-to-r from-emerald-50 via-teal-50 to-sky-50">
@@ -5151,10 +5206,10 @@
               </div>
               <div>
                 <div class="flex items-center gap-2">
-                  <h3 class="text-base font-black text-slate-900">Live Google Sheet Synchronization</h3>
-                  <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">Permanently Embedded</span>
+                  <h3 class="text-base font-black text-slate-900">Google Sheets Integration &amp; Live Sync</h3>
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">Dual Embedded Sources</span>
                 </div>
-                <p class="text-xs text-emerald-800 font-medium">Dual-Tab Sync: <strong class="font-bold text-slate-900">Recommendations</strong> &amp; <strong class="font-bold text-slate-900">PLR</strong> (Auto-syncs on refresh)</p>
+                <p class="text-xs text-emerald-800 font-medium">Both sheets permanently embedded for live status updation on load and refresh</p>
               </div>
             </div>
             <button onclick="portalApp.closeActionModal()" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-white/80 transition-colors cursor-pointer">
@@ -5169,83 +5224,119 @@
               <div class="flex items-center justify-between">
                 <span class="font-bold text-slate-900 text-xs flex items-center gap-1.5">
                   <i data-lucide="database" class="w-4 h-4 text-emerald-600"></i>
-                  <span>Active Live Datasets (Row 2 Strict Start)</span>
+                  <span>Active Live Datasets (Row 2 Strict Start • Auto-Sync Active)</span>
                 </span>
                 <span class="inline-flex items-center gap-1 font-mono text-emerald-800 font-bold bg-emerald-100 px-2 py-0.5 rounded text-[11px]">
-                  <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Auto-Sync on Refresh: ACTIVE
+                  <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Live Status: Connected
                 </span>
               </div>
-              <div class="grid grid-cols-2 gap-2 text-[11px]">
-                <div class="bg-white p-2.5 rounded-lg border border-slate-200">
-                  <div class="text-slate-500 font-medium">Tab: Recommendations</div>
-                  <div class="font-bold text-slate-900 text-xs mt-0.5 font-mono">${recs.length} Items (${closedRecCount} Closed, ${openRecCount} Open)</div>
-                  <div class="text-[10px] text-emerald-700 mt-1">Extracts Col E (Recs), Col F (Dept), Col G (Status)</div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+                <div class="bg-white p-2.5 rounded-lg border border-slate-200 shadow-2xs">
+                  <div class="text-slate-500 font-medium flex items-center justify-between">
+                    <span>Source 1: Recommendations</span>
+                    <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">Embedded</span>
+                  </div>
+                  <div class="font-bold text-slate-900 text-xs mt-0.5 font-mono">${recs.length} Recommendations (${closedRecCount} Closed, ${openRecCount} Open)</div>
+                  <div class="text-[10px] text-emerald-700 mt-1">Col E: Recommendations • Col F: Dept • Col G: Status</div>
                 </div>
-                <div class="bg-white p-2.5 rounded-lg border border-slate-200">
-                  <div class="text-slate-500 font-medium">Tab: PLR (Incidents)</div>
+                <div class="bg-white p-2.5 rounded-lg border border-slate-200 shadow-2xs">
+                  <div class="text-slate-500 font-medium flex items-center justify-between">
+                    <span>Source 2: PLRs Status &amp; Incidents</span>
+                    <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-sky-50 text-sky-700 border border-sky-200">Embedded</span>
+                  </div>
                   <div class="font-bold text-slate-900 text-xs mt-0.5 font-mono">${incidents.length} Outages (${closedIncCount} Closed, ${openIncCount} Open)</div>
-                  <div class="text-[10px] text-sky-700 mt-1">Extracts Col E (Outage), Col F (Status), Col G (Machine)</div>
+                  <div class="text-[10px] text-sky-700 mt-1">Col E: Incident • Col F: Status • Col G: Machine (Breakdown)</div>
                 </div>
               </div>
-              <p class="text-slate-600 text-[11px] leading-relaxed">
-                Whenever you add rows or update Open/Closed status in either tab of the Google Sheet, refreshing the browser or clicking below automatically refetches and updates all dashboard metrics, charts, and machine counts.
-              </p>
             </div>
 
-            <!-- Sheet URL input -->
-            <div class="space-y-1.5">
+            <!-- Row 1: Recommendations Google Sheet (Already Embedded Sheet - Kept As Such) -->
+            <div class="p-3.5 rounded-xl border border-emerald-200 bg-emerald-50/40 space-y-2.5">
               <div class="flex items-center justify-between">
-                <label class="block font-bold text-slate-700 uppercase tracking-wider text-[10px]">Permanently Embedded Google Sheet URL</label>
-                <span class="text-[10px] text-emerald-700 font-bold">Auto-Refreshed Permanently</span>
+                <label class="block font-bold text-emerald-950 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+                  <i data-lucide="layers" class="w-3.5 h-3.5 text-emerald-700"></i>
+                  <span>1. Recommendations Google Sheet (Already Embedded Sheet)</span>
+                </label>
+                <span class="text-[10px] font-bold text-emerald-800 bg-emerald-100/80 px-2 py-0.5 rounded-full border border-emerald-300">
+                  Target Tab: Recommendations
+                </span>
               </div>
-              <input
-                type="text"
-                id="plr-sheet-url-input"
-                placeholder="https://docs.google.com/spreadsheets/d/.../edit"
-                value="${defaultUrl}"
-                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white font-mono text-xs text-slate-900 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
-              />
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label class="block font-bold text-slate-700 uppercase tracking-wider text-[10px] mb-1">Target Tab 1</label>
+              <div class="flex flex-col sm:flex-row gap-2">
                 <input
                   type="text"
-                  id="plr-sheet-tab-input"
-                  value="Recommendations"
-                  class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-slate-50 font-mono text-xs font-bold text-slate-800 focus:outline-none"
-                  readonly
+                  id="plr-sheet-url-input"
+                  placeholder="https://docs.google.com/spreadsheets/d/.../edit"
+                  value="${defaultRecsUrl}"
+                  class="flex-1 px-3.5 py-2 rounded-xl border border-emerald-300 bg-white font-mono text-xs text-slate-900 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
                 />
+                <button
+                  type="button"
+                  onclick="portalApp.syncRecommendationsSheetOnly()"
+                  class="px-3 py-2 rounded-xl text-xs font-bold text-emerald-800 bg-emerald-100 hover:bg-emerald-200 border border-emerald-300 shadow-2xs transition-colors shrink-0 flex items-center justify-center gap-1.5 cursor-pointer"
+                  title="Sync Recommendations sheet only"
+                >
+                  <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                  <span>Sync Recs</span>
+                </button>
               </div>
-              <div>
-                <label class="block font-bold text-slate-700 uppercase tracking-wider text-[10px] mb-1">Target Tab 2</label>
-                <input
-                  type="text"
-                  value="PLR (Generation Losses)"
-                  class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-slate-50 font-mono text-xs font-bold text-sky-800 focus:outline-none"
-                  readonly
-                />
+              <div class="flex items-center justify-between text-[10px] text-emerald-800">
+                <span>Feeds: Action Recommendations per Dept, KPI Cards (Total &amp; Open Recs), and Recommendations Log.</span>
+                <span class="font-mono font-bold">Col E, F, G</span>
               </div>
             </div>
 
-            <!-- Sync Button -->
+            <!-- Row 2: PLRs Status Google Sheet (New Dedicated Row for PLR Status Updation) -->
+            <div class="p-3.5 rounded-xl border border-sky-200 bg-sky-50/40 space-y-2.5">
+              <div class="flex items-center justify-between">
+                <label class="block font-bold text-sky-950 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+                  <i data-lucide="cpu" class="w-3.5 h-3.5 text-sky-700"></i>
+                  <span>2. PLRs Status &amp; Incidents Google Sheet (New Dedicated Row)</span>
+                </label>
+                <span class="text-[10px] font-bold text-sky-800 bg-sky-100/80 px-2 py-0.5 rounded-full border border-sky-300">
+                  Target Tab: PLR / PLRstatus
+                </span>
+              </div>
+              <div class="flex flex-col sm:flex-row gap-2">
+                <input
+                  type="text"
+                  id="plr-status-sheet-url-input"
+                  placeholder="https://docs.google.com/spreadsheets/d/.../edit or published CSV URL"
+                  value="${defaultStatusUrl}"
+                  class="flex-1 px-3.5 py-2 rounded-xl border border-sky-300 bg-white font-mono text-xs text-slate-900 focus:outline-none focus:border-sky-600 focus:ring-1 focus:ring-sky-600"
+                />
+                <button
+                  type="button"
+                  onclick="portalApp.syncPlrStatusSheetOnly()"
+                  class="px-3 py-2 rounded-xl text-xs font-bold text-sky-800 bg-sky-100 hover:bg-sky-200 border border-sky-300 shadow-2xs transition-colors shrink-0 flex items-center justify-center gap-1.5 cursor-pointer"
+                  title="Sync PLR Status sheet only"
+                >
+                  <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                  <span>Sync PLR Status</span>
+                </button>
+              </div>
+              <div class="flex items-center justify-between text-[10px] text-sky-800">
+                <span>Feeds: PLR by Machine (Column G), PLRs KPI Cards (Total &amp; Open PLRs), and Plant Records PLR Incidents Log.</span>
+                <span class="font-mono font-bold">Col B, E, F, G, H, I</span>
+              </div>
+            </div>
+
+            <!-- Master Sync Both Sheets Action Button -->
             <div>
               <button
                 type="button"
                 id="plr-sync-action-btn"
-                onclick="portalApp.syncAllPlrSheets({ silent: false })"
-                class="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
+                onclick="portalApp.syncAllPlrSheets({ silent: false, target: 'both' })"
+                class="w-full py-3 px-4 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-emerald-600 via-teal-600 to-[#2E6DA4] hover:opacity-95 shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <i data-lucide="refresh-cw" class="w-4 h-4"></i>
-                <span>Fetch &amp; Sync Both Tabs Now (Live Data)</span>
+                <span>Fetch &amp; Sync Both Sheets Now (Live Status Updation)</span>
               </button>
             </div>
 
             <!-- Divider -->
-            <div class="relative flex py-2 items-center">
+            <div class="relative flex py-1 items-center">
               <div class="flex-grow border-t border-slate-200"></div>
-              <span class="flex-shrink mx-3 text-[10px] font-bold uppercase tracking-wider text-slate-400">Or Manual CSV Ingestion</span>
+              <span class="flex-shrink mx-3 text-[10px] font-bold uppercase tracking-wider text-slate-400">Manual CSV Backup Ingestion</span>
               <div class="flex-grow border-t border-slate-200"></div>
             </div>
 
@@ -5254,12 +5345,12 @@
               <label class="flex flex-col items-center justify-center p-3 border-2 border-dashed border-slate-200 hover:border-emerald-500 rounded-xl bg-slate-50 hover:bg-emerald-50/50 cursor-pointer transition-colors text-center">
                 <i data-lucide="upload" class="w-5 h-5 text-slate-500 mb-1"></i>
                 <span class="font-bold text-slate-800 text-[11px]">Upload CSV File</span>
-                <span class="text-[10px] text-slate-500 mt-0.5">Recommendations or PLR CSV</span>
+                <span class="text-[10px] text-slate-500 mt-0.5">Smart Detection: PLR Incidents or Recommendations</span>
                 <input
                   type="file"
                   accept=".csv,text/csv"
                   class="hidden"
-                  onchange="portalApp.handlePlrRecommendationsFileUpload(event)"
+                  onchange="portalApp.handlePlrSmartFileUpload(event)"
                 />
               </label>
 
@@ -5282,13 +5373,29 @@
                 placeholder="Paste CSV text here (with header row)..."
                 class="w-full p-2.5 rounded-xl border border-slate-300 font-mono text-[11px] focus:outline-none focus:border-emerald-600"
               ></textarea>
-              <button
-                type="button"
-                onclick="portalApp.importPlrRecommendationsFromPastedCsv()"
-                class="w-full py-2 rounded-xl text-xs font-bold text-white bg-slate-900 hover:bg-black transition-colors cursor-pointer"
-              >
-                Parse &amp; Ingest Pasted CSV
-              </button>
+              <div class="flex gap-2">
+                <button
+                  type="button"
+                  onclick="portalApp.importPlrSmartFromPastedCsv()"
+                  class="flex-1 py-2 rounded-xl text-xs font-bold text-white bg-slate-900 hover:bg-black transition-colors cursor-pointer"
+                >
+                  Auto-Detect &amp; Ingest
+                </button>
+                <button
+                  type="button"
+                  onclick="portalApp.importPlrIncidentsFromPastedCsv()"
+                  class="px-3 py-2 rounded-xl text-xs font-bold text-sky-800 bg-sky-50 hover:bg-sky-100 border border-sky-200 transition-colors cursor-pointer"
+                >
+                  As PLR Status
+                </button>
+                <button
+                  type="button"
+                  onclick="portalApp.importPlrRecommendationsFromPastedCsv()"
+                  class="px-3 py-2 rounded-xl text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-colors cursor-pointer"
+                >
+                  As Recommendations
+                </button>
+              </div>
             </div>
 
             <!-- Status Feedback Container -->
@@ -5297,15 +5404,33 @@
           </div>
 
           <!-- Footer -->
-          <div class="p-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between">
-            <button
-              type="button"
-              onclick="portalApp.resetPlrRecommendationsToBaseline()"
-              class="px-3.5 py-2 rounded-xl text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 shadow-xs cursor-pointer transition-colors"
-              title="Reset datasets back to original baseline records"
-            >
-              Reset to Baseline
-            </button>
+          <div class="p-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between flex-wrap gap-2">
+            <div class="flex items-center gap-2">
+              <button
+                type="button"
+                onclick="portalApp.resetAllPlrToBaseline()"
+                class="px-3.5 py-2 rounded-xl text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 shadow-xs cursor-pointer transition-colors"
+                title="Reset both incidents and recommendations back to original baseline records"
+              >
+                Reset All to Baseline
+              </button>
+              <button
+                type="button"
+                onclick="portalApp.resetPlrRecommendationsToBaseline()"
+                class="px-2.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 bg-white border border-slate-200 shadow-2xs cursor-pointer hover:bg-slate-100"
+                title="Reset recommendations only"
+              >
+                Reset Recs
+              </button>
+              <button
+                type="button"
+                onclick="portalApp.resetPlrIncidentsToBaseline()"
+                class="px-2.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 bg-white border border-slate-200 shadow-2xs cursor-pointer hover:bg-slate-100"
+                title="Reset incidents only"
+              >
+                Reset Incidents
+              </button>
+            </div>
             <button
               type="button"
               onclick="portalApp.closeActionModal()"
@@ -5328,66 +5453,113 @@
   };
 
   /**
-   * Permanently Embedded Google Sheet Sync (Dual-Tab Engine)
-   * Synchronizes both "Recommendations" and "PLR" tabs directly from Google Sheet.
-   * Row 1 is header row and strictly skipped (data starts strictly at Row 2).
-   * Refetches live whenever dashboard is refreshed or loaded.
+   * Permanently Embedded Google Sheets Sync Engine (Dual Embedded Sheet URLs & Tabs)
+   * Synchronizes:
+   * 1. Recommendations Sheet (Tab: Recommendations -> Col E Recs, Col F Dept, Col G Status)
+   * 2. PLRs Status Sheet (Tab: PLR / PLRstatus -> Col E Incident, Col F Status, Col G Machine, Col H Priority, Col I Dept)
+   * Strict Row 2 start: Never counts Row 1 header.
+   * Both permanently embedded for live status updation on page load and manual refresh.
    */
   portalApp.syncAllPlrSheets = async function (options = {}) {
     const isSilent = options.silent || false;
-    const customUrl = options.url || null;
+    const customRecUrl = options.url || null;
+    const customStatusUrl = options.statusUrl || null;
+    const targetSource = options.target || 'both'; // 'both', 'recs', 'incidents'
 
-    const urlInput = document.getElementById('plr-sheet-url-input');
+    const recsInput = document.getElementById('plr-sheet-url-input');
+    const statusInput = document.getElementById('plr-status-sheet-url-input');
     const statusMsg = document.getElementById('plr-sync-status-msg');
     const btn = document.getElementById('plr-sync-action-btn');
 
-    const savedUrl = customUrl || (urlInput ? urlInput.value.trim() : '') || (typeof localStorage !== 'undefined' && localStorage.getItem('FPCL_CONNECTED_SHEET_URL')) || (portalApp.state && portalApp.state.connectedSheetUrl) || 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit';
+    const savedRecUrl = customRecUrl || (recsInput ? recsInput.value.trim() : '') || (typeof localStorage !== 'undefined' && localStorage.getItem('FPCL_CONNECTED_SHEET_URL')) || (portalApp.state && portalApp.state.connectedSheetUrl) || HARDCODED_RECOMMENDATIONS_SHEET_URL;
+
+    const savedStatusUrl = customStatusUrl || (statusInput ? statusInput.value.trim() : '') || (typeof localStorage !== 'undefined' && localStorage.getItem('FPCL_CONNECTED_PLR_STATUS_SHEET_URL')) || (portalApp.state && portalApp.state.connectedPlrStatusSheetUrl) || HARDCODED_PLR_STATUS_SHEET_URL;
+
+    if (!savedRecUrl && !savedStatusUrl) {
+      if (isSilent) return;
+      if (statusMsg) {
+        statusMsg.className = 'text-xs p-3 rounded-xl bg-amber-50 text-amber-900 border border-amber-200 block';
+        statusMsg.innerHTML = 'Please enter a valid Google Sheet URL to synchronize.';
+      }
+      return;
+    }
 
     if (btn) {
       btn.disabled = true;
-      btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i><span>Syncing Recommendations &amp; PLR tabs...</span>`;
+      btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i><span>Syncing Live Embedded Sheets...</span>`;
       if (window.lucide) window.lucide.createIcons();
     }
 
     if (statusMsg) {
       statusMsg.className = 'text-xs p-3 rounded-xl bg-blue-50 text-blue-900 border border-blue-200 block';
-      statusMsg.innerHTML = `Connecting to Google Sheet and fetching tabs <strong>Recommendations</strong> and <strong>PLR</strong> (starting from Row 2)...`;
+      statusMsg.innerHTML = `Fetching live data starting from Row 2 across embedded sheets...`;
     }
 
-    const fetchTabCsv = async (sheetTab) => {
+    const fetchTabCsv = async (sheetTab, targetUrl) => {
       let csvData = '';
+      const urlToUse = targetUrl || savedRecUrl;
+      if (!urlToUse) return '';
+
+      // Extract GID if present in the URL
+      const gidMatch = urlToUse.match(/[#?&]gid=([0-9]+)/);
+      const gid = gidMatch ? gidMatch[1] : null;
+
       // 1. Try server proxy
       try {
         const res = await fetch('/api/sheets/fetch', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url: savedUrl, sheetTab })
+          body: JSON.stringify({ url: urlToUse, sheetTab, gid })
         });
         const json = await res.json();
         if (json.success && json.csvText) {
           csvData = json.csvText;
         }
       } catch (err) {
-        console.warn(`Proxy fetch failed for tab ${sheetTab}:`, err);
+        console.warn(`Proxy fetch failed for tab ${sheetTab} on ${urlToUse}:`, err);
       }
 
       // 2. Client-side fallback if server proxy was blocked
       if (!csvData) {
-        let spreadsheetId = savedUrl;
-        const match = savedUrl.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
-        if (match) spreadsheetId = match[1];
+        let spreadsheetId = urlToUse;
+        let isPublished = false;
+        let pubBase = '';
+        const pubMatch = urlToUse.match(/\/spreadsheets\/d\/e\/([a-zA-Z0-9-_]+)/);
+        if (pubMatch) {
+          isPublished = true;
+          spreadsheetId = pubMatch[1];
+          pubBase = `https://docs.google.com/spreadsheets/d/e/${spreadsheetId}/pub`;
+        } else {
+          const match = urlToUse.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+          if (match) spreadsheetId = match[1];
+        }
 
-        const candidateUrls = [
-          `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetTab)}`,
-          `https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&sheet=${encodeURIComponent(sheetTab)}`
-        ];
+        const candidateUrls = [];
+        if (urlToUse.includes('output=csv') || urlToUse.includes('format=csv') || urlToUse.includes('/pub?')) {
+          candidateUrls.push(urlToUse);
+        } else if (urlToUse.includes('/pubhtml')) {
+          candidateUrls.push(urlToUse.replace('/pubhtml', '/pub?output=csv'));
+        }
+
+        if (isPublished) {
+          if (gid) candidateUrls.push(`${pubBase}?output=csv&gid=${gid}`);
+          candidateUrls.push(`${pubBase}?output=csv&sheet=${encodeURIComponent(sheetTab)}`);
+          candidateUrls.push(`${pubBase}?output=csv`);
+        } else {
+          if (gid) {
+            candidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&gid=${gid}`);
+            candidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&gid=${gid}`);
+          }
+          candidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetTab)}`);
+          candidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&sheet=${encodeURIComponent(sheetTab)}`);
+        }
 
         for (const candidate of candidateUrls) {
           try {
             const fallbackRes = await fetch(candidate);
             if (fallbackRes.ok) {
               const text = await fallbackRes.text();
-              if (text && !text.includes('<!DOCTYPE html>') && !text.includes('<html')) {
+              if (text && !text.includes('<!DOCTYPE html>') && !text.includes('<html') && !text.includes('google-site-verification')) {
                 csvData = text;
                 break;
               }
@@ -5404,46 +5576,65 @@
     let incidentsSummary = '';
 
     try {
-      // Fetch Tab 1: Recommendations
-      const recsCsv = await fetchTabCsv('Recommendations');
-      if (recsCsv) {
-        const parsedRecs = window.parsePLRRecommendationsCSV(recsCsv);
-        if (parsedRecs && parsedRecs.length > 0) {
-          window.FPCL_PLR_RECOMMENDATIONS = parsedRecs;
-          try {
-            localStorage.setItem('FPCL_PLR_RECOMMENDATIONS_UPDATED', JSON.stringify(parsedRecs));
-          } catch (e) {}
-          recsUpdated = true;
-          const openCount = parsedRecs.filter(r => (r.status || '').toLowerCase() === 'open').length;
-          const closedCount = parsedRecs.length - openCount;
-          recsSummary = `${parsedRecs.length} Recommendations (${closedCount} Closed, ${openCount} Open)`;
+      // 1. Sync Recommendations Sheet (if requested)
+      if ((targetSource === 'both' || targetSource === 'recs') && savedRecUrl) {
+        const recsCsv = await fetchTabCsv('Recommendations', savedRecUrl);
+        if (recsCsv) {
+          const parsedRecs = window.parsePLRRecommendationsCSV(recsCsv);
+          if (parsedRecs && parsedRecs.length > 0) {
+            window.FPCL_PLR_RECOMMENDATIONS = parsedRecs;
+            try {
+              localStorage.setItem('FPCL_PLR_RECOMMENDATIONS_UPDATED', JSON.stringify(parsedRecs));
+            } catch (e) {}
+            recsUpdated = true;
+            const openCount = parsedRecs.filter(r => (r.status || '').toLowerCase() === 'open').length;
+            const closedCount = parsedRecs.length - openCount;
+            recsSummary = `${parsedRecs.length} Recommendations (${closedCount} Closed, ${openCount} Open)`;
+          }
         }
       }
 
-      // Fetch Tab 2: PLR
-      let incidentsCsv = await fetchTabCsv('PLR');
-      if (!incidentsCsv) {
-        incidentsCsv = await fetchTabCsv('PLRstatus');
-      }
-      if (incidentsCsv) {
-        const parsedIncidents = window.parsePLRIncidentsCSV(incidentsCsv);
-        if (parsedIncidents && parsedIncidents.length > 0) {
-          window.FPCL_PLR_DATA = parsedIncidents;
-          try {
-            localStorage.setItem('FPCL_PLR_INCIDENTS_UPDATED', JSON.stringify(parsedIncidents));
-          } catch (e) {}
-          incidentsUpdated = true;
-          const openInc = parsedIncidents.filter(i => (i.status || '').toLowerCase() === 'open').length;
-          const closedInc = parsedIncidents.length - openInc;
-          incidentsSummary = `${parsedIncidents.length} Outages (${closedInc} Closed, ${openInc} Open)`;
+      // 2. Sync PLRs Status & Incidents Sheet (if requested)
+      if ((targetSource === 'both' || targetSource === 'incidents' || targetSource === 'status') && savedStatusUrl) {
+        const plrTabCandidates = ['PLRstatus', 'PLRStatus', 'PLR', 'PLR status', 'PLR Status', 'PLRs status', 'PLRs Status', 'PLRs', 'PLR Incident', 'Incidents', 'Outages', 'Sheet1'];
+        let incidentsCsv = '';
+        for (const tab of plrTabCandidates) {
+          incidentsCsv = await fetchTabCsv(tab, savedStatusUrl);
+          if (incidentsCsv && incidentsCsv.length > 100) {
+            // Check if it parses into valid plant incidents
+            const testParsed = window.parsePLRIncidentsCSV(incidentsCsv);
+            if (testParsed && testParsed.length > 0) {
+              break;
+            }
+          }
+        }
+
+        if (incidentsCsv) {
+          const parsedIncidents = window.parsePLRIncidentsCSV(incidentsCsv);
+          if (parsedIncidents && parsedIncidents.length > 0) {
+            window.FPCL_PLR_DATA = parsedIncidents;
+            try {
+              localStorage.setItem('FPCL_PLR_INCIDENTS_UPDATED', JSON.stringify(parsedIncidents));
+            } catch (e) {}
+            incidentsUpdated = true;
+            const openInc = parsedIncidents.filter(i => (i.status || '').toLowerCase() === 'open').length;
+            const closedInc = parsedIncidents.length - openInc;
+            incidentsSummary = `${parsedIncidents.length} Outages (${closedInc} Closed, ${openInc} Open)`;
+          }
         }
       }
 
-      // Persist permanently embedded sheet URL
-      if (savedUrl) {
+      // Persist permanently embedded sheet URLs
+      if (savedRecUrl) {
         try {
-          localStorage.setItem('FPCL_CONNECTED_SHEET_URL', savedUrl);
-          if (portalApp.state) portalApp.state.connectedSheetUrl = savedUrl;
+          localStorage.setItem('FPCL_CONNECTED_SHEET_URL', savedRecUrl);
+          if (portalApp.state) portalApp.state.connectedSheetUrl = savedRecUrl;
+        } catch (e) {}
+      }
+      if (savedStatusUrl) {
+        try {
+          localStorage.setItem('FPCL_CONNECTED_PLR_STATUS_SHEET_URL', savedStatusUrl);
+          if (portalApp.state) portalApp.state.connectedPlrStatusSheetUrl = savedStatusUrl;
         } catch (e) {}
       }
 
@@ -5456,13 +5647,13 @@
         const combinedMsg = [recsSummary, incidentsSummary].filter(Boolean).join(' • ');
         if (!isSilent) {
           portalApp.closeActionModal();
-          portalApp.showToast('Google Sheet Synced', combinedMsg || 'Successfully refetched live data starting from Row 2.', 'success');
+          portalApp.showToast('Embedded Sheets Synced', combinedMsg || 'Successfully refetched live data starting from Row 2.', 'success');
         } else {
-          console.log('Live Google Sheet auto-sync completed:', combinedMsg);
+          console.log('Live Google Sheets auto-sync completed:', combinedMsg);
         }
       } else {
         if (!isSilent) {
-          throw new Error('Could not fetch data from Google Sheet. Please ensure the spreadsheet is shared with "Anyone with the link can view".');
+          throw new Error('Could not fetch data from connected sheet URLs. Please ensure the sheets are shared with "Anyone with the link can view".');
         }
       }
 
@@ -5484,6 +5675,20 @@
   };
 
   /**
+   * Helper: Sync Recommendations Sheet Only
+   */
+  portalApp.syncRecommendationsSheetOnly = async function () {
+    return portalApp.syncAllPlrSheets({ silent: false, target: 'recs' });
+  };
+
+  /**
+   * Helper: Sync PLR Status Sheet Only
+   */
+  portalApp.syncPlrStatusSheetOnly = async function () {
+    return portalApp.syncAllPlrSheets({ silent: false, target: 'status' });
+  };
+
+  /**
    * Compatibility wrapper for single-tab sync
    */
   portalApp.syncPlrRecommendationsFromSheet = async function (customUrl) {
@@ -5494,36 +5699,81 @@
    * 1-Click Refresh directly from connected Google Sheet tabs Recommendations & PLR
    */
   portalApp.refreshFromLiveSheet = async function () {
-    return portalApp.syncAllPlrSheets({ silent: false });
+    return portalApp.syncAllPlrSheets({ silent: false, target: 'both' });
   };
 
   /**
-   * Handle CSV File Upload
+   * Smart CSV Upload (Auto-detects whether file is Incidents or Recommendations)
    */
-  portalApp.handlePlrRecommendationsFileUpload = function (event) {
+  portalApp.handlePlrSmartFileUpload = function (event) {
     const file = event.target.files && event.target.files[0];
     if (!file) return;
 
     const reader = new FileReader();
     reader.onload = function (e) {
       const text = e.target.result;
-      const parsed = window.parsePLRRecommendationsCSV(text);
-      if (parsed && parsed.length > 0) {
-        window.FPCL_PLR_RECOMMENDATIONS = parsed;
+      const lowerHeader = (text.split('\n')[0] || '').toLowerCase();
+
+      // If header contains machine, outage, or incident -> PLR Status
+      if (lowerHeader.includes('machine') || lowerHeader.includes('outage') || (lowerHeader.includes('incident') && !lowerHeader.includes('recommendation'))) {
+        const parsed = window.parsePLRIncidentsCSV(text);
+        if (parsed && parsed.length > 0) {
+          window.FPCL_PLR_DATA = parsed;
+          try {
+            localStorage.setItem('FPCL_PLR_INCIDENTS_UPDATED', JSON.stringify(parsed));
+          } catch (err) {}
+          portalApp.closeActionModal();
+          portalApp.syncPlrStatsToOverview();
+          portalApp.renderPlrSuite();
+          portalApp.showToast('PLR Status Updated', `Parsed ${parsed.length} incidents from uploaded CSV. Machine breakdown & KPI cards updated.`, 'success');
+          return;
+        }
+      }
+
+      // Default or Recommendations
+      const parsedRecs = window.parsePLRRecommendationsCSV(text);
+      if (parsedRecs && parsedRecs.length > 0) {
+        window.FPCL_PLR_RECOMMENDATIONS = parsedRecs;
+        try {
+          localStorage.setItem('FPCL_PLR_RECOMMENDATIONS_UPDATED', JSON.stringify(parsedRecs));
+        } catch (err) {}
         portalApp.closeActionModal();
         portalApp.saveAndReflectRecChanges(
-          'CSV File Ingested',
-          `Parsed ${parsed.length} recommendations from Column E named "Recommendations".`
+          'Recommendations Ingested',
+          `Parsed ${parsedRecs.length} recommendations from Column E.`
         );
       } else {
-        alert('Could not parse recommendations from the uploaded file. Please ensure Column E contains recommendations.');
+        alert('Could not parse dataset from the uploaded file. Please ensure valid CSV formatting.');
       }
     };
     reader.readAsText(file);
   };
 
+  portalApp.handlePlrRecommendationsFileUpload = function (event) {
+    portalApp.handlePlrSmartFileUpload(event);
+  };
+
   /**
-   * Handle Pasted CSV Text
+   * Smart Paste Ingestion
+   */
+  portalApp.importPlrSmartFromPastedCsv = function () {
+    const textarea = document.getElementById('plr-paste-textarea');
+    if (!textarea || !textarea.value.trim()) {
+      alert('Please paste CSV text into the box.');
+      return;
+    }
+    const text = textarea.value.trim();
+    const lowerHeader = (text.split('\n')[0] || '').toLowerCase();
+
+    if (lowerHeader.includes('machine') || lowerHeader.includes('outage') || (lowerHeader.includes('incident') && !lowerHeader.includes('recommendation'))) {
+      portalApp.importPlrIncidentsFromPastedCsv();
+    } else {
+      portalApp.importPlrRecommendationsFromPastedCsv();
+    }
+  };
+
+  /**
+   * Handle Pasted CSV Text for Recommendations
    */
   portalApp.importPlrRecommendationsFromPastedCsv = function () {
     const textarea = document.getElementById('plr-paste-textarea');
@@ -5535,9 +5785,12 @@
     const parsed = window.parsePLRRecommendationsCSV(textarea.value.trim());
     if (parsed && parsed.length > 0) {
       window.FPCL_PLR_RECOMMENDATIONS = parsed;
+      try {
+        localStorage.setItem('FPCL_PLR_RECOMMENDATIONS_UPDATED', JSON.stringify(parsed));
+      } catch (e) {}
       portalApp.closeActionModal();
       portalApp.saveAndReflectRecChanges(
-        'CSV Text Ingested',
+        'Recommendations Ingested',
         `Parsed ${parsed.length} recommendations from pasted text.`
       );
     } else {
@@ -5546,7 +5799,32 @@
   };
 
   /**
-   * Reset to original 451 recommendations
+   * Handle Pasted CSV Text for PLR Incidents
+   */
+  portalApp.importPlrIncidentsFromPastedCsv = function () {
+    const textarea = document.getElementById('plr-paste-textarea');
+    if (!textarea || !textarea.value.trim()) {
+      alert('Please paste CSV text into the box.');
+      return;
+    }
+
+    const parsed = window.parsePLRIncidentsCSV(textarea.value.trim());
+    if (parsed && parsed.length > 0) {
+      window.FPCL_PLR_DATA = parsed;
+      try {
+        localStorage.setItem('FPCL_PLR_INCIDENTS_UPDATED', JSON.stringify(parsed));
+      } catch (e) {}
+      portalApp.closeActionModal();
+      portalApp.syncPlrStatsToOverview();
+      portalApp.renderPlrSuite();
+      portalApp.showToast('PLR Status Updated', `Parsed ${parsed.length} plant outages from pasted text. Machine breakdown and KPIs updated.`, 'success');
+    } else {
+      alert('Could not parse any incident rows. Please check the CSV formatting.');
+    }
+  };
+
+  /**
+   * Reset PLR Recommendations to Baseline
    */
   portalApp.resetPlrRecommendationsToBaseline = function () {
     if (!confirm('Are you sure you want to reset recommendations to the original 451 records? Any manual additions or edits will be reverted.')) {
@@ -5563,6 +5841,50 @@
       'Baseline Restored',
       'Original 451 recommendations restored and reflected across the portal.'
     );
+  };
+
+  /**
+   * Reset PLR Incidents to Baseline
+   */
+  portalApp.resetPlrIncidentsToBaseline = function () {
+    if (!confirm('Are you sure you want to reset incidents to the original 233 outage records?')) {
+      return;
+    }
+
+    localStorage.removeItem('FPCL_PLR_INCIDENTS_UPDATED');
+    window.FPCL_PLR_DATA = Array.isArray(window.FPCL_PLR_DATA_BASELINE) && window.FPCL_PLR_DATA_BASELINE.length > 0
+      ? JSON.parse(JSON.stringify(window.FPCL_PLR_DATA_BASELINE))
+      : getPlrData();
+
+    portalApp.closeActionModal();
+    portalApp.syncPlrStatsToOverview();
+    portalApp.renderPlrSuite();
+    portalApp.showToast('Incidents Restored', 'Original 233 incident outage records restored.', 'info');
+  };
+
+  /**
+   * Reset All PLR Datasets to Baseline
+   */
+  portalApp.resetAllPlrToBaseline = function () {
+    if (!confirm('Reset BOTH Recommendations (451 records) and Incident Outages (233 records) back to authentic baseline?')) {
+      return;
+    }
+
+    localStorage.removeItem('FPCL_PLR_RECOMMENDATIONS_UPDATED');
+    localStorage.removeItem('FPCL_PLR_INCIDENTS_UPDATED');
+
+    window.FPCL_PLR_RECOMMENDATIONS = Array.isArray(window.FPCL_PLR_RECOMMENDATIONS_BASELINE) && window.FPCL_PLR_RECOMMENDATIONS_BASELINE.length > 0
+      ? JSON.parse(JSON.stringify(window.FPCL_PLR_RECOMMENDATIONS_BASELINE))
+      : getPlrRecs();
+
+    window.FPCL_PLR_DATA = Array.isArray(window.FPCL_PLR_DATA_BASELINE) && window.FPCL_PLR_DATA_BASELINE.length > 0
+      ? JSON.parse(JSON.stringify(window.FPCL_PLR_DATA_BASELINE))
+      : getPlrData();
+
+    portalApp.closeActionModal();
+    portalApp.syncPlrStatsToOverview();
+    portalApp.renderPlrSuite();
+    portalApp.showToast('All Datasets Restored', 'Both recommendations and plant outages restored to authentic baseline.', 'success');
   };
 
   // Keyboard shortcut: Close PLR modals on Escape key
