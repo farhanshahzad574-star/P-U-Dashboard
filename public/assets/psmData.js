@@ -5,7 +5,7 @@
  * Supports live Google Sheets CSV parsing and offline fallback
  */
 
-window.FPCL_PSM_SHEET_URL = "https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/gviz/tq?tqx=out:csv&sheet=PSM_Audit_Phase1";
+window.FPCL_PSM_SHEET_URL = "https://docs.google.com/spreadsheets/d/1bFBRGKqIfO8Pn7qPSTU0pbdTB87ezDyXvVDnCbTGrx4/export?format=csv&gid=0";
 
 // Robust RFC-4180 compliant CSV Parser supporting multiline quoted fields, escaped quotes, commas
 window.parsePSMCSV = function(csvText) {
@@ -58,32 +58,43 @@ window.parsePSMCSV = function(csvText) {
   // Identify column indices from header
   const headers = rows[0].map(h => h.trim().toLowerCase().replace(/[^a-z0-9]/g, ''));
   
-  const findCol = (keywords) => {
-    return headers.findIndex(h => keywords.some(k => h.includes(k)));
+  const findCol = (exactMatches, partialKeywords) => {
+    const exactIdx = headers.findIndex(h => exactMatches.includes(h));
+    if (exactIdx !== -1) return exactIdx;
+    return headers.findIndex(h => partialKeywords.some(k => h.includes(k)));
   };
 
-  const colSr = findCol(['sr']);
-  const colObs = findCol(['observationno', 'obsno', 'obs']);
-  const colElement = findCol(['psmelement', 'element']);
-  const colAudit = findCol(['auditno', 'audit']);
-  const colAuditeeDept = findCol(['auditeedepartment', 'auditeedept']);
-  const colAuditeeUnit = findCol(['auditeeunit']);
-  const colFinding = findCol(['observationfindings', 'findings', 'finding', 'observation']);
-  const colActionDept = findCol(['actiondepartment', 'actiondept']);
-  const colActionUnit = findCol(['actionunit']);
-  const colNature = findCol(['natureoffindings', 'nature', 'severity']);
-  const colActionRemarks = findCol(['actiondepartmenetunitremarks', 'actiondeptremarks', 'actionremarks']);
-  const colStatus = findCol(['statusopencloseoverdue', 'status']);
-  const colHseqRemarks = findCol(['hseqremarks', 'hseq']);
+  const colSr = findCol(['sr', 'sno', 'serialno'], ['sr']);
+  const colObs = findCol(['observationno', 'obsno', 'observationnumber'], ['obsno', 'observationno']);
+  const colElement = findCol(['psmelement', 'element'], ['psmelement', 'element']);
+  const colAudit = findCol(['auditno', 'auditnumber'], ['audit']);
+  const colAuditeeDept = findCol(['auditeedepartment', 'auditeedept'], ['auditeedepartment', 'auditeedept']);
+  const colAuditeeUnit = findCol(['auditeeunit'], ['auditeeunit']);
+  const colFinding = findCol(['observationfindings', 'findings', 'finding', 'observationfinding', 'description'], ['finding', 'observationfinding']);
+  const colActionDept = findCol(['actiondepartment', 'actiondept'], ['actiondept', 'actiondepartment']);
+  const colActionUnit = findCol(['actionunit'], ['actionunit']);
+  const colNature = findCol(['natureoffindings', 'nature'], ['nature', 'severity']);
+  const colActionRemarks = findCol(['actiondepartmenetunitremarks', 'actiondepartmentremarks', 'actiondeptremarks'], ['actionremark', 'unitremark']);
+  const colStatus = findCol(['statusopencloseoverdue', 'status'], ['status']);
+  const colHseqRemarks = findCol(['hseqremarks', 'hseq'], ['hseq']);
 
   const parsedItems = [];
 
   for (let r = 1; r < rows.length; r++) {
     const row = rows[r];
-    if (!row || row.length === 0 || !row[colObs !== -1 ? colObs : 1]) continue;
+    if (!row || row.length === 0) continue;
+    
+    // Check if row has any meaningful content (skip trailing empty rows)
+    const hasAnyContent = row.some(cell => cell && cell.trim().length > 0);
+    if (!hasAnyContent) continue;
+
+    const rawObs = (colObs !== -1 && row[colObs]) ? row[colObs].trim() : '';
+    const rawFinding = (colFinding !== -1 && row[colFinding]) ? row[colFinding].trim() : '';
+    // Skip row if it doesn't have an observation number and doesn't have a finding description
+    if (!rawObs && !rawFinding) continue;
 
     const rawStatus = (colStatus !== -1 && row[colStatus]) ? row[colStatus].trim() : 'Open';
-    // Normalize status: "Close", "Closed", "Closed." -> "Close"; "Open" -> "Open"
+    // Normalize status: "Close", "Closed", "Closed." -> "Close"; "Overdue" -> "Overdue"; else "Open"
     let normStatus = 'Open';
     const sLower = rawStatus.toLowerCase();
     if (sLower.includes('close')) {
@@ -95,19 +106,19 @@ window.parsePSMCSV = function(csvText) {
     }
 
     const item = {
-      sr: colSr !== -1 && row[colSr] ? parseInt(row[colSr], 10) : r,
-      observationNo: (colObs !== -1 ? row[colObs] : row[1]) || `PSM-IA-2026-${String(r).padStart(4, '0')}`,
+      sr: colSr !== -1 && row[colSr] ? parseInt(row[colSr], 10) || r : r,
+      observationNo: rawObs || (colObs !== -1 ? row[colObs] : '') || `PSM-IA-2026-${String(r).padStart(4, '0')}`,
       psmElement: (colElement !== -1 ? row[colElement] : row[2]) || 'General',
       auditNo: (colAudit !== -1 ? row[colAudit] : row[3]) || 'Phase 1 June 2026',
       auditeeDepartment: (colAuditeeDept !== -1 ? row[colAuditeeDept] : row[4]) || '',
       auditeeUnit: (colAuditeeUnit !== -1 ? row[colAuditeeUnit] : row[5]) || '',
-      finding: (colFinding !== -1 ? row[colFinding] : row[6]) || '',
+      finding: rawFinding || (colFinding !== -1 ? row[colFinding] : '') || '',
       actionDepartment: (colActionDept !== -1 ? row[colActionDept] : row[7]) || 'Unassigned',
       actionUnit: (colActionUnit !== -1 ? row[colActionUnit] : row[8]) || 'Unassigned',
       nature: (colNature !== -1 ? row[colNature] : row[9]) || 'Minor',
       actionRemarks: (colActionRemarks !== -1 ? row[colActionRemarks] : row[10]) || '',
       status: normStatus,
-      rawStatus: rawStatus,
+      rawStatus: rawStatus || normStatus,
       hseqRemarks: (colHseqRemarks !== -1 ? row[colHseqRemarks] : row[12]) || ''
     };
 

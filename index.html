@@ -15,20 +15,35 @@
       (function() {
         function isViteWsError(err) {
           if (!err) return false;
-          var msg = (typeof err === 'string' ? err : (err.message || err.reason || '')) + '';
+          var msg = (typeof err === 'string' ? err : (err.message || err.reason || err.stack || '')) + '';
           return msg.indexOf('WebSocket closed without opened') !== -1 ||
                  msg.indexOf('failed to connect to websocket') !== -1;
         }
+        var origConsoleError = console.error;
+        console.error = function() {
+          for (var i = 0; i < arguments.length; i++) {
+            if (isViteWsError(arguments[i])) {
+              return;
+            }
+          }
+          origConsoleError.apply(console, arguments);
+        };
         window.addEventListener('unhandledrejection', function(e) {
           if (isViteWsError(e.reason)) {
             e.preventDefault();
+            if (typeof e.stopImmediatePropagation === 'function') {
+              e.stopImmediatePropagation();
+            }
           }
-        });
+        }, true);
         window.addEventListener('error', function(e) {
           if (isViteWsError(e.message || e.error)) {
             e.preventDefault();
+            if (typeof e.stopImmediatePropagation === 'function') {
+              e.stopImmediatePropagation();
+            }
           }
-        });
+        }, true);
       })();
     </script>
 
@@ -2037,10 +2052,9 @@
 
           // Grouped bars: Total Actions (Blue) and Open Actions (Amber/Orange)
           const barsSvg = items.map((d, i) => {
-            // For Recommendations (plr): Total Recommendations = 451, Open Recommendations = 31
-            // For Sub HSE-PSM: Total Findings = 121, Open Findings = 45
-            const totalVal = d.id === 'plr' ? 451 : (d.kpis.total || 0);
-            const openVal = d.id === 'plr' ? 31 : (d.id === 'sub-hse-psm' ? 45 : (d.kpis.inProgress || 0));
+            // Dynamic Total and Open counts derived directly from live dashboard KPIs
+            const totalVal = (d.kpis && d.kpis.total !== undefined) ? d.kpis.total : (d.id === 'plr' ? 451 : 0);
+            const openVal = (d.kpis && d.kpis.inProgress !== undefined) ? d.kpis.inProgress : (d.id === 'plr' ? 31 : 0);
 
             const totalH = yMax > 0 ? (totalVal / yMax) * plotH : 0;
             const openH = yMax > 0 ? (openVal / yMax) * plotH : 0;
@@ -2535,8 +2549,8 @@
                   ` : ''}
                   ${item.id === 'sub-hse-psm' ? `
                     <div class="px-2.5 py-1.5 rounded-lg bg-teal-50 border border-teal-200 text-teal-900 text-xs font-bold flex items-center justify-between">
-                      <span>121 Audit Findings</span>
-                      <span class="font-mono text-teal-800 font-bold text-sm">76 Closed • 45 Open</span>
+                      <span>${total} Audit Observations</span>
+                      <span class="font-mono text-teal-800 font-bold text-sm">${closed} Closed • ${inProg} Open</span>
                     </div>
                   ` : ''}
 
@@ -2954,13 +2968,22 @@
             if (plrContainer) plrContainer.classList.add('hidden');
             if (psmContainer) {
               psmContainer.classList.remove('hidden');
-              if (window.FPCL_PSM_SUITE && typeof window.FPCL_PSM_SUITE.render === 'function') {
-                window.FPCL_PSM_SUITE.render();
+              if (window.FPCL_PSM_SUITE) {
+                if (typeof window.FPCL_PSM_SUITE.syncLiveFeed === 'function') {
+                  window.FPCL_PSM_SUITE.syncLiveFeed({ silent: true });
+                }
+                if (typeof window.FPCL_PSM_SUITE.render === 'function') {
+                  window.FPCL_PSM_SUITE.render();
+                }
               }
             }
             if (sheetKeyEl) {
-              sheetKeyEl.textContent = 'PSM Audit Phase 1 • 121 Findings & 13 Action Departments';
-              sheetKeyEl.title = 'PSM Internal Audit Findings (Phase 1 June 2026 Google Sheet)';
+              const psmData = (window.FPCL_PSM_DATA && window.FPCL_PSM_DATA.length > 0) ? window.FPCL_PSM_DATA : [];
+              const psmTotal = psmData.length || 121;
+              const psmClosed = psmData.filter(p => p.status === 'Close').length;
+              const psmOpen = psmTotal - psmClosed;
+              sheetKeyEl.textContent = `PSM Audit Phase 1 • ${psmTotal} Observations (${psmClosed} Closed, ${psmOpen} Open)`;
+              sheetKeyEl.title = 'Live Google Sheets: PSM Audit Phase 1 June 2026 (1bFBRGKqIfO8Pn7qPSTU0pbdTB87ezDyXvVDnCbTGrx4)';
             }
           } else {
             if (plrContainer) plrContainer.classList.add('hidden');

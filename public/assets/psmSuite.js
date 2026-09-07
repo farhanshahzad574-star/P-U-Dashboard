@@ -15,6 +15,8 @@
  */
 
 (function() {
+  const HARDCODED_PSM_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1bFBRGKqIfO8Pn7qPSTU0pbdTB87ezDyXvVDnCbTGrx4/export?format=csv&gid=0';
+
   const psmSuite = {
     state: {
       searchQuery: '',
@@ -36,9 +38,86 @@
 
     init() {
       window.FPCL_PSM_SUITE = this;
-      // Auto-load data if available
+
+      // Always ensure hardcoded Google Sheet CSV URL is active
+      if (!window.FPCL_PSM_SHEET_URL || window.FPCL_PSM_SHEET_URL.includes('1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms')) {
+        window.FPCL_PSM_SHEET_URL = HARDCODED_PSM_SHEET_URL;
+      }
+      try {
+        const storedUrl = localStorage.getItem('FPCL_PSM_SHEET_URL');
+        if (storedUrl && !storedUrl.includes('1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms')) {
+          window.FPCL_PSM_SHEET_URL = storedUrl;
+        } else {
+          window.FPCL_PSM_SHEET_URL = HARDCODED_PSM_SHEET_URL;
+          localStorage.setItem('FPCL_PSM_SHEET_URL', HARDCODED_PSM_SHEET_URL);
+        }
+      } catch (e) {}
+
+      // Fast-paint from localStorage cache if present
+      try {
+        const cached = localStorage.getItem('FPCL_PSM_DATA_CACHE');
+        if (cached) {
+          const parsedCached = JSON.parse(cached);
+          if (Array.isArray(parsedCached) && parsedCached.length > 0) {
+            window.FPCL_PSM_DATA = parsedCached;
+          }
+        }
+      } catch (e) {}
+
+      // Auto-load embedded data if not yet loaded
       if (!window.FPCL_PSM_DATA && window.FPCL_PSM_RAW_CSV && typeof window.parsePSMCSV === 'function') {
         window.FPCL_PSM_DATA = window.parsePSMCSV(window.FPCL_PSM_RAW_CSV);
+      }
+
+      // Sync initial stats to portal Overview
+      this.syncPsmStatsToOverview();
+
+      // Trigger automatic live Google Sheets sync on launch
+      setTimeout(() => {
+        this.syncLiveFeed({ silent: true });
+      }, 700);
+
+      // Periodic auto-sync every 60 seconds so sheet additions/deletions reflect live
+      if (!this._autoSyncTimer) {
+        this._autoSyncTimer = setInterval(() => {
+          this.syncLiveFeed({ silent: true });
+        }, 60000);
+      }
+    },
+
+    syncPsmStatsToOverview() {
+      const data = this.getRawData();
+      if (!data || data.length === 0) return;
+
+      const total = data.length;
+      const closed = data.filter(i => i.status === 'Close').length;
+      const open = total - closed;
+      const rate = total > 0 ? ((closed / total) * 100).toFixed(1) + '%' : '0.0%';
+
+      const depts = new Set(data.map(i => i.actionDepartment).filter(Boolean));
+
+      if (window.DASHBOARD_REGISTRY) {
+        const psmEntry = window.DASHBOARD_REGISTRY.find(d => d.id === 'sub-hse-psm');
+        if (psmEntry) {
+          psmEntry.kpis = { total, closed, inProgress: open, overdue: 0, compliance: rate };
+          psmEntry.punchList = { open, closed, total, rate };
+          psmEntry.statusComment = `${total} audit observations tracked across ${depts.size} Action Departments (${closed} Closed, ${open} Open, ${rate} Closure Rate).`;
+        }
+      }
+
+      if (window.portalApp) {
+        if (typeof window.portalApp.updateRollupStats === 'function') {
+          window.portalApp.updateRollupStats();
+        }
+        if (typeof window.portalApp.renderCards === 'function') {
+          window.portalApp.renderCards();
+        }
+        if (typeof window.portalApp.renderComparisonChart === 'function') {
+          window.portalApp.renderComparisonChart();
+        }
+        if (typeof window.portalApp.renderPunchListTable === 'function') {
+          window.portalApp.renderPunchListTable();
+        }
       }
     },
 
@@ -1712,51 +1791,121 @@
       const input = document.getElementById('psm-sheet-url-input');
       if (input && input.value.trim()) {
         window.FPCL_PSM_SHEET_URL = input.value.trim();
+        try {
+          localStorage.setItem('FPCL_PSM_SHEET_URL', window.FPCL_PSM_SHEET_URL);
+        } catch (e) {}
       }
       this.closeConfigModal();
-      this.syncLiveFeed();
+      this.syncLiveFeed({ silent: false });
     },
 
-    // Live Feed Synchronization from Google Sheet
-    async syncLiveFeed() {
-      this.state.isSyncing = true;
-      this.render();
+    // Live Feed Synchronization from Google Sheet (via server proxy with client fallback)
+    async syncLiveFeed(options = {}) {
+      const isSilent = options.silent || false;
+      const isForce = options.force || false;
+      const now = Date.now();
 
-      let targetUrl = window.FPCL_PSM_SHEET_URL;
-      
-      // Auto-convert edit link to CSV export link if user pasted standard Google Sheet link
-      if (targetUrl.includes('/edit')) {
-        const base = targetUrl.split('/edit')[0];
-        targetUrl = `${base}/export?format=csv`;
+      // Return active in-flight sync promise to prevent duplicate concurrent network requests
+      if (this._syncPromise) {
+        return this._syncPromise;
       }
 
-      try {
-        const response = await fetch(targetUrl, { method: 'GET', cache: 'no-cache' });
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
-        const csvText = await response.text();
-        const parsed = window.parsePSMCSV(csvText);
-        if (parsed.length > 0) {
-          window.FPCL_PSM_DATA = parsed;
-          this.state.lastSynced = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-          if (window.portalApp && typeof window.portalApp.showToast === 'function') {
-            window.portalApp.showToast('Google Sheet Synced', `Successfully loaded ${parsed.length} audit observations.`, 'success');
+      // 10-second cache cooldown for non-forced requests
+      if (!isForce && this._lastSyncTimestamp && (now - this._lastSyncTimestamp < 10000)) {
+        return Promise.resolve(window.FPCL_PSM_DATA);
+      }
+
+      this.state.isSyncing = true;
+      if (!isSilent) this.render();
+
+      this._syncPromise = (async () => {
+        let targetUrl = window.FPCL_PSM_SHEET_URL || HARDCODED_PSM_SHEET_URL;
+        
+        // Auto-convert edit link or standard doc link to CSV export link
+        if (targetUrl.includes('/edit')) {
+          const base = targetUrl.split('/edit')[0];
+          targetUrl = `${base}/export?format=csv&gid=0`;
+        } else if (!targetUrl.includes('format=csv') && !targetUrl.includes('output=csv') && targetUrl.includes('/spreadsheets/d/')) {
+          const match = targetUrl.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+          if (match) {
+            targetUrl = `https://docs.google.com/spreadsheets/d/${match[1]}/export?format=csv&gid=0`;
           }
         }
-      } catch (err) {
-        console.warn('Google Sheet live fetch encountered an issue, falling back to embedded dataset:', err);
-        // Fallback to embedded raw CSV
-        if (window.FPCL_PSM_RAW_CSV && typeof window.parsePSMCSV === 'function') {
-          window.FPCL_PSM_DATA = window.parsePSMCSV(window.FPCL_PSM_RAW_CSV);
+
+        let csvText = '';
+
+        // 1. Try server proxy FIRST (/api/sheets/fetch) for CORS-free Google Sheets export
+        try {
+          const res = await fetch('/api/sheets/fetch', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url: targetUrl, sheetTab: 'PSM', gid: '0' })
+          });
+          if (res.ok) {
+            const json = await res.json();
+            if (json.success && json.csvText && json.csvText.length > 50) {
+              csvText = json.csvText;
+            }
+          }
+        } catch (proxyErr) {
+          console.warn('Proxy fetch failed for PSM sheet, attempting direct fallback:', proxyErr);
         }
-        if (window.portalApp && typeof window.portalApp.showToast === 'function') {
-          window.portalApp.showToast('Data Synced', `Loaded ${window.FPCL_PSM_DATA.length} audit records.`, 'info');
+
+        // 2. Client-side direct fetch fallback
+        if (!csvText) {
+          try {
+            const resp = await fetch(targetUrl, { method: 'GET', cache: 'no-cache' });
+            if (resp.ok) {
+              csvText = await resp.text();
+            }
+          } catch (directErr) {
+            console.warn('Direct fetch failed for PSM sheet:', directErr);
+          }
         }
-      } finally {
+
+        try {
+          if (csvText && typeof window.parsePSMCSV === 'function') {
+            const parsed = window.parsePSMCSV(csvText);
+            if (parsed.length > 0) {
+              window.FPCL_PSM_DATA = parsed;
+              try {
+                localStorage.setItem('FPCL_PSM_DATA_CACHE', JSON.stringify(parsed));
+              } catch (e) {}
+              this.state.lastSynced = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+              this._lastSyncTimestamp = Date.now();
+              
+              // Sync updated KPIs and counts to the Executive Overview dashboard
+              this.syncPsmStatsToOverview();
+
+              const closedCount = parsed.filter(p => p.status === 'Close').length;
+              const openCount = parsed.length - closedCount;
+
+              if (!isSilent && window.portalApp && typeof window.portalApp.showToast === 'function') {
+                window.portalApp.showToast('Google Sheet Synced', `Successfully loaded ${parsed.length} audit observations (${closedCount} Closed, ${openCount} Open) live from Google Sheet.`, 'success');
+              } else if (isSilent) {
+                console.log(`Live PSM Google Sheet auto-sync completed: ${parsed.length} findings (${closedCount} Closed, ${openCount} Open)`);
+              }
+            }
+          } else {
+            // If fetch didn't return text and no data loaded yet, fallback to embedded raw CSV
+            if ((!window.FPCL_PSM_DATA || window.FPCL_PSM_DATA.length === 0) && window.FPCL_PSM_RAW_CSV && typeof window.parsePSMCSV === 'function') {
+              window.FPCL_PSM_DATA = window.parsePSMCSV(window.FPCL_PSM_RAW_CSV);
+              this.syncPsmStatsToOverview();
+            }
+            if (!isSilent && window.portalApp && typeof window.portalApp.showToast === 'function') {
+              window.portalApp.showToast('Sync Notice', 'Could not refresh from live sheet. Using current cached data.', 'warning');
+            }
+          }
+        } catch (err) {
+          console.warn('Google Sheet live parse error:', err);
+        }
+      })().finally(() => {
         this.state.isSyncing = false;
-        this.render();
-      }
+        this._syncPromise = null;
+        if (!isSilent) this.render();
+      });
+
+      return this._syncPromise;
     },
 
     // Export current filtered findings to CSV file
