@@ -28,7 +28,55 @@
 
   window.portalApp = window.portalApp || {};
   window.portalApp.state = window.portalApp.state || {};
-  const portalApp = window.portalApp;
+  window.FPCL_PLR_SUITE = window.portalApp;
+  var portalApp = window.portalApp;
+
+  // Root-Level Modal Container Acquisition (Guarantees DOM attachment at document.body across all environments)
+  function getPlrModalContainer() {
+    let el = document.getElementById('plr-data-modal-container');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'plr-data-modal-container';
+      document.body.appendChild(el);
+    } else if (el.parentElement !== document.body) {
+      document.body.appendChild(el);
+    }
+    return el;
+  }
+
+  function getPlrInspectionContainer() {
+    let el = document.getElementById('plr-inspection-modal-container');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'plr-inspection-modal-container';
+      document.body.appendChild(el);
+    } else if (el.parentElement !== document.body) {
+      document.body.appendChild(el);
+    }
+    return el;
+  }
+
+  function getPlrActionContainer() {
+    let el = document.getElementById('plr-action-modal-container');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'plr-action-modal-container';
+      document.body.appendChild(el);
+    } else if (el.parentElement !== document.body) {
+      document.body.appendChild(el);
+    }
+    return el;
+  }
+
+  function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
 
   function getDefaultPlrState() {
     return {
@@ -1458,7 +1506,8 @@
           
           <!-- Card 1: TOTAL PLRs -->
           <div
-            onclick="portalApp.openPlrKpiModal('total-plrs')"
+            data-plr-kpi="total-plrs"
+            onclick="(window.portalApp || portalApp).openPlrKpiModal('total-plrs')"
             class="bg-white border border-slate-200 hover:border-[#2E6DA4] hover:shadow-md hover:-translate-y-0.5 rounded-2xl p-4 sm:p-5 shadow-sm relative overflow-hidden group transition-all cursor-pointer"
             title="Click to view all ${totalPLRs} Plant Loss Reports in pop-up window"
           >
@@ -1483,7 +1532,8 @@
 
           <!-- Card 2: OPEN PLRs -->
           <div
-            onclick="portalApp.openPlrKpiModal('open-plrs')"
+            data-plr-kpi="open-plrs"
+            onclick="(window.portalApp || portalApp).openPlrKpiModal('open-plrs')"
             class="bg-white border border-rose-200 hover:border-rose-400 hover:shadow-md hover:-translate-y-0.5 rounded-2xl p-4 sm:p-5 shadow-sm relative overflow-hidden group transition-all cursor-pointer"
             title="Click to inspect all ${openPLRs} Open PLRs in pop-up window"
           >
@@ -1510,7 +1560,8 @@
 
           <!-- Card 3: TOTAL RECOMMENDATIONS -->
           <div
-            onclick="portalApp.openPlrKpiModal('total-recs')"
+            data-plr-kpi="total-recs"
+            onclick="(window.portalApp || portalApp).openPlrKpiModal('total-recs')"
             class="bg-white border border-slate-200 hover:border-blue-400 hover:shadow-md hover:-translate-y-0.5 rounded-2xl p-4 sm:p-5 shadow-sm relative overflow-hidden group transition-all cursor-pointer"
             title="Click to view all ${totalRecs} Recommendations in pop-up window"
           >
@@ -1535,7 +1586,8 @@
 
           <!-- Card 4: OPEN RECOMMENDATIONS -->
           <div
-            onclick="portalApp.openPlrKpiModal('open-recs')"
+            data-plr-kpi="open-recs"
+            onclick="(window.portalApp || portalApp).openPlrKpiModal('open-recs')"
             class="bg-white border border-amber-200 hover:border-amber-400 hover:shadow-md hover:-translate-y-0.5 rounded-2xl p-4 sm:p-5 shadow-sm relative overflow-hidden group transition-all cursor-pointer"
             title="Click to view all ${openRecs} Open Recommendations in pop-up window"
           >
@@ -1651,10 +1703,10 @@
                       class="px-2 py-0.5 rounded-md transition-all cursor-pointer ${isIncidents ? 'bg-[#2E6DA4] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'}"
                     >Incidents</button>
                   </div>
-                  <span class="px-2.5 py-1 rounded-full text-xs font-black bg-red-50 text-[#B91C1C] border border-red-200 cursor-pointer" onclick="portalApp.openResolutionDataModal('Open')">
+                  <span data-plr-action="resolution-modal" data-status="Open" class="px-2.5 py-1 rounded-full text-xs font-black bg-red-50 text-[#B91C1C] border border-red-200 cursor-pointer" onclick="(window.portalApp || portalApp).openResolutionDataModal('Open')">
                     ${resOpenCount} Open
                   </span>
-                  <span class="px-2.5 py-1 rounded-full text-xs font-black bg-emerald-50 text-[#047857] border border-emerald-200 cursor-pointer" onclick="portalApp.openResolutionDataModal('Closed')">
+                  <span data-plr-action="resolution-modal" data-status="Closed" class="px-2.5 py-1 rounded-full text-xs font-black bg-emerald-50 text-[#047857] border border-emerald-200 cursor-pointer" onclick="(window.portalApp || portalApp).openResolutionDataModal('Closed')">
                     ${resClosedCount} Closed
                   </span>
                 </div>
@@ -1668,32 +1720,38 @@
               <!-- Resolution Metrics & Quick Actions (Non-scrollable, fully visible covering page area) -->
               <div class="pt-3 border-t border-slate-100 space-y-3">
                 <div class="flex items-center justify-between text-xs">
-                  <span class="font-bold text-slate-700">Resolution Ratio: <strong class="text-[#047857] font-sans font-extrabold cursor-pointer hover:underline" onclick="portalApp.openResolutionDataModal('Closed')">${resClosureRate}% Closed (${resClosedCount}/${resTotalCount})</strong></span>
-                  <span class="text-xs text-slate-500 font-medium">Pending: <strong class="text-[#B91C1C] font-sans font-extrabold cursor-pointer hover:underline" onclick="portalApp.openResolutionDataModal('Open')">${100 - resClosureRate}% Open (${resOpenCount})</strong></span>
+                  <span class="font-bold text-slate-700">Resolution Ratio: <strong data-plr-action="resolution-modal" data-status="Closed" class="text-[#047857] font-sans font-extrabold cursor-pointer hover:underline" onclick="(window.portalApp || portalApp).openResolutionDataModal('Closed')">${resClosureRate}% Closed (${resClosedCount}/${resTotalCount})</strong></span>
+                  <span class="text-xs text-slate-500 font-medium">Pending: <strong data-plr-action="resolution-modal" data-status="Open" class="text-[#B91C1C] font-sans font-extrabold cursor-pointer hover:underline" onclick="(window.portalApp || portalApp).openResolutionDataModal('Open')">${100 - resClosureRate}% Open (${resOpenCount})</strong></span>
                 </div>
                 <!-- Closure Progress Bar with Darker Corporate Tones (Interactive) -->
                 <div class="w-full h-3 rounded-full bg-slate-100 overflow-hidden flex cursor-pointer shadow-inner" title="Click green for Closed records, red for Open records">
-                  <div class="h-full bg-[#047857] hover:brightness-110 transition-all" style="width: ${resClosureRate}%;" onclick="portalApp.openResolutionDataModal('Closed')"></div>
-                  <div class="h-full bg-[#B91C1C] hover:brightness-110 transition-all" style="width: ${100 - resClosureRate}%;" onclick="portalApp.openResolutionDataModal('Open')"></div>
+                  <div data-plr-action="resolution-modal" data-status="Closed" class="h-full bg-[#047857] hover:brightness-110 transition-all" style="width: ${resClosureRate}%;" onclick="(window.portalApp || portalApp).openResolutionDataModal('Closed')"></div>
+                  <div data-plr-action="resolution-modal" data-status="Open" class="h-full bg-[#B91C1C] hover:brightness-110 transition-all" style="width: ${100 - resClosureRate}%;" onclick="(window.portalApp || portalApp).openResolutionDataModal('Open')"></div>
                 </div>
                 <!-- Action Buttons Filter & Inspect -->
                 <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
                   <div class="flex items-center gap-2">
                     <button
-                      onclick="portalApp.openResolutionDataModal('all')"
+                      data-plr-action="resolution-modal"
+                      data-status="all"
+                      onclick="(window.portalApp || portalApp).openResolutionDataModal('all')"
                       class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer border bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200 hover:border-slate-300"
                     >
                       All ${isIncidents ? 'Incidents' : 'Recommendations'} (${resTotalCount})
                     </button>
                     <button
-                      onclick="portalApp.openResolutionDataModal('Closed')"
+                      data-plr-action="resolution-modal"
+                      data-status="Closed"
+                      onclick="(window.portalApp || portalApp).openResolutionDataModal('Closed')"
                       class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer border bg-emerald-50 hover:bg-emerald-100 text-[#047857] border-emerald-200"
                     >
                       Closed (${resClosedCount})
                     </button>
                   </div>
                   <button
-                    onclick="portalApp.openResolutionDataModal('Open')"
+                    data-plr-action="resolution-modal"
+                    data-status="Open"
+                    onclick="(window.portalApp || portalApp).openResolutionDataModal('Open')"
                     class="px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 border shadow-xs bg-[#B91C1C] hover:bg-[#991B1B] text-white border-[#B91C1C]"
                   >
                     <i data-lucide="alert-circle" class="w-3.5 h-3.5"></i>
@@ -2124,7 +2182,9 @@
         <g
           id="plr-donut-slice-group-${idx}"
           class="cursor-pointer"
-          onclick="portalApp.onMachineSliceClick('${escapedMachine}')"
+          data-plr-action="select-machine"
+          data-machine="${escapedMachine}"
+          onclick="(window.portalApp || portalApp).onMachineSliceClick('${escapedMachine}')"
           onmouseenter="portalApp.onMachineSliceHover(event, '${escapedMachine}', ${idx})"
           onmousemove="portalApp.moveTooltip(event)"
           onmouseleave="portalApp.onMachineSliceLeave(${idx})"
@@ -2168,7 +2228,8 @@
           ${sliceGroups.join('')}
         </svg>
         <div
-          onclick="portalApp.onCenterDonutClick()"
+          data-plr-action="donut-center"
+          onclick="(window.portalApp || portalApp).onCenterDonutClick()"
           onmouseenter="portalApp.showTooltip(event, { title: '${escapedActiveMachine}', badge: 'Active Asset View', color: '#1e40af', subtitle: 'Incident Outages Explorer', metrics: [{ label: 'Selected Outages', value: '${activeMachine.count}' }, { label: 'Share', value: '${activeMachine.pct}%' }], hint: 'Click to open matching investigation records' })"
           onmousemove="portalApp.moveTooltip(event)"
           onmouseleave="portalApp.hideTooltip()"
@@ -2200,7 +2261,9 @@
         const escaped = m.name.replace(/'/g, "\\'");
         return `
           <button
-            onclick="portalApp.onMachineSliceClick('${escaped}')"
+            data-plr-action="select-machine"
+            data-machine="${escaped}"
+            onclick="(window.portalApp || portalApp).onMachineSliceClick('${escaped}')"
             onmouseenter="portalApp.showTooltip(event, { title: '${escaped}', badge: 'Machine Asset', color: '${m.color}', subtitle: 'Outage Incident Analysis', metrics: [{ label: 'Outages', value: '${m.count}' }, { label: 'Outage Share', value: '${m.pct}%' }], hint: 'Click to select and open ${m.count} records' })"
             onmousemove="portalApp.moveTooltip(event)"
             onmouseleave="portalApp.hideTooltip()"
@@ -2218,7 +2281,9 @@
         `;
       }).join('') + `
         <button
-          onclick="portalApp.onMachineSliceClick('${escapedActiveMachine}')"
+          data-plr-action="select-machine"
+          data-machine="${escapedActiveMachine}"
+          onclick="(window.portalApp || portalApp).onMachineSliceClick('${escapedActiveMachine}')"
           class="px-2.5 py-1 rounded-lg text-xs font-bold text-[#1e40af] bg-blue-50/80 hover:bg-blue-100 border border-blue-200 cursor-pointer flex items-center gap-1"
           title="Open modal displaying incident data for ${activeMachine.name}"
         >
@@ -2227,7 +2292,7 @@
         </button>
       ` + (s.selectedMachine !== 'all' ? `
         <button
-          onclick="portalApp.filterPlrByMachine('all')"
+          onclick="(window.portalApp || portalApp).filterPlrByMachine('all')"
           class="px-2.5 py-1 rounded-lg text-xs font-bold text-slate-600 bg-white hover:bg-slate-50 border border-slate-300 cursor-pointer"
         >
           Clear Filter
@@ -2467,7 +2532,11 @@
                 return `
                   <tr
                     class="hover:bg-slate-50/80 transition-colors cursor-pointer group"
-                    onclick="portalApp.openPlrDataModal({ type: 'recommendations', title: 'Department: ' + '${escapedDept}', badge: 'Action Department', subtitle: '${d.total} Recommendations (${d.open} Open • ${d.closed} Closed)', filterDept: '${escapedDept}' })"
+                    data-plr-action="dept-recs"
+                    data-dept="${escapedDept}"
+                    data-title="Department: ${escapedDept}"
+                    data-subtitle="${d.total} Recommendations (${d.open} Open • ${d.closed} Closed)"
+                    onclick="(window.portalApp || portalApp).openPlrDataModal({ type: 'recommendations', title: 'Department: ' + '${escapedDept}', badge: 'Action Department', subtitle: '${d.total} Recommendations (${d.open} Open • ${d.closed} Closed)', filterDept: '${escapedDept}' })"
                   >
                     <td class="py-2.5 px-4 font-bold text-slate-800 group-hover:text-[#2E6DA4] flex items-center gap-2">
                       <span class="w-2 h-2 rounded-full bg-[#2E6DA4]"></span>
@@ -2475,13 +2544,23 @@
                     </td>
                     <td class="py-2.5 px-3 text-center font-mono font-bold text-slate-700">${d.total}</td>
                     <td
-                      class="py-2.5 px-3 text-center font-mono font-extrabold text-rose-600 hover:underline"
-                      onclick="event.stopPropagation(); portalApp.openPlrDataModal({ type: 'recommendations', title: 'Department: ' + '${escapedDept}', badge: 'Open Recommendations', subtitle: '${d.open} Open Pending Items', filterDept: '${escapedDept}', filterStatus: 'Open' })"
+                      class="py-2.5 px-3 text-center font-mono font-extrabold text-rose-600 hover:underline cursor-pointer"
+                      data-plr-action="dept-recs"
+                      data-dept="${escapedDept}"
+                      data-status="Open"
+                      data-title="Department: ${escapedDept}"
+                      data-subtitle="${d.open} Open Pending Items"
+                      onclick="event.stopPropagation(); (window.portalApp || portalApp).openPlrDataModal({ type: 'recommendations', title: 'Department: ' + '${escapedDept}', badge: 'Open Recommendations', subtitle: '${d.open} Open Pending Items', filterDept: '${escapedDept}', filterStatus: 'Open' })"
                       title="Click to view Open items"
                     >${d.open}</td>
                     <td
-                      class="py-2.5 px-3 text-center font-mono font-extrabold text-emerald-700 hover:underline"
-                      onclick="event.stopPropagation(); portalApp.openPlrDataModal({ type: 'recommendations', title: 'Department: ' + '${escapedDept}', badge: 'Closed Recommendations', subtitle: '${d.closed} Closed Resolved Items', filterDept: '${escapedDept}', filterStatus: 'Closed' })"
+                      class="py-2.5 px-3 text-center font-mono font-extrabold text-emerald-700 hover:underline cursor-pointer"
+                      data-plr-action="dept-recs"
+                      data-dept="${escapedDept}"
+                      data-status="Closed"
+                      data-title="Department: ${escapedDept}"
+                      data-subtitle="${d.closed} Closed Resolved Items"
+                      onclick="event.stopPropagation(); (window.portalApp || portalApp).openPlrDataModal({ type: 'recommendations', title: 'Department: ' + '${escapedDept}', badge: 'Closed Recommendations', subtitle: '${d.closed} Closed Resolved Items', filterDept: '${escapedDept}', filterStatus: 'Closed' })"
                       title="Click to view Closed items"
                     >${d.closed}</td>
                     <td class="py-2.5 px-4">
@@ -2494,7 +2573,11 @@
                     </td>
                     <td class="py-2.5 px-3 text-right">
                       <button
-                        onclick="event.stopPropagation(); portalApp.openPlrDataModal({ type: 'recommendations', title: 'Department: ' + '${escapedDept}', badge: 'Action Department', subtitle: '${d.total} Recommendations', filterDept: '${escapedDept}' })"
+                        data-plr-action="dept-recs"
+                        data-dept="${escapedDept}"
+                        data-title="Department: ${escapedDept}"
+                        data-subtitle="${d.total} Recommendations"
+                        onclick="event.stopPropagation(); (window.portalApp || portalApp).openPlrDataModal({ type: 'recommendations', title: 'Department: ' + '${escapedDept}', badge: 'Action Department', subtitle: '${d.total} Recommendations', filterDept: '${escapedDept}' })"
                         class="px-2.5 py-1 rounded-md text-[11px] font-bold text-[#2E6DA4] bg-blue-50/70 hover:bg-blue-100 border border-blue-200 transition-colors inline-flex items-center gap-1 cursor-pointer"
                       >
                         <span>View</span>
@@ -2692,7 +2775,9 @@
             d="${dClosed}"
             fill="${darkClosedColor}"
             class="cursor-pointer transition-all hover:brightness-110 hover:opacity-95"
-            onclick="portalApp.openResolutionDataModal('Closed')"
+            data-plr-action="resolution-modal"
+            data-status="Closed"
+            onclick="(window.portalApp || portalApp).openResolutionDataModal('Closed')"
             onmouseenter="portalApp.showTooltip(event, { title: 'Closed ${isIncidents ? 'Incidents' : 'Recommendations'}', value: '${closed} of ${total} ${labelNoun} (${closedPct}%)', badge: 'RESOLVED', hint: 'Click to open detailed records window' })"
             onmouseleave="portalApp.hideTooltip()"
           >
@@ -2704,7 +2789,9 @@
             d="${dOpen}"
             fill="${darkOpenColor}"
             class="cursor-pointer transition-all hover:brightness-110 hover:opacity-95"
-            onclick="portalApp.openResolutionDataModal('Open')"
+            data-plr-action="resolution-modal"
+            data-status="Open"
+            onclick="(window.portalApp || portalApp).openResolutionDataModal('Open')"
             onmouseenter="portalApp.showTooltip(event, { title: 'Open Pending ${isIncidents ? 'Incidents' : 'Recommendations'}', value: '${open} of ${total} ${labelNoun} (${openPct}%)', badge: 'ACTION REQUIRED', hint: 'Click to open detailed records window' })"
             onmouseleave="portalApp.hideTooltip()"
           >

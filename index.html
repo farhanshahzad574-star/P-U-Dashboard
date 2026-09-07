@@ -164,6 +164,27 @@
         box-shadow: 0 8px 30px -4px rgba(0, 0, 0, 0.06);
       }
 
+      /* High-priority modal backdrop ensuring root-level stacking and viewport coverage across all hosts */
+      .portal-modal-backdrop {
+        position: fixed !important;
+        inset: 0 !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        z-index: 99999 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        background-color: rgba(15, 23, 42, 0.65) !important;
+        backdrop-filter: blur(4px) !important;
+        -webkit-backdrop-filter: blur(4px) !important;
+        padding: 0.75rem !important;
+        box-sizing: border-box !important;
+      }
+
       /* ========================================================================= */
       /* CIRCULATING GLOW FOR ACTIVE DASHBOARD MENU ITEM                           */
       /* ========================================================================= */
@@ -1504,6 +1525,11 @@
 
     </div>
 
+    <!-- Dedicated Root Containers for PLR Dashboard Interactive Modals (Prevents clipping & ensures viewport coverage) -->
+    <div id="plr-data-modal-container"></div>
+    <div id="plr-inspection-modal-container"></div>
+    <div id="plr-action-modal-container"></div>
+
     <!-- ========================================================================= -->
     <!-- JAVASCRIPT ENGINE: EXACT COLOR SCHEMES, VIEW SWITCHER, CARDS & DETAIL     -->
     <!-- ========================================================================= -->
@@ -1879,6 +1905,8 @@
       };
 
       const portalApp = window.portalApp;
+      window.portalApp = portalApp;
+      window.FPCL_PLR_SUITE = portalApp;
       Object.assign(portalApp, {
         init() {
           this.updateRollupStats();
