@@ -50,6 +50,10 @@
       recSearchQuery: '',
       recPage: 1,
       recPageSize: 15,
+      // Visual & Interactive Data Modal State
+      resolutionMode: 'recommendations', // 'recommendations' or 'incidents'
+      deptBarViewMode: 'chart', // 'chart', 'table', 'split'
+      activeModal: null,
       // Focused PLR inspection
       focusedPlrNo: null
     };
@@ -76,51 +80,19 @@
   }
 
   /**
-   * Dynamic Splitting & Normalization (Column F: ACTION ENTITY)
-   * Dynamically parses and splits combined department strings by common delimiters (/, &, ,, or "and"),
-   * trims whitespace, cleans extraneous quotes/characters, and preserves standard department abbreviations.
-   * e.g. "Mechanical & Inspection" -> ["Mechanical", "Inspection"]
-   *      "Finance / FPCL-KE O/C"   -> ["Finance", "FPCL-KE O/C"]
-   *      "Finance"                 -> ["Finance"]
+   * Dynamic Normalization (Column F: ACTION ENTITY)
+   * Preserves authentic department names dynamically from Column F (actionBy)
+   * Any new department or updated text is dynamically handled without hardcoding.
    */
-  function splitAndNormalizeActionEntities(raw) {
-    if (!raw || typeof raw !== 'string') return ['Unassigned'];
+  function normalizeActionEntity(raw) {
+    if (!raw || typeof raw !== 'string') return 'Unassigned';
     let str = String(raw).trim();
-    if (!str || str === '-' || str.toLowerCase() === 'none') return ['Unassigned'];
+    if (!str || str === '-' || str.toLowerCase() === 'none') return 'Unassigned';
+    return str;
+  }
 
-    // Protect known compound terms and abbreviations that contain delimiters:
-    // 1. O/C or O / C (Operating Committee)
-    const OC_TOKEN = '___OC_TOKEN___';
-    str = str.replace(/\bO\s*\/\s*C\b/gi, OC_TOKEN);
-
-    // 2. E&I or E & I (Electrical & Instrumentation)
-    const EI_TOKEN = '___EI_TOKEN___';
-    str = str.replace(/\bE\s*&\s*I\b/gi, EI_TOKEN);
-
-    // 3. I&C or I & C (Instrumentation & Control)
-    const IC_TOKEN = '___IC_TOKEN___';
-    str = str.replace(/\bI\s*&\s*C\b/gi, IC_TOKEN);
-
-    // Split by delimiters: /, &, ,, or " and "
-    const parts = str.split(/\s*(?:\/|&|,|\band\b)\s*/i);
-
-    const results = [];
-    parts.forEach(part => {
-      let clean = part
-        .replace(new RegExp(OC_TOKEN, 'g'), 'O/C')
-        .replace(new RegExp(EI_TOKEN, 'g'), 'E&I')
-        .replace(new RegExp(IC_TOKEN, 'g'), 'I&C')
-        .trim();
-
-      // Clean leading and trailing quotes or extra punctuation
-      clean = clean.replace(/^["'`\s]+|["'`\s]+$/g, '').trim();
-
-      if (clean) {
-        results.push(clean);
-      }
-    });
-
-    return results.length > 0 ? results : [str.trim()];
+  function splitAndNormalizeActionEntities(raw) {
+    return [normalizeActionEntity(raw)];
   }
 
   /**
@@ -129,24 +101,8 @@
   function matchesActionEntity(rawActionBy, targetEntity) {
     if (!targetEntity || targetEntity === 'all') return true;
     const cleanTarget = String(targetEntity).trim().toLowerCase();
-    const depts = splitAndNormalizeActionEntities(rawActionBy);
-
-    // 1. Direct match on any split and normalized department
-    if (depts.some(d => d.toLowerCase() === cleanTarget)) return true;
-
-    // 2. Fallback substring match on raw string
-    const rawLower = String(rawActionBy || '').toLowerCase();
-    if (rawLower.includes(cleanTarget)) return true;
-
-    // 3. Normalized alias matching for KE O/C / FPCL-KE O/C
-    if (cleanTarget === 'ke o/c' && (rawLower.includes('ke o/c') || depts.some(d => d.toLowerCase().includes('ke o/c')))) {
-      return true;
-    }
-    if (cleanTarget === 'fpcl-ke o/c' && (rawLower.includes('fpcl-ke o/c') || depts.some(d => d.toLowerCase().includes('fpcl-ke o/c')))) {
-      return true;
-    }
-
-    return false;
+    const cleanRaw = normalizeActionEntity(rawActionBy).toLowerCase();
+    return cleanRaw === cleanTarget;
   }
 
   /**
@@ -660,6 +616,12 @@
     ].filter(Boolean).length;
     const hasActiveFilters = activeFilterCount > 0;
 
+    const isIncidents = s.resolutionMode === 'incidents';
+    const resTotalCount = isIncidents ? totalPLRs : totalRecs;
+    const resOpenCount = isIncidents ? openPLRs : openRecs;
+    const resClosedCount = isIncidents ? closedPLRs : closedRecs;
+    const resClosureRate = isIncidents ? plrClosureRate : recClosureRate;
+
     container.innerHTML = `
       <div class="space-y-6 text-slate-800 font-sans antialiased">
         
@@ -999,7 +961,7 @@
               </div>
             </div>
 
-            <!-- Right Card: OVERALL INCIDENT RESOLUTION -->
+            <!-- Right Card: OVERALL RECOMMENDATIONS RESOLUTION -->
             <div class="lg:col-span-6 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col justify-between space-y-4">
               <div class="flex items-start justify-between gap-2">
                 <div class="flex items-center gap-3">
@@ -1008,20 +970,30 @@
                   </div>
                   <div>
                     <div class="flex items-center gap-2 flex-wrap">
-                      <h4 class="text-xs sm:text-sm font-extrabold text-slate-900 tracking-wide uppercase">Overall Incident Resolution</h4>
+                      <h4 class="text-xs sm:text-sm font-extrabold text-slate-900 tracking-wide uppercase">Overall recommendations Resolution</h4>
                       <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-slate-100 text-slate-600 border border-slate-200">
-                        Column F Status
+                        ${isIncidents ? 'Column F Incident Status' : 'Recommendations Status'}
                       </span>
                     </div>
-                    <p class="text-[11px] text-slate-500 mt-0.5">Open (Action Pending) vs. Closed (Resolved)</p>
+                    <p class="text-[11px] text-slate-500 mt-0.5">Open (Action Pending) vs. Closed (Resolved) • Click pie or metrics to explore records</p>
                   </div>
                 </div>
-                <div class="flex items-center gap-1.5 shrink-0">
-                  <span class="px-2.5 py-1 rounded-full text-xs font-black bg-red-50 text-[#B91C1C] border border-red-200">
-                    27 Open
+                <div class="flex items-center gap-2 shrink-0">
+                  <div class="inline-flex p-0.5 bg-slate-100 rounded-lg border border-slate-200 text-[10px] font-bold">
+                    <button
+                      onclick="portalApp.setResolutionMode('recommendations')"
+                      class="px-2 py-0.5 rounded-md transition-all cursor-pointer ${!isIncidents ? 'bg-[#047857] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'}"
+                    >Recs</button>
+                    <button
+                      onclick="portalApp.setResolutionMode('incidents')"
+                      class="px-2 py-0.5 rounded-md transition-all cursor-pointer ${isIncidents ? 'bg-[#2E6DA4] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'}"
+                    >Incidents</button>
+                  </div>
+                  <span class="px-2.5 py-1 rounded-full text-xs font-black bg-red-50 text-[#B91C1C] border border-red-200 cursor-pointer" onclick="portalApp.openResolutionDataModal('Open')">
+                    ${resOpenCount} Open
                   </span>
-                  <span class="px-2.5 py-1 rounded-full text-xs font-black bg-emerald-50 text-[#047857] border border-emerald-200">
-                    206 Closed
+                  <span class="px-2.5 py-1 rounded-full text-xs font-black bg-emerald-50 text-[#047857] border border-emerald-200 cursor-pointer" onclick="portalApp.openResolutionDataModal('Closed')">
+                    ${resClosedCount} Closed
                   </span>
                 </div>
               </div>
@@ -1034,36 +1006,36 @@
               <!-- Resolution Metrics & Quick Actions (Non-scrollable, fully visible covering page area) -->
               <div class="pt-3 border-t border-slate-100 space-y-3">
                 <div class="flex items-center justify-between text-xs">
-                  <span class="font-bold text-slate-700">Resolution Ratio: <strong class="text-[#047857] font-sans font-extrabold">88% Closed (${closedPLRs}/${totalPLRs})</strong></span>
-                  <span class="text-xs text-slate-500 font-medium">Pending: <strong class="text-[#B91C1C] font-sans font-extrabold">12% Open (${openPLRs})</strong></span>
+                  <span class="font-bold text-slate-700">Resolution Ratio: <strong class="text-[#047857] font-sans font-extrabold cursor-pointer hover:underline" onclick="portalApp.openResolutionDataModal('Closed')">${resClosureRate}% Closed (${resClosedCount}/${resTotalCount})</strong></span>
+                  <span class="text-xs text-slate-500 font-medium">Pending: <strong class="text-[#B91C1C] font-sans font-extrabold cursor-pointer hover:underline" onclick="portalApp.openResolutionDataModal('Open')">${100 - resClosureRate}% Open (${resOpenCount})</strong></span>
                 </div>
-                <!-- Closure Progress Bar with Darker Corporate Tones -->
-                <div class="w-full h-2.5 rounded-full bg-slate-100 overflow-hidden flex">
-                  <div class="h-full bg-[#047857]" style="width: ${plrClosureRate}%;"></div>
-                  <div class="h-full bg-[#B91C1C]" style="width: ${100 - plrClosureRate}%;"></div>
+                <!-- Closure Progress Bar with Darker Corporate Tones (Interactive) -->
+                <div class="w-full h-3 rounded-full bg-slate-100 overflow-hidden flex cursor-pointer shadow-inner" title="Click green for Closed records, red for Open records">
+                  <div class="h-full bg-[#047857] hover:brightness-110 transition-all" style="width: ${resClosureRate}%;" onclick="portalApp.openResolutionDataModal('Closed')"></div>
+                  <div class="h-full bg-[#B91C1C] hover:brightness-110 transition-all" style="width: ${100 - resClosureRate}%;" onclick="portalApp.openResolutionDataModal('Open')"></div>
                 </div>
-                <!-- Action Buttons Filter -->
+                <!-- Action Buttons Filter & Inspect -->
                 <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
                   <div class="flex items-center gap-2">
                     <button
-                      onclick="portalApp.filterPlrByStatus('all')"
-                      class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer border ${s.selectedStatus === 'all' ? 'bg-[#2E6DA4] text-white border-[#2E6DA4]' : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'}"
+                      onclick="portalApp.openResolutionDataModal('all')"
+                      class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer border bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200 hover:border-slate-300"
                     >
-                      All Incidents (${totalPLRs})
+                      All ${isIncidents ? 'Incidents' : 'Recommendations'} (${resTotalCount})
                     </button>
                     <button
-                      onclick="portalApp.filterPlrByStatus('Closed')"
-                      class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer border ${s.selectedStatus === 'Closed' ? 'bg-[#047857] text-white border-[#047857]' : 'bg-emerald-50 hover:bg-emerald-100 text-[#047857] border-emerald-200'}"
+                      onclick="portalApp.openResolutionDataModal('Closed')"
+                      class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer border bg-emerald-50 hover:bg-emerald-100 text-[#047857] border-emerald-200"
                     >
-                      Closed (${closedPLRs})
+                      Closed (${resClosedCount})
                     </button>
                   </div>
                   <button
-                    onclick="portalApp.filterPlrByStatus('Open')"
-                    class="px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 border shadow-xs ${s.selectedStatus === 'Open' ? 'bg-[#991B1B] text-white border-[#991B1B]' : 'bg-[#B91C1C] hover:bg-[#991B1B] text-white border-[#B91C1C]'}"
+                    onclick="portalApp.openResolutionDataModal('Open')"
+                    class="px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 border shadow-xs bg-[#B91C1C] hover:bg-[#991B1B] text-white border-[#B91C1C]"
                   >
                     <i data-lucide="alert-circle" class="w-3.5 h-3.5"></i>
-                    <span>Inspect 27 Open PLRs</span>
+                    <span>Inspect ${resOpenCount} Open ${isIncidents ? 'PLRs' : 'Recs'}</span>
                     <i data-lucide="chevron-right" class="w-3 h-3"></i>
                   </button>
                 </div>
@@ -1073,63 +1045,58 @@
 
           </div>
 
-          <!-- Row 2: ACTION RECOMMENDATIONS PER DEPT (Full Width covering page area) -->
+          <!-- Row 2: ACTION RECOMMENDATIONS PER DEPT (Sub HSE Visual Design matching User Attachment) -->
           <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-4">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
               <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-xl bg-blue-50 border border-blue-100 text-[#2E6DA4] flex items-center justify-center shrink-0">
-                  <i data-lucide="layers" class="w-5 h-5"></i>
+                <div class="w-9 h-9 rounded-xl bg-teal-50 border border-teal-100 text-teal-700 flex items-center justify-center shrink-0">
+                  <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
                 </div>
                 <div>
-                  <h4 class="text-xs sm:text-sm font-black text-slate-900 uppercase tracking-wider">Action Recommendations Per Dept</h4>
-                  <p class="text-[11px] text-slate-500 mt-0.5">Open Observations (Rose) vs. Closed (Emerald) across <span class="font-mono font-bold text-slate-700">${totalRecs}</span> total recommendations (<span class="text-emerald-700 font-mono font-bold">${closedRecs} Closed</span> • <span class="text-rose-600 font-mono font-bold">${openRecs} Open</span>)</p>
+                  <h4 class="text-xs sm:text-sm font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                    <span>OPEN VS. CLOSED FINDINGS BY ACTION DEPARTMENT</span>
+                  </h4>
+                  <p class="text-[11px] text-slate-500 mt-0.5">Click any bar or table row to open detailed data records • <span class="font-mono font-bold text-slate-700">${totalRecs}</span> Total Recommendations (<span class="text-emerald-700 font-mono font-bold">${closedRecs} Closed</span> • <span class="text-rose-600 font-mono font-bold">${openRecs} Open</span>)</p>
                 </div>
               </div>
-              <div class="flex items-center gap-2 self-start sm:self-auto">
+              <div class="flex items-center gap-4 flex-wrap">
+                <!-- Legend matching Sub HSE Dashboard Image -->
+                <div class="flex items-center gap-3 text-xs font-bold font-mono">
+                  <span class="inline-flex items-center gap-1.5">
+                    <span class="w-3 h-3 rounded-xs bg-[#f43f5e]"></span>
+                    <span class="text-slate-600">Open Findings</span>
+                  </span>
+                  <span class="inline-flex items-center gap-1.5">
+                    <span class="w-3 h-3 rounded-xs bg-[#10b981]"></span>
+                    <span class="text-slate-600">Closed Findings</span>
+                  </span>
+                </div>
+                <!-- View Mode Pills (Bar Chart / Table / Both Views) -->
                 <div class="inline-flex p-0.5 bg-slate-100 rounded-lg border border-slate-200 text-[11px]">
                   <button
-                    id="plr-rec-mode-side-by-side"
-                    onclick="portalApp.setRecChartMode('side-by-side')"
-                    class="px-2.5 py-1 rounded-md font-bold transition-all cursor-pointer ${s.recChartMode === 'side-by-side' ? 'bg-[#2E6DA4] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'}"
-                  >Side-by-Side</button>
+                    onclick="portalApp.setDeptBarViewMode('chart')"
+                    class="px-2.5 py-1 rounded-md font-bold transition-all cursor-pointer ${s.deptBarViewMode !== 'table' && s.deptBarViewMode !== 'split' ? 'bg-[#2E6DA4] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'}"
+                  >Bar Chart</button>
                   <button
-                    id="plr-rec-mode-stacked"
-                    onclick="portalApp.setRecChartMode('stacked')"
-                    class="px-2.5 py-1 rounded-md font-bold transition-all cursor-pointer ${s.recChartMode === 'stacked' ? 'bg-[#2E6DA4] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'}"
-                  >Stacked</button>
+                    onclick="portalApp.setDeptBarViewMode('table')"
+                    class="px-2.5 py-1 rounded-md font-bold transition-all cursor-pointer ${s.deptBarViewMode === 'table' ? 'bg-[#2E6DA4] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'}"
+                  >Table 1</button>
                   <button
-                    id="plr-rec-mode-trend"
-                    onclick="portalApp.setRecChartMode('trend')"
-                    class="px-2.5 py-1 rounded-md font-bold transition-all cursor-pointer ${s.recChartMode === 'trend' ? 'bg-[#2E6DA4] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'}"
-                  >Trend Lines</button>
+                    onclick="portalApp.setDeptBarViewMode('split')"
+                    class="px-2.5 py-1 rounded-md font-bold transition-all cursor-pointer ${s.deptBarViewMode === 'split' ? 'bg-[#2E6DA4] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'}"
+                  >Both Views</button>
                 </div>
-                <span class="px-2.5 py-1 rounded-full text-xs font-mono font-black bg-blue-50 text-[#2E6DA4] border border-blue-200">
-                  ${totalRecs} Recs
-                </span>
               </div>
             </div>
 
-            <!-- Legend -->
-            <div class="flex items-center justify-end gap-5 text-xs font-semibold">
-              <span class="flex items-center gap-1.5 text-slate-700">
-                <span class="w-3 h-3 rounded-xs bg-[#10b981]"></span> Closed Observations (${closedRecs})
-              </span>
-              <span class="flex items-center gap-1.5 text-slate-700">
-                <span class="w-3 h-3 rounded-xs bg-[#f43f5e]"></span> Open Observations (${openRecs})
-              </span>
-              <span class="flex items-center gap-1.5 text-slate-500 font-mono text-[11px]">
-                Total: ${totalRecs}
-              </span>
-            </div>
-
-            <!-- SVG Vertical Bar / Trend Chart (Wide, non-scrollable, responsive) -->
-            <div id="plr-dept-bar-chart-container" class="w-full min-h-[285px] mb-3">
+            <!-- Dynamic Horizontal Bar Chart & Table 1 Container -->
+            <div id="plr-dept-bar-chart-container" class="w-full min-h-[285px]">
               <!-- Rendered dynamically -->
             </div>
 
-            <!-- Quick Filter Pills (Fully covering width, no scrollbar) -->
-            <div class="pt-4 border-t border-slate-100 mt-2">
-              <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">QUICK FILTER RECOMMENDATIONS BY DEPT:</div>
+            <!-- Quick Filter & Explore Pills -->
+            <div class="pt-3 border-t border-slate-100">
+              <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">QUICK FILTER &amp; EXPLORE BY DEPT:</div>
               <div class="flex flex-wrap items-center gap-2 text-xs" id="plr-dept-quick-filters">
                 <!-- Rendered dynamically -->
               </div>
@@ -1206,6 +1173,11 @@
           <!-- Rendered dynamically when a PLR is clicked -->
         </div>
 
+        <!-- ========================================================================= -->
+        <!-- 7. INTERACTIVE DRILLDOWN DATA MODAL CONTAINER                            -->
+        <!-- ========================================================================= -->
+        <div id="plr-data-modal-container"></div>
+
       </div>
     `;
 
@@ -1219,7 +1191,77 @@
   };
 
   /**
-   * 1. Machine Breakdown Donut (Light Theme, crisp contrast & professional typography)
+   * Tooltip System for PLR Interactive Visualizations
+   */
+  portalApp.getOrCreateTooltip = function () {
+    let el = document.getElementById('plr-interactive-tooltip');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'plr-interactive-tooltip';
+      el.className = 'fixed z-[9999] pointer-events-none transition-opacity duration-150 opacity-0 bg-slate-900/95 text-white text-xs rounded-xl px-3.5 py-2.5 shadow-2xl border border-slate-700/80 backdrop-blur-md max-w-xs';
+      document.body.appendChild(el);
+    }
+    return el;
+  };
+
+  portalApp.showTooltip = function (e, opt) {
+    const tip = portalApp.getOrCreateTooltip();
+    let content = '';
+    if (opt.badge) {
+      content += `<div class="inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider mb-1" style="background-color: ${opt.color ? opt.color + '33' : '#38bdf833'}; color: ${opt.color || '#38bdf8'}">${opt.badge}</div>`;
+    }
+    if (opt.title) {
+      content += `<div class="font-extrabold text-sm text-white">${opt.title}</div>`;
+    }
+    if (opt.subtitle) {
+      content += `<div class="text-[11px] text-slate-400 mb-1.5">${opt.subtitle}</div>`;
+    }
+    if (opt.metrics && Array.isArray(opt.metrics)) {
+      content += `<div class="space-y-0.5 my-1.5 pt-1.5 border-t border-slate-800">`;
+      opt.metrics.forEach(m => {
+        content += `<div class="flex items-center justify-between gap-3 text-[11px]">
+          <span class="text-slate-400 font-medium">${m.label}:</span>
+          <span class="font-mono font-bold text-white">${m.value}</span>
+        </div>`;
+      });
+      content += `</div>`;
+    }
+    if (opt.hint) {
+      content += `<div class="mt-1.5 pt-1.5 border-t border-slate-800 text-[10px] font-semibold text-cyan-300 flex items-center gap-1">
+        <span>🔍</span> <span>${opt.hint}</span>
+      </div>`;
+    }
+
+    tip.innerHTML = content;
+    tip.style.opacity = '1';
+    portalApp.moveTooltip(e);
+  };
+
+  portalApp.moveTooltip = function (e) {
+    const tip = portalApp.getOrCreateTooltip();
+    const pad = 14;
+    let x = e.clientX + pad;
+    let y = e.clientY + pad;
+
+    const rect = tip.getBoundingClientRect();
+    if (x + rect.width > window.innerWidth - 10) {
+      x = e.clientX - rect.width - pad;
+    }
+    if (y + rect.height > window.innerHeight - 10) {
+      y = e.clientY - rect.height - pad;
+    }
+
+    tip.style.left = `${Math.max(10, x)}px`;
+    tip.style.top = `${Math.max(10, y)}px`;
+  };
+
+  portalApp.hideTooltip = function () {
+    const tip = document.getElementById('plr-interactive-tooltip');
+    if (tip) tip.style.opacity = '0';
+  };
+
+  /**
+   * 1. Machine Breakdown Donut (Interactive slices & center click to open incident records)
    */
   portalApp.renderMachineDonut = function () {
     const container = document.getElementById('plr-machine-donut-container');
@@ -1260,6 +1302,7 @@
 
       const d = `M ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2}`;
       const isSelected = s.selectedMachine === m.name;
+      const escapedMachine = m.name.replace(/'/g, "\\'");
 
       paths.push(`
         <path
@@ -1267,16 +1310,20 @@
           fill="none"
           stroke="${m.color}"
           stroke-width="${isSelected ? strokeWidth + 6 : strokeWidth}"
-          class="cursor-pointer transition-all duration-300 hover:opacity-85"
-          onclick="portalApp.filterPlrByMachine('${m.name}')"
+          class="cursor-pointer transition-all duration-300 hover:opacity-90 hover:stroke-[38]"
+          onclick="portalApp.filterPlrByMachine('${escapedMachine}'); portalApp.openPlrDataModal({ type: 'incidents', title: 'Machine: ' + '${escapedMachine}', badge: 'Machine Asset', subtitle: '${m.count} Outages (${m.pct}% of total)', filterMachine: '${escapedMachine}' });"
+          onmouseenter="portalApp.showTooltip(event, { title: '${escapedMachine}', badge: 'Machine Asset', color: '${m.color}', subtitle: 'Outage Incident Analysis', metrics: [{ label: 'Outages', value: '${m.count}' }, { label: 'Outage Share', value: '${m.pct}%' }, { label: 'Total Plant Outages', value: '233' }], hint: 'Click to open and inspect ${m.count} incident investigation records' })"
+          onmousemove="portalApp.moveTooltip(event)"
+          onmouseleave="portalApp.hideTooltip()"
         >
-          <title>${m.name}: ${m.count} Outages (${m.pct}%)</title>
+          <title>${m.name}: ${m.count} Outages (${m.pct}%) - Click to open records</title>
         </path>
       `);
     });
 
     const activeMachine = machines.find(m => m.name === s.selectedMachine) || { name: 'STG # 4', count: 155, pct: 67 };
     const isSTG4 = activeMachine.name.includes('STG # 4');
+    const escapedActiveMachine = activeMachine.name.replace(/'/g, "\\'");
 
     container.innerHTML = `
       <div class="relative w-[300px] h-[300px] sm:w-[320px] sm:h-[320px] max-w-full aspect-square">
@@ -1285,8 +1332,15 @@
           <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#f1f5f9" stroke-width="${strokeWidth}" />
           ${paths.join('')}
         </svg>
-        <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center px-4 font-sans">
-          <span class="text-xs font-extrabold text-slate-600 uppercase tracking-wider leading-tight font-sans">${activeMachine.name}</span>
+        <div
+          onclick="portalApp.openPlrDataModal({ type: 'incidents', title: 'Machine: ' + '${escapedActiveMachine}', badge: 'Equipment Asset', subtitle: '${activeMachine.count} Outages (${activeMachine.pct}% of total)', filterMachine: '${s.selectedMachine !== 'all' ? escapedActiveMachine : 'all'}' })"
+          onmouseenter="portalApp.showTooltip(event, { title: '${escapedActiveMachine}', badge: 'Active Asset View', color: '#1e40af', subtitle: 'Incident Outages Explorer', metrics: [{ label: 'Selected Outages', value: '${activeMachine.count}' }, { label: 'Share', value: '${activeMachine.pct}%' }], hint: 'Click to open matching investigation records' })"
+          onmousemove="portalApp.moveTooltip(event)"
+          onmouseleave="portalApp.hideTooltip()"
+          class="absolute inset-0 flex flex-col items-center justify-center cursor-pointer text-center px-4 font-sans rounded-full hover:bg-slate-50/70 transition-all group"
+          title="Click to view outage records"
+        >
+          <span class="text-xs font-extrabold text-slate-600 uppercase tracking-wider leading-tight font-sans group-hover:text-[#1e40af] transition-colors">${activeMachine.name}</span>
           ${isSTG4 ? `
             <span class="inline-flex items-center text-[10px] font-bold text-[#1e40af] bg-blue-50/90 px-2 py-0.5 rounded-full border border-blue-200/80 mt-0.5 font-sans">
               Primary Outage Driver
@@ -1296,36 +1350,51 @@
               Equipment Unit
             </span>
           `}
-          <span class="text-4xl sm:text-[44px] font-black text-slate-900 tracking-tight leading-none my-1 font-sans">${activeMachine.count}</span>
+          <span class="text-4xl sm:text-[44px] font-black text-slate-900 tracking-tight leading-none my-1 font-sans group-hover:scale-105 transition-transform">${activeMachine.count}</span>
           <span class="text-xs font-bold text-slate-600 font-sans tracking-tight">${activeMachine.pct}% of Total Outages</span>
+          <span class="text-[10px] font-extrabold text-[#1e40af] opacity-0 group-hover:opacity-100 transition-opacity mt-1 flex items-center gap-0.5">
+            <span>Click to inspect data</span>
+            <i data-lucide="arrow-up-right" class="w-2.5 h-2.5"></i>
+          </span>
         </div>
       </div>
     `;
 
-    // Quick Select Buttons (Non-scrollable, all visible covering page area)
+    // Quick Select Buttons (with inspect direct link)
     if (quickSelContainer) {
       quickSelContainer.innerHTML = machines.map(m => {
         const isSel = s.selectedMachine === m.name;
+        const escaped = m.name.replace(/'/g, "\\'");
         return `
           <button
-            onclick="portalApp.filterPlrByMachine('${m.name}')"
+            onclick="portalApp.filterPlrByMachine('${escaped}')"
             class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 border ${
               isSel
                 ? 'bg-[#1e40af] text-white border-[#1e40af] font-black shadow-xs'
                 : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
             }"
+            title="${m.name}: ${m.count} Outages"
           >
-            <span class="w-2 h-2 rounded-full" style="background-color: ${m.color}"></span>
-            <span>${m.name}</span>
-            <span class="font-sans font-semibold text-[11px] opacity-80">(${m.count})</span>
+            <span class="w-2 h-2 rounded-full shrink-0" style="background-color: ${m.color}"></span>
+            <span class="truncate">${m.name}</span>
+            <span class="font-mono font-semibold text-[11px] opacity-80">(${m.count})</span>
           </button>
         `;
-      }).join('') + (s.selectedMachine !== 'all' ? `
+      }).join('') + `
+        <button
+          onclick="portalApp.openPlrDataModal({ type: 'incidents', title: 'Machine: ' + '${escapedActiveMachine}', badge: 'Equipment Asset', subtitle: '${activeMachine.count} Outages', filterMachine: '${s.selectedMachine !== 'all' ? escapedActiveMachine : 'all'}' })"
+          class="px-2.5 py-1 rounded-lg text-xs font-bold text-[#1e40af] bg-blue-50/80 hover:bg-blue-100 border border-blue-200 cursor-pointer flex items-center gap-1"
+          title="Open modal displaying incident data for ${activeMachine.name}"
+        >
+          <i data-lucide="table" class="w-3 h-3"></i>
+          <span>Inspect Data (${activeMachine.count})</span>
+        </button>
+      ` + (s.selectedMachine !== 'all' ? `
         <button
           onclick="portalApp.filterPlrByMachine('all')"
-          class="px-2.5 py-1 rounded-lg text-xs font-bold text-[#1e40af] bg-white hover:bg-slate-50 border border-[#1e40af] cursor-pointer"
+          class="px-2.5 py-1 rounded-lg text-xs font-bold text-slate-600 bg-white hover:bg-slate-50 border border-slate-300 cursor-pointer"
         >
-          Clear Selection
+          Clear Filter
         </button>
       ` : '');
     }
@@ -1340,7 +1409,12 @@
   }
 
   /**
-   * 2. Action Recommendations Per Dept Bar/Trend Chart (Dynamic from modified data, Wide & Non-scrollable)
+   * 2. Action Recommendations Per Dept (Sub HSE Dashboard Design & Interactivity)
+   * Converts Action Recommendations Per Dept trend to Sub HSE Dashboard layout:
+   * - Horizontal Stacked Bar Chart: Open Findings (#f43f5e) vs Closed Findings (#10b981)
+   * - Table 1: Findings Status by Action Department with Department, Total, Open, Close, % Closure, and Actions
+   * - View Mode Switching: Bar Chart, Table 1, or Both Views (Split)
+   * - Clickable bars, rows, and counts to open filtered interactive data modal
    */
   portalApp.renderDeptBarChart = function () {
     const container = document.getElementById('plr-dept-bar-chart-container');
@@ -1361,356 +1435,274 @@
       return;
     }
 
-    // Direct authentic Column F departments across the entire chart (No "Other Depts" grouping)
     const chartDepts = rawDepts;
+    const viewMode = s.deptBarViewMode || 'chart';
 
-    const peak = Math.max(...chartDepts.map(d => Math.max(d.total, d.closed, d.open)), 1);
+    // SVG Bar Chart Dimensions
+    const w = 960;
+    const padLeft = 190;
+    const padRight = 64;
+    const padTop = 32;
+    const padBottom = 38;
+    const rowH = 26;
+    const h = padTop + chartDepts.length * rowH + padBottom;
+    const chartW = w - padLeft - padRight;
+
+    const peak = Math.max(...chartDepts.map(d => d.total), 1);
     const maxVal = Math.ceil(peak / 20) * 20 || 20;
 
-    const w = 960;
-    const h = 330;
-    const pad = { top: 32, right: 28, bottom: 125, left: 48 };
-    const chartW = w - pad.left - pad.right;
-    const chartH = h - pad.top - pad.bottom;
-    const yBase = pad.top + chartH;
-    const step = chartW / chartDepts.length;
-
-    // Y Axis Grid lines (4 to 5 ticks)
-    const tickCount = 4;
-    const yTicks = [];
+    // Vertical Dotted Grid Lines
+    const tickCount = 5;
+    const xTicks = [];
     for (let i = 0; i <= tickCount; i++) {
-      yTicks.push(Math.round((maxVal / tickCount) * i));
+      xTicks.push(Math.round((maxVal / tickCount) * i));
     }
-    const gridSvg = yTicks.map(val => {
-      const y = pad.top + chartH - (val / maxVal) * chartH;
+
+    const gridSvg = xTicks.map(val => {
+      const x = padLeft + (val / maxVal) * chartW;
       return `
-        <line x1="${pad.left}" y1="${y}" x2="${w - pad.right}" y2="${y}" stroke="#f1f5f9" stroke-width="1" stroke-dasharray="3 3"/>
-        <text x="${pad.left - 8}" y="${y + 3}" fill="#64748b" font-size="9" font-family="monospace" text-anchor="end">${val}</text>
+        <line x1="${x}" y1="${padTop - 6}" x2="${x}" y2="${padTop + chartDepts.length * rowH + 6}" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="3 3"/>
+        <text x="${x}" y="${padTop + chartDepts.length * rowH + 20}" fill="#64748b" font-size="10" font-family="monospace" font-weight="600" text-anchor="middle">${val}</text>
       `;
     }).join('');
 
-    const baselineSvg = `
-      <line x1="${pad.left}" y1="${yBase}" x2="${w - pad.right}" y2="${yBase}" stroke="#cbd5e1" stroke-width="1.5"/>
+    // Render Department Horizontal Stacked Rows
+    const rowsSvg = chartDepts.map((d, index) => {
+      const y = padTop + index * rowH;
+      const openW = (d.open / maxVal) * chartW;
+      const closedW = (d.closed / maxVal) * chartW;
+      const isSelected = s.recSelectedEntity === d.name;
+      const escapedDept = d.name.replace(/'/g, "\\'");
+      const pct = d.total > 0 ? Math.round((d.closed / d.total) * 100) : 0;
+
+      return `
+        <g class="group cursor-pointer">
+          <!-- Background Row Hover Strip -->
+          <rect
+            x="4"
+            y="${y}"
+            width="${w - 8}"
+            height="${rowH - 4}"
+            rx="4"
+            fill="${isSelected ? '#f0f9ff' : 'transparent'}"
+            class="group-hover:fill-slate-50 transition-colors"
+          />
+
+          <!-- Department Name Label on Y-axis -->
+          <text
+            x="${padLeft - 14}"
+            y="${y + 14}"
+            fill="${isSelected ? '#2E6DA4' : '#1e293b'}"
+            font-size="11"
+            font-weight="${isSelected ? '900' : '700'}"
+            font-family="'Plus Jakarta Sans', system-ui, sans-serif"
+            text-anchor="end"
+            class="transition-colors group-hover:fill-[#2E6DA4]"
+            onclick="portalApp.openPlrDataModal({ type: 'recommendations', title: 'Department: ' + '${escapedDept}', badge: 'Action Department', subtitle: '${d.total} Total Recommendations (${d.open} Open • ${d.closed} Closed)', filterDept: '${escapedDept}' })"
+            onmouseenter="portalApp.showTooltip(event, { title: '${escapedDept}', badge: 'Action Department', color: '#2E6DA4', subtitle: 'Action Recommendations Overview', metrics: [{ label: 'Total Recommendations', value: '${d.total}' }, { label: 'Open Pending', value: '${d.open}' }, { label: 'Closed Resolved', value: '${d.closed}' }, { label: 'Closure Rate', value: '${pct}%' }], hint: 'Click to open department recommendation records' })"
+            onmousemove="portalApp.moveTooltip(event)"
+            onmouseleave="portalApp.hideTooltip()"
+          >
+            ${d.name}
+            <title>${d.name}: ${d.total} Items (${d.open} Open, ${d.closed} Closed, ${pct}% Closure)</title>
+          </text>
+
+          <!-- Subtle Background Track Bar -->
+          <rect
+            x="${padLeft}"
+            y="${y + 3}"
+            width="${chartW}"
+            height="15"
+            rx="4"
+            fill="#f1f5f9"
+            class="group-hover:fill-slate-200/70 transition-colors"
+            onclick="portalApp.openPlrDataModal({ type: 'recommendations', title: 'Department: ' + '${escapedDept}', badge: 'Action Department', subtitle: '${d.total} Total Recommendations', filterDept: '${escapedDept}' })"
+          />
+
+          <!-- Open Findings Bar (Rose-500 #f43f5e) -->
+          ${d.open > 0 ? `
+            <rect
+              x="${padLeft}"
+              y="${y + 3}"
+              width="${openW}"
+              height="15"
+              rx="${d.closed > 0 ? '4 0 0 4' : '4'}"
+              fill="#f43f5e"
+              class="transition-all hover:brightness-110"
+              onclick="portalApp.openPlrDataModal({ type: 'recommendations', title: 'Department: ' + '${escapedDept}', badge: 'Open Recommendations', subtitle: '${d.open} Open Pending Items', filterDept: '${escapedDept}', filterStatus: 'Open' })"
+              onmouseenter="portalApp.showTooltip(event, { title: '${escapedDept}', badge: 'Open Findings', color: '#f43f5e', subtitle: 'Pending Implementation', metrics: [{ label: 'Open Recommendations', value: '${d.open}' }, { label: 'Dept Total', value: '${d.total}' }], hint: 'Click to open and inspect open items' })"
+              onmousemove="portalApp.moveTooltip(event)"
+              onmouseleave="portalApp.hideTooltip()"
+            />
+            ${openW >= 15 ? `
+              <text
+                x="${padLeft + openW / 2}"
+                y="${y + 14.5}"
+                fill="#ffffff"
+                font-size="9.5"
+                font-weight="900"
+                font-family="monospace"
+                text-anchor="middle"
+                class="pointer-events-none select-none"
+              >${d.open}</text>
+            ` : ''}
+          ` : ''}
+
+          <!-- Closed Findings Bar (Emerald-500 #10b981) -->
+          ${d.closed > 0 ? `
+            <rect
+              x="${padLeft + openW}"
+              y="${y + 3}"
+              width="${closedW}"
+              height="15"
+              rx="${d.open > 0 ? '0 4 4 0' : '4'}"
+              fill="#10b981"
+              class="transition-all hover:brightness-110"
+              onclick="portalApp.openPlrDataModal({ type: 'recommendations', title: 'Department: ' + '${escapedDept}', badge: 'Closed Recommendations', subtitle: '${d.closed} Closed Resolved Items', filterDept: '${escapedDept}', filterStatus: 'Closed' })"
+              onmouseenter="portalApp.showTooltip(event, { title: '${escapedDept}', badge: 'Closed Findings', color: '#10b981', subtitle: 'Resolved & Implemented', metrics: [{ label: 'Closed Recommendations', value: '${d.closed}' }, { label: 'Closure Rate', value: '${pct}%' }], hint: 'Click to open and inspect closed items' })"
+              onmousemove="portalApp.moveTooltip(event)"
+              onmouseleave="portalApp.hideTooltip()"
+            />
+            ${closedW >= 15 ? `
+              <text
+                x="${padLeft + openW + closedW / 2}"
+                y="${y + 14.5}"
+                fill="#ffffff"
+                font-size="9.5"
+                font-weight="900"
+                font-family="monospace"
+                text-anchor="middle"
+                class="pointer-events-none select-none"
+              >${d.closed}</text>
+            ` : ''}
+          ` : ''}
+
+          <!-- Total Count Metric on the Right -->
+          <text
+            x="${padLeft + chartW + 12}"
+            y="${y + 14}"
+            fill="#64748b"
+            font-size="11"
+            font-weight="800"
+            font-family="monospace"
+            text-anchor="start"
+            class="transition-colors group-hover:fill-[#2E6DA4]"
+            onclick="portalApp.openPlrDataModal({ type: 'recommendations', title: 'Department: ' + '${escapedDept}', badge: 'Action Department', subtitle: '${d.total} Total Recommendations', filterDept: '${escapedDept}' })"
+          >${d.total}</text>
+        </g>
+      `;
+    }).join('');
+
+    const chartHtml = `
+      <div class="w-full overflow-x-auto select-none">
+        <svg viewBox="0 0 ${w} ${h}" class="w-full min-w-[700px] h-auto overflow-hidden">
+          ${gridSvg}
+          ${rowsSvg}
+        </svg>
+      </div>
     `;
 
-    let contentSvg = '';
+    // Table 1: Findings Status by Action Department (Sub HSE Image 2)
+    const tableHtml = `
+      <div class="rounded-xl border border-slate-200 overflow-hidden bg-white shadow-xs">
+        <div class="px-4 py-3 bg-slate-50/90 border-b border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-[#2E6DA4]"></span>
+            <span class="text-xs font-black text-slate-800 tracking-wider uppercase font-sans">TABLE 1: FINDINGS STATUS BY ACTION DEPARTMENT</span>
+          </div>
+          <span class="text-[11px] text-slate-500 font-medium">Click any row, open or closed number to view relevant items</span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-xs text-left">
+            <thead class="bg-slate-50 text-slate-500 text-[10px] font-black uppercase tracking-wider border-b border-slate-200">
+              <tr>
+                <th class="py-2.5 px-4">DEPARTMENT</th>
+                <th class="py-2.5 px-3 text-center">TOTAL</th>
+                <th class="py-2.5 px-3 text-center text-rose-600">OPEN</th>
+                <th class="py-2.5 px-3 text-center text-emerald-700">CLOSE</th>
+                <th class="py-2.5 px-4 text-center">% CLOSURE</th>
+                <th class="py-2.5 px-3 text-right">ACTION</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              ${chartDepts.map(d => {
+                const pct = d.total > 0 ? Math.round((d.closed / d.total) * 100) : 0;
+                const escapedDept = d.name.replace(/'/g, "\\'");
+                return `
+                  <tr
+                    class="hover:bg-slate-50/80 transition-colors cursor-pointer group"
+                    onclick="portalApp.openPlrDataModal({ type: 'recommendations', title: 'Department: ' + '${escapedDept}', badge: 'Action Department', subtitle: '${d.total} Recommendations (${d.open} Open • ${d.closed} Closed)', filterDept: '${escapedDept}' })"
+                  >
+                    <td class="py-2.5 px-4 font-bold text-slate-800 group-hover:text-[#2E6DA4] flex items-center gap-2">
+                      <span class="w-2 h-2 rounded-full bg-[#2E6DA4]"></span>
+                      <span>${d.name}</span>
+                    </td>
+                    <td class="py-2.5 px-3 text-center font-mono font-bold text-slate-700">${d.total}</td>
+                    <td
+                      class="py-2.5 px-3 text-center font-mono font-extrabold text-rose-600 hover:underline"
+                      onclick="event.stopPropagation(); portalApp.openPlrDataModal({ type: 'recommendations', title: 'Department: ' + '${escapedDept}', badge: 'Open Recommendations', subtitle: '${d.open} Open Pending Items', filterDept: '${escapedDept}', filterStatus: 'Open' })"
+                      title="Click to view Open items"
+                    >${d.open}</td>
+                    <td
+                      class="py-2.5 px-3 text-center font-mono font-extrabold text-emerald-700 hover:underline"
+                      onclick="event.stopPropagation(); portalApp.openPlrDataModal({ type: 'recommendations', title: 'Department: ' + '${escapedDept}', badge: 'Closed Recommendations', subtitle: '${d.closed} Closed Resolved Items', filterDept: '${escapedDept}', filterStatus: 'Closed' })"
+                      title="Click to view Closed items"
+                    >${d.closed}</td>
+                    <td class="py-2.5 px-4">
+                      <div class="flex items-center gap-2 justify-center">
+                        <div class="w-24 h-2 rounded-full bg-slate-100 overflow-hidden shrink-0">
+                          <div class="h-full ${pct >= 85 ? 'bg-emerald-500' : pct >= 60 ? 'bg-amber-500' : 'bg-rose-500'}" style="width: ${pct}%;"></div>
+                        </div>
+                        <span class="font-mono font-bold text-[11px] ${pct >= 85 ? 'text-emerald-700' : pct >= 60 ? 'text-amber-700' : 'text-rose-600'} w-10 text-right">${pct}%</span>
+                      </div>
+                    </td>
+                    <td class="py-2.5 px-3 text-right">
+                      <button
+                        onclick="event.stopPropagation(); portalApp.openPlrDataModal({ type: 'recommendations', title: 'Department: ' + '${escapedDept}', badge: 'Action Department', subtitle: '${d.total} Recommendations', filterDept: '${escapedDept}' })"
+                        class="px-2.5 py-1 rounded-md text-[11px] font-bold text-[#2E6DA4] bg-blue-50/70 hover:bg-blue-100 border border-blue-200 transition-colors inline-flex items-center gap-1 cursor-pointer"
+                      >
+                        <span>View</span>
+                        <i data-lucide="chevron-right" class="w-3 h-3"></i>
+                      </button>
+                    </td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
 
-    if (s.recChartMode === 'trend') {
-      // Trend lines with Area Fill using smooth Bezier curves
-      const pointsTotal = [];
-      const pointsClosed = [];
-      const pointsOpen = [];
-
-      chartDepts.forEach((d, i) => {
-        const cx = pad.left + i * step + step / 2;
-        const cyTotal = pad.top + chartH - (d.total / maxVal) * chartH;
-        const cyClosed = pad.top + chartH - (d.closed / maxVal) * chartH;
-        const cyOpen = pad.top + chartH - (d.open / maxVal) * chartH;
-        pointsTotal.push({ x: cx, y: cyTotal, dept: d });
-        pointsClosed.push({ x: cx, y: cyClosed, dept: d });
-        pointsOpen.push({ x: cx, y: cyOpen, dept: d });
-      });
-
-      const getSmoothPath = (pts) => {
-        if (!pts.length) return '';
-        let p = `M ${pts[0].x} ${pts[0].y}`;
-        for (let i = 0; i < pts.length - 1; i++) {
-          const p0 = pts[i];
-          const p1 = pts[i + 1];
-          const cpX = (p0.x + p1.x) / 2;
-          p += ` C ${cpX} ${p0.y}, ${cpX} ${p1.y}, ${p1.x} ${p1.y}`;
-        }
-        return p;
-      };
-
-      const pathTotal = getSmoothPath(pointsTotal);
-      const pathClosed = getSmoothPath(pointsClosed);
-      const pathOpen = getSmoothPath(pointsOpen);
-
-      const areaTotal = pathTotal + ` L ${pointsTotal[pointsTotal.length - 1].x} ${yBase} L ${pointsTotal[0].x} ${yBase} Z`;
-      const areaClosed = pathClosed + ` L ${pointsClosed[pointsClosed.length - 1].x} ${yBase} L ${pointsClosed[0].x} ${yBase} Z`;
-      const areaOpen = pathOpen + ` L ${pointsOpen[pointsOpen.length - 1].x} ${yBase} L ${pointsOpen[0].x} ${yBase} Z`;
-
-      const defs = `
-        <defs>
-          <linearGradient id="plrDeptGradTotal" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#2E6DA4" stop-opacity="0.22"/>
-            <stop offset="100%" stop-color="#2E6DA4" stop-opacity="0.01"/>
-          </linearGradient>
-          <linearGradient id="plrDeptGradClosed" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#047857" stop-opacity="0.28"/>
-            <stop offset="100%" stop-color="#047857" stop-opacity="0.02"/>
-          </linearGradient>
-          <linearGradient id="plrDeptGradOpen" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#B91C1C" stop-opacity="0.25"/>
-            <stop offset="100%" stop-color="#B91C1C" stop-opacity="0.02"/>
-          </linearGradient>
-        </defs>
+    // Render depending on active viewMode
+    if (viewMode === 'table') {
+      container.innerHTML = tableHtml;
+    } else if (viewMode === 'split') {
+      container.innerHTML = `
+        <div class="space-y-5">
+          ${chartHtml}
+          ${tableHtml}
+        </div>
       `;
-
-      const nodesSvg = chartDepts.map((d, i) => {
-        const ptT = pointsTotal[i];
-        const ptC = pointsClosed[i];
-        const ptO = pointsOpen[i];
-        const isSelected = s.recSelectedEntity === d.name;
-        const clickHandler = d.isGroup ? "portalApp.filterRecByDeptDirect('all')" : `portalApp.filterRecByDeptDirect('${d.name.replace(/'/g, "\\'")}')`;
-        const labelY = yBase + 12;
-        const cleanName = formatDeptLabel(d.name);
-
-        return `
-          <g class="cursor-pointer group" onclick="${clickHandler}">
-            <title>${d.name}&#10;Total: ${d.total} Recs&#10;Closed: ${d.closed}&#10;Open: ${d.open}</title>
-            <!-- Vertical guide line on hover -->
-            <line x1="${ptT.x}" y1="${pad.top}" x2="${ptT.x}" y2="${yBase}" stroke="#94a3b8" stroke-width="1" stroke-dasharray="2 2" class="opacity-0 group-hover:opacity-100 transition-opacity"/>
-            
-            <!-- Closed Marker & Value -->
-            <circle cx="${ptC.x}" cy="${ptC.y}" r="4.5" fill="#047857" stroke="#ffffff" stroke-width="1.5" class="transition-transform group-hover:scale-125"/>
-            <text x="${ptC.x}" y="${ptC.y - 7}" fill="#047857" font-size="8.5" font-weight="bold" font-family="monospace" text-anchor="middle">${d.closed}</text>
-            
-            <!-- Open Marker & Value (with warning ring if > 0) -->
-            ${d.open > 0 ? `
-              <circle cx="${ptO.x}" cy="${ptO.y}" r="6.5" fill="none" stroke="#B91C1C" stroke-width="1.5" opacity="0.6"/>
-              <circle cx="${ptO.x}" cy="${ptO.y}" r="3.5" fill="#B91C1C" stroke="#ffffff" stroke-width="1"/>
-              <text x="${ptO.x}" y="${ptO.y - 7}" fill="#B91C1C" font-size="8.5" font-weight="bold" font-family="monospace" text-anchor="middle">${d.open}</text>
-            ` : ''}
-
-            <!-- Total Marker on Top -->
-            <circle cx="${ptT.x}" cy="${ptT.y}" r="5" fill="#2E6DA4" stroke="#ffffff" stroke-width="2" class="transition-transform group-hover:scale-125"/>
-            
-            <!-- Total count label -->
-            <text x="${ptT.x}" y="${ptT.y - 8}" fill="#0f172a" font-size="9" font-weight="900" font-family="monospace" text-anchor="middle">${d.total}</text>
-
-            <!-- Baseline tick mark -->
-            <line x1="${ptT.x}" y1="${yBase}" x2="${ptT.x}" y2="${yBase + 5}" stroke="#cbd5e1" stroke-width="1.5"/>
-            
-            <!-- X Axis Label (Exact Column F Department) -->
-            <text
-              x="${ptT.x}"
-              y="${labelY}"
-              fill="${isSelected ? '#1e40af' : '#475569'}"
-              font-size="8.5"
-              font-weight="${isSelected ? '900' : '600'}"
-              text-anchor="end"
-              transform="rotate(-52, ${ptT.x}, ${labelY})"
-              class="group-hover:fill-[#1e40af] transition-colors"
-            >${cleanName}<title>${d.name} (${d.total} Recs)</title></text>
-          </g>
-        `;
-      }).join('');
-
-      contentSvg = `
-        ${defs}
-        <path d="${areaTotal}" fill="url(#plrDeptGradTotal)"/>
-        <path d="${areaClosed}" fill="url(#plrDeptGradClosed)"/>
-        <path d="${areaOpen}" fill="url(#plrDeptGradOpen)"/>
-        <path d="${pathTotal}" fill="none" stroke="#2E6DA4" stroke-width="2" stroke-dasharray="4 3"/>
-        <path d="${pathClosed}" fill="none" stroke="#047857" stroke-width="2.5"/>
-        <path d="${pathOpen}" fill="none" stroke="#B91C1C" stroke-width="2.5"/>
-        ${nodesSvg}
-      `;
-    } else if (s.recChartMode === 'side-by-side') {
-      const groupW = Math.min(36, Math.max(20, step * 0.7));
-      const gap = 3;
-      const subW = (groupW - gap) / 2;
-
-      contentSvg = chartDepts.map((d, i) => {
-        const xCenter = pad.left + i * step + step / 2;
-        const xStart = xCenter - groupW / 2;
-        const xClosed = xStart;
-        const xOpen = xStart + subW + gap;
-
-        const openH = (d.open / maxVal) * chartH;
-        const closedH = (d.closed / maxVal) * chartH;
-        const yClosed = yBase - closedH;
-        const yOpen = yBase - openH;
-
-        const isSelected = s.recSelectedEntity === d.name;
-        const clickHandler = `portalApp.filterRecByDeptDirect('${d.name.replace(/'/g, "\\'")}')`;
-
-        const labelY = yBase + 12;
-        const cleanName = formatDeptLabel(d.name);
-
-        const yClosedVal = d.closed > 0 ? yClosed - 5 : yBase - 5;
-        const yOpenVal = d.open > 0 ? yOpen - 5 : yBase - 5;
-        const highestValY = Math.min(yClosedVal, yOpenVal);
-
-        return `
-          <g class="cursor-pointer group" onclick="${clickHandler}">
-            <title>${d.name}&#10;Total: ${d.total} Recs&#10;Closed: ${d.closed} (${d.total > 0 ? ((d.closed/d.total)*100).toFixed(0) : 0}%)&#10;Open: ${d.open}</title>
-            
-            <!-- Hover column highlight -->
-            <rect x="${xStart - 4}" y="${pad.top}" width="${groupW + 8}" height="${chartH}" fill="#f8fafc" rx="4" class="opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"/>
-
-            <!-- Closed Bar (Emerald) -->
-            ${d.closed > 0 ? `
-              <rect
-                x="${xClosed}"
-                y="${yClosed}"
-                width="${subW}"
-                height="${Math.max(closedH, 2)}"
-                fill="#10b981"
-                rx="2"
-                class="transition-all group-hover:fill-[#059669]"
-              />
-            ` : `
-              <rect x="${xClosed}" y="${yBase - 2}" width="${subW}" height="2" fill="#cbd5e1" rx="1"/>
-            `}
-
-            <!-- Open Bar (Rose) -->
-            ${d.open > 0 ? `
-              <rect
-                x="${xOpen}"
-                y="${yOpen}"
-                width="${subW}"
-                height="${Math.max(openH, 2)}"
-                fill="#f43f5e"
-                rx="2"
-                class="transition-all group-hover:fill-[#e11d48]"
-              />
-            ` : `
-              <rect x="${xOpen}" y="${yBase - 2}" width="${subW}" height="2" fill="#e2e8f0" rx="1"/>
-            `}
-
-            <!-- Value for Closed Bar (Emerald) -->
-            <text
-              x="${xClosed + subW / 2}"
-              y="${yClosedVal}"
-              fill="${d.closed > 0 ? '#047857' : '#94a3b8'}"
-              font-size="8"
-              font-weight="900"
-              font-family="monospace"
-              text-anchor="middle"
-            >${d.closed}</text>
-
-            <!-- Value for Open Bar (Red) -->
-            <text
-              x="${xOpen + subW / 2}"
-              y="${yOpenVal}"
-              fill="${d.open > 0 ? '#b91c1c' : '#94a3b8'}"
-              font-size="8"
-              font-weight="900"
-              font-family="monospace"
-              text-anchor="middle"
-            >${d.open}</text>
-
-            <!-- Total indicator above pair -->
-            <text
-              x="${xCenter}"
-              y="${highestValY - 8}"
-              fill="#0f172a"
-              font-size="8.5"
-              font-weight="bold"
-              font-family="monospace"
-              text-anchor="middle"
-            >${d.total}</text>
-
-            <!-- Baseline tick mark -->
-            <line x1="${xCenter}" y1="${yBase}" x2="${xCenter}" y2="${yBase + 5}" stroke="#cbd5e1" stroke-width="1.5"/>
-
-            <!-- X Axis Label (Exact Column F Department) -->
-            <text
-              x="${xCenter}"
-              y="${labelY}"
-              fill="${isSelected ? '#1e40af' : '#475569'}"
-              font-size="8.5"
-              font-weight="${isSelected ? '900' : '600'}"
-              text-anchor="end"
-              transform="rotate(-52, ${xCenter}, ${labelY})"
-              class="group-hover:fill-[#1e40af] transition-colors"
-            >${cleanName}<title>${d.name} (${d.total} Recs)</title></text>
-          </g>
-        `;
-      }).join('');
     } else {
-      // Default: Stacked Bar Chart
-      const barWidth = Math.min(26, Math.max(16, step * 0.55));
-      contentSvg = chartDepts.map((d, i) => {
-        const xCenter = pad.left + i * step + step / 2;
-        const x = xCenter - barWidth / 2;
-        const totalH = (d.total / maxVal) * chartH;
-        const openH = (d.open / maxVal) * chartH;
-        const closedH = (d.closed / maxVal) * chartH;
-        const yClosed = yBase - closedH;
-        const yOpen = yClosed - openH;
-        const isSelected = s.recSelectedEntity === d.name;
-        const clickHandler = `portalApp.filterRecByDeptDirect('${d.name.replace(/'/g, "\\'")}')`;
-
-        const labelY = yBase + 12;
-        const cleanName = formatDeptLabel(d.name);
-
-        return `
-          <g class="cursor-pointer group" onclick="${clickHandler}">
-            <title>${d.name}&#10;Total: ${d.total} Recs&#10;Closed: ${d.closed}&#10;Open: ${d.open}</title>
-            <!-- Closed Bar (Emerald) -->
-            <rect
-              x="${x}"
-              y="${yClosed}"
-              width="${barWidth}"
-              height="${closedH}"
-              fill="#10b981"
-              rx="3"
-              class="transition-opacity group-hover:opacity-85"
-            />
-            <!-- Open Bar (Rose) -->
-            ${d.open > 0 ? `
-              <rect
-                x="${x}"
-                y="${yOpen}"
-                width="${barWidth}"
-                height="${openH}"
-                fill="#f43f5e"
-                rx="3"
-                class="transition-opacity group-hover:opacity-85"
-              />
-            ` : ''}
-            <!-- Label on Top -->
-            <text x="${xCenter}" y="${yOpen - 5}" fill="#0f172a" font-size="9" font-weight="900" font-family="monospace" text-anchor="middle">${d.total}</text>
-            <!-- Value inside closed bar if enough room -->
-            ${closedH > 18 ? `
-              <text x="${xCenter}" y="${yClosed + closedH / 2 + 3}" fill="#ffffff" font-size="8" font-weight="bold" font-family="monospace" text-anchor="middle">${d.closed}</text>
-            ` : ''}
-            <!-- Value inside open bar if enough room -->
-            ${openH > 12 ? `
-              <text x="${xCenter}" y="${yOpen + openH / 2 + 3}" fill="#ffffff" font-size="8" font-weight="bold" font-family="monospace" text-anchor="middle">${d.open}</text>
-            ` : ''}
-            <!-- Baseline tick -->
-            <line x1="${xCenter}" y1="${yBase}" x2="${xCenter}" y2="${yBase + 5}" stroke="#cbd5e1" stroke-width="1.5"/>
-            <!-- X-Axis Label (Exact Column F Department) -->
-            <text
-              x="${xCenter}"
-              y="${labelY}"
-              fill="${isSelected ? '#2E6DA4' : '#475569'}"
-              font-size="8.5"
-              font-weight="${isSelected ? '900' : '600'}"
-              text-anchor="end"
-              transform="rotate(-52, ${xCenter}, ${labelY})"
-              class="group-hover:fill-[#2E6DA4] transition-colors"
-            >${cleanName}<title>${d.name} (${d.total} Recs)</title></text>
-          </g>
-        `;
-      }).join('');
+      // Default: 'chart' (Horizontal Stacked Bar Chart)
+      container.innerHTML = chartHtml;
     }
 
-    container.innerHTML = `
-      <svg viewBox="0 0 ${w} ${h}" class="w-full h-auto select-none overflow-hidden">
-        ${gridSvg}
-        ${baselineSvg}
-        ${contentSvg}
-      </svg>
-    `;
-
-    // Quick Filter Pills (Displaying all departments dynamically from active dataset)
+    // Quick Filter Pills (Allowing instant single-click dept filtering)
     if (filterContainer) {
       filterContainer.innerHTML = rawDepts.map(d => {
         const isSel = s.recSelectedEntity === d.name;
+        const escaped = d.name.replace(/'/g, "\\'");
         return `
           <button
-            onclick="portalApp.filterRecByDeptDirect('${d.name.replace(/'/g, "\\'")}')"
+            onclick="portalApp.filterRecByDeptDirect('${escaped}')"
             class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer border ${
               isSel
                 ? 'bg-[#2E6DA4] text-white border-[#2E6DA4] font-black shadow-xs'
                 : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
             }"
+            title="${d.name}: ${d.total} Items"
           >
             <span>${d.name}</span>
             <span class="font-mono text-[11px] text-rose-600 font-bold">(${d.open} Open</span>
@@ -1726,6 +1718,8 @@
         </button>
       ` : '');
     }
+
+    if (window.lucide) window.lucide.createIcons();
   };
 
   /**

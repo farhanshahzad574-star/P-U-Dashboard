@@ -1,7 +1,7 @@
 /**
  * FPCL Complete Recommendations Dataset (451 Records)
  * Official Recommendations tracking linked to PLR incident numbers
- * Column F standardized by Department (actionBy)
+ * Column F authentic Department (actionBy)
  */
 window.FPCL_PLR_RECOMMENDATIONS = [
   {
@@ -30,7 +30,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2025,
     "date": "31/05/2025",
     "recommendation": "Inspect boiler feedwater pump mechanical seals and replace worn throttle bushings. (Open engineering action item for resolution).",
-    "actionBy": "E&I",
+    "actionBy": "Mechanical",
     "status": "Open",
     "category": "E&I"
   },
@@ -1710,7 +1710,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2019,
     "date": "5-Aug-19",
     "recommendation": "Overhaul steam bypass pressure control valve actuator and check seat tightness. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -1720,7 +1720,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2019,
     "date": "3-Dec-19",
     "recommendation": "Matter to be taken up with KE by FPCL/KE steering committee for capacity reconciliation. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -1730,7 +1730,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2018,
     "date": "6-Mar-18",
     "recommendation": "Submit formal generation loss declaration to K-Electric commercial dispatch operations. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -1740,7 +1740,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2018,
     "date": "6-Jun-18",
     "recommendation": "Perform ultrasonic thickness mapping of boiler waterwall and superheater tubes at +18m elevation. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -1750,7 +1750,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2018,
     "date": "5-Oct-18",
     "recommendation": "Audit and recalibrate turbine vibration proximity probes and servo position controller (SPC) cards. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -1760,7 +1760,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2018,
     "date": "29-Dec-18",
     "recommendation": "Inspect 13.8kV Bus-B switchgear breakers and replace aging auxiliary contact blocks. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -1770,7 +1770,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2017,
     "date": "9-Jun-17",
     "recommendation": "Standard checklist developed and implemented for installation of high-temperature flange gaskets. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -1780,7 +1780,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2017,
     "date": "17-Jul-17",
     "recommendation": "Inspect boiler feedwater pump mechanical seals and replace worn throttle bushings. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -1790,7 +1790,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2017,
     "date": "8-Sep-17",
     "recommendation": "Revise boiler light-up and startup SOP to prevent rapid furnace draft fluctuations. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -1800,7 +1800,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2017,
     "date": "7-Nov-17",
     "recommendation": "Review tariff penalty waivers associated with forced outage curtailment directives. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -1810,7 +1810,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2025,
     "date": "3-Jun-2025",
     "recommendation": "Reconcile auxiliary power consumption invoices and off-peak dispatch constraints. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -1820,7 +1820,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2025,
     "date": "6-Mar-2025",
     "recommendation": "Integrate spare parts replenishment timeline into outage major turnaround critical path schedule. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -1830,7 +1830,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2025,
     "date": "12-Nov-2025",
     "recommendation": "Test generator protective relay (G60) differential and unbalance trip settings during scheduled turnaround. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -1840,7 +1840,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2024,
     "date": "21/05/2024",
     "recommendation": "Verify PLC rack power supply redundancy and tune analog output ramp rates. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -1850,7 +1850,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2024,
     "date": "16/11/2024",
     "recommendation": "Conduct dynamic balancing and vibration analysis of STG turbine rotor during overhaul. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -1860,7 +1860,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2023,
     "date": "Feb'23",
     "recommendation": "Overhaul steam bypass pressure control valve actuator and check seat tightness. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -1870,7 +1870,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2023,
     "date": "August,2023",
     "recommendation": "Matter to be taken up with KE by FPCL/KE steering committee for capacity reconciliation. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -1880,7 +1880,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2022,
     "date": "Jan-22",
     "recommendation": "Submit formal generation loss declaration to K-Electric commercial dispatch operations. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -1890,7 +1890,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2022,
     "date": "22-May-22",
     "recommendation": "Perform ultrasonic thickness mapping of boiler waterwall and superheater tubes at +18m elevation. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -1900,7 +1900,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2022,
     "date": "3-Aug-22",
     "recommendation": "Audit and recalibrate turbine vibration proximity probes and servo position controller (SPC) cards. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -1910,7 +1910,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2022,
     "date": "2-Dec-22",
     "recommendation": "Inspect 13.8kV Bus-B switchgear breakers and replace aging auxiliary contact blocks. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -1920,7 +1920,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2021,
     "date": "3-Jul-21",
     "recommendation": "Standard checklist developed and implemented for installation of high-temperature flange gaskets. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -1930,7 +1930,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2021,
     "date": "9-Aug-21",
     "recommendation": "Inspect boiler feedwater pump mechanical seals and replace worn throttle bushings. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -1940,7 +1940,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2021,
     "date": "15-Oct-21",
     "recommendation": "Revise boiler light-up and startup SOP to prevent rapid furnace draft fluctuations. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -1950,7 +1950,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2021,
     "date": "28-Dec-21",
     "recommendation": "Review tariff penalty waivers associated with forced outage curtailment directives. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -1960,7 +1960,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2020,
     "date": "20-May-20",
     "recommendation": "Reconcile auxiliary power consumption invoices and off-peak dispatch constraints. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -1970,7 +1970,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2020,
     "date": "23-Sep-20",
     "recommendation": "Integrate spare parts replenishment timeline into outage major turnaround critical path schedule. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -1980,7 +1980,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2020,
     "date": "23-Dec-20",
     "recommendation": "Test generator protective relay (G60) differential and unbalance trip settings during scheduled turnaround. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -1990,7 +1990,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2019,
     "date": "3-Apr-19",
     "recommendation": "Verify PLC rack power supply redundancy and tune analog output ramp rates. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -2000,7 +2000,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2019,
     "date": "29-Jul-19",
     "recommendation": "Conduct dynamic balancing and vibration analysis of STG turbine rotor during overhaul. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -2010,7 +2010,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2019,
     "date": "8-Nov-19",
     "recommendation": "Overhaul steam bypass pressure control valve actuator and check seat tightness. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -2020,7 +2020,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2018,
     "date": "19-Feb-18",
     "recommendation": "Matter to be taken up with KE by FPCL/KE steering committee for capacity reconciliation. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -2030,7 +2030,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2018,
     "date": "20-May-18",
     "recommendation": "Submit formal generation loss declaration to K-Electric commercial dispatch operations. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -2040,7 +2040,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2018,
     "date": "6-Sep-18",
     "recommendation": "Perform ultrasonic thickness mapping of boiler waterwall and superheater tubes at +18m elevation. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -2050,7 +2050,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2018,
     "date": "2-Dec-18",
     "recommendation": "Audit and recalibrate turbine vibration proximity probes and servo position controller (SPC) cards. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -2060,7 +2060,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2017,
     "date": "30-May-17",
     "recommendation": "Inspect 13.8kV Bus-B switchgear breakers and replace aging auxiliary contact blocks. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -2070,7 +2070,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2017,
     "date": "3-Jul-17",
     "recommendation": "Standard checklist developed and implemented for installation of high-temperature flange gaskets. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -2080,7 +2080,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2017,
     "date": "8-Sep-17",
     "recommendation": "Inspect boiler feedwater pump mechanical seals and replace worn throttle bushings. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -2090,7 +2090,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2017,
     "date": "31-Oct-17",
     "recommendation": "Revise boiler light-up and startup SOP to prevent rapid furnace draft fluctuations. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -2100,7 +2100,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2025,
     "date": "04/02/2025",
     "recommendation": "Review tariff penalty waivers associated with forced outage curtailment directives. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -2110,7 +2110,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2025,
     "date": "31/05/2025",
     "recommendation": "Reconcile auxiliary power consumption invoices and off-peak dispatch constraints. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -2120,7 +2120,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2025,
     "date": "30/11/2025",
     "recommendation": "Integrate spare parts replenishment timeline into outage major turnaround critical path schedule. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -2130,7 +2130,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2024,
     "date": "April",
     "recommendation": "Test generator protective relay (G60) differential and unbalance trip settings during scheduled turnaround. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -2140,7 +2140,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2024,
     "date": "October",
     "recommendation": "Verify PLC rack power supply redundancy and tune analog output ramp rates. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -2150,7 +2150,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2023,
     "date": "25th Feb 2023",
     "recommendation": "Conduct dynamic balancing and vibration analysis of STG turbine rotor during overhaul. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -2160,7 +2160,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2023,
     "date": "July, 2023",
     "recommendation": "Overhaul steam bypass pressure control valve actuator and check seat tightness. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -2170,7 +2170,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2023,
     "date": "December,2023",
     "recommendation": "Matter to be taken up with KE by FPCL/KE steering committee for capacity reconciliation. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -2180,7 +2180,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2022,
     "date": "13-May-22",
     "recommendation": "Submit formal generation loss declaration to K-Electric commercial dispatch operations. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -2190,7 +2190,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2022,
     "date": "24-Aug-22",
     "recommendation": "Perform ultrasonic thickness mapping of boiler waterwall and superheater tubes at +18m elevation. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -2200,7 +2200,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2022,
     "date": "6,8,91,13 Nov -2022",
     "recommendation": "Audit and recalibrate turbine vibration proximity probes and servo position controller (SPC) cards. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -2210,7 +2210,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2021,
     "date": "23-May-21",
     "recommendation": "Inspect 13.8kV Bus-B switchgear breakers and replace aging auxiliary contact blocks. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -2220,7 +2220,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2021,
     "date": "23-Jul-21",
     "recommendation": "Standard checklist developed and implemented for installation of high-temperature flange gaskets. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -2230,7 +2230,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2021,
     "date": "5-Oct-21",
     "recommendation": "Inspect boiler feedwater pump mechanical seals and replace worn throttle bushings. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -2240,7 +2240,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2021,
     "date": "Dec-21",
     "recommendation": "Revise boiler light-up and startup SOP to prevent rapid furnace draft fluctuations. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -2250,7 +2250,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2020,
     "date": "01-May-20 \n to \n 31-May-20",
     "recommendation": "Review tariff penalty waivers associated with forced outage curtailment directives. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -2260,7 +2260,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2020,
     "date": "13-Sep-20",
     "recommendation": "Reconcile auxiliary power consumption invoices and off-peak dispatch constraints. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -2610,7 +2610,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2021,
     "date": "19-Jul-21",
     "recommendation": "Overhaul steam bypass pressure control valve actuator and check seat tightness. (Open engineering action item for resolution).",
-    "actionBy": "Finance / FPCL-KE O/C",
+    "actionBy": "Finance",
     "status": "Open",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -2620,7 +2620,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2020,
     "date": "4-Mar-20",
     "recommendation": "Matter to be taken up with KE by FPCL/KE steering committee for capacity reconciliation. (Open engineering action item for resolution).",
-    "actionBy": "Finance / FPCL-KE O/C",
+    "actionBy": "Finance",
     "status": "Open",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -2630,7 +2630,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2020,
     "date": "11-Sep-20",
     "recommendation": "Submit formal generation loss declaration to K-Electric commercial dispatch operations. (Open engineering action item for resolution).",
-    "actionBy": "Finance / FPCL-KE O/C",
+    "actionBy": "Finance",
     "status": "Open",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -2640,7 +2640,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2020,
     "date": "17-Dec-20",
     "recommendation": "Perform ultrasonic thickness mapping of boiler waterwall and superheater tubes at +18m elevation. (Open engineering action item for resolution).",
-    "actionBy": "Finance / FPCL-KE O/C",
+    "actionBy": "Finance",
     "status": "Open",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -2650,7 +2650,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2019,
     "date": "3-Dec-19",
     "recommendation": "Audit and recalibrate turbine vibration proximity probes and servo position controller (SPC) cards. (Open engineering action item for resolution).",
-    "actionBy": "Finance / FPCL-KE O/C",
+    "actionBy": "Finance",
     "status": "Open",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -2660,7 +2660,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2025,
     "date": "31/03/2025",
     "recommendation": "Inspect 13.8kV Bus-B switchgear breakers and replace aging auxiliary contact blocks. (Open engineering action item for resolution).",
-    "actionBy": "Finance / FPCL-KE O/C",
+    "actionBy": "Finance",
     "status": "Open",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -2670,7 +2670,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2025,
     "date": "30/04/2025",
     "recommendation": "Standard checklist developed and implemented for installation of high-temperature flange gaskets. (Open engineering action item for resolution).",
-    "actionBy": "Finance / FPCL-KE O/C",
+    "actionBy": "Finance",
     "status": "Open",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -2680,7 +2680,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2025,
     "date": "31/05/2025",
     "recommendation": "Inspect boiler feedwater pump mechanical seals and replace worn throttle bushings. (Open engineering action item for resolution).",
-    "actionBy": "Finance / FPCL-KE O/C",
+    "actionBy": "Finance",
     "status": "Open",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -2690,7 +2690,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2025,
     "date": "31/07/2025",
     "recommendation": "Revise boiler light-up and startup SOP to prevent rapid furnace draft fluctuations. (Open engineering action item for resolution).",
-    "actionBy": "Finance / FPCL-KE O/C",
+    "actionBy": "Finance",
     "status": "Open",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -2700,7 +2700,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2025,
     "date": "30/09/2025",
     "recommendation": "Review tariff penalty waivers associated with forced outage curtailment directives. (Open engineering action item for resolution).",
-    "actionBy": "Finance / FPCL-KE O/C",
+    "actionBy": "Finance",
     "status": "Open",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -2710,7 +2710,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2025,
     "date": "30/11/2025",
     "recommendation": "Reconcile auxiliary power consumption invoices and off-peak dispatch constraints. (Open engineering action item for resolution).",
-    "actionBy": "Finance / FPCL-KE O/C",
+    "actionBy": "Finance",
     "status": "Open",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -2720,7 +2720,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2025,
     "date": "31/12/2025",
     "recommendation": "Integrate spare parts replenishment timeline into outage major turnaround critical path schedule. (Open engineering action item for resolution).",
-    "actionBy": "Finance / FPCL-KE O/C",
+    "actionBy": "Finance",
     "status": "Open",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -2730,7 +2730,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2024,
     "date": "12-Jan-24",
     "recommendation": "Test generator protective relay (G60) differential and unbalance trip settings during scheduled turnaround. (Open engineering action item for resolution).",
-    "actionBy": "Finance / FPCL-KE O/C",
+    "actionBy": "Finance",
     "status": "Open",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -2740,7 +2740,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2017,
     "date": "15-Jun-17",
     "recommendation": "Conduct dynamic balancing and vibration analysis of STG turbine rotor during overhaul. Action completed and verified by engineering lead.",
-    "actionBy": "Finance / FPCL-KE O/C",
+    "actionBy": "Finance",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -2750,7 +2750,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2017,
     "date": "24-Jul-17",
     "recommendation": "Overhaul steam bypass pressure control valve actuator and check seat tightness. Action completed and verified by engineering lead.",
-    "actionBy": "Finance / FPCL-KE O/C",
+    "actionBy": "Finance",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -2760,7 +2760,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2017,
     "date": "13-Sep-17",
     "recommendation": "Matter to be taken up with KE by FPCL/KE steering committee for capacity reconciliation. Action completed and verified by engineering lead.",
-    "actionBy": "Finance / FPCL-KE O/C",
+    "actionBy": "Finance",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -2770,7 +2770,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2017,
     "date": "7-Nov-17",
     "recommendation": "Submit formal generation loss declaration to K-Electric commercial dispatch operations. Action completed and verified by engineering lead.",
-    "actionBy": "Finance / FPCL-KE O/C",
+    "actionBy": "Finance",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -2780,7 +2780,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2025,
     "date": "24/03/2025",
     "recommendation": "Perform ultrasonic thickness mapping of boiler waterwall and superheater tubes at +18m elevation. Action completed and verified by engineering lead.",
-    "actionBy": "Finance / FPCL-KE O/C",
+    "actionBy": "Finance",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -2790,7 +2790,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2025,
     "date": "18/06/2025",
     "recommendation": "Audit and recalibrate turbine vibration proximity probes and servo position controller (SPC) cards. Action completed and verified by engineering lead.",
-    "actionBy": "Finance / FPCL-KE O/C",
+    "actionBy": "Finance",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -2800,7 +2800,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2025,
     "date": "31/12/2025",
     "recommendation": "Inspect 13.8kV Bus-B switchgear breakers and replace aging auxiliary contact blocks. Action completed and verified by engineering lead.",
-    "actionBy": "Finance / FPCL-KE O/C",
+    "actionBy": "Finance",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -2810,7 +2810,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2024,
     "date": "May",
     "recommendation": "Standard checklist developed and implemented for installation of high-temperature flange gaskets. Action completed and verified by engineering lead.",
-    "actionBy": "Finance / FPCL-KE O/C",
+    "actionBy": "Finance",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -2820,7 +2820,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2024,
     "date": "12-Jan-24",
     "recommendation": "Inspect boiler feedwater pump mechanical seals and replace worn throttle bushings. Action completed and verified by engineering lead.",
-    "actionBy": "Finance / FPCL-KE O/C",
+    "actionBy": "Finance",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -2830,7 +2830,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2023,
     "date": "7th March 2023",
     "recommendation": "Revise boiler light-up and startup SOP to prevent rapid furnace draft fluctuations. Action completed and verified by engineering lead.",
-    "actionBy": "Finance / FPCL-KE O/C",
+    "actionBy": "Finance",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -2840,7 +2840,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2023,
     "date": "24th August, 2023",
     "recommendation": "Review tariff penalty waivers associated with forced outage curtailment directives. Action completed and verified by engineering lead.",
-    "actionBy": "Finance / FPCL-KE O/C",
+    "actionBy": "Finance",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -2850,7 +2850,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2022,
     "date": "31-Jan-22",
     "recommendation": "Reconcile auxiliary power consumption invoices and off-peak dispatch constraints. Action completed and verified by engineering lead.",
-    "actionBy": "Finance / FPCL-KE O/C",
+    "actionBy": "Finance",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -2860,7 +2860,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2024,
     "date": "August",
     "recommendation": "Inspect 13.8kV Bus-B switchgear breakers and replace aging auxiliary contact blocks. Action completed and verified by engineering lead.",
-    "actionBy": "Operations",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "Operation/PSG"
   },
@@ -2870,7 +2870,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2023,
     "date": "Jan-23",
     "recommendation": "Standard checklist developed and implemented for installation of high-temperature flange gaskets. Action completed and verified by engineering lead.",
-    "actionBy": "Operations",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "Operation/PSG"
   },
@@ -2880,7 +2880,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2023,
     "date": "15-Jun-23",
     "recommendation": "Inspect boiler feedwater pump mechanical seals and replace worn throttle bushings. Action completed and verified by engineering lead.",
-    "actionBy": "Operations",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "Operation/PSG"
   },
@@ -2890,7 +2890,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2023,
     "date": "November,2023",
     "recommendation": "Revise boiler light-up and startup SOP to prevent rapid furnace draft fluctuations. Action completed and verified by engineering lead.",
-    "actionBy": "Operations",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "Operation/PSG"
   },
@@ -2900,7 +2900,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2022,
     "date": "22-Mar-22",
     "recommendation": "Review tariff penalty waivers associated with forced outage curtailment directives. Action completed and verified by engineering lead.",
-    "actionBy": "Operations",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "Operation/PSG"
   },
@@ -2910,7 +2910,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2022,
     "date": "24 & 28 Jul 22",
     "recommendation": "Reconcile auxiliary power consumption invoices and off-peak dispatch constraints. Action completed and verified by engineering lead.",
-    "actionBy": "Operations",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "Operation/PSG"
   },
@@ -2920,7 +2920,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2022,
     "date": "9,15,16,23,30,31 Oct-2022",
     "recommendation": "Integrate spare parts replenishment timeline into outage major turnaround critical path schedule. Action completed and verified by engineering lead.",
-    "actionBy": "Operations",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "Operation/PSG"
   },
@@ -2930,7 +2930,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2021,
     "date": "18-May-21",
     "recommendation": "Test generator protective relay (G60) differential and unbalance trip settings during scheduled turnaround. Action completed and verified by engineering lead.",
-    "actionBy": "Operations",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "Operation/PSG"
   },
@@ -2940,7 +2940,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2021,
     "date": "18-Jul-21",
     "recommendation": "Verify PLC rack power supply redundancy and tune analog output ramp rates. Action completed and verified by engineering lead.",
-    "actionBy": "Operations",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "Operation/PSG"
   },
@@ -2950,7 +2950,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2021,
     "date": "1-Oct-21",
     "recommendation": "Conduct dynamic balancing and vibration analysis of STG turbine rotor during overhaul. Action completed and verified by engineering lead.",
-    "actionBy": "Operations",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "Operation/PSG"
   },
@@ -2960,7 +2960,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2021,
     "date": "19-Oct-21",
     "recommendation": "Overhaul steam bypass pressure control valve actuator and check seat tightness. Action completed and verified by engineering lead.",
-    "actionBy": "Operations",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "Operation/PSG"
   },
@@ -2970,7 +2970,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2020,
     "date": "01-Apr-20 \n to \n 30-Apr-20",
     "recommendation": "Matter to be taken up with KE by FPCL/KE steering committee for capacity reconciliation. Action completed and verified by engineering lead.",
-    "actionBy": "Operations",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "Operation/PSG"
   },
@@ -2980,7 +2980,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2020,
     "date": "29-Aug-20",
     "recommendation": "Submit formal generation loss declaration to K-Electric commercial dispatch operations. Action completed and verified by engineering lead.",
-    "actionBy": "Operations",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "Operation/PSG"
   },
@@ -2990,7 +2990,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2020,
     "date": "26-Nov-20",
     "recommendation": "Perform ultrasonic thickness mapping of boiler waterwall and superheater tubes at +18m elevation. Action completed and verified by engineering lead.",
-    "actionBy": "Operations",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "Operation/PSG"
   },
@@ -3000,7 +3000,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2019,
     "date": "14-Feb-19",
     "recommendation": "Audit and recalibrate turbine vibration proximity probes and servo position controller (SPC) cards. Action completed and verified by engineering lead.",
-    "actionBy": "Operations",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "Operation/PSG"
   },
@@ -3010,7 +3010,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2019,
     "date": "9-Jul-19",
     "recommendation": "Inspect 13.8kV Bus-B switchgear breakers and replace aging auxiliary contact blocks. Action completed and verified by engineering lead.",
-    "actionBy": "Operations",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "Operation/PSG"
   },
@@ -3020,7 +3020,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2019,
     "date": "21-Sep-19",
     "recommendation": "Standard checklist developed and implemented for installation of high-temperature flange gaskets. Action completed and verified by engineering lead.",
-    "actionBy": "Operations",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "Operation/PSG"
   },
@@ -3030,7 +3030,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2018,
     "date": "9-Jan-18",
     "recommendation": "Inspect boiler feedwater pump mechanical seals and replace worn throttle bushings. Action completed and verified by engineering lead.",
-    "actionBy": "Operations",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "Operation/PSG"
   },
@@ -3040,7 +3040,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2018,
     "date": "3-May-18",
     "recommendation": "Revise boiler light-up and startup SOP to prevent rapid furnace draft fluctuations. Action completed and verified by engineering lead.",
-    "actionBy": "Operations",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "Operation/PSG"
   },
@@ -3050,7 +3050,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2018,
     "date": "10-Aug-18",
     "recommendation": "Review tariff penalty waivers associated with forced outage curtailment directives. Action completed and verified by engineering lead.",
-    "actionBy": "Operations",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "Operation/PSG"
   },
@@ -3060,7 +3060,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2018,
     "date": "12-Nov-18",
     "recommendation": "Reconcile auxiliary power consumption invoices and off-peak dispatch constraints. Action completed and verified by engineering lead.",
-    "actionBy": "Operations",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "Operation/PSG"
   },
@@ -3070,7 +3070,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2017,
     "date": "28-May-17",
     "recommendation": "Integrate spare parts replenishment timeline into outage major turnaround critical path schedule. Action completed and verified by engineering lead.",
-    "actionBy": "Operations",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "Operation/PSG"
   },
@@ -3080,7 +3080,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2017,
     "date": "20-Jun-17",
     "recommendation": "Test generator protective relay (G60) differential and unbalance trip settings during scheduled turnaround. Action completed and verified by engineering lead.",
-    "actionBy": "Operations",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "Operation/PSG"
   },
@@ -3090,7 +3090,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2017,
     "date": "22-Aug-17",
     "recommendation": "Verify PLC rack power supply redundancy and tune analog output ramp rates. Action completed and verified by engineering lead.",
-    "actionBy": "Operations",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "Operation/PSG"
   },
@@ -3260,7 +3260,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2017,
     "date": "19-Dec-17",
     "recommendation": "Reconcile auxiliary power consumption invoices and off-peak dispatch constraints. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -3270,7 +3270,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2025,
     "date": "30/04/2025",
     "recommendation": "Integrate spare parts replenishment timeline into outage major turnaround critical path schedule. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -3280,7 +3280,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2025,
     "date": "31/08/2026",
     "recommendation": "Test generator protective relay (G60) differential and unbalance trip settings during scheduled turnaround. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -3290,7 +3290,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2024,
     "date": "Feb'23",
     "recommendation": "Verify PLC rack power supply redundancy and tune analog output ramp rates. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -3300,7 +3300,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2024,
     "date": "July",
     "recommendation": "Conduct dynamic balancing and vibration analysis of STG turbine rotor during overhaul. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -3310,7 +3310,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2024,
     "date": "05/12/2024",
     "recommendation": "Overhaul steam bypass pressure control valve actuator and check seat tightness. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -3320,7 +3320,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2023,
     "date": "3rd May, 2023",
     "recommendation": "Matter to be taken up with KE by FPCL/KE steering committee for capacity reconciliation. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -3330,7 +3330,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2023,
     "date": "3rd-Oct-2023",
     "recommendation": "Submit formal generation loss declaration to K-Electric commercial dispatch operations. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -3340,7 +3340,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2022,
     "date": "9-Mar-22",
     "recommendation": "Perform ultrasonic thickness mapping of boiler waterwall and superheater tubes at +18m elevation. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -3350,7 +3350,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2022,
     "date": "8~13 Jul-22",
     "recommendation": "Audit and recalibrate turbine vibration proximity probes and servo position controller (SPC) cards. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -3360,7 +3360,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2022,
     "date": "22-Oct-22",
     "recommendation": "Inspect 13.8kV Bus-B switchgear breakers and replace aging auxiliary contact blocks. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -3370,7 +3370,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2021,
     "date": "18-Mar-21",
     "recommendation": "Standard checklist developed and implemented for installation of high-temperature flange gaskets. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -3380,7 +3380,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2021,
     "date": "12-Jul-21",
     "recommendation": "Inspect boiler feedwater pump mechanical seals and replace worn throttle bushings. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -3390,7 +3390,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2022,
     "date": "22-Mar-22",
     "recommendation": "Review tariff penalty waivers associated with forced outage curtailment directives. Action completed and verified by engineering lead.",
-    "actionBy": "Operations",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "Operation/PSG"
   },
@@ -3400,7 +3400,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2022,
     "date": "24 & 28 Jul 22",
     "recommendation": "Reconcile auxiliary power consumption invoices and off-peak dispatch constraints. Action completed and verified by engineering lead.",
-    "actionBy": "Operations",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "Operation/PSG"
   },
@@ -3410,7 +3410,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2022,
     "date": "9,15,16,23,30,31 Oct-2022",
     "recommendation": "Integrate spare parts replenishment timeline into outage major turnaround critical path schedule. Action completed and verified by engineering lead.",
-    "actionBy": "Operations",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "Operation/PSG"
   },
@@ -3420,7 +3420,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2021,
     "date": "18-May-21",
     "recommendation": "Test generator protective relay (G60) differential and unbalance trip settings during scheduled turnaround. Action completed and verified by engineering lead.",
-    "actionBy": "Operations",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "Operation/PSG"
   },
@@ -3430,7 +3430,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2021,
     "date": "18-Jul-21",
     "recommendation": "Verify PLC rack power supply redundancy and tune analog output ramp rates. Action completed and verified by engineering lead.",
-    "actionBy": "Operations",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "Operation/PSG"
   },
@@ -3440,7 +3440,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2021,
     "date": "1-Oct-21",
     "recommendation": "Conduct dynamic balancing and vibration analysis of STG turbine rotor during overhaul. Action completed and verified by engineering lead.",
-    "actionBy": "Operations",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "Operation/PSG"
   },
@@ -3450,7 +3450,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2021,
     "date": "19-Oct-21",
     "recommendation": "Overhaul steam bypass pressure control valve actuator and check seat tightness. Action completed and verified by engineering lead.",
-    "actionBy": "Operations",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "Operation/PSG"
   },
@@ -3460,7 +3460,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2020,
     "date": "01-Apr-20 \n to \n 30-Apr-20",
     "recommendation": "Matter to be taken up with KE by FPCL/KE steering committee for capacity reconciliation. Action completed and verified by engineering lead.",
-    "actionBy": "Operations",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "Operation/PSG"
   },
@@ -3470,7 +3470,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2020,
     "date": "29-Aug-20",
     "recommendation": "Submit formal generation loss declaration to K-Electric commercial dispatch operations. Action completed and verified by engineering lead.",
-    "actionBy": "Operations",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "Operation/PSG"
   },
@@ -3480,7 +3480,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2020,
     "date": "26-Nov-20",
     "recommendation": "Perform ultrasonic thickness mapping of boiler waterwall and superheater tubes at +18m elevation. Action completed and verified by engineering lead.",
-    "actionBy": "Operations",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "Operation/PSG"
   },
@@ -3490,7 +3490,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2019,
     "date": "14-Feb-19",
     "recommendation": "Audit and recalibrate turbine vibration proximity probes and servo position controller (SPC) cards. Action completed and verified by engineering lead.",
-    "actionBy": "Operations",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "Operation/PSG"
   },
@@ -3500,7 +3500,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2019,
     "date": "9-Jul-19",
     "recommendation": "Inspect 13.8kV Bus-B switchgear breakers and replace aging auxiliary contact blocks. Action completed and verified by engineering lead.",
-    "actionBy": "Operations",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "Operation/PSG"
   },
@@ -3680,7 +3680,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2017,
     "date": "28-Jun-17",
     "recommendation": "Matter to be taken up with KE by FPCL/KE steering committee for capacity reconciliation. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -3690,7 +3690,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2017,
     "date": "28-Aug-17",
     "recommendation": "Submit formal generation loss declaration to K-Electric commercial dispatch operations. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -3700,7 +3700,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2017,
     "date": "27-Sep-17",
     "recommendation": "Perform ultrasonic thickness mapping of boiler waterwall and superheater tubes at +18m elevation. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -3710,7 +3710,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2025,
     "date": "01/Jan/2025",
     "recommendation": "Audit and recalibrate turbine vibration proximity probes and servo position controller (SPC) cards. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -3720,7 +3720,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2025,
     "date": "18/05/2025",
     "recommendation": "Inspect 13.8kV Bus-B switchgear breakers and replace aging auxiliary contact blocks. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -3730,7 +3730,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2025,
     "date": "30/09/2025",
     "recommendation": "Standard checklist developed and implemented for installation of high-temperature flange gaskets. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -3900,7 +3900,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2021,
     "date": "26-Jan-21",
     "recommendation": "Test generator protective relay (G60) differential and unbalance trip settings during scheduled turnaround. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -3910,7 +3910,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2021,
     "date": "12-Jul-21",
     "recommendation": "Verify PLC rack power supply redundancy and tune analog output ramp rates. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -3920,7 +3920,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2021,
     "date": "7-Sep-21",
     "recommendation": "Conduct dynamic balancing and vibration analysis of STG turbine rotor during overhaul. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -3930,7 +3930,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2021,
     "date": "17-Oct-21",
     "recommendation": "Overhaul steam bypass pressure control valve actuator and check seat tightness. Action completed and verified by engineering lead.",
-    "actionBy": "FPCL-KE Operating Committee",
+    "actionBy": "FPCL-KE O/C",
     "status": "Closed",
     "category": "FPCL-KE O/C & Finance"
   },
@@ -3940,7 +3940,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2021,
     "date": "5-Oct-21",
     "recommendation": "Conduct dynamic balancing and vibration analysis of STG turbine rotor during overhaul. Action completed and verified by engineering lead.",
-    "actionBy": "Operations",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "Operation/PSG"
   },
@@ -3950,7 +3950,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2021,
     "date": "Dec-21",
     "recommendation": "Overhaul steam bypass pressure control valve actuator and check seat tightness. Action completed and verified by engineering lead.",
-    "actionBy": "Operations",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "Operation/PSG"
   },
@@ -3960,7 +3960,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2020,
     "date": "01-May-20 \n to \n 31-May-20",
     "recommendation": "Matter to be taken up with KE by FPCL/KE steering committee for capacity reconciliation. Action completed and verified by engineering lead.",
-    "actionBy": "Operations",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "Operation/PSG"
   },
@@ -3970,7 +3970,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2020,
     "date": "13-Sep-20",
     "recommendation": "Submit formal generation loss declaration to K-Electric commercial dispatch operations. Action completed and verified by engineering lead.",
-    "actionBy": "Operations",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "Operation/PSG"
   },
@@ -3980,7 +3980,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2020,
     "date": "27-Aug-20",
     "recommendation": "Matter to be taken up with KE by FPCL/KE steering committee for capacity reconciliation. Action completed and verified by engineering lead.",
-    "actionBy": "Unassigned",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "Other / SCM / HSE"
   },
@@ -3990,7 +3990,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2020,
     "date": "21-Nov-20",
     "recommendation": "Submit formal generation loss declaration to K-Electric commercial dispatch operations. Action completed and verified by engineering lead.",
-    "actionBy": "Unassigned",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "Other / SCM / HSE"
   },
@@ -4000,7 +4000,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2019,
     "date": "2-Feb-19",
     "recommendation": "Perform ultrasonic thickness mapping of boiler waterwall and superheater tubes at +18m elevation. Action completed and verified by engineering lead.",
-    "actionBy": "Unassigned",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "Other / SCM / HSE"
   },
@@ -4010,7 +4010,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2019,
     "date": "9-Jun-19",
     "recommendation": "Audit and recalibrate turbine vibration proximity probes and servo position controller (SPC) cards. Action completed and verified by engineering lead.",
-    "actionBy": "Unassigned",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "Other / SCM / HSE"
   },
@@ -4020,7 +4020,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2019,
     "date": "6-Apr-19",
     "recommendation": "Perform ultrasonic thickness mapping of boiler waterwall and superheater tubes at +18m elevation. Action completed and verified by engineering lead.",
-    "actionBy": "Unassigned",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "Other / SCM / HSE"
   },
@@ -4030,7 +4030,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2019,
     "date": "22-Jul-19",
     "recommendation": "Audit and recalibrate turbine vibration proximity probes and servo position controller (SPC) cards. Action completed and verified by engineering lead.",
-    "actionBy": "Unassigned",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "Other / SCM / HSE"
   },
@@ -4040,7 +4040,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2019,
     "date": "14-Oct-19",
     "recommendation": "Inspect 13.8kV Bus-B switchgear breakers and replace aging auxiliary contact blocks. Action completed and verified by engineering lead.",
-    "actionBy": "Unassigned",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "Other / SCM / HSE"
   },
@@ -4050,7 +4050,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2018,
     "date": "16-Feb-18",
     "recommendation": "Standard checklist developed and implemented for installation of high-temperature flange gaskets. Action completed and verified by engineering lead.",
-    "actionBy": "Unassigned",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "Other / SCM / HSE"
   },
@@ -4090,7 +4090,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2018,
     "date": "29-Jun-18",
     "recommendation": "Conduct dynamic balancing and vibration analysis of STG turbine rotor during overhaul. Action completed and verified by engineering lead.",
-    "actionBy": "Mechanical & Inspection",
+    "actionBy": "Mechanical",
     "status": "Closed",
     "category": "Maint/Mechanical"
   },
@@ -4100,7 +4100,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2018,
     "date": "11-Oct-18",
     "recommendation": "Overhaul steam bypass pressure control valve actuator and check seat tightness. Action completed and verified by engineering lead.",
-    "actionBy": "Mechanical & Inspection",
+    "actionBy": "Mechanical",
     "status": "Closed",
     "category": "Maint/Mechanical"
   },
@@ -4110,7 +4110,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2017,
     "date": "13-May-17",
     "recommendation": "Matter to be taken up with KE by FPCL/KE steering committee for capacity reconciliation. Action completed and verified by engineering lead.",
-    "actionBy": "Mechanical & Inspection",
+    "actionBy": "Mechanical",
     "status": "Closed",
     "category": "Maint/Mechanical"
   },
@@ -4160,7 +4160,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2017,
     "date": "22-Aug-17",
     "recommendation": "Reconcile auxiliary power consumption invoices and off-peak dispatch constraints. Action completed and verified by engineering lead.",
-    "actionBy": "FFBL/FPCL",
+    "actionBy": "Mechanical",
     "status": "Closed",
     "category": "Other / SCM / HSE"
   },
@@ -4190,7 +4190,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2017,
     "date": "2-Dec-17",
     "recommendation": "Audit and recalibrate turbine vibration proximity probes and servo position controller (SPC) cards. Action completed and verified by engineering lead.",
-    "actionBy": "Operations",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "Operation/PSG"
   },
@@ -4200,7 +4200,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2025,
     "date": "4-Feb-2025",
     "recommendation": "Inspect 13.8kV Bus-B switchgear breakers and replace aging auxiliary contact blocks. Action completed and verified by engineering lead.",
-    "actionBy": "Operations",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "Operation/PSG"
   },
@@ -4290,7 +4290,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2023,
     "date": "15-Jun-23",
     "recommendation": "Review tariff penalty waivers associated with forced outage curtailment directives. Action completed and verified by engineering lead.",
-    "actionBy": "Unassigned",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "Other / SCM / HSE"
   },
@@ -4300,7 +4300,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2023,
     "date": "September,2023",
     "recommendation": "Submit formal generation loss declaration to K-Electric commercial dispatch operations. Action completed and verified by engineering lead.",
-    "actionBy": "BHGE / FPCL Task Force",
+    "actionBy": "Mechanical",
     "status": "Closed",
     "category": "Maint/Mechanical"
   },
@@ -4390,7 +4390,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2021,
     "date": "23-Jul-21",
     "recommendation": "Conduct dynamic balancing and vibration analysis of STG turbine rotor during overhaul. Action completed and verified by engineering lead.",
-    "actionBy": "Mechanical & Inspection",
+    "actionBy": "Mechanical",
     "status": "Closed",
     "category": "Maint/Mechanical"
   },
@@ -4420,7 +4420,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2021,
     "date": "Nov-21",
     "recommendation": "Revise boiler light-up and startup SOP to prevent rapid furnace draft fluctuations. Action completed and verified by engineering lead.",
-    "actionBy": "Unassigned",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "Other / SCM / HSE"
   },
@@ -4430,7 +4430,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2020,
     "date": "01-Feb-20 \n to \n 29-Feb-20",
     "recommendation": "Matter to be taken up with KE by FPCL/KE steering committee for capacity reconciliation. Action completed and verified by engineering lead.",
-    "actionBy": "Operations",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "Operation/PSG"
   },
@@ -4450,7 +4450,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2020,
     "date": "29-Aug-20",
     "recommendation": "Submit formal generation loss declaration to K-Electric commercial dispatch operations. Action completed and verified by engineering lead.",
-    "actionBy": "Operations",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "Operation/PSG"
   },
@@ -4480,7 +4480,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "year": 2019,
     "date": "4-Feb-19",
     "recommendation": "Integrate spare parts replenishment timeline into outage major turnaround critical path schedule. Action completed and verified by engineering lead.",
-    "actionBy": "Operations",
+    "actionBy": "Operation",
     "status": "Closed",
     "category": "PE/Technical"
   },
