@@ -10,6 +10,28 @@
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
 
+    <!-- Suppress benign Vite WebSocket disconnects in sandboxed preview -->
+    <script>
+      (function() {
+        function isViteWsError(err) {
+          if (!err) return false;
+          var msg = (typeof err === 'string' ? err : (err.message || err.reason || '')) + '';
+          return msg.indexOf('WebSocket closed without opened') !== -1 ||
+                 msg.indexOf('failed to connect to websocket') !== -1;
+        }
+        window.addEventListener('unhandledrejection', function(e) {
+          if (isViteWsError(e.reason)) {
+            e.preventDefault();
+          }
+        });
+        window.addEventListener('error', function(e) {
+          if (isViteWsError(e.message || e.error)) {
+            e.preventDefault();
+          }
+        });
+      })();
+    </script>
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
