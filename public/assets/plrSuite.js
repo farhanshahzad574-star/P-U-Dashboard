@@ -76,6 +76,80 @@
   }
 
   /**
+   * Dynamic Splitting & Normalization (Column F: ACTION ENTITY)
+   * Dynamically parses and splits combined department strings by common delimiters (/, &, ,, or "and"),
+   * trims whitespace, cleans extraneous quotes/characters, and preserves standard department abbreviations.
+   * e.g. "Mechanical & Inspection" -> ["Mechanical", "Inspection"]
+   *      "Finance / FPCL-KE O/C"   -> ["Finance", "FPCL-KE O/C"]
+   *      "Finance"                 -> ["Finance"]
+   */
+  function splitAndNormalizeActionEntities(raw) {
+    if (!raw || typeof raw !== 'string') return ['Unassigned'];
+    let str = String(raw).trim();
+    if (!str || str === '-' || str.toLowerCase() === 'none') return ['Unassigned'];
+
+    // Protect known compound terms and abbreviations that contain delimiters:
+    // 1. O/C or O / C (Operating Committee)
+    const OC_TOKEN = '___OC_TOKEN___';
+    str = str.replace(/\bO\s*\/\s*C\b/gi, OC_TOKEN);
+
+    // 2. E&I or E & I (Electrical & Instrumentation)
+    const EI_TOKEN = '___EI_TOKEN___';
+    str = str.replace(/\bE\s*&\s*I\b/gi, EI_TOKEN);
+
+    // 3. I&C or I & C (Instrumentation & Control)
+    const IC_TOKEN = '___IC_TOKEN___';
+    str = str.replace(/\bI\s*&\s*C\b/gi, IC_TOKEN);
+
+    // Split by delimiters: /, &, ,, or " and "
+    const parts = str.split(/\s*(?:\/|&|,|\band\b)\s*/i);
+
+    const results = [];
+    parts.forEach(part => {
+      let clean = part
+        .replace(new RegExp(OC_TOKEN, 'g'), 'O/C')
+        .replace(new RegExp(EI_TOKEN, 'g'), 'E&I')
+        .replace(new RegExp(IC_TOKEN, 'g'), 'I&C')
+        .trim();
+
+      // Clean leading and trailing quotes or extra punctuation
+      clean = clean.replace(/^["'`\s]+|["'`\s]+$/g, '').trim();
+
+      if (clean) {
+        results.push(clean);
+      }
+    });
+
+    return results.length > 0 ? results : [str.trim()];
+  }
+
+  /**
+   * Check if a raw Action Entity string matches a target entity filter
+   */
+  function matchesActionEntity(rawActionBy, targetEntity) {
+    if (!targetEntity || targetEntity === 'all') return true;
+    const cleanTarget = String(targetEntity).trim().toLowerCase();
+    const depts = splitAndNormalizeActionEntities(rawActionBy);
+
+    // 1. Direct match on any split and normalized department
+    if (depts.some(d => d.toLowerCase() === cleanTarget)) return true;
+
+    // 2. Fallback substring match on raw string
+    const rawLower = String(rawActionBy || '').toLowerCase();
+    if (rawLower.includes(cleanTarget)) return true;
+
+    // 3. Normalized alias matching for KE O/C / FPCL-KE O/C
+    if (cleanTarget === 'ke o/c' && (rawLower.includes('ke o/c') || depts.some(d => d.toLowerCase().includes('ke o/c')))) {
+      return true;
+    }
+    if (cleanTarget === 'fpcl-ke o/c' && (rawLower.includes('fpcl-ke o/c') || depts.some(d => d.toLowerCase().includes('fpcl-ke o/c')))) {
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
    * Fast lookup map of recommendations by PLR #
    */
   function getRecsMapByPlr() {
@@ -134,7 +208,7 @@
 
       // Resp Dept filter (COL I)
       if (s.selectedDept && s.selectedDept !== 'all') {
-        if (String(item.dept || '').toLowerCase() !== s.selectedDept.toLowerCase()) {
+        if (!matchesActionEntity(item.dept, s.selectedDept)) {
           return false;
         }
       }
@@ -149,8 +223,8 @@
       // Action Entity filter (checks linked recommendations or incident dept)
       if (s.selectedEntity && s.selectedEntity !== 'all') {
         const linkedRecs = recsMap.get(String(item.plrNo || '').toUpperCase()) || [];
-        const hasEntity = linkedRecs.some(r => String(r.actionBy || '').toLowerCase() === s.selectedEntity.toLowerCase()) ||
-          String(item.dept || '').toLowerCase() === s.selectedEntity.toLowerCase();
+        const hasEntity = linkedRecs.some(r => matchesActionEntity(r.actionBy, s.selectedEntity)) ||
+          matchesActionEntity(item.dept, s.selectedEntity);
         if (!hasEntity) return false;
       }
 
@@ -191,7 +265,7 @@
       // Entity filter (checks actionBy)
       const targetEntity = s.selectedEntity !== 'all' ? s.selectedEntity : (s.recSelectedEntity !== 'all' ? s.recSelectedEntity : null);
       if (targetEntity) {
-        if (String(item.actionBy || '').toLowerCase() !== targetEntity.toLowerCase()) {
+        if (!matchesActionEntity(item.actionBy, targetEntity)) {
           return false;
         }
       }
@@ -227,9 +301,9 @@
 
       // Dept filter
       if (s.selectedDept && s.selectedDept !== 'all') {
-        const itemDept = String(item.actionBy || '').toLowerCase();
-        const pDept = parentPlr ? String(parentPlr.dept || '').toLowerCase() : '';
-        if (itemDept !== s.selectedDept.toLowerCase() && pDept !== s.selectedDept.toLowerCase()) {
+        const itemMatches = matchesActionEntity(item.actionBy, s.selectedDept);
+        const parentMatches = parentPlr ? matchesActionEntity(parentPlr.dept, s.selectedDept) : false;
+        if (!itemMatches && !parentMatches) {
           return false;
         }
       }
@@ -288,10 +362,13 @@
     const recs = getPlrRecs();
     const counts = {};
     recs.forEach(r => {
-      const val = (r.actionBy || '').trim();
-      if (val) {
-        counts[val] = (counts[val] || 0) + 1;
-      }
+      const depts = splitAndNormalizeActionEntities(r.actionBy);
+      const uniqueDeptsInRow = Array.from(new Set(depts));
+      uniqueDeptsInRow.forEach(dept => {
+        if (dept) {
+          counts[dept] = (counts[dept] || 0) + 1;
+        }
+      });
     });
     // Sort descending by frequency, then alphabetically
     return Object.keys(counts)
@@ -324,7 +401,7 @@
       // Entity filter (if not ignored)
       if (!ignoreEntityFilter) {
         const targetEntity = s.selectedEntity !== 'all' ? s.selectedEntity : (s.recSelectedEntity !== 'all' ? s.recSelectedEntity : null);
-        if (targetEntity && String(item.actionBy || '').toLowerCase() !== targetEntity.toLowerCase()) {
+        if (targetEntity && !matchesActionEntity(item.actionBy, targetEntity)) {
           return false;
         }
       }
@@ -354,9 +431,9 @@
 
       // Resp Dept filter (incident level)
       if (s.selectedDept && s.selectedDept !== 'all') {
-        const itemDept = String(item.actionBy || '').toLowerCase();
-        const pDept = parentPlr ? String(parentPlr.dept || '').toLowerCase() : '';
-        if (itemDept !== s.selectedDept.toLowerCase() && pDept !== s.selectedDept.toLowerCase()) return false;
+        const itemMatches = matchesActionEntity(item.actionBy, s.selectedDept);
+        const parentMatches = parentPlr ? matchesActionEntity(parentPlr.dept, s.selectedDept) : false;
+        if (!itemMatches && !parentMatches) return false;
       }
 
       return true;
@@ -364,17 +441,21 @@
 
     const map = new Map();
     filtered.forEach(r => {
-      const val = (r.actionBy || '').trim() || 'Unassigned';
-      if (!map.has(val)) {
-        map.set(val, { name: val, total: 0, open: 0, closed: 0 });
-      }
-      const item = map.get(val);
-      item.total++;
-      if ((r.status || '').toLowerCase() === 'open') {
-        item.open++;
-      } else {
-        item.closed++;
-      }
+      const depts = splitAndNormalizeActionEntities(r.actionBy);
+      const isRecordOpen = (r.status || '').toLowerCase() === 'open';
+      const uniqueDeptsInRow = Array.from(new Set(depts));
+      uniqueDeptsInRow.forEach(dept => {
+        if (!map.has(dept)) {
+          map.set(dept, { name: dept, total: 0, open: 0, closed: 0 });
+        }
+        const item = map.get(dept);
+        item.total++;
+        if (isRecordOpen) {
+          item.open++;
+        } else {
+          item.closed++;
+        }
+      });
     });
 
     return Array.from(map.values()).sort((a, b) => b.total - a.total || a.name.localeCompare(b.name));
@@ -470,17 +551,21 @@
 
     const map = new Map();
     filtered.forEach(r => {
-      const val = (r.actionBy || '').trim() || 'Unassigned';
-      if (!map.has(val)) {
-        map.set(val, { name: val, items: 0, open: 0, closed: 0 });
-      }
-      const item = map.get(val);
-      item.items++;
-      if ((r.status || '').toLowerCase() === 'open') {
-        item.open++;
-      } else {
-        item.closed++;
-      }
+      const depts = splitAndNormalizeActionEntities(r.actionBy);
+      const isRecordOpen = (r.status || '').toLowerCase() === 'open';
+      const uniqueDeptsInRow = Array.from(new Set(depts));
+      uniqueDeptsInRow.forEach(dept => {
+        if (!map.has(dept)) {
+          map.set(dept, { name: dept, items: 0, open: 0, closed: 0 });
+        }
+        const item = map.get(dept);
+        item.items++;
+        if (isRecordOpen) {
+          item.open++;
+        } else {
+          item.closed++;
+        }
+      });
     });
     return Array.from(map.values()).sort((a, b) => b.items - a.items || a.name.localeCompare(b.name));
   }
@@ -1054,100 +1139,7 @@
         </div>
 
         <!-- ========================================================================= -->
-        <!-- 4. ASSIGNED RECOMMENDATIONS TREND (Closed vs. Open)                       -->
-        <!-- ========================================================================= -->
-        <div class="space-y-4">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1">
-            <div class="flex items-center gap-2.5 flex-wrap">
-              <span class="w-2.5 h-2.5 rounded-full bg-[#2E6DA4]"></span>
-              <h3 class="text-sm sm:text-base font-black tracking-wider text-slate-900 uppercase">
-                Assigned Recommendations Trends (Closed vs. Open)
-              </h3>
-              <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-50 text-[#2E6DA4] border border-blue-200">
-                ${totalRecs} Actions • ${recClosureRate}% Closed
-              </span>
-            </div>
-            <span class="text-xs font-medium text-slate-500">Columns F (Action Entity) &amp; G (Status)</span>
-          </div>
-
-          <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-4">
-            <!-- Trend View Switcher & Header -->
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
-              <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-100 text-[#047857] flex items-center justify-center shrink-0">
-                  <i data-lucide="trending-up" class="w-4 h-4"></i>
-                </div>
-                <div>
-                  <h4 class="text-xs sm:text-sm font-black text-slate-900 uppercase tracking-wider">Assigned Recommendations Progression &amp; Resolution Trend</h4>
-                  <p class="text-[11px] text-slate-500 mt-0.5">Comparative tracking of Closed (Emerald) vs. Open (Rose) recommendations as per current active dataset</p>
-                </div>
-              </div>
-              <div class="flex items-center gap-2 self-start sm:self-auto flex-wrap">
-                <div class="inline-flex p-0.5 bg-slate-100 rounded-lg border border-slate-200 text-[11px]">
-                  <button
-                    id="plr-assigned-view-bars"
-                    onclick="portalApp.setAssignedTrendViewType('side-by-side')"
-                    class="px-2.5 py-1 rounded-md font-bold transition-all cursor-pointer ${s.assignedTrendViewType === 'side-by-side' ? 'bg-[#2E6DA4] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'}"
-                  >Side-by-Side</button>
-                  <button
-                    id="plr-assigned-view-trend"
-                    onclick="portalApp.setAssignedTrendViewType('trend')"
-                    class="px-2.5 py-1 rounded-md font-bold transition-all cursor-pointer ${s.assignedTrendViewType === 'trend' ? 'bg-[#2E6DA4] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'}"
-                  >Trend Lines</button>
-                </div>
-                <div class="inline-flex p-0.5 bg-slate-100 rounded-lg border border-slate-200 text-[11px]">
-                  <button
-                    id="plr-assigned-mode-entity"
-                    onclick="portalApp.setAssignedTrendMode('entity')"
-                    class="px-2.5 py-1 rounded-md font-bold transition-all cursor-pointer ${s.assignedTrendMode === 'entity' ? 'bg-[#2E6DA4] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'}"
-                  >By Assigned Entity</button>
-                  <button
-                    id="plr-assigned-mode-yearly"
-                    onclick="portalApp.setAssignedTrendMode('yearly')"
-                    class="px-2.5 py-1 rounded-md font-bold transition-all cursor-pointer ${s.assignedTrendMode === 'yearly' ? 'bg-[#2E6DA4] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'}"
-                  >Multi-Year Progression (2017–2025)</button>
-                </div>
-                <div class="flex items-center gap-3 text-xs font-semibold pl-2">
-                  <span class="flex items-center gap-1.5 text-slate-700">
-                    <span class="w-2.5 h-2.5 rounded-full bg-[#10b981]"></span> Closed (${closedRecs})
-                  </span>
-                  <span class="flex items-center gap-1.5 text-slate-700">
-                    <span class="w-2.5 h-2.5 rounded-full bg-[#f43f5e]"></span> Open (${openRecs})
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Dedicated SVG Trend Chart Container -->
-            <div id="plr-assigned-trend-chart-container" class="w-full min-h-[285px] mb-3">
-              <!-- Rendered dynamically -->
-            </div>
-
-            <!-- Quick Selection Chips -->
-            <div class="pt-4 border-t border-slate-100 mt-2">
-              <div class="flex items-center justify-between text-xs font-bold text-slate-600 mb-2">
-                <span class="uppercase tracking-wider text-[11px] text-slate-500">FILTER RECOMMENDATIONS BY ASSIGNED ENTITY CHIPS:</span>
-                <span class="text-[11px] font-normal text-slate-400">Click to filter table records</span>
-              </div>
-              <div class="flex flex-wrap items-center gap-2" id="plr-entity-chips-container">
-                <!-- Rendered dynamically without inner scrollbars -->
-              </div>
-            </div>
-
-            <!-- 4-Column Bento Grid of Department Cards (Covers page area) -->
-            <div class="pt-3 border-t border-slate-100">
-              <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2.5">
-                ENTITY RESOLUTION CARDS &amp; PROGRESS BREAKDOWN:
-              </div>
-              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5" id="plr-bento-cards-container">
-                <!-- Rendered dynamically -->
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- ========================================================================= -->
-        <!-- 5. PLANT RECORDS & OUTAGE LOG (Light Master Table)                         -->
+        <!-- 4. PLANT RECORDS & OUTAGE LOG (Light Master Table)                         -->
         <!-- ========================================================================= -->
         <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-4">
           <!-- Header with Dual Tabs -->
@@ -1221,8 +1213,6 @@
     portalApp.renderMachineDonut();
     portalApp.renderDeptBarChart();
     portalApp.renderResolutionPie();
-    portalApp.renderAssignedTrendChart();
-    portalApp.renderEntityChipsAndBento();
     portalApp.renderTableSection();
 
     if (window.lucide) window.lucide.createIcons();
@@ -2621,9 +2611,17 @@
                 <td class="py-3 px-3 font-mono text-slate-600">${item.date || (parentPlr ? parentPlr.date : '—')}</td>
                 <td class="py-3 px-4 text-slate-800 text-xs leading-relaxed max-w-lg">${item.recommendation}</td>
                 <td class="py-3 px-3">
-                  <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-800 border border-slate-200">
-                    ${item.actionBy}
-                  </span>
+                  <div class="flex flex-wrap gap-1">
+                    ${splitAndNormalizeActionEntities(item.actionBy).map(d => `
+                      <span
+                        onclick="portalApp.filterRecByDeptDirect('${d.replace(/'/g, "\\'")}', true)"
+                        class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-800 border border-slate-200 hover:bg-blue-50 hover:text-[#2E6DA4] hover:border-blue-300 transition-colors cursor-pointer"
+                        title="Filter by ${d}"
+                      >
+                        ${d}
+                      </span>
+                    `).join('')}
+                  </div>
                 </td>
                 <td class="py-3 px-3">
                   <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${
@@ -2929,11 +2927,17 @@
     portalApp.renderTableSection();
   };
 
-  portalApp.filterRecByDeptDirect = function (dept) {
+  portalApp.filterRecByDeptDirect = function (dept, isToggle = false) {
     const s = getPlrState();
     s.activeTab = 'recommendations';
-    s.recSelectedEntity = s.recSelectedEntity === dept ? 'all' : dept;
+    if (isToggle) {
+      s.recSelectedEntity = s.recSelectedEntity === dept ? 'all' : dept;
+    } else {
+      s.recSelectedEntity = dept || 'all';
+    }
+    s.selectedEntity = s.recSelectedEntity;
     s.recPage = 1;
+    s.page = 1;
     portalApp.renderPlrSuite();
     const el = document.getElementById('plr-table-toolbar-container');
     if (el) el.scrollIntoView({ behavior: 'smooth' });
