@@ -197,7 +197,7 @@ CRITICAL INSTRUCTIONS & CONSTRAINTS:
 ${config.context}
 `;
 
-        const response = await ai.models.generateContent({
+        const geminiPromise = ai.models.generateContent({
           model: 'gemini-3.8-flash',
           contents: message,
           config: {
@@ -205,6 +205,12 @@ ${config.context}
             temperature: 0.2,
           }
         });
+
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          setTimeout(() => reject(new Error('Gemini API call timed out after 3500ms')), 3500);
+        });
+
+        const response = await Promise.race([geminiPromise, timeoutPromise]);
 
         const reply = response.text || regretResponse;
 
