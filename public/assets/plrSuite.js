@@ -4145,8 +4145,12 @@
     const s = getPlrState();
     if (!s.activePlrModal) return;
     const m = s.activePlrModal;
-    const container = document.getElementById('plr-data-modal-container');
-    if (!container) return;
+    let container = document.getElementById('plr-data-modal-container');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'plr-data-modal-container';
+      document.body.appendChild(container);
+    }
 
     const records = portalApp.getPlrModalFilteredRecords();
     const allRecords = m.allRecords || [];
@@ -4200,7 +4204,7 @@
     }
 
     container.innerHTML = `
-      <div class="fixed inset-0 z-[60] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5" onclick="if(event.target === this) portalApp.closePlrDataModal()">
+      <div class="fixed inset-0 z-[9999] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5" style="pointer-events: auto;" onclick="if(event.target === this) (window.portalApp || portalApp).closePlrDataModal()">
         <div class="bg-white border border-slate-200 rounded-2xl w-full max-w-6xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden animate-in fade-in zoom-in-95 duration-150">
           
           <!-- Modal Header (Corporate Executive Styled) -->
@@ -5558,9 +5562,8 @@
     const statusMsg = document.getElementById('plr-sync-status-msg');
     const btn = document.getElementById('plr-sync-action-btn');
 
-    const savedRecUrl = customRecUrl || (recsInput ? recsInput.value.trim() : '') || (typeof localStorage !== 'undefined' && localStorage.getItem('FPCL_CONNECTED_SHEET_URL')) || (portalApp.state && portalApp.state.connectedSheetUrl) || HARDCODED_RECOMMENDATIONS_SHEET_URL;
-
-    const savedStatusUrl = customStatusUrl || (statusInput ? statusInput.value.trim() : '') || (typeof localStorage !== 'undefined' && localStorage.getItem('FPCL_CONNECTED_PLR_STATUS_SHEET_URL')) || (portalApp.state && portalApp.state.connectedPlrStatusSheetUrl) || HARDCODED_PLR_STATUS_SHEET_URL;
+    const savedRecUrl = customRecUrl || HARDCODED_RECOMMENDATIONS_SHEET_URL;
+    const savedStatusUrl = customStatusUrl || HARDCODED_PLR_STATUS_SHEET_URL;
 
     if (!savedRecUrl && !savedStatusUrl) {
       if (isSilent) return;
@@ -5587,11 +5590,12 @@
       const urlToUse = targetUrl || savedRecUrl;
       if (!urlToUse) return '';
 
-      // Extract GID if present in the URL
+      const now = Date.now();
+      const nonce = Math.floor(Math.random() * 10000000);
       const gidMatch = urlToUse.match(/[#?&]gid=([0-9]+)/);
       const gid = gidMatch ? gidMatch[1] : null;
 
-      // 1. Resilient Multi-tier Google Sheet Fetcher (handles CORS on Vercel via JSONP)
+      // 1. Resilient Multi-tier Google Sheet Fetcher (handles CORS on Vercel via JSONP + zero-cache)
       if (typeof window.fetchGoogleSheetData === 'function') {
         try {
           csvData = await window.fetchGoogleSheetData(urlToUse, { sheetTab, gid });
@@ -5612,13 +5616,19 @@
         }
       }
 
-      // 3. Try server proxy (/api/sheets/fetch)
+      // 3. Try server proxy (/api/sheets/fetch) with explicit zero-cache
       if (!csvData) {
         try {
           const res = await fetch('/api/sheets/fetch', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ url: urlToUse, sheetTab, gid })
+            headers: {
+              'Content-Type': 'application/json',
+              'Cache-Control': 'no-cache, no-store, must-revalidate',
+              'Pragma': 'no-cache',
+              'Expires': '0'
+            },
+            cache: 'no-store',
+            body: JSON.stringify({ url: urlToUse, sheetTab, gid, t: now, _nocache: nonce })
           });
           if (res.ok) {
             const json = await res.json();
@@ -5631,7 +5641,7 @@
         }
       }
 
-      // 4. Client-side fallback if server proxy was blocked
+      // 4. Client-side direct fallback with cache-busting
       if (!csvData) {
         let spreadsheetId = urlToUse;
         let isPublished = false;
@@ -5668,7 +5678,17 @@
 
         for (const candidate of candidateUrls) {
           try {
-            const fallbackRes = await fetch(candidate);
+            const separator = candidate.includes('?') ? '&' : '?';
+            const cacheBustedCandidate = `${candidate}${separator}_t=${now}&_nocache=${nonce}&t=${now}`;
+            const fallbackRes = await fetch(cacheBustedCandidate, {
+              method: 'GET',
+              cache: 'no-store',
+              headers: {
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0'
+              }
+            });
             if (fallbackRes.ok) {
               const text = await fallbackRes.text();
               if (text && !text.includes('<!DOCTYPE html>') && !text.includes('<html') && !text.includes('google-site-verification')) {
@@ -6005,6 +6025,32 @@
       if (portalApp.closePlrDataModal) portalApp.closePlrDataModal();
       if (portalApp.closePlrInspectionModal) portalApp.closePlrInspectionModal();
       if (portalApp.closeActionModal) portalApp.closeActionModal();
+    }
+  });
+
+  // Global window bindings and fallback click delegation to guarantee modal popups in any environment
+  window.portalApp = portalApp;
+  window.openPlrKpiModal = function (kpiType) { return portalApp.openPlrKpiModal(kpiType); };
+  window.openPlrDataModal = function (opts) { return portalApp.openPlrDataModal(opts); };
+  window.openResolutionDataModal = function (status) { return portalApp.openResolutionDataModal(status); };
+  window.closePlrDataModal = function () { return portalApp.closePlrDataModal(); };
+
+  // Document-level delegation to capture clicks on KPI cards & resolution bars
+  document.addEventListener('click', function (e) {
+    const kpiEl = e.target.closest('[data-plr-kpi]');
+    if (kpiEl && typeof portalApp.openPlrKpiModal === 'function') {
+      const kpiType = kpiEl.getAttribute('data-plr-kpi');
+      if (kpiType) {
+        portalApp.openPlrKpiModal(kpiType);
+        return;
+      }
+    }
+
+    const resEl = e.target.closest('[data-plr-action="resolution-modal"]');
+    if (resEl && typeof portalApp.openResolutionDataModal === 'function') {
+      const status = resEl.getAttribute('data-status') || 'all';
+      portalApp.openResolutionDataModal(status);
+      return;
     }
   });
 

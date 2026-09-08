@@ -39,18 +39,10 @@
     init() {
       window.FPCL_PSM_SUITE = this;
 
-      // Always ensure hardcoded Google Sheet CSV URL is active
-      if (!window.FPCL_PSM_SHEET_URL || window.FPCL_PSM_SHEET_URL.includes('1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms')) {
-        window.FPCL_PSM_SHEET_URL = HARDCODED_PSM_SHEET_URL;
-      }
+      // Permanently lock hardcoded Google Sheet CSV URL so connection never breaks
+      window.FPCL_PSM_SHEET_URL = HARDCODED_PSM_SHEET_URL;
       try {
-        const storedUrl = localStorage.getItem('FPCL_PSM_SHEET_URL');
-        if (storedUrl && !storedUrl.includes('1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms')) {
-          window.FPCL_PSM_SHEET_URL = storedUrl;
-        } else {
-          window.FPCL_PSM_SHEET_URL = HARDCODED_PSM_SHEET_URL;
-          localStorage.setItem('FPCL_PSM_SHEET_URL', HARDCODED_PSM_SHEET_URL);
-        }
+        localStorage.setItem('FPCL_PSM_SHEET_URL', HARDCODED_PSM_SHEET_URL);
       } catch (e) {}
 
       // Fast-paint from localStorage cache if present
@@ -1819,20 +1811,12 @@
       if (!isSilent) this.render();
 
       this._syncPromise = (async () => {
-        let targetUrl = window.FPCL_PSM_SHEET_URL || HARDCODED_PSM_SHEET_URL;
-        
-        // Auto-convert edit link or standard doc link to CSV export link
-        if (targetUrl.includes('/edit')) {
-          const base = targetUrl.split('/edit')[0];
-          targetUrl = `${base}/export?format=csv&gid=0`;
-        } else if (!targetUrl.includes('format=csv') && !targetUrl.includes('output=csv') && targetUrl.includes('/spreadsheets/d/')) {
-          const match = targetUrl.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
-          if (match) {
-            targetUrl = `https://docs.google.com/spreadsheets/d/${match[1]}/export?format=csv&gid=0`;
-          }
-        }
+        // Permanently lock to the authentic hardcoded Google Sheet URL so the connection cannot break
+        const targetUrl = HARDCODED_PSM_SHEET_URL;
 
         let csvText = '';
+        const now = Date.now();
+        const nonce = Math.floor(Math.random() * 10000000);
 
         // Resilient Multi-tier Google Sheet Fetcher (bypasses CORS restrictions on Vercel)
         if (typeof window.fetchGoogleSheetData === 'function') {
@@ -1855,13 +1839,19 @@
           }
         }
 
-        // Fallback: Try server proxy (/api/sheets/fetch)
+        // Fallback: Try server proxy (/api/sheets/fetch) with zero-cache
         if (!csvText) {
           try {
             const res = await fetch('/api/sheets/fetch', {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ url: targetUrl, sheetTab: 'PSM', gid: '0' })
+              headers: {
+                'Content-Type': 'application/json',
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0'
+              },
+              cache: 'no-store',
+              body: JSON.stringify({ url: targetUrl, sheetTab: 'PSM', gid: '0', t: now, _nocache: nonce })
             });
             if (res.ok) {
               const json = await res.json();
@@ -1874,10 +1864,20 @@
           }
         }
 
-        // Fallback: Client-side direct fetch
+        // Fallback: Client-side direct fetch with cache-busting and explicit no-store
         if (!csvText) {
           try {
-            const resp = await fetch(targetUrl, { method: 'GET', cache: 'no-cache' });
+            const separator = targetUrl.includes('?') ? '&' : '?';
+            const cacheBustedUrl = `${targetUrl}${separator}_t=${now}&_nocache=${nonce}&t=${now}`;
+            const resp = await fetch(cacheBustedUrl, {
+              method: 'GET',
+              cache: 'no-store',
+              headers: {
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0'
+              }
+            });
             if (resp.ok) {
               csvText = await resp.text();
             }

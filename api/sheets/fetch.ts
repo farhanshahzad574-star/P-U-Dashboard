@@ -112,15 +112,26 @@ export default async function handler(req: any, res: any) {
     let csvText = '';
     let successUrl = '';
     let lastError = '';
+    const now = Date.now();
+    const nonce = Math.floor(Math.random() * 10000000);
+
+    const noCacheHeaders = {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'Accept': 'text/csv,text/plain,*/*',
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    };
 
     for (const fetchUrl of candidateUrls) {
       try {
-        const response = await fetch(fetchUrl, {
+        const separator = fetchUrl.includes('?') ? '&' : '?';
+        const bustedUrl = `${fetchUrl}${separator}_t=${now}&_nocache=${nonce}&t=${now}`;
+
+        const response = await fetch(bustedUrl, {
           method: 'GET',
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Accept': 'text/csv,text/plain,*/*'
-          },
+          cache: 'no-store',
+          headers: noCacheHeaders,
           redirect: 'follow'
         });
 
@@ -149,8 +160,17 @@ export default async function handler(req: any, res: any) {
 
       for (const gvizUrl of gvizCandidateUrls) {
         try {
-          const gvizRes = await fetch(gvizUrl, {
-            headers: { 'Accept': '*/*' },
+          const separator = gvizUrl.includes('?') ? '&' : '?';
+          const bustedGvizUrl = `${gvizUrl}${separator}_t=${now}&_nocache=${nonce}&t=${now}`;
+
+          const gvizRes = await fetch(bustedGvizUrl, {
+            cache: 'no-store',
+            headers: {
+              'Accept': '*/*',
+              'Cache-Control': 'no-cache, no-store, must-revalidate',
+              'Pragma': 'no-cache',
+              'Expires': '0'
+            },
             redirect: 'follow'
           });
           if (gvizRes.ok) {
@@ -172,7 +192,9 @@ export default async function handler(req: any, res: any) {
     }
 
     if (csvText) {
-      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
       res.status(200).json({
         success: true,
         source: successUrl,

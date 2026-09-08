@@ -2,9 +2,11 @@
  * FPCL Executive Operations & Compliance Portal
  * Universal Google Sheets Data Fetcher & Live Synchronizer
  * 
- * Solves Cross-Origin (CORS) restrictions on static deployments (e.g. Vercel)
- * by utilizing Google Visualization API JSONP protocol with no-cache cache-busting,
- * seamlessly paired with server proxy fallback.
+ * Zero-Cache Guarantees:
+ * - Completely bypasses browser, CDN, and Vercel Edge caching with explicit 'no-store'
+ * - Appends dynamic timestamp and random nonces to all CSV / GViz endpoints
+ * - Native Google Visualization API JSONP protocol eliminates Cross-Origin (CORS) limits on Vercel
+ * - Seamless multi-tier fallback (Serverless Proxy -> JSONP -> Direct -> CORS Proxy)
  */
 
 (function () {
@@ -39,6 +41,7 @@
   /**
    * Fetches Google Sheet data directly via Google Visualization JSONP script injection
    * Completely bypasses browser Cross-Origin (CORS) limits on ANY origin (Vercel, AI Studio, localhost)
+   * Guaranteed zero-cache with dynamic nonce parameters
    */
   window.fetchGoogleSheetViaJSONP = function (urlOrId, options = {}) {
     return new Promise((resolve, reject) => {
@@ -59,7 +62,9 @@
       const gid = options.gid !== undefined && options.gid !== null ? options.gid : (gidMatch ? gidMatch[1] : null);
       const sheetTab = options.sheetTab || null;
 
-      const callbackName = 'gviz_jsonp_cb_' + Date.now() + '_' + Math.floor(Math.random() * 1000000);
+      const now = Date.now();
+      const nonce = Math.floor(Math.random() * 10000000);
+      const callbackName = 'gviz_jsonp_cb_' + now + '_' + nonce;
       const script = document.createElement('script');
       script.type = 'text/javascript';
       script.async = true;
@@ -117,8 +122,8 @@
         gvizUrl += `&sheet=${encodeURIComponent(sheetTab)}`;
       }
 
-      // Cache-busting timestamp ensures changes made in Google Sheet reflect immediately
-      gvizUrl += `&_t=${Date.now()}`;
+      // Absolute cache-busting timestamp + random token guarantees immediate reflection of edits
+      gvizUrl += `&_t=${now}&_nocache=${nonce}&t=${now}`;
 
       script.src = gvizUrl;
       (document.head || document.documentElement).appendChild(script);
@@ -126,23 +131,34 @@
   };
 
   /**
-   * Resilient multi-tier Google Sheet fetch orchestrator:
-   * Tier 1: Local / Vercel Server API Proxy (/api/sheets/fetch)
-   * Tier 2: Client-side Google Visualization API JSONP (no CORS restriction)
-   * Tier 3: Direct browser fetch (if published or CORS enabled)
-   * Tier 4: Public CORS Proxy fallback (allorigins)
+   * Resilient multi-tier Google Sheet fetch orchestrator with strict zero-cache policy:
+   * Tier 1: Local / Vercel Server API Proxy (/api/sheets/fetch) with cache: 'no-store'
+   * Tier 2: Client-side Google Visualization API JSONP (zero CORS, zero cache)
+   * Tier 3: Direct browser fetch with cache: 'no-store' and Cache-Control headers
+   * Tier 4: Public CORS Proxy fallback (allorigins) with cache-busting query
    */
   window.fetchGoogleSheetData = async function (targetUrl, options = {}) {
     const sheetTab = options.sheetTab || 'Sheet1';
     const gid = options.gid !== undefined ? options.gid : null;
+    const now = Date.now();
+    const nonce = Math.floor(Math.random() * 10000000);
+
+    const noCacheHeaders = {
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    };
 
     // 1. First attempt: Server / Serverless API proxy (/api/sheets/fetch)
     try {
       const proxyRes = await fetch('/api/sheets/fetch', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: targetUrl, sheetTab, gid }),
-        cache: 'no-cache'
+        headers: {
+          'Content-Type': 'application/json',
+          ...noCacheHeaders
+        },
+        body: JSON.stringify({ url: targetUrl, sheetTab, gid, t: now, _nocache: nonce }),
+        cache: 'no-store'
       });
       if (proxyRes.ok) {
         const json = await proxyRes.json();
@@ -151,10 +167,10 @@
         }
       }
     } catch (e) {
-      // Server proxy unavailable (e.g. static Vercel deployment) - proceed to JSONP
+      // Server proxy unavailable (e.g. static host without serverless functions) - proceed to JSONP
     }
 
-    // 2. Second attempt: Direct JSONP via Google Visualization API (native browser, no CORS)
+    // 2. Second attempt: Direct JSONP via Google Visualization API (native browser, no CORS restrictions on Vercel)
     try {
       const jsonpResult = await window.fetchGoogleSheetViaJSONP(targetUrl, { gid, sheetTab });
       if (jsonpResult && jsonpResult.csvText && jsonpResult.csvText.length > 50) {
@@ -164,13 +180,20 @@
       console.warn(`JSONP fetch failed for ${sheetTab} (${targetUrl}):`, jsonpErr);
     }
 
-    // 3. Third attempt: Direct fetch (in case URL is published to web or has CORS)
+    // 3. Third attempt: Direct fetch with strict zero-cache flags
     try {
       let candidateUrl = targetUrl;
       if (candidateUrl.includes('/edit')) {
         candidateUrl = candidateUrl.split('/edit')[0] + (gid ? `/export?format=csv&gid=${gid}` : '/export?format=csv');
       }
-      const directRes = await fetch(candidateUrl, { method: 'GET', cache: 'no-cache' });
+      const separator = candidateUrl.includes('?') ? '&' : '?';
+      const cacheBustedUrl = `${candidateUrl}${separator}_t=${now}&_nocache=${nonce}&t=${now}`;
+
+      const directRes = await fetch(cacheBustedUrl, {
+        method: 'GET',
+        cache: 'no-store',
+        headers: noCacheHeaders
+      });
       if (directRes.ok) {
         const text = await directRes.text();
         if (text && !text.includes('<!DOCTYPE html>') && !text.includes('<html') && text.length > 50) {
@@ -178,16 +201,21 @@
         }
       }
     } catch (directErr) {
-      // Direct fetch blocked by CORS
+      // Direct fetch blocked by CORS or network
     }
 
     // 4. Fourth attempt: Resilient public CORS proxy
     try {
-      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
-      const proxyRes = await fetch(proxyUrl, { cache: 'no-cache' });
+      const separator = targetUrl.includes('?') ? '&' : '?';
+      const targetWithBuster = `${targetUrl}${separator}_t=${now}&t=${now}`;
+      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetWithBuster)}&_t=${now}`;
+      const proxyRes = await fetch(proxyUrl, {
+        cache: 'no-store',
+        headers: noCacheHeaders
+      });
       if (proxyRes.ok) {
         const text = await proxyRes.text();
-        if (text && !text.includes('<!DOCTYPE html>') && text.length > 50) {
+        if (text && !text.includes('<!DOCTYPE html>') && !text.includes('<html') && text.length > 50) {
           return text;
         }
       }
