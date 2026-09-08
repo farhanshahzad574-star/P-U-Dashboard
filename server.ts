@@ -270,10 +270,31 @@ ${config.context}
   }
 });
 
-// POST /api/sheets/fetch - Live Google Sheets Tab CSV Proxy (supports Recommendations and PLR tabs)
-app.post('/api/sheets/fetch', async (req: Request, res: Response): Promise<void> => {
+function convertGvizTableToCsv(table: any): string {
+  if (!table || !Array.isArray(table.cols)) return '';
+  const headers = table.cols.map((col: any) => {
+    const label = (col && (col.label || col.id)) || '';
+    return `"${String(label).replace(/"/g, '""')}"`;
+  }).join(',');
+
+  const rows = (table.rows || []).map((row: any) => {
+    if (!row || !Array.isArray(row.c)) return '';
+    return row.c.map((cell: any) => {
+      if (!cell || cell.v === null || cell.v === undefined) return '""';
+      const val = (cell.f !== undefined && cell.f !== null) ? cell.f : cell.v;
+      return `"${String(val).replace(/"/g, '""')}"`;
+    }).join(',');
+  });
+
+  return [headers, ...rows].join('\r\n');
+}
+
+// POST & GET /api/sheets/fetch - Live Google Sheets Tab CSV Proxy (supports Recommendations and PLR tabs)
+app.all('/api/sheets/fetch', async (req: Request, res: Response): Promise<void> => {
   try {
-    const { url, sheetTab = 'Recommendations', gid: customGid } = req.body;
+    const url = req.body?.url || req.query?.url;
+    const sheetTab = req.body?.sheetTab || req.query?.sheetTab || 'Recommendations';
+    const customGid = req.body?.gid || req.query?.gid;
     if (!url || typeof url !== 'string') {
       res.status(400).json({ success: false, error: 'A valid Google Sheet URL is required.' });
       return;
@@ -372,6 +393,40 @@ app.post('/api/sheets/fetch', async (req: Request, res: Response): Promise<void>
         }
       } catch (err: any) {
         lastError = err?.message || 'Network request failed';
+      }
+    }
+
+    // Direct Google Visualization JSON fallback if out:csv was HTML-blocked
+    if (!csvText && spreadsheetId) {
+      const gvizCandidateUrls: string[] = [];
+      if (gid) {
+        gvizCandidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:json&gid=${gid}`);
+      }
+      for (const tab of candidateTabs) {
+        gvizCandidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(tab)}`);
+      }
+
+      for (const gvizUrl of gvizCandidateUrls) {
+        try {
+          const gvizRes = await fetch(gvizUrl, {
+            headers: { 'Accept': '*/*' },
+            redirect: 'follow'
+          });
+          if (gvizRes.ok) {
+            const raw = await gvizRes.text();
+            const jsonMatch = raw.match(/google\.visualization\.Query\.setResponse\((.*)\);?/s);
+            if (jsonMatch && jsonMatch[1]) {
+              const data = JSON.parse(jsonMatch[1]);
+              if (data && data.table) {
+                csvText = convertGvizTableToCsv(data.table);
+                successUrl = gvizUrl;
+                break;
+              }
+            }
+          }
+        } catch (gvizErr) {
+          // ignore and continue
+        }
       }
     }
 

@@ -1834,24 +1834,47 @@
 
         let csvText = '';
 
-        // 1. Try server proxy FIRST (/api/sheets/fetch) for CORS-free Google Sheets export
-        try {
-          const res = await fetch('/api/sheets/fetch', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ url: targetUrl, sheetTab: 'PSM', gid: '0' })
-          });
-          if (res.ok) {
-            const json = await res.json();
-            if (json.success && json.csvText && json.csvText.length > 50) {
-              csvText = json.csvText;
-            }
+        // Resilient Multi-tier Google Sheet Fetcher (bypasses CORS restrictions on Vercel)
+        if (typeof window.fetchGoogleSheetData === 'function') {
+          try {
+            csvText = await window.fetchGoogleSheetData(targetUrl, { sheetTab: 'PSM', gid: '0' });
+          } catch (e) {
+            console.warn('window.fetchGoogleSheetData error:', e);
           }
-        } catch (proxyErr) {
-          console.warn('Proxy fetch failed for PSM sheet, attempting direct fallback:', proxyErr);
         }
 
-        // 2. Client-side direct fetch fallback
+        // Direct JSONP fallback if window.fetchGoogleSheetData did not return text
+        if (!csvText && typeof window.fetchGoogleSheetViaJSONP === 'function') {
+          try {
+            const jsonpRes = await window.fetchGoogleSheetViaJSONP(targetUrl, { sheetTab: 'PSM', gid: '0' });
+            if (jsonpRes && jsonpRes.csvText) {
+              csvText = jsonpRes.csvText;
+            }
+          } catch (e) {
+            console.warn('JSONP fallback error:', e);
+          }
+        }
+
+        // Fallback: Try server proxy (/api/sheets/fetch)
+        if (!csvText) {
+          try {
+            const res = await fetch('/api/sheets/fetch', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ url: targetUrl, sheetTab: 'PSM', gid: '0' })
+            });
+            if (res.ok) {
+              const json = await res.json();
+              if (json.success && json.csvText && json.csvText.length > 50) {
+                csvText = json.csvText;
+              }
+            }
+          } catch (proxyErr) {
+            console.warn('Proxy fetch failed for PSM sheet:', proxyErr);
+          }
+        }
+
+        // Fallback: Client-side direct fetch
         if (!csvText) {
           try {
             const resp = await fetch(targetUrl, { method: 'GET', cache: 'no-cache' });

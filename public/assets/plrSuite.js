@@ -5591,22 +5591,47 @@
       const gidMatch = urlToUse.match(/[#?&]gid=([0-9]+)/);
       const gid = gidMatch ? gidMatch[1] : null;
 
-      // 1. Try server proxy
-      try {
-        const res = await fetch('/api/sheets/fetch', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url: urlToUse, sheetTab, gid })
-        });
-        const json = await res.json();
-        if (json.success && json.csvText) {
-          csvData = json.csvText;
+      // 1. Resilient Multi-tier Google Sheet Fetcher (handles CORS on Vercel via JSONP)
+      if (typeof window.fetchGoogleSheetData === 'function') {
+        try {
+          csvData = await window.fetchGoogleSheetData(urlToUse, { sheetTab, gid });
+        } catch (e) {
+          console.warn(`window.fetchGoogleSheetData error for tab ${sheetTab}:`, e);
         }
-      } catch (err) {
-        console.warn(`Proxy fetch failed for tab ${sheetTab} on ${urlToUse}:`, err);
       }
 
-      // 2. Client-side fallback if server proxy was blocked
+      // 2. Direct JSONP fallback if window.fetchGoogleSheetData did not return text
+      if (!csvData && typeof window.fetchGoogleSheetViaJSONP === 'function') {
+        try {
+          const jsonpRes = await window.fetchGoogleSheetViaJSONP(urlToUse, { sheetTab, gid });
+          if (jsonpRes && jsonpRes.csvText && jsonpRes.csvText.length > 50) {
+            csvData = jsonpRes.csvText;
+          }
+        } catch (e) {
+          console.warn(`JSONP fallback failed for tab ${sheetTab}:`, e);
+        }
+      }
+
+      // 3. Try server proxy (/api/sheets/fetch)
+      if (!csvData) {
+        try {
+          const res = await fetch('/api/sheets/fetch', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url: urlToUse, sheetTab, gid })
+          });
+          if (res.ok) {
+            const json = await res.json();
+            if (json.success && json.csvText) {
+              csvData = json.csvText;
+            }
+          }
+        } catch (err) {
+          console.warn(`Proxy fetch failed for tab ${sheetTab} on ${urlToUse}:`, err);
+        }
+      }
+
+      // 4. Client-side fallback if server proxy was blocked
       if (!csvData) {
         let spreadsheetId = urlToUse;
         let isPublished = false;
