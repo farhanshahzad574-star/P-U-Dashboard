@@ -341,9 +341,9 @@
     // Handle interactive click on donut slices or legends to filter dashboard and open data modal
     onDonutSliceClick(type, value) {
       this.hideTooltip();
+      const raw = this.getRawData();
       if (type === 'element') {
         this.state.elementFilter = value;
-        const raw = this.getRawData();
         const records = raw.filter(d => d.psmElement === value);
         const openCount = records.filter(d => (d.status || '').toLowerCase() === 'open').length;
         const closedCount = records.length - openCount;
@@ -353,11 +353,14 @@
           badge: 'PSM Element',
           subtitle: `${records.length} Findings in ${value} (${closedCount} Closed, ${openCount} Open)`,
           filterElement: value,
-          filterStatus: 'all'
+          filterDept: 'all',
+          filterUnit: 'all',
+          filterNature: 'all',
+          filterStatus: 'all',
+          records: records
         });
       } else {
         this.state.natureFilter = value;
-        const raw = this.getRawData();
         const records = raw.filter(d => d.nature === value);
         const openCount = records.filter(d => (d.status || '').toLowerCase() === 'open').length;
         const closedCount = records.length - openCount;
@@ -367,9 +370,34 @@
           badge: 'Severity',
           subtitle: `${records.length} Findings with Severity ${value} (${closedCount} Closed, ${openCount} Open)`,
           filterNature: value,
-          filterStatus: 'all'
+          filterElement: 'all',
+          filterDept: 'all',
+          filterUnit: 'all',
+          filterStatus: 'all',
+          records: records
         });
       }
+    },
+
+    // Handle click on any general part of donut (center hub, background track, or donut wrapper)
+    onDonutGeneralClick() {
+      this.hideTooltip();
+      const raw = this.getRawData();
+      const total = raw.length;
+      const openCount = raw.filter(d => (d.status || '').toLowerCase() === 'open').length;
+      const closedCount = total - openCount;
+      const isElement = this.state.chartBreakdownMode === 'element';
+      this.openDataModal({
+        title: isElement ? 'Audit Breakdown: All PSM Elements' : 'Audit Breakdown: All Severity Levels',
+        badge: 'Audit Scope',
+        subtitle: `${total} Total Audit Findings (${closedCount} Closed, ${openCount} Open)`,
+        filterElement: 'all',
+        filterDept: 'all',
+        filterUnit: 'all',
+        filterNature: 'all',
+        filterStatus: 'all',
+        records: raw
+      });
     },
 
     // Main render method mounted on #psm-specialized-container
@@ -791,24 +819,38 @@
                     <i data-lucide="bar-chart-3" class="w-4 h-4 text-teal-600"></i>
                     <span>OPEN VS. CLOSED FINDINGS BY ACTION DEPARTMENT</span>
                   </h3>
-                  <p class="text-[11px] text-slate-500">Click any bar to filter & view items</p>
-                </div>
-                <!-- Legend -->
-                <div class="flex items-center gap-3 text-xs font-bold font-mono">
-                  <span class="inline-flex items-center gap-1.5">
-                    <span class="w-2.5 h-2.5 rounded-sm bg-rose-500"></span>
-                    <span class="text-slate-600">Open Findings</span>
-                  </span>
-                  <span class="inline-flex items-center gap-1.5">
-                    <span class="w-2.5 h-2.5 rounded-sm bg-teal-500"></span>
-                    <span class="text-slate-600">Closed Findings</span>
-                  </span>
+                  <p class="text-[11px] text-slate-500">Click any department bar to filter & view items</p>
                 </div>
               </div>
 
               <!-- Horizontal SVG Bar Chart -->
               <div id="psm-dept-bar-chart" class="w-full overflow-x-auto">
                 ${this.renderDepartmentBarChart(deptList)}
+              </div>
+
+              <!-- Legends of Department Findings Trend Placed at Bottom -->
+              <div class="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs font-mono">
+                <div class="flex items-center gap-3">
+                  <button
+                    onclick="FPCL_PSM_SUITE.openDataModal({ title: 'All Open Findings by Department', badge: 'Active Open', subtitle: '${openCount} Open findings across all departments', filterStatus: 'Open' })"
+                    class="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 font-bold cursor-pointer hover:bg-rose-100 transition-colors shadow-2xs"
+                    title="Click to view all Open findings in pop-up window"
+                  >
+                    <span class="w-2.5 h-2.5 rounded-sm bg-rose-500"></span>
+                    <span>Open Findings (${openCount})</span>
+                  </button>
+                  <button
+                    onclick="FPCL_PSM_SUITE.openDataModal({ title: 'All Closed Findings by Department', badge: 'Resolved', subtitle: '${closedCount} Closed findings across all departments', filterStatus: 'Close' })"
+                    class="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 font-bold cursor-pointer hover:bg-emerald-100 transition-colors shadow-2xs"
+                    title="Click to view all Closed findings in pop-up window"
+                  >
+                    <span class="w-2.5 h-2.5 rounded-sm bg-teal-500"></span>
+                    <span>Closed Findings (${closedCount})</span>
+                  </button>
+                </div>
+                <div class="text-[11px] font-sans text-slate-400 font-medium">
+                  Click any bar to inspect department data
+                </div>
               </div>
             </div>
 
@@ -1237,7 +1279,7 @@
         <!-- ========================================================================= -->
         <!-- 8. FINDING INSPECTION MODAL                                               -->
         <!-- ========================================================================= -->
-        <div id="psm-inspection-modal" class="fixed inset-0 z-[70] bg-black/60 backdrop-blur-xs hidden items-center justify-center p-4">
+        <div id="psm-inspection-modal" class="fixed inset-0 z-[10000] bg-black/60 backdrop-blur-xs hidden items-center justify-center p-4">
           <div id="psm-modal-card" class="bg-white border border-slate-200 rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
             <!-- Populated dynamically via inspectFinding() -->
           </div>
@@ -1424,14 +1466,14 @@
       const items = isElement ? this.getElementAggregation(filteredData) : this.getSeverityAggregation(filteredData);
       
       if (items.length === 0) {
-        return `<div class="text-center py-6 text-xs text-slate-400">No records available</div>`;
+        return `<div class="text-center py-8 text-xs text-slate-400 font-medium">No records available in current scope</div>`;
       }
 
       // Elegant palette colors for slices
       const colors = ['#0D9488', '#0284C7', '#6366F1', '#EC4899', '#F59E0B', '#8B5CF6', '#10B981'];
 
       const total = items.reduce((acc, it) => acc + it.count, 0);
-      const radius = 56;
+      const radius = 88;
       const circumference = 2 * Math.PI * radius;
 
       let currentOffset = 0;
@@ -1445,20 +1487,20 @@
 
         return `
           <circle
-            cx="75" cy="75" r="${radius}"
+            cx="120" cy="120" r="${radius}"
             fill="transparent"
             stroke="${color}"
-            stroke-width="${isFiltered ? '24' : '20'}"
+            stroke-width="${isFiltered ? '32' : '26'}"
             stroke-dasharray="${sliceLength} ${circumference - sliceLength}"
             stroke-dashoffset="${offset}"
             style="cursor: pointer; pointer-events: stroke;"
-            class="transition-all duration-300 hover:opacity-80"
-            onclick="FPCL_PSM_SUITE.onDonutSliceClick('${isElement ? 'element' : 'nature'}', '${it.name.replace(/'/g, "\\'")}')"
-            onmouseenter="FPCL_PSM_SUITE.showTooltip(event, { title: '${it.name.replace(/'/g, "\\'")}', badge: '${isElement ? 'PSM Element' : 'Severity'}', color: '${color}', subtitle: 'Audit Breakdown Slice', metrics: [{ label: 'Count', value: '${it.count}' }, { label: 'Share of Audit', value: '${it.percentage}%' }, { label: 'Total In Scope', value: '${total}' }], hint: 'Click to open ${it.count} findings for ${it.name.replace(/'/g, "\\'")}' })"
+            class="transition-all duration-300 hover:opacity-85 hover:stroke-[30px]"
+            onclick="event.stopPropagation(); FPCL_PSM_SUITE.onDonutSliceClick('${isElement ? 'element' : 'nature'}', '${it.name.replace(/'/g, "\\'")}')"
+            onmouseenter="FPCL_PSM_SUITE.showTooltip(event, { title: '${it.name.replace(/'/g, "\\'")}', badge: '${isElement ? 'PSM Element' : 'Severity'}', color: '${color}', subtitle: 'Audit Breakdown Slice', metrics: [{ label: 'Count', value: '${it.count}' }, { label: 'Share of Audit', value: '${it.percentage}%' }, { label: 'Total In Scope', value: '${total}' }], hint: 'Click to open pop-up window with ${it.count} findings for ${it.name.replace(/'/g, "\\'")}' })"
             onmousemove="FPCL_PSM_SUITE.moveTooltip(event)"
             onmouseleave="FPCL_PSM_SUITE.hideTooltip()"
           >
-            <title>${it.name}: ${it.count} (${it.percentage}%) - Click to open data records</title>
+            <title>${it.name}: ${it.count} (${it.percentage}%) - Click to open relevant data records</title>
           </circle>
         `;
       }).join('');
@@ -1468,48 +1510,66 @@
         const isFiltered = (isElement && this.state.elementFilter === it.name) || (!isElement && this.state.natureFilter === it.name);
         return `
           <button
-            onclick="FPCL_PSM_SUITE.onDonutSliceClick('${isElement ? 'element' : 'nature'}', '${it.name.replace(/'/g, "\\'")}')"
-            onmouseenter="FPCL_PSM_SUITE.showTooltip(event, { title: '${it.name.replace(/'/g, "\\'")}', badge: '${isElement ? 'PSM Element' : 'Severity'}', color: '${color}', subtitle: 'Audit Filter Tag', metrics: [{ label: 'Count', value: '${it.count}' }, { label: 'Share', value: '${it.percentage}%' }], hint: 'Click to explore ${it.count} findings' })"
+            onclick="event.stopPropagation(); FPCL_PSM_SUITE.onDonutSliceClick('${isElement ? 'element' : 'nature'}', '${it.name.replace(/'/g, "\\'")}')"
+            onmouseenter="FPCL_PSM_SUITE.showTooltip(event, { title: '${it.name.replace(/'/g, "\\'")}', badge: '${isElement ? 'PSM Element' : 'Severity'}', color: '${color}', subtitle: 'Audit Filter Tag', metrics: [{ label: 'Count', value: '${it.count}' }, { label: 'Share', value: '${it.percentage}%' }], hint: 'Click to explore ${it.count} findings in pop-up window' })"
             onmousemove="FPCL_PSM_SUITE.moveTooltip(event)"
             onmouseleave="FPCL_PSM_SUITE.hideTooltip()"
-            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all text-left cursor-pointer ${
+            class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all text-left cursor-pointer ${
               isFiltered 
-                ? 'bg-slate-900 text-white border-slate-900 shadow-2xs font-bold' 
-                : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
+                ? 'bg-slate-900 text-white border-slate-900 shadow-sm font-bold ring-2 ring-slate-400' 
+                : 'bg-slate-50 hover:bg-slate-100 text-slate-800 border-slate-200 shadow-2xs hover:border-slate-300'
             }"
+            title="Click to pop up window for ${it.name}"
           >
             <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: ${color};"></span>
-            <span class="text-xs font-bold truncate max-w-[90px]">${it.name}</span>
-            <span class="text-[11px] font-mono opacity-75">(${it.count})</span>
+            <span class="text-xs font-bold truncate max-w-[130px] sm:max-w-[160px]">${it.name}</span>
+            <span class="text-[11px] font-mono px-1.5 py-0.5 rounded font-semibold ${isFiltered ? 'bg-white/20 text-white' : 'bg-white text-slate-700 border border-slate-200'}">
+              ${it.count} (${it.percentage}%)
+            </span>
           </button>
         `;
       }).join('');
 
       return `
-        <div class="flex flex-col sm:flex-row items-center justify-center gap-6">
-          <!-- Donut SVG -->
-          <div class="relative w-40 h-40 shrink-0">
-            <svg viewBox="0 0 150 150" class="w-full h-full transform -rotate-90">
-              <circle cx="75" cy="75" r="${radius}" fill="transparent" stroke="#F1F5F9" stroke-width="20"/>
+        <div class="flex flex-col items-center justify-center w-full gap-5">
+          <!-- Enlarged Donut SVG -->
+          <div
+            class="relative w-60 h-60 sm:w-68 sm:h-68 shrink-0 cursor-pointer select-none"
+            onclick="FPCL_PSM_SUITE.onDonutGeneralClick()"
+            title="Click any part of donut to open data window"
+          >
+            <svg viewBox="0 0 240 240" class="w-full h-full transform -rotate-90">
+              <!-- Background Track Ring (Clickable) -->
+              <circle
+                cx="120" cy="120" r="${radius}"
+                fill="transparent"
+                stroke="#F1F5F9"
+                stroke-width="26"
+                class="cursor-pointer transition-colors hover:stroke-slate-200"
+                onclick="event.stopPropagation(); FPCL_PSM_SUITE.onDonutGeneralClick()"
+              />
               ${slicesSvg}
             </svg>
+            
+            <!-- Interactive Center Hub -->
             <div class="absolute inset-0 flex items-center justify-center pointer-events-none text-center">
               <div
-                onclick="FPCL_PSM_SUITE.openDataModal({ title: 'Complete Audit Scope', badge: 'All Findings', subtitle: '${total} Total Findings Across All Elements', filterStatus: 'all' })"
-                onmouseenter="FPCL_PSM_SUITE.showTooltip(event, { title: 'Audit Scope', badge: 'All Findings', color: '#0F172A', subtitle: '${isElement ? 'All PSM Elements' : 'All Severity Levels'}', metrics: [{ label: 'Total In Scope', value: '${total}' }], hint: 'Click to open all ${total} audit records' })"
+                onclick="event.stopPropagation(); FPCL_PSM_SUITE.onDonutGeneralClick()"
+                onmouseenter="FPCL_PSM_SUITE.showTooltip(event, { title: 'Complete Audit Scope', badge: 'All Findings', color: '#0F172A', subtitle: '${isElement ? 'All PSM Elements' : 'All Severity Levels'}', metrics: [{ label: 'Total In Scope', value: '${total}' }], hint: 'Click to open pop-up window for all ${total} audit records' })"
                 onmousemove="FPCL_PSM_SUITE.moveTooltip(event)"
                 onmouseleave="FPCL_PSM_SUITE.hideTooltip()"
-                class="w-20 h-20 rounded-full flex flex-col items-center justify-center pointer-events-auto cursor-pointer hover:bg-slate-100/70 transition-colors group"
-                title="Click to view all ${total} findings"
+                class="w-32 h-32 sm:w-36 sm:h-36 rounded-full flex flex-col items-center justify-center pointer-events-auto cursor-pointer bg-white hover:bg-slate-50 transition-all duration-200 group border border-slate-100 shadow-xs"
+                title="Click to open pop-up window for all ${total} audit records"
               >
-                <span class="text-xl font-black font-mono text-slate-900 group-hover:text-teal-700 transition-colors">${total}</span>
-                <span class="text-[9px] font-bold text-slate-500 uppercase tracking-wider group-hover:text-teal-600 transition-colors">FINDINGS</span>
+                <span class="text-3xl sm:text-4xl font-black font-mono text-slate-900 group-hover:text-teal-700 transition-colors leading-none">${total}</span>
+                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest group-hover:text-teal-600 transition-colors mt-1.5">FINDINGS</span>
+                <span class="text-[9px] font-bold text-teal-700 bg-teal-50 px-2.5 py-0.5 rounded-full border border-teal-200 mt-2 opacity-90 group-hover:opacity-100 transition-opacity">Click for data</span>
               </div>
             </div>
           </div>
 
-          <!-- Legend Tags -->
-          <div class="flex flex-wrap items-center justify-center gap-2 max-w-[220px]">
+          <!-- Breakdown Legends Placed at Bottom -->
+          <div class="w-full pt-4 border-t border-slate-100 flex flex-wrap items-center justify-center gap-2">
             ${legendHtml}
           </div>
         </div>
@@ -2346,7 +2406,7 @@
       const hasActiveFilters = (m.filterDept !== 'all' || m.filterElement !== 'all' || m.filterNature !== 'all' || m.activeStatusTab !== 'all' || !!m.searchQuery.trim());
 
       container.innerHTML = `
-        <div class="fixed inset-0 z-[60] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5" onclick="if(event.target === this) FPCL_PSM_SUITE.closeDataModal()">
+        <div class="fixed inset-0 z-[9999] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5" onclick="if(event.target === this) FPCL_PSM_SUITE.closeDataModal()">
           <div class="bg-white border border-slate-200 rounded-2xl w-full max-w-5xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden animate-in fade-in zoom-in-95 duration-150">
             
             <!-- Modal Header -->
