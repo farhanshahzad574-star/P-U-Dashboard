@@ -133,19 +133,50 @@
   window.FPCL_HARDCODED_RECOMMENDATIONS_SHEET_URL = HARDCODED_RECOMMENDATIONS_SHEET_URL;
   window.FPCL_HARDCODED_PLR_STATUS_SHEET_URL = HARDCODED_PLR_STATUS_SHEET_URL;
 
+  // Helper to cleanse any old cached or imported data where PE was written as Plant Engineering
+  function cleansePeEntities(recs) {
+    if (!Array.isArray(recs)) return { recs, modified: false };
+    let modified = false;
+    recs.forEach(r => {
+      if (r && r.actionBy && /plant\s*engineering/i.test(r.actionBy)) {
+        r.actionBy = r.actionBy
+          .replace(/Plant\s+Engineering\s*\(\s*PE\s*\)/gi, 'PE')
+          .replace(/PE\s*\(\s*Plant\s+Engineering\s*\)/gi, 'PE')
+          .replace(/Plant\s+Engineering/gi, 'PE')
+          .trim();
+        if (r.category && /plant\s*engineering/i.test(r.category)) {
+          r.category = r.actionBy;
+        }
+        modified = true;
+      }
+    });
+    return { recs, modified };
+  }
+
   // Restore modified recommendations and incidents from localStorage if present
   try {
     const savedRecs = localStorage.getItem('FPCL_PLR_RECOMMENDATIONS_UPDATED');
     if (savedRecs) {
       const parsedSaved = JSON.parse(savedRecs);
       if (Array.isArray(parsedSaved) && parsedSaved.length >= 50) {
-        window.FPCL_PLR_RECOMMENDATIONS = parsedSaved;
+        const { recs, modified } = cleansePeEntities(parsedSaved);
+        window.FPCL_PLR_RECOMMENDATIONS = recs;
+        if (modified) {
+          try {
+            localStorage.setItem('FPCL_PLR_RECOMMENDATIONS_UPDATED', JSON.stringify(recs));
+          } catch (e) {}
+        }
       } else {
         localStorage.removeItem('FPCL_PLR_RECOMMENDATIONS_UPDATED');
       }
     }
   } catch (err) {
     console.warn('Could not restore cached recommendations from localStorage:', err);
+  }
+
+  // Also ensure in-memory baseline recommendations strictly maintain PE
+  if (Array.isArray(window.FPCL_PLR_RECOMMENDATIONS)) {
+    cleansePeEntities(window.FPCL_PLR_RECOMMENDATIONS);
   }
 
   try {
@@ -399,6 +430,15 @@
         rawAction = String(row[colAction]).trim();
       }
 
+      // Strictly normalize any Plant Engineering variation to 'PE' directly as specified in Google Sheet Column F
+      if (rawAction && /plant\s*engineering/i.test(rawAction)) {
+        rawAction = rawAction
+          .replace(/Plant\s+Engineering\s*\(\s*PE\s*\)/gi, 'PE')
+          .replace(/PE\s*\(\s*Plant\s+Engineering\s*\)/gi, 'PE')
+          .replace(/Plant\s+Engineering/gi, 'PE')
+          .trim();
+      }
+
       // Extract recommendation from Column E (index 4) named Recommendations
       let rawRec = (colRec !== -1 && row[colRec]) ? String(row[colRec]).trim() : (row.length > 4 ? String(row[4] || '').trim() : '');
       
@@ -613,6 +653,12 @@
       return ['Unassigned'];
     }
 
+    // Strictly enforce source Google Sheet entity name: in Google Sheet Column F it is just 'PE'
+    // Prevent any expansion into "Plant Engineering" or "Plant Engineering (PE)"
+    str = str.replace(/Plant\s+Engineering\s*\(\s*PE\s*\)/gi, 'PE');
+    str = str.replace(/PE\s*\(\s*Plant\s+Engineering\s*\)/gi, 'PE');
+    str = str.replace(/Plant\s+Engineering/gi, 'PE');
+
     // Protect known multi-character tokens containing '&', '/', or parentheses
     str = str.replace(/E\s*&\s*I/gi, '__E_AND_I__');
     str = str.replace(/O\s*\/\s*C/gi, '__O_SLASH_C__');
@@ -645,8 +691,8 @@
       if (lower === 'operation' || lower === 'operations' || lower === 'ops' || lower === 'oprs' || lower.includes('ops-psg') || lower === 'process') {
         return 'Operations';
       }
-      // PE entity directly as specified in Google Sheet
-      if (lower === 'pe' || lower === 'plant engineering' || lower === 'plant engineering (pe)' || lower === 'pe/technical') {
+      // PE entity directly as specified in Google Sheet - strictly keep as PE, never expand
+      if (lower === 'pe' || lower === 'plant engineering' || lower.includes('plant engineering') || lower === 'plant eng' || lower.startsWith('pe ') || lower === 'pe/technical') {
         return 'PE';
       }
       // FPCL-KE O/C variations
@@ -3861,7 +3907,7 @@
                         <div class="flex items-center justify-between gap-2 flex-wrap">
                           <span class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
                             <span class="w-5 h-5 rounded-full bg-slate-100 text-[#2E6DA4] flex items-center justify-center text-[10px] font-mono font-bold">${idx + 1}</span>
-                            <span class="text-[#2E6DA4]">${r.actionBy}</span>
+                            <span class="text-[#2E6DA4]">${normalizeActionEntity(r.actionBy)}</span>
                           </span>
                           <button
                             onclick="portalApp.toggleRecommendationStatus(${r.sNo}, ${plrNo})"
@@ -4749,7 +4795,7 @@
                         <td class="py-2.5 px-3 whitespace-nowrap">
                           <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-800 border border-slate-200">
                             <span class="w-1.5 h-1.5 rounded-full bg-[#2E6DA4]"></span>
-                            <span>${r.actionBy}</span>
+                            <span>${normalizeActionEntity(r.actionBy)}</span>
                           </span>
                         </td>
                         <td class="py-2.5 px-3 whitespace-nowrap">
@@ -5322,7 +5368,14 @@
     const plrNo = plrnoEl ? parseInt(plrnoEl.value, 10) : 0;
     const year = yearEl && yearEl.value ? parseInt(yearEl.value, 10) : 2025;
     const date = dateEl ? dateEl.value.trim() : '';
-    const actionBy = actionbyEl && actionbyEl.value.trim() ? actionbyEl.value.trim() : 'Unassigned';
+    let actionBy = actionbyEl && actionbyEl.value.trim() ? actionbyEl.value.trim() : 'Unassigned';
+    if (/plant\s*engineering/i.test(actionBy)) {
+      actionBy = actionBy
+        .replace(/Plant\s+Engineering\s*\(\s*PE\s*\)/gi, 'PE')
+        .replace(/PE\s*\(\s*Plant\s+Engineering\s*\)/gi, 'PE')
+        .replace(/Plant\s+Engineering/gi, 'PE')
+        .trim();
+    }
     const recommendation = recEl.value.trim();
     const status = statusRadio ? statusRadio.value : 'Open';
 
@@ -5523,7 +5576,15 @@
     item.plrNo = plrnoEl ? parseInt(plrnoEl.value, 10) : item.plrNo;
     item.year = yearEl && yearEl.value ? parseInt(yearEl.value, 10) : item.year;
     item.date = dateEl ? dateEl.value.trim() : item.date;
-    item.actionBy = actionbyEl && actionbyEl.value.trim() ? actionbyEl.value.trim() : item.actionBy;
+    let cleanActionBy = actionbyEl && actionbyEl.value.trim() ? actionbyEl.value.trim() : item.actionBy;
+    if (cleanActionBy && /plant\s*engineering/i.test(cleanActionBy)) {
+      cleanActionBy = cleanActionBy
+        .replace(/Plant\s+Engineering\s*\(\s*PE\s*\)/gi, 'PE')
+        .replace(/PE\s*\(\s*Plant\s+Engineering\s*\)/gi, 'PE')
+        .replace(/Plant\s+Engineering/gi, 'PE')
+        .trim();
+    }
+    item.actionBy = cleanActionBy;
     item.recommendation = recEl.value.trim();
     item.status = statusRadio ? statusRadio.value : item.status;
     item.category = item.actionBy;
