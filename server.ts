@@ -80,7 +80,7 @@ PLR Data Summary (linked to Google Sheet tabs PLRstatus & Recommendations):
      * FPCL-KE Operating Committee: 79 items (77 closed, 2 open).
      * Operations: 45 items (41 closed, 4 open).
      * Mechanical: 38 items (34 closed, 4 open).
-     * Plant Engineering (PE): 28 items (26 closed, 2 open).
+     * PE: 28 items (26 closed, 2 open).
      * Finance / FPCL-KE O/C: 25 items (24 closed, 1 open).
      * SCM: 11 items (11 closed, 0 open).
      * KE: 5 items (5 closed, 0 open).
@@ -233,7 +233,7 @@ ${config.context}
       if (lowerMsg.includes('machine') || lowerMsg.includes('stg') || lowerMsg.includes('boiler') || lowerMsg.includes('outage') || lowerMsg.includes('equipment')) {
         reply = `**PLR Standardized Machine Breakdown (233 Total Outages):**\n\n- **STG # 4**: 154 outages (Primary outage driver • 66.1% of total losses)\n- **STG # 3**: 17 outages\n- **Boiler # 1 (CFB-1)**: 17 outages\n- **STG # 2**: 11 outages\n- **Boiler # 2 (CFB-2)**: 11 outages\n- **STG # 1**: 10 outages\n- **Other Equipment / Multi-Unit**: 13 outages\n\n*Overall PLR Incident Resolution: 206 Closed, 27 Open (88.4% Resolution Rate).*`;
       } else if (lowerMsg.includes('department') || lowerMsg.includes('e&i') || lowerMsg.includes('mechanical') || lowerMsg.includes('operations') || lowerMsg.includes('recommendation') || lowerMsg.includes('action')) {
-        reply = `**PLR Recommendations by Standardized Department (451 Total Records):**\n\n- **E&I**: 196 items (182 closed, 14 open • 92.9% rate)\n- **FPCL-KE Operating Committee**: 79 items (77 closed, 2 open)\n- **Operations**: 45 items (41 closed, 4 open)\n- **Mechanical**: 38 items (34 closed, 4 open)\n- **Plant Engineering (PE)**: 28 items (26 closed, 2 open)\n- **Finance / FPCL-KE O/C**: 25 items (24 closed, 1 open)\n- **SCM**: 11 items (11 closed, 0 open)\n- **KE**: 5 items (5 closed, 0 open)\n- **Mechanical & Inspection**: 4 items (4 closed, 0 open)\n- **Planning**: 2 items (2 closed, 0 open)\n- **HSE**: 1 item (1 closed, 0 open)\n- **Unassigned**: 10 items (6 closed, 4 open)\n\n*Overall Recommendation Status: 420 Closed, 31 Open (93.1% Closure Rate).*`;
+        reply = `**PLR Recommendations by Standardized Department (451 Total Records):**\n\n- **E&I**: 196 items (182 closed, 14 open • 92.9% rate)\n- **FPCL-KE Operating Committee**: 79 items (77 closed, 2 open)\n- **Operations**: 45 items (41 closed, 4 open)\n- **Mechanical**: 38 items (34 closed, 4 open)\n- **PE**: 28 items (26 closed, 2 open)\n- **Finance / FPCL-KE O/C**: 25 items (24 closed, 1 open)\n- **SCM**: 11 items (11 closed, 0 open)\n- **KE**: 5 items (5 closed, 0 open)\n- **Mechanical & Inspection**: 4 items (4 closed, 0 open)\n- **Planning**: 2 items (2 closed, 0 open)\n- **HSE**: 1 item (1 closed, 0 open)\n- **Unassigned**: 10 items (6 closed, 4 open)\n\n*Overall Recommendation Status: 420 Closed, 31 Open (93.1% Closure Rate).*`;
       } else if (lowerMsg.includes('open') || lowerMsg.includes('status') || lowerMsg.includes('closure')) {
         reply = `**PLR Dashboard Status Summary:**\n\n- **Recommendations**: 451 Total — 420 Closed, 31 Open (**93.1% Closure Rate**)\n- **PLR Incidents**: 233 Total — 206 Closed, 27 Open (**88.4% Resolution Rate**)\n- **Open Recommendations Owners**: E&I (14), Operations (4), Mechanical (4), Unassigned (4), PE (2), FPCL-KE O/C (2), Finance (1).`;
       } else {

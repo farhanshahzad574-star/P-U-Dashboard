@@ -2978,14 +2978,18 @@
           document.getElementById('detail-title').style.color = '#1E293B';
           
           const descEl = document.getElementById('detail-description');
-          if (dashboardId === 'plr' && typeof portalApp.getPlrDynamicDescription === 'function') {
-            const dynamicDesc = portalApp.getPlrDynamicDescription();
+          if (dashboardId === 'plr') {
+            descEl.style.display = '';
+            const dynamicDesc = (window.portalApp && typeof window.portalApp.getPlrDynamicDescription === 'function')
+              ? window.portalApp.getPlrDynamicDescription()
+              : (dashboard.description || 'Plant Loss Recommendations tracking engineering and operational action items across plant units.');
             descEl.textContent = dynamicDesc;
-            dashboard.description = dynamicDesc;
+            descEl.style.color = '#475569';
           } else {
+            descEl.style.display = '';
             descEl.textContent = dashboard.description;
+            descEl.style.color = '#475569';
           }
-          descEl.style.color = '#475569';
 
           document.getElementById('detail-cadence').textContent = dashboard.cadence;
           document.getElementById('detail-owner').textContent = dashboard.department;

@@ -186,40 +186,41 @@
    * "Official Plant Loss Recommendations tracking {totalRecs} engineering and operational action items across {deptCount} standardized departments ({closedRecs} Closed, {openRecs} Open, {recClosureRate} Closure Rate), linked to {totalIncidents} generation loss incidents across standardized machine classes ({closedIncidents} Closed, {openIncidents} Open, {incResolutionRate} Resolution)."
    */
   portalApp.getPlrDynamicDescription = function () {
-    const recs = getPlrRecs();
-    const incidents = getPlrData();
+    const s = getPlrState();
+    const activeFilters = [];
+    if (s.selectedMachine && s.selectedMachine !== 'all') activeFilters.push(`Machine: ${s.selectedMachine}`);
+    if (s.selectedPriority && s.selectedPriority !== 'all') activeFilters.push(`Priority: ${s.selectedPriority}`);
+    if (s.selectedDept && s.selectedDept !== 'all') activeFilters.push(`Dept: ${s.selectedDept}`);
+    if (s.selectedYear && s.selectedYear !== 'all') activeFilters.push(`Year: ${s.selectedYear}`);
+    if (s.selectedEntity && s.selectedEntity !== 'all') activeFilters.push(`Entity: ${s.selectedEntity}`);
+    if (s.searchQuery && s.searchQuery.trim()) activeFilters.push(`Search: "${s.searchQuery.trim()}"`);
+
+    const hasActiveFilters = activeFilters.length > 0;
+    const recs = hasActiveFilters ? getFilteredPlrRecs() : getPlrRecs();
+    const incidents = hasActiveFilters ? getFilteredPlrData() : getPlrData();
 
     const totalRecs = recs.length;
     const openRecs = recs.filter(r => (r.status || '').toLowerCase() === 'open').length;
     const closedRecs = totalRecs - openRecs;
     const recClosureRate = totalRecs > 0 ? ((closedRecs / totalRecs) * 100).toFixed(1) + '%' : '0.0%';
 
-    let deptCount = 0;
-    try {
-      if (typeof getDeptRecsList === 'function') {
-        const dList = getDeptRecsList(true);
-        if (dList && dList.length) deptCount = dList.length;
-      }
-    } catch (e) {}
-
-    if (!deptCount) {
-      const deptSet = new Set();
-      recs.forEach(r => {
-        const d = (r.actionBy || r.dept || r.category || '').trim();
-        if (d) deptSet.add(d);
-      });
-      deptCount = deptSet.size;
-    }
-    if (!deptCount || deptCount === 12) {
-      deptCount = 13;
-    }
-
     const totalIncidents = incidents.length;
     const openIncidents = incidents.filter(i => (i.status || '').toLowerCase() === 'open').length;
     const closedIncidents = totalIncidents - openIncidents;
     const incResolutionRate = totalIncidents > 0 ? ((closedIncidents / totalIncidents) * 100).toFixed(1) + '%' : '0.0%';
 
-    return `Official Plant Loss Recommendations tracking ${totalRecs} engineering and operational action items across ${deptCount} standardized departments (${closedRecs} Closed, ${openRecs} Open, ${recClosureRate} Closure Rate), linked to ${totalIncidents} generation loss incidents across standardized machine classes (${closedIncidents} Closed, ${openIncidents} Open, ${incResolutionRate} Resolution).`;
+    if (!hasActiveFilters) {
+      let deptCount = 13;
+      try {
+        if (typeof getDeptRecsList === 'function') {
+          const dList = getDeptRecsList(true);
+          if (dList && dList.length) deptCount = dList.length;
+        }
+      } catch (e) {}
+      return `Official Plant Loss Recommendations tracking ${totalRecs} engineering and operational action items across ${deptCount} standardized departments (${closedRecs} Closed, ${openRecs} Open, ${recClosureRate} Closure Rate), linked to ${totalIncidents} generation loss incidents across standardized machine classes (${closedIncidents} Closed, ${openIncidents} Open, ${incResolutionRate} Resolution).`;
+    } else {
+      return `Filtered Scope (${activeFilters.join(', ')}): Tracking ${totalRecs} recommendations (${closedRecs} Closed, ${openRecs} Open, ${recClosureRate} Closure Rate) and ${totalIncidents} generation loss incidents (${closedIncidents} Closed, ${openIncidents} Open, ${incResolutionRate} Resolution Rate).`;
+    }
   };
 
   /**
@@ -254,7 +255,11 @@
     const descEl = document.getElementById('detail-description');
     const ownerEl = document.getElementById('detail-owner');
     if (portalApp.state && portalApp.state.activeDashboardId === 'plr') {
-      if (descEl) descEl.textContent = dynamicDesc;
+      if (descEl) {
+        descEl.textContent = dynamicDesc;
+        descEl.style.display = '';
+        descEl.style.color = '#475569';
+      }
       if (ownerEl) ownerEl.textContent = 'Process';
     }
 
@@ -612,7 +617,6 @@
     str = str.replace(/E\s*&\s*I/gi, '__E_AND_I__');
     str = str.replace(/O\s*\/\s*C/gi, '__O_SLASH_C__');
     str = str.replace(/FPCL\s*-\s*KE/gi, '__FPCL_KE__');
-    str = str.replace(/Plant\s+Engineering\s*\(\s*PE\s*\)/gi, '__PE_FULL__');
     str = str.replace(/Maintenance\s*\/\s*Technical/gi, '__MAINT_TECH__');
 
     // Split by comma, slash, semicolon, newline, plus, ' and ' or isolated ' & '
@@ -623,7 +627,6 @@
         .replace(/__E_AND_I__/g, 'E&I')
         .replace(/__O_SLASH_C__/g, 'O/C')
         .replace(/__FPCL_KE__/g, 'FPCL-KE')
-        .replace(/__PE_FULL__/g, 'Plant Engineering (PE)')
         .replace(/__MAINT_TECH__/g, 'Maintenance')
         .trim();
 
@@ -642,9 +645,9 @@
       if (lower === 'operation' || lower === 'operations' || lower === 'ops' || lower === 'oprs' || lower.includes('ops-psg') || lower === 'process') {
         return 'Operations';
       }
-      // Plant Engineering (PE) variations
-      if (lower === 'plant engineering (pe)' || lower === 'plant engineering' || lower === 'pe' || lower === 'technical ho' || lower === 'technical' || lower === 'pe/technical') {
-        return 'Plant Engineering (PE)';
+      // PE entity directly as specified in Google Sheet
+      if (lower === 'pe' || lower === 'plant engineering' || lower === 'plant engineering (pe)' || lower === 'pe/technical') {
+        return 'PE';
       }
       // FPCL-KE O/C variations
       if (lower === 'fpcl-ke o/c' || lower === 'fpcl-ke' || lower === 'ke o/c' || lower === 'fpcl / ke o/c' || lower === 'fpcl-ke o/c ') {
@@ -1270,6 +1273,14 @@
     const container = document.getElementById('plr-specialized-container');
     if (!container) return;
 
+    // Dynamically update the description below the upper Plant Loss Recommendations title
+    const descEl = document.getElementById('detail-description');
+    if (descEl) {
+      descEl.textContent = portalApp.getPlrDynamicDescription();
+      descEl.style.display = '';
+      descEl.style.color = '#475569';
+    }
+
     const data = getFilteredPlrData();
     const recs = getFilteredPlrRecs();
     const s = getPlrState();
@@ -1304,27 +1315,19 @@
       <div class="space-y-6 text-slate-800 font-sans antialiased">
         
         <!-- ========================================================================= -->
-        <!-- 1. TOP WORKBOOK CONNECTION & ACTION BAR (Light Theme)                     -->
+        <!-- 1. MERGED ACTION & INTEGRATION TOOLBAR (Below Upper Heading)               -->
         <!-- ========================================================================= -->
-        <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div class="flex items-center gap-3.5">
-            <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-[#2E6DA4] to-sky-600 text-white flex items-center justify-center shrink-0 shadow-sm">
-              <i data-lucide="activity" class="w-5 h-5 text-white"></i>
-            </div>
-            <div>
-              <div class="flex items-center gap-2 flex-wrap">
-                <h3 class="text-base sm:text-lg font-black text-slate-900 tracking-tight">Plant Loss Reports (PLR) Dashboard Suite</h3>
-                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-300 shadow-2xs" title="Google Sheet is permanently embedded and automatically refetches on page load/refresh">
-                  <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Auto-Sync Live Sheet: Active
-                </span>
-                <span class="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-slate-100 text-slate-700 border border-slate-200">
-                  ${totalPLRs} Incidents • ${totalRecs} Recommendations (${closedRecs} Closed, ${openRecs} Open)
-                </span>
-              </div>
-              <p class="text-xs text-slate-500 font-medium mt-0.5">
-                Embedded Google Sheet: <span class="font-bold text-slate-700 font-mono">PLRs white dashboard</span> • Dual Tabs: <strong class="text-[#2E6DA4]">PLR</strong> (Outages) &amp; <strong class="text-emerald-700">Recommendations</strong> (Row 2 Data Start)
-              </p>
-            </div>
+        <div class="bg-white border border-slate-200 rounded-2xl p-3.5 sm:p-4 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-3.5">
+          <div class="flex items-center gap-2.5 flex-wrap">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-300 shadow-2xs" title="Google Sheet is permanently embedded and automatically refetches on page load/refresh">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Auto-Sync Live Sheet: Active
+            </span>
+            <span class="px-3 py-1 rounded-full text-xs font-mono font-bold bg-slate-100 text-slate-700 border border-slate-200">
+              ${totalPLRs} Incidents • ${totalRecs} Recommendations (${closedRecs} Closed, ${openRecs} Open)
+            </span>
+            <span class="text-xs text-slate-500 font-medium hidden sm:inline">
+              Embedded Google Sheet: <span class="font-bold text-slate-700 font-mono">PLRs white dashboard</span> • Dual Tabs: <strong class="text-[#2E6DA4]">PLR</strong> (Outages) &amp; <strong class="text-emerald-700">Recommendations</strong>
+            </span>
           </div>
           <div class="flex items-center gap-2 shrink-0 flex-wrap">
             <button
@@ -2936,9 +2939,13 @@
         const labelText = isYearly ? d.year : d.label;
         const cleanName = isYearly ? d.year : formatDeptLabel(d.label);
         const isSelected = isYearly ? (s.selectedYear === d.year) : (s.recSelectedEntity === d.raw);
-        const clickHandler = isYearly
-          ? `portalApp.handlePlrYearChange('${d.year}')`
-          : `portalApp.filterRecByDeptDirect('${(d.raw || '').replace(/'/g, "\\'")}')`;
+        const escapedRaw = (d.raw || '').replace(/'/g, "\\'");
+        const groupClickHandler = isYearly
+          ? `portalApp.handlePlrYearChange('${d.year}'); portalApp.openPlrDataModal({ type: 'recommendations', title: 'Year ' + '${d.year}' + ' Recommendations', badge: 'Year ' + '${d.year}', subtitle: '${d.total} Recommendations (${d.closed} Closed • ${d.open} Open)', filterYear: '${d.year}', filterStatus: 'all' })`
+          : `portalApp.filterRecByDeptDirect('${escapedRaw}'); portalApp.openPlrDataModal({ type: 'recommendations', title: 'Department: ' + '${cleanName}', badge: 'Action Department', subtitle: '${d.total} Recommendations (${d.closed} Closed • ${d.open} Open)', filterDept: '${escapedRaw}', filterStatus: 'all' })`;
+
+        const closedBarClickHandler = `event.stopPropagation(); portalApp.openPlrDataModal({ type: 'recommendations', title: '${isYearly ? 'Year ' + d.year : 'Department: ' + cleanName} (Closed)', badge: 'Closed Recs', subtitle: '${d.closed} Closed Recommendations (${resPct}% resolved)', filterYear: '${isYearly ? d.year : 'all'}', filterDept: '${isYearly ? 'all' : escapedRaw}', filterStatus: 'Closed' })`;
+        const openBarClickHandler = `event.stopPropagation(); portalApp.openPlrDataModal({ type: 'recommendations', title: '${isYearly ? 'Year ' + d.year : 'Department: ' + cleanName} (Open)', badge: 'Open Recs', subtitle: '${d.open} Open Pending Recommendations', filterYear: '${isYearly ? d.year : 'all'}', filterDept: '${isYearly ? 'all' : escapedRaw}', filterStatus: 'Open' })`;
 
         const resPct = d.total > 0 ? ((d.closed / d.total) * 100).toFixed(0) : 0;
         const labelY = baseY + 12;
@@ -2948,8 +2955,8 @@
         const highestValY = Math.min(yClosedVal, yOpenVal);
 
         return `
-          <g class="cursor-pointer group" onclick="${clickHandler}">
-            <title>${labelText}&#10;Total: ${d.total} Recs&#10;Closed: ${d.closed} (${resPct}%)&#10;Open: ${d.open}</title>
+          <g class="cursor-pointer group" onclick="${groupClickHandler}">
+            <title>${labelText}&#10;Total: ${d.total} Recs (Click to view all)&#10;Closed: ${d.closed} (${resPct}%) (Click to view closed)&#10;Open: ${d.open} (Click to view open)</title>
             
             <!-- Hover column highlight -->
             <rect x="${xStart - 4}" y="${pad.top}" width="${groupW + 8}" height="${chartH}" fill="#f8fafc" rx="4" class="opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"/>
@@ -2963,7 +2970,8 @@
                 height="${Math.max(closedH, 2)}"
                 fill="#10b981"
                 rx="2"
-                class="transition-all group-hover:fill-[#059669]"
+                class="transition-all group-hover:fill-[#059669] cursor-pointer"
+                onclick="${closedBarClickHandler}"
               />
             ` : `
               <rect x="${xClosed}" y="${baseY - 2}" width="${subW}" height="2" fill="#cbd5e1" rx="1"/>
@@ -2978,7 +2986,8 @@
                 height="${Math.max(openH, 2)}"
                 fill="#f43f5e"
                 rx="2"
-                class="transition-all group-hover:fill-[#e11d48]"
+                class="transition-all group-hover:fill-[#e11d48] cursor-pointer"
+                onclick="${openBarClickHandler}"
               />
             ` : `
               <rect x="${xOpen}" y="${baseY - 2}" width="${subW}" height="2" fill="#e2e8f0" rx="1"/>
@@ -3911,11 +3920,18 @@
 
   /**
    * Dedicated entry point for KPI cards click drill-down
-   * Slices data precisely according to the clicked metric
+   * Slices data precisely according to the clicked metric and inherits active dashboard filters
    */
   portalApp.openPlrKpiModal = function (kpiType) {
+    const s = getPlrState();
     const rawData = getPlrData();
     const rawRecs = getPlrRecs();
+
+    // Inherit active filters from dashboard so drilldown matches the KPI card context
+    const activeMachine = s.selectedMachine !== 'all' ? s.selectedMachine : 'all';
+    const activePriority = s.selectedPriority !== 'all' ? s.selectedPriority : 'all';
+    const activeDept = s.selectedDept !== 'all' ? s.selectedDept : (s.selectedEntity !== 'all' ? s.selectedEntity : 'all');
+    const activeYear = s.selectedYear !== 'all' ? s.selectedYear : 'all';
 
     if (kpiType === 'total-plrs') {
       const openCount = rawData.filter(d => (d.status || '').toLowerCase() === 'open').length;
@@ -3924,9 +3940,13 @@
       portalApp.openPlrDataModal({
         type: 'incidents',
         title: 'Total Plant Loss Reports (PLR Incident Log)',
-        badge: `${rawData.length} Total Incidents (100%)`,
+        badge: `${rawData.length} Total Incidents`,
         subtitle: `Complete historical plant loss and outage reports (2017–2025) across STG, Boilers & Auxiliaries • ${closedCount} Closed (${closureRate}%), ${openCount} Open`,
         filterStatus: 'all',
+        filterMachine: activeMachine,
+        filterPriority: activePriority,
+        filterDept: activeDept,
+        filterYear: activeYear,
         kpiSource: 'total-plrs'
       });
     } else if (kpiType === 'open-plrs') {
@@ -3935,8 +3955,12 @@
         type: 'incidents',
         title: 'Open Plant Loss Reports Under Active Investigation',
         badge: `${openCount} Open Incidents`,
-        subtitle: 'Plant outages undergoing root-cause investigation, corrective maintenance, or pending closeout sign-off • Columns B to K',
+        subtitle: 'Plant outages undergoing root-cause investigation, corrective maintenance, or pending closeout sign-off',
         filterStatus: 'Open',
+        filterMachine: activeMachine,
+        filterPriority: activePriority,
+        filterDept: activeDept,
+        filterYear: activeYear,
         kpiSource: 'open-plrs'
       });
     } else if (kpiType === 'total-recs') {
@@ -3947,8 +3971,12 @@
         type: 'recommendations',
         title: 'Total Corrective Action Recommendations',
         badge: `${rawRecs.length} Total Recommendations`,
-        subtitle: `Extracted from Google Sheet tab "Recommendations" Column E ("Recommendations") across 16+ Action Entities • ${closedRecs} Closed (${closureRate}%), ${openRecs} Open`,
+        subtitle: `Corrective action items extracted across 14+ standardized Action Entities • ${closedRecs} Closed (${closureRate}%), ${openRecs} Open`,
         filterStatus: 'all',
+        filterMachine: activeMachine,
+        filterPriority: activePriority,
+        filterDept: activeDept,
+        filterYear: activeYear,
         kpiSource: 'total-recs'
       });
     } else if (kpiType === 'open-recs') {
@@ -3957,8 +3985,12 @@
         type: 'recommendations',
         title: 'Open Action Recommendations (Active Corrective Backlog)',
         badge: `${openRecs} Open Recommendations`,
-        subtitle: 'Active corrective action items awaiting physical completion or engineering sign-off • Tab: Recommendations Column E',
+        subtitle: 'Active corrective action items awaiting physical completion or engineering sign-off',
         filterStatus: 'Open',
+        filterMachine: activeMachine,
+        filterPriority: activePriority,
+        filterDept: activeDept,
+        filterYear: activeYear,
         kpiSource: 'open-recs'
       });
     }
@@ -3968,15 +4000,15 @@
     const s = getPlrState();
     const type = opts.type || 'incidents'; // 'incidents' or 'recommendations'
     const title = opts.title || (type === 'incidents' ? 'Plant Outage Incidents' : 'Action Recommendations');
-    const badge = opts.badge || (type === 'incidents' ? 'Outage Records' : 'Recommendations');
+    const badge = opts.badge || (type === 'incidents' ? 'Incident Outages' : 'Action Recommendations');
     const subtitle = opts.subtitle || 'Detailed operational records';
     const filterStatus = opts.filterStatus || 'all'; // 'all', 'Open', 'Closed'
     const filterMachine = opts.filterMachine || 'all';
     const filterDept = opts.filterDept || opts.filterEntity || 'all';
     const filterPriority = opts.filterPriority || 'all';
+    const filterYear = opts.filterYear ? String(opts.filterYear).trim() : 'all';
 
     let allRecords = [];
-
     if (type === 'incidents') {
       allRecords = getPlrData();
     } else {
@@ -3991,10 +4023,13 @@
       filterMachine,
       filterDept,
       filterPriority,
+      filterYear,
       activeStatusTab: filterStatus,
       searchQuery: '',
       allRecords: allRecords,
-      kpiSource: opts.kpiSource || null
+      kpiSource: opts.kpiSource || null,
+      baseTitle: title,
+      baseSubtitle: subtitle
     };
 
     portalApp.renderPlrDataModal();
@@ -4018,18 +4053,6 @@
     const s = getPlrState();
     if (!s.activePlrModal) return;
     s.activePlrModal.filterMachine = machine;
-    if (machine !== 'all') {
-      s.activePlrModal.title = 'Machine: ' + machine;
-      s.activePlrModal.badge = 'Machine Asset';
-      const mMatch = PLR_MACHINES_LIST.find(it => it.name === machine);
-      if (mMatch) {
-        s.activePlrModal.subtitle = `${mMatch.count} Outages (${mMatch.pct}% of total plant outages)`;
-      }
-    } else {
-      s.activePlrModal.title = s.activePlrModal.type === 'incidents' ? 'Plant Outage Incidents' : 'Action Recommendations';
-      s.activePlrModal.badge = 'All Assets';
-      s.activePlrModal.subtitle = 'Detailed operational records across all plant equipment';
-    }
     portalApp.renderPlrDataModal();
   };
 
@@ -4047,6 +4070,13 @@
     portalApp.renderPlrDataModal();
   };
 
+  portalApp.setPlrDataModalYear = function (year) {
+    const s = getPlrState();
+    if (!s.activePlrModal) return;
+    s.activePlrModal.filterYear = year ? String(year).trim() : 'all';
+    portalApp.renderPlrDataModal();
+  };
+
   portalApp.resetPlrDataModalFilters = function () {
     const s = getPlrState();
     if (!s.activePlrModal) return;
@@ -4054,6 +4084,7 @@
     s.activePlrModal.filterMachine = 'all';
     s.activePlrModal.filterPriority = 'all';
     s.activePlrModal.filterDept = 'all';
+    s.activePlrModal.filterYear = 'all';
     s.activePlrModal.searchQuery = '';
     portalApp.renderPlrDataModal();
   };
@@ -4070,6 +4101,11 @@
    */
   portalApp.toggleRecStatusFromModal = function (sNo) {
     portalApp.toggleRecommendationStatus(sNo);
+    const s = getPlrState();
+    if (s.activePlrModal) {
+      s.activePlrModal.allRecords = getPlrRecs();
+      portalApp.renderPlrDataModal();
+    }
   };
 
   portalApp.getPlrModalFilteredRecords = function () {
@@ -4079,13 +4115,13 @@
     let records = m.allRecords || [];
     const plrsMap = getPlrsMap();
 
-    // Filter by status tab
+    // 1. Filter by status tab (All, Open, Closed)
     if (m.activeStatusTab && m.activeStatusTab !== 'all') {
-      const target = m.activeStatusTab.toLowerCase();
-      records = records.filter(r => (r.status || '').toLowerCase() === target);
+      const target = m.activeStatusTab.toLowerCase().trim();
+      records = records.filter(r => (r.status || '').toLowerCase().trim() === target);
     }
 
-    // Filter by machine
+    // 2. Filter by machine
     if (m.filterMachine && m.filterMachine !== 'all') {
       if (m.type === 'incidents') {
         records = records.filter(r => matchesMachine(r.machine, m.filterMachine));
@@ -4097,12 +4133,20 @@
       }
     }
 
-    // Filter by priority (for incidents)
-    if (m.type === 'incidents' && m.filterPriority && m.filterPriority !== 'all') {
-      records = records.filter(r => (r.priority || '').toLowerCase() === m.filterPriority.toLowerCase());
+    // 3. Filter by priority (for incidents & recommendations linked to PLR)
+    if (m.filterPriority && m.filterPriority !== 'all') {
+      const targetPri = m.filterPriority.toLowerCase().trim();
+      if (m.type === 'incidents') {
+        records = records.filter(r => (r.priority || '').toLowerCase().trim() === targetPri);
+      } else {
+        records = records.filter(r => {
+          const parent = plrsMap.get(String(r.plrNo).toUpperCase());
+          return parent ? (parent.priority || '').toLowerCase().trim() === targetPri : false;
+        });
+      }
     }
 
-    // Filter by department / entity
+    // 4. Filter by department / entity
     if (m.filterDept && m.filterDept !== 'all') {
       if (m.type === 'incidents') {
         records = records.filter(r => matchesActionEntity(r.dept, m.filterDept));
@@ -4111,30 +4155,48 @@
       }
     }
 
-    // Filter by search query
+    // 5. Filter by year
+    if (m.filterYear && m.filterYear !== 'all') {
+      const targetYear = String(m.filterYear).trim();
+      records = records.filter(r => {
+        let yr = r.year;
+        if (!yr && m.type !== 'incidents') {
+          const parent = plrsMap.get(String(r.plrNo).toUpperCase());
+          if (parent) yr = parent.year;
+        }
+        return String(yr || '').trim() === targetYear;
+      });
+    }
+
+    // 6. Filter by search query
     if (m.searchQuery && m.searchQuery.trim()) {
       const q = m.searchQuery.toLowerCase().trim();
       if (m.type === 'incidents') {
         records = records.filter(r =>
-          String(r.plrNo).toLowerCase().includes(q) ||
-          (r.incident && r.incident.toLowerCase().includes(q)) ||
-          (r.machine && r.machine.toLowerCase().includes(q)) ||
-          (r.dept && r.dept.toLowerCase().includes(q)) ||
-          (r.priority && r.priority.toLowerCase().includes(q)) ||
-          (r.status && r.status.toLowerCase().includes(q)) ||
-          String(r.year).includes(q) ||
-          (r.date && r.date.toLowerCase().includes(q))
+          String(r.plrNo || '').toLowerCase().includes(q) ||
+          String(r.incident || '').toLowerCase().includes(q) ||
+          String(r.machine || '').toLowerCase().includes(q) ||
+          String(r.dept || '').toLowerCase().includes(q) ||
+          String(r.priority || '').toLowerCase().includes(q) ||
+          String(r.status || '').toLowerCase().includes(q) ||
+          String(r.year || '').includes(q) ||
+          String(r.date || '').toLowerCase().includes(q)
         );
       } else {
-        records = records.filter(r =>
-          String(r.plrNo).toLowerCase().includes(q) ||
-          String(r.sNo).toLowerCase().includes(q) ||
-          (r.recommendation && r.recommendation.toLowerCase().includes(q)) ||
-          (r.actionBy && r.actionBy.toLowerCase().includes(q)) ||
-          (r.status && r.status.toLowerCase().includes(q)) ||
-          String(r.year).includes(q) ||
-          (r.date && r.date.toLowerCase().includes(q))
-        );
+        records = records.filter(r => {
+          const parent = plrsMap.get(String(r.plrNo).toUpperCase());
+          const parentMachine = parent ? parent.machine : '';
+          return (
+            String(r.plrNo || '').toLowerCase().includes(q) ||
+            String(r.sNo || '').toLowerCase().includes(q) ||
+            String(r.recommendation || '').toLowerCase().includes(q) ||
+            String(r.actionBy || '').toLowerCase().includes(q) ||
+            String(parentMachine).toLowerCase().includes(q) ||
+            String(r.status || '').toLowerCase().includes(q) ||
+            String(r.year || '').includes(q) ||
+            String(r.date || '').toLowerCase().includes(q)
+          );
+        });
       }
     }
 
@@ -4155,11 +4217,13 @@
     const records = portalApp.getPlrModalFilteredRecords();
     const allRecords = m.allRecords || [];
     const plrsMap = getPlrsMap();
+    const isIncidents = m.type === 'incidents';
 
-    // Compute scope counts based on machine and department filters
+    // Compute dimensional records that match current Machine, Priority, Dept, Year and Search (independent of status tab)
     let scopedRecords = allRecords;
+
     if (m.filterMachine && m.filterMachine !== 'all') {
-      if (m.type === 'incidents') {
+      if (isIncidents) {
         scopedRecords = scopedRecords.filter(r => matchesMachine(r.machine, m.filterMachine));
       } else {
         scopedRecords = scopedRecords.filter(r => {
@@ -4168,48 +4232,200 @@
         });
       }
     }
+
+    if (m.filterPriority && m.filterPriority !== 'all') {
+      const targetPri = m.filterPriority.toLowerCase().trim();
+      if (isIncidents) {
+        scopedRecords = scopedRecords.filter(r => (r.priority || '').toLowerCase().trim() === targetPri);
+      } else {
+        scopedRecords = scopedRecords.filter(r => {
+          const parent = plrsMap.get(String(r.plrNo).toUpperCase());
+          return parent ? (parent.priority || '').toLowerCase().trim() === targetPri : false;
+        });
+      }
+    }
+
     if (m.filterDept && m.filterDept !== 'all') {
-      if (m.type === 'incidents') {
+      if (isIncidents) {
         scopedRecords = scopedRecords.filter(r => matchesActionEntity(r.dept, m.filterDept));
       } else {
         scopedRecords = scopedRecords.filter(r => matchesActionEntity(r.actionBy, m.filterDept));
       }
     }
 
+    if (m.filterYear && m.filterYear !== 'all') {
+      const targetYear = String(m.filterYear).trim();
+      scopedRecords = scopedRecords.filter(r => {
+        let yr = r.year;
+        if (!yr && !isIncidents) {
+          const parent = plrsMap.get(String(r.plrNo).toUpperCase());
+          if (parent) yr = parent.year;
+        }
+        return String(yr || '').trim() === targetYear;
+      });
+    }
+
+    if (m.searchQuery && m.searchQuery.trim()) {
+      const q = m.searchQuery.toLowerCase().trim();
+      if (isIncidents) {
+        scopedRecords = scopedRecords.filter(r =>
+          String(r.plrNo || '').toLowerCase().includes(q) ||
+          String(r.incident || '').toLowerCase().includes(q) ||
+          String(r.machine || '').toLowerCase().includes(q) ||
+          String(r.dept || '').toLowerCase().includes(q) ||
+          String(r.priority || '').toLowerCase().includes(q) ||
+          String(r.status || '').toLowerCase().includes(q) ||
+          String(r.year || '').includes(q) ||
+          String(r.date || '').toLowerCase().includes(q)
+        );
+      } else {
+        scopedRecords = scopedRecords.filter(r => {
+          const parent = plrsMap.get(String(r.plrNo).toUpperCase());
+          const parentMachine = parent ? parent.machine : '';
+          return (
+            String(r.plrNo || '').toLowerCase().includes(q) ||
+            String(r.sNo || '').toLowerCase().includes(q) ||
+            String(r.recommendation || '').toLowerCase().includes(q) ||
+            String(r.actionBy || '').toLowerCase().includes(q) ||
+            String(parentMachine).toLowerCase().includes(q) ||
+            String(r.status || '').toLowerCase().includes(q) ||
+            String(r.year || '').includes(q) ||
+            String(r.date || '').toLowerCase().includes(q)
+          );
+        });
+      }
+    }
+
     const totalCount = scopedRecords.length;
-    const openCount = scopedRecords.filter(r => (r.status || '').toLowerCase() === 'open').length;
+    const openCount = scopedRecords.filter(r => (r.status || '').toLowerCase().trim() === 'open').length;
     const closedCount = totalCount - openCount;
     const closurePct = totalCount > 0 ? Math.round((closedCount / totalCount) * 100) : 0;
 
-    const isIncidents = m.type === 'incidents';
-
-    // Dynamic machine options matching plant assets
-    const machineBreakdown = getPlrMachinesBreakdown();
-    const totalMachineRecords = getPlrData().length || 233;
-    const availableMachines = [
-      { id: 'all', label: `All Machines (${totalMachineRecords})` },
-      ...machineBreakdown.map(mb => ({ id: mb.name, label: `${mb.name} (${mb.count})` }))
+    // Standardized Machines list with accurate counts from allRecords
+    const machineList = [
+      'STG # 4',
+      'STG # 3',
+      'Boiler # 1 (CFB-1)',
+      'STG # 2',
+      'Boiler # 2 (CFB-2)',
+      'STG # 1',
+      'Other Equipment'
     ];
-    let availableDepts = ['all'];
-    if (isIncidents) {
-      const rawData = getPlrData();
-      const depts = new Set();
-      rawData.forEach(d => { if (d.dept) depts.add(d.dept.trim()); });
-      availableDepts = ['all', ...Array.from(depts).sort()];
-    } else {
-      const rawRecs = getPlrRecs();
-      const entities = new Set();
-      rawRecs.forEach(r => { if (r.actionBy) entities.add(r.actionBy.trim()); });
-      availableDepts = ['all', ...Array.from(entities).sort()];
+    const availableMachines = [
+      { id: 'all', label: `All Machines (${allRecords.length})` },
+      ...machineList.map(name => {
+        const count = allRecords.filter(r => {
+          if (isIncidents) return matchesMachine(r.machine, name);
+          const parent = plrsMap.get(String(r.plrNo).toUpperCase());
+          return parent ? matchesMachine(parent.machine, name) : false;
+        }).length;
+        return { id: name, label: `${name} (${count})` };
+      })
+    ];
+
+    // Standardized Department options with counts from allRecords
+    const baseDepts = [
+      'E&I',
+      'Mechanical',
+      'Operations',
+      'PE',
+      'FPCL-KE O/C',
+      'KE',
+      'Finance',
+      'SCM',
+      'Inspection',
+      'Planning',
+      'HSE',
+      'BHGE',
+      'HHI'
+    ];
+    const availableDepts = [
+      { id: 'all', label: `All Departments (${allRecords.length})` },
+      ...baseDepts.map(deptName => {
+        const count = allRecords.filter(r => {
+          return matchesActionEntity(isIncidents ? r.dept : r.actionBy, deptName);
+        }).length;
+        return { id: deptName, label: `${deptName} (${count})` };
+      }).filter(d => d.id === 'all' || d.label.includes('('))
+    ];
+
+    // Priority options with counts
+    const priorityList = ['Critical', 'High', 'Medium', 'Low'];
+    const availablePriorities = [
+      { id: 'all', label: `All Priorities (${allRecords.length})` },
+      ...priorityList.map(pri => {
+        const count = allRecords.filter(r => {
+          if (isIncidents) return (r.priority || '').toLowerCase().trim() === pri.toLowerCase();
+          const parent = plrsMap.get(String(r.plrNo).toUpperCase());
+          return parent ? (parent.priority || '').toLowerCase().trim() === pri.toLowerCase() : false;
+        }).length;
+        return { id: pri, label: `${pri} (${count})` };
+      })
+    ];
+
+    // Year options with counts
+    const yearList = ['2025', '2024', '2023', '2022', '2021', '2020', '2019', '2018', '2017'];
+    const availableYears = [
+      { id: 'all', label: `All Years (${allRecords.length})` },
+      ...yearList.map(yr => {
+        const count = allRecords.filter(r => {
+          let y = r.year;
+          if (!y && !isIncidents) {
+            const parent = plrsMap.get(String(r.plrNo).toUpperCase());
+            if (parent) y = parent.year;
+          }
+          return String(y || '').trim() === yr;
+        }).length;
+        return { id: yr, label: `${yr} (${count})` };
+      })
+    ];
+
+    // Active filters tracking
+    const activeFilters = [];
+    if (m.activeStatusTab && m.activeStatusTab !== 'all') {
+      activeFilters.push({
+        label: `Status: ${m.activeStatusTab}`,
+        clearCode: "portalApp.setPlrDataModalStatusTab('all')"
+      });
+    }
+    if (m.filterMachine && m.filterMachine !== 'all') {
+      activeFilters.push({
+        label: `Machine: ${m.filterMachine}`,
+        clearCode: "portalApp.setPlrDataModalMachine('all')"
+      });
+    }
+    if (m.filterDept && m.filterDept !== 'all') {
+      activeFilters.push({
+        label: `Dept: ${m.filterDept}`,
+        clearCode: "portalApp.setPlrDataModalDept('all')"
+      });
+    }
+    if (m.filterPriority && m.filterPriority !== 'all') {
+      activeFilters.push({
+        label: `Priority: ${m.filterPriority}`,
+        clearCode: "portalApp.setPlrDataModalPriority('all')"
+      });
+    }
+    if (m.filterYear && m.filterYear !== 'all') {
+      activeFilters.push({
+        label: `Year: ${m.filterYear}`,
+        clearCode: "portalApp.setPlrDataModalYear('all')"
+      });
+    }
+    if (m.searchQuery && m.searchQuery.trim()) {
+      activeFilters.push({
+        label: `Search: "${m.searchQuery.trim()}"`,
+        clearCode: "portalApp.filterPlrDataModalSearch('')"
+      });
     }
 
     container.innerHTML = `
-      <div class="fixed inset-0 z-[9999] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5" style="pointer-events: auto;" onclick="if(event.target === this) (window.portalApp || portalApp).closePlrDataModal()">
-        <div class="bg-white border border-slate-200 rounded-2xl w-full max-w-6xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+      <div class="fixed inset-0 z-[9999] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 md:p-6" style="pointer-events: auto;" onclick="if(event.target === this) (window.portalApp || portalApp).closePlrDataModal()">
+        <div class="bg-white border border-slate-200 rounded-2xl w-full max-w-6xl shadow-2xl flex flex-col max-h-[92vh] overflow-hidden animate-in fade-in zoom-in-95 duration-150">
           
           <!-- Modal Header (Corporate Executive Styled) -->
-          <div class="p-5 border-b border-slate-200 bg-slate-50 flex items-center justify-between gap-4">
-            <div class="flex items-center gap-3 min-w-0">
+          <div class="p-4 sm:p-5 border-b border-slate-200 bg-slate-50 flex items-center justify-between gap-4">
+            <div class="flex items-center gap-3.5 min-w-0">
               <div class="w-10 h-10 rounded-xl ${isIncidents ? 'bg-[#2E6DA4]' : 'bg-[#047857]'} text-white flex items-center justify-center shadow-sm shrink-0">
                 <i data-lucide="${isIncidents ? 'cpu' : 'clipboard-check'}" class="w-5 h-5"></i>
               </div>
@@ -4217,17 +4433,32 @@
                 <div class="flex items-center gap-2 flex-wrap">
                   <h3 class="text-base sm:text-lg font-black text-slate-900 tracking-tight truncate">${m.title}</h3>
                   <span class="px-2.5 py-0.5 rounded-full text-xs font-bold ${isIncidents ? 'bg-blue-100 text-blue-800 border border-blue-200' : 'bg-emerald-100 text-emerald-800 border border-emerald-200'} shrink-0 font-mono">
-                    ${m.badge}
+                    ${records.length} of ${allRecords.length} ${isIncidents ? 'Incidents' : 'Recs'}
                   </span>
+                  ${activeFilters.length > 0 ? `
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
+                      ${activeFilters.length} Active ${activeFilters.length === 1 ? 'Filter' : 'Filters'}
+                    </span>
+                  ` : ''}
                 </div>
                 <p class="text-xs text-slate-500 mt-0.5 truncate">${m.subtitle}</p>
               </div>
             </div>
             
             <div class="flex items-center gap-2 shrink-0">
+              ${activeFilters.length > 0 ? `
+                <button
+                  onclick="portalApp.resetPlrDataModalFilters()"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 shadow-2xs cursor-pointer transition-colors"
+                  title="Reset all filters back to default"
+                >
+                  <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                  <span class="hidden sm:inline">Reset Filters</span>
+                </button>
+              ` : ''}
               <button
                 onclick="portalApp.exportPlrModalCSV()"
-                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 shadow-xs cursor-pointer transition-colors"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 shadow-2xs cursor-pointer transition-colors"
                 title="Export filtered records to CSV"
               >
                 <i data-lucide="download" class="w-3.5 h-3.5 text-[#2E6DA4]"></i>
@@ -4243,83 +4474,105 @@
             </div>
           </div>
 
-          <!-- Metrics & Filter Bar -->
-          <div class="px-5 py-3 border-b border-slate-200 bg-white flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
-            <!-- Summary KPIs -->
-            <div class="flex items-center gap-3 flex-wrap text-xs">
-              <span class="font-bold text-slate-600">Total in View: <strong class="text-slate-900 font-mono text-sm">${totalCount}</strong></span>
-              <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
-                <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
-                ${openCount} Open
-              </span>
-              <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                ${closedCount} Closed
-              </span>
-              <span class="text-xs font-bold ${isIncidents ? 'text-[#2E6DA4] bg-blue-50 border-blue-200' : 'text-emerald-800 bg-emerald-50 border-emerald-200'} font-mono px-2 py-0.5 rounded border">
-                ${closurePct}% Resolved
-              </span>
-            </div>
+          <!-- Metrics & Filter Controls Bar -->
+          <div class="px-4 sm:px-5 py-3 border-b border-slate-200 bg-white space-y-2.5">
+            <!-- Top Row: Metrics & Status Toggle -->
+            <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+              <!-- Summary KPIs -->
+              <div class="flex items-center gap-2.5 flex-wrap text-xs">
+                <span class="font-bold text-slate-600">Total in Scope: <strong class="text-slate-900 font-mono text-sm">${totalCount}</strong></span>
+                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                  <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                  ${openCount} Open
+                </span>
+                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                  ${closedCount} Closed
+                </span>
+                <span class="text-xs font-bold ${isIncidents ? 'text-[#2E6DA4] bg-blue-50 border-blue-200' : 'text-emerald-800 bg-emerald-50 border-emerald-200'} font-mono px-2 py-0.5 rounded border">
+                  ${closurePct}% Resolved
+                </span>
+              </div>
 
-            <!-- In-Modal Filters: Status Buttons, Dropdowns & Search -->
-            <div class="flex items-center gap-2 flex-wrap">
-              <!-- Status Filter Buttons -->
-              <div class="inline-flex p-0.5 bg-slate-100 rounded-lg border border-slate-200 text-xs">
+              <!-- Status Toggle Buttons -->
+              <div class="inline-flex p-0.5 bg-slate-100 rounded-xl border border-slate-200 text-xs shrink-0 self-start md:self-auto">
                 <button
                   onclick="portalApp.setPlrDataModalStatusTab('all')"
-                  class="px-2.5 py-1 rounded-md font-bold transition-all cursor-pointer ${m.activeStatusTab === 'all' ? (isIncidents ? 'bg-[#2E6DA4] text-white shadow-2xs' : 'bg-[#047857] text-white shadow-2xs') : 'text-slate-600 hover:text-slate-900'}"
+                  class="px-3 py-1 rounded-lg font-bold transition-all cursor-pointer ${m.activeStatusTab === 'all' ? (isIncidents ? 'bg-[#2E6DA4] text-white shadow-2xs' : 'bg-[#047857] text-white shadow-2xs') : 'text-slate-600 hover:text-slate-900'}"
                 >
                   All (${totalCount})
                 </button>
                 <button
                   onclick="portalApp.setPlrDataModalStatusTab('Open')"
-                  class="px-2.5 py-1 rounded-md font-bold transition-all cursor-pointer ${m.activeStatusTab.toLowerCase() === 'open' ? 'bg-[#B91C1C] text-white shadow-2xs' : 'text-slate-600 hover:text-slate-900'}"
+                  class="px-3 py-1 rounded-lg font-bold transition-all cursor-pointer ${m.activeStatusTab.toLowerCase() === 'open' ? 'bg-[#B91C1C] text-white shadow-2xs' : 'text-slate-600 hover:text-slate-900'}"
                 >
                   Open (${openCount})
                 </button>
                 <button
                   onclick="portalApp.setPlrDataModalStatusTab('Closed')"
-                  class="px-2.5 py-1 rounded-md font-bold transition-all cursor-pointer ${m.activeStatusTab.toLowerCase() === 'closed' ? 'bg-[#047857] text-white shadow-2xs' : 'text-slate-600 hover:text-slate-900'}"
+                  class="px-3 py-1 rounded-lg font-bold transition-all cursor-pointer ${m.activeStatusTab.toLowerCase() === 'closed' ? 'bg-[#047857] text-white shadow-2xs' : 'text-slate-600 hover:text-slate-900'}"
                 >
                   Closed (${closedCount})
                 </button>
               </div>
+            </div>
 
-              <!-- Secondary Filter Dropdowns -->
-              ${isIncidents ? `
+            <!-- Bottom Row: Filter Dropdowns & Search Box -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 pt-1 border-t border-slate-100">
+              <!-- Machine Filter -->
+              <div>
                 <select
                   onchange="portalApp.setPlrDataModalMachine(this.value)"
-                  class="text-xs py-1.5 px-2.5 rounded-lg border border-slate-300 bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#2E6DA4] font-medium"
-                  title="Filter by machine"
+                  class="w-full text-xs py-1.5 px-2 rounded-lg border ${m.filterMachine !== 'all' ? 'border-[#2E6DA4] bg-blue-50/60 font-bold text-[#1e40af]' : 'border-slate-300 bg-slate-50 text-slate-700'} focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#2E6DA4] transition-colors cursor-pointer"
+                  title="Filter by Machine / Equipment Asset"
                 >
                   ${availableMachines.map(opt => `
                     <option value="${opt.id}" ${m.filterMachine === opt.id ? 'selected' : ''}>${opt.label}</option>
                   `).join('')}
                 </select>
-                <select
-                  onchange="portalApp.setPlrDataModalPriority(this.value)"
-                  class="text-xs py-1.5 px-2.5 rounded-lg border border-slate-300 bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#2E6DA4]"
-                  title="Filter by priority"
-                >
-                  <option value="all" ${m.filterPriority === 'all' ? 'selected' : ''}>All Priorities</option>
-                  <option value="High" ${m.filterPriority === 'High' ? 'selected' : ''}>High</option>
-                  <option value="Low" ${m.filterPriority === 'Low' ? 'selected' : ''}>Low</option>
-                </select>
-              ` : `
+              </div>
+
+              <!-- Department Filter -->
+              <div>
                 <select
                   onchange="portalApp.setPlrDataModalDept(this.value)"
-                  class="text-xs py-1.5 px-2.5 rounded-lg border border-slate-300 bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-emerald-600 max-w-[150px]"
-                  title="Filter by Action Entity"
+                  class="w-full text-xs py-1.5 px-2 rounded-lg border ${m.filterDept !== 'all' ? 'border-[#2E6DA4] bg-blue-50/60 font-bold text-[#1e40af]' : 'border-slate-300 bg-slate-50 text-slate-700'} focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#2E6DA4] transition-colors cursor-pointer"
+                  title="Filter by Department / Action Entity"
                 >
-                  <option value="all" ${m.filterDept === 'all' ? 'selected' : ''}>All Entities (${totalCount})</option>
-                  ${availableDepts.filter(d => d !== 'all').map(d => `
-                    <option value="${d}" ${m.filterDept === d ? 'selected' : ''}>${d}</option>
+                  ${availableDepts.map(opt => `
+                    <option value="${opt.id}" ${m.filterDept === opt.id ? 'selected' : ''}>${opt.label}</option>
                   `).join('')}
                 </select>
-              `}
+              </div>
 
-              <!-- Search Input -->
-              <div class="relative w-40 sm:w-52">
+              <!-- Priority Filter -->
+              <div>
+                <select
+                  onchange="portalApp.setPlrDataModalPriority(this.value)"
+                  class="w-full text-xs py-1.5 px-2 rounded-lg border ${m.filterPriority !== 'all' ? 'border-[#2E6DA4] bg-blue-50/60 font-bold text-[#1e40af]' : 'border-slate-300 bg-slate-50 text-slate-700'} focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#2E6DA4] transition-colors cursor-pointer"
+                  title="Filter by Priority"
+                >
+                  ${availablePriorities.map(opt => `
+                    <option value="${opt.id}" ${m.filterPriority === opt.id ? 'selected' : ''}>${opt.label}</option>
+                  `).join('')}
+                </select>
+              </div>
+
+              <!-- Year Filter -->
+              <div>
+                <select
+                  onchange="portalApp.setPlrDataModalYear(this.value)"
+                  class="w-full text-xs py-1.5 px-2 rounded-lg border ${m.filterYear !== 'all' ? 'border-[#2E6DA4] bg-blue-50/60 font-bold text-[#1e40af]' : 'border-slate-300 bg-slate-50 text-slate-700'} focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#2E6DA4] transition-colors cursor-pointer"
+                  title="Filter by Year"
+                >
+                  ${availableYears.map(opt => `
+                    <option value="${opt.id}" ${m.filterYear === opt.id ? 'selected' : ''}>${opt.label}</option>
+                  `).join('')}
+                </select>
+              </div>
+
+              <!-- Search Box -->
+              <div class="col-span-2 sm:col-span-1 relative">
                 <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-slate-400">
                   <i data-lucide="search" class="w-3.5 h-3.5"></i>
                 </div>
@@ -4328,29 +4581,56 @@
                   type="text"
                   value="${m.searchQuery || ''}"
                   oninput="portalApp.filterPlrDataModalSearch(this.value)"
-                  placeholder="Search..."
-                  class="w-full pl-8 pr-7 py-1.5 text-xs rounded-lg border border-slate-300 bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#2E6DA4]"
+                  placeholder="Search records..."
+                  class="w-full pl-8 pr-7 py-1.5 text-xs rounded-lg border ${m.searchQuery ? 'border-[#2E6DA4] bg-blue-50/40' : 'border-slate-300 bg-slate-50'} focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#2E6DA4]"
                 />
                 ${m.searchQuery ? `
-                  <button onclick="portalApp.filterPlrDataModalSearch('')" class="absolute right-2 top-1.5 text-slate-400 hover:text-slate-600 cursor-pointer">
+                  <button onclick="portalApp.filterPlrDataModalSearch('')" class="absolute right-2 top-2 text-slate-400 hover:text-slate-700 cursor-pointer" title="Clear search">
                     <i data-lucide="x" class="w-3 h-3"></i>
                   </button>
                 ` : ''}
               </div>
             </div>
+
+            <!-- Active Filters Chip Row -->
+            ${activeFilters.length > 0 ? `
+              <div class="flex items-center gap-1.5 flex-wrap pt-1 text-xs">
+                <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mr-1">Filtered by:</span>
+                ${activeFilters.map(f => `
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-800 border border-blue-200">
+                    <span>${f.label}</span>
+                    <button onclick="${f.clearCode}" class="hover:text-red-600 cursor-pointer p-0.5 rounded-full hover:bg-blue-100" title="Remove this filter">
+                      <i data-lucide="x" class="w-2.5 h-2.5"></i>
+                    </button>
+                  </span>
+                `).join('')}
+                <button
+                  onclick="portalApp.resetPlrDataModalFilters()"
+                  class="text-[11px] text-[#2E6DA4] hover:underline font-bold ml-1 cursor-pointer"
+                >
+                  Clear all
+                </button>
+              </div>
+            ` : ''}
           </div>
 
           <!-- Table Content -->
-          <div class="overflow-y-auto flex-1 max-h-[60vh]">
+          <div class="overflow-y-auto flex-1 max-h-[62vh]">
             ${records.length === 0 ? `
-              <div class="py-16 text-center text-slate-400 space-y-2">
-                <i data-lucide="inbox" class="w-8 h-8 mx-auto text-slate-300"></i>
-                <p class="text-xs font-semibold">No records match your filter criteria in this view.</p>
+              <div class="py-16 px-4 text-center text-slate-500 space-y-3">
+                <div class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
+                  <i data-lucide="filter-x" class="w-6 h-6"></i>
+                </div>
+                <div>
+                  <p class="text-sm font-bold text-slate-800">No records match your active filter criteria</p>
+                  <p class="text-xs text-slate-400 mt-1">Try adjusting the machine, department, status, priority, or search term.</p>
+                </div>
                 <button
                   onclick="portalApp.resetPlrDataModalFilters()"
-                  class="text-xs text-[#2E6DA4] hover:underline font-semibold cursor-pointer"
+                  class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-bold text-white bg-[#2E6DA4] hover:bg-[#235885] transition-colors cursor-pointer shadow-xs"
                 >
-                  Reset all filters
+                  <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                  <span>Reset All Filters</span>
                 </button>
               </div>
             ` : isIncidents ? `
@@ -4371,7 +4651,7 @@
                 <tbody class="divide-y divide-slate-100 text-slate-800">
                   ${records.map((r, idx) => {
                     const isOpen = (r.status || '').toLowerCase() === 'open';
-                    const isHigh = (r.priority || '').toLowerCase() === 'high';
+                    const isHigh = (r.priority || '').toLowerCase() === 'high' || (r.priority || '').toLowerCase() === 'critical';
                     return `
                       <tr class="hover:bg-slate-50/80 transition-colors group">
                         <td class="py-2.5 px-3 font-mono text-center text-slate-400 text-[11px]">${idx + 1}</td>
@@ -4437,7 +4717,8 @@
                     <th class="py-2.5 px-3 w-12 text-center">#</th>
                     <th class="py-2.5 px-3 w-28 font-mono">Rec Ref</th>
                     <th class="py-2.5 px-3 w-32">Action Department</th>
-                    <th class="py-2.5 px-3">Recommendation Details (Column E - Recommendations)</th>
+                    <th class="py-2.5 px-3 w-32">Machine Asset</th>
+                    <th class="py-2.5 px-3">Recommendation Details</th>
                     <th class="py-2.5 px-3 w-24">Parent PLR</th>
                     <th class="py-2.5 px-3 w-24">Date</th>
                     <th class="py-2.5 px-3 w-28 text-center">Status (Click to Toggle)</th>
@@ -4447,6 +4728,8 @@
                 <tbody class="divide-y divide-slate-100 text-slate-800">
                   ${records.map((r, idx) => {
                     const isOpen = (r.status || '').toLowerCase() === 'open';
+                    const parentPlr = plrsMap.get(String(r.plrNo).toUpperCase());
+                    const machineName = parentPlr ? parentPlr.machine : '—';
                     return `
                       <tr class="hover:bg-slate-50/80 transition-colors group">
                         <td class="py-2.5 px-3 font-mono text-center text-slate-400 text-[11px]">${idx + 1}</td>
@@ -4463,6 +4746,12 @@
                           <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-800 border border-slate-200">
                             <span class="w-1.5 h-1.5 rounded-full bg-[#2E6DA4]"></span>
                             <span>${r.actionBy}</span>
+                          </span>
+                        </td>
+                        <td class="py-2.5 px-3 whitespace-nowrap">
+                          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-800 border border-slate-200">
+                            <i data-lucide="cpu" class="w-3 h-3 text-[#2E6DA4]"></i>
+                            <span>${machineName}</span>
                           </span>
                         </td>
                         <td class="py-2.5 px-3 max-w-lg">
@@ -4523,11 +4812,11 @@
 
           <!-- Modal Footer -->
           <div class="p-3.5 border-t border-slate-200 bg-slate-50 flex items-center justify-between text-xs text-slate-500">
-            <span>Showing <strong class="text-slate-800">${records.length}</strong> of <strong class="text-slate-800">${totalCount}</strong> records</span>
+            <span>Showing <strong class="text-slate-800">${records.length}</strong> of <strong class="text-slate-800">${totalCount}</strong> matching records (${allRecords.length} total in catalog)</span>
             <div class="flex items-center gap-2">
               <button
                 onclick="portalApp.exportPlrModalCSV()"
-                class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-100 border border-slate-200 transition-colors cursor-pointer"
+                class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-100 border border-slate-200 transition-colors cursor-pointer shadow-2xs"
               >
                 Export CSV
               </button>
