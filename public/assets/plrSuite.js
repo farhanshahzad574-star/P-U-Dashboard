@@ -1311,19 +1311,17 @@
     const resClosedCount = isIncidents ? closedPLRs : closedRecs;
     const resClosureRate = isIncidents ? plrClosureRate : recClosureRate;
 
-    container.innerHTML = `
-      <div class="space-y-6 text-slate-800 font-sans antialiased">
-        
-        <!-- ========================================================================= -->
-        <!-- 1. MERGED ACTION & INTEGRATION TOOLBAR (Below Upper Heading)               -->
-        <!-- ========================================================================= -->
-        <div class="bg-white border border-slate-200 rounded-2xl p-3.5 sm:p-4 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-3.5">
+    // Merge action features directly below the upper heading inside detail-header-card
+    const extraToolbar = document.getElementById('detail-header-extra-toolbar');
+    if (extraToolbar) {
+      extraToolbar.innerHTML = `
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pt-0.5">
           <div class="flex items-center gap-2.5 flex-wrap">
             <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-300 shadow-2xs" title="Google Sheet is permanently embedded and automatically refetches on page load/refresh">
               <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Auto-Sync Live Sheet: Active
             </span>
             <span class="px-3 py-1 rounded-full text-xs font-mono font-bold bg-slate-100 text-slate-700 border border-slate-200">
-              ${totalPLRs} Incidents • ${totalRecs} Recommendations (${closedRecs} Closed, ${openRecs} Open)
+              ${totalPLRs} Incidents • ${totalRecs} Recommendations (${closedRecs} Closed, ${openRecs} Open • ${recClosureRate}% Closure)
             </span>
             <span class="text-xs text-slate-500 font-medium hidden sm:inline">
               Embedded Google Sheet: <span class="font-bold text-slate-700 font-mono">PLRs white dashboard</span> • Dual Tabs: <strong class="text-[#2E6DA4]">PLR</strong> (Outages) &amp; <strong class="text-emerald-700">Recommendations</strong>
@@ -1332,7 +1330,7 @@
           <div class="flex items-center gap-2 shrink-0 flex-wrap">
             <button
               onclick="portalApp.refreshFromLiveSheet()"
-              class="px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+              class="px-3.5 py-1.5 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
               title="Refetch latest rows and Open/Closed status from Google Sheet (Recommendations & PLR tabs)"
             >
               <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
@@ -1340,7 +1338,7 @@
             </button>
             <button
               onclick="portalApp.openPlrSheetSyncModal()"
-              class="px-3 py-2 rounded-xl text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+              class="px-3 py-1.5 rounded-xl text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
               title="View permanently embedded Google Sheet integration details and tabs"
             >
               <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-600"></i>
@@ -1348,7 +1346,7 @@
             </button>
             <button
               onclick="portalApp.resetAllPlrImageFilters()"
-              class="px-3 py-2 rounded-xl text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+              class="px-3 py-1.5 rounded-xl text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
               title="Reset all filters across both tabs"
             >
               <i data-lucide="rotate-ccw" class="w-3.5 h-3.5 text-[#2E6DA4]"></i>
@@ -1356,16 +1354,22 @@
             </button>
             <button
               onclick="portalApp.exportPlrCSV()"
-              class="px-3 py-2 rounded-xl text-xs font-bold text-white bg-[#2E6DA4] hover:bg-[#235885] shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+              class="px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-[#2E6DA4] hover:bg-[#235885] shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
             >
               <i data-lucide="download" class="w-3.5 h-3.5"></i>
               <span>Export CSV</span>
             </button>
           </div>
         </div>
+      `;
+      extraToolbar.classList.remove('hidden');
+    }
 
+    container.innerHTML = `
+      <div class="space-y-6 text-slate-800 font-sans antialiased">
+        
         <!-- ========================================================================= -->
-        <!-- 2. EXECUTIVE FILTER SUITE (ATTACHED IMAGE FILTER CONTROLS)                 -->
+        <!-- EXECUTIVE FILTER SUITE (ATTACHED IMAGE FILTER CONTROLS)                   -->
         <!-- ========================================================================= -->
         <div class="rounded-2xl p-4 sm:p-5 shadow-lg border relative overflow-hidden" style="background: linear-gradient(135deg, #091a32 0%, #0c2340 100%); border-color: #1e3a5f;">
           <!-- Subtle ambient backdrop lighting -->

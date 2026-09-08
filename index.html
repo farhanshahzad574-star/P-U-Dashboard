@@ -1005,6 +1005,9 @@
               </div>
             </div>
           </div>
+
+          <!-- Dynamic Merged Toolbar Area directly integrated under Upper Heading -->
+          <div id="detail-header-extra-toolbar" class="mt-4 pt-3.5 border-t border-slate-200/80 hidden"></div>
         </div>
 
         <!-- ========================================================================= -->
@@ -1603,7 +1606,7 @@
           category: 'Plant Integrity & Incident Analytics',
           department: 'Process',
           cadence: 'Continuous / Incident Driven',
-          description: 'Official Plant Loss Recommendations tracking 451 engineering and operational action items across 13 standardized departments (420 Closed, 31 Open, 93.1% Closure Rate), linked to 233 generation loss incidents across standardized machine classes (206 Closed, 27 Open, 88.4% Resolution).',
+          description: 'Official Plant Loss Recommendations tracking 534 engineering and operational action items across 13 standardized departments (492 Closed, 42 Open, 92.1% Closure Rate), linked to 233 generation loss incidents across standardized machine classes (206 Closed, 27 Open, 88.4% Resolution).',
           color: {
             bg: '#FFF7ED',
             primary: '#EA580C',
@@ -1614,10 +1617,10 @@
           gradientStop1: '#EA580C',
           gradientStop2: '#DC2626',
           tagStyle: 'bg-orange-50 text-orange-700 border-orange-200',
-          kpis: { total: 451, closed: 420, inProgress: 31, overdue: 0, compliance: '93.1%' },
-          punchList: { open: 31, closed: 420, total: 451, rate: '93.1%' },
+          kpis: { total: 534, closed: 492, inProgress: 42, overdue: 0, compliance: '92.1%' },
+          punchList: { open: 42, closed: 492, total: 534, rate: '92.1%' },
           dataReadiness: { master: '100%', signoff: '100%' },
-          statusComment: '451 Recommendations across standardized departments: 420 Closed, 31 Open (93.1% Closure) • 233 PLR Incidents across standardized machines: 206 Closed, 27 Open (88.4% Resolution).',
+          statusComment: '534 Recommendations across standardized departments: 492 Closed, 42 Open (92.1% Closure) • 233 PLR Incidents across standardized machines: 206 Closed, 27 Open (88.4% Resolution).',
           actions: [
             { id: 'PLR-216-R1', desc: 'Recalibrate STG-4 turbine high exhaust temperature thermocouple wiring and trip latch loop', owner: 'E&I Team', due: '2025-11-20', priority: 'Critical', status: 'In Progress' },
             { id: 'PLR-216-R2', desc: 'Inspect lube oil cooler auxiliary thermostatic bypass valve seating and replace gaskets', owner: 'Mech Team', due: '2025-11-25', priority: 'High', status: 'Completed' },
@@ -1742,7 +1745,7 @@
           category: 'Sub HSE Committees',
           department: 'Process Safety Management Sub-Committee',
           cadence: 'Phase 1 June 2026 Audit',
-          description: 'Process Safety Management internal audit findings, action department tracking, PSM elements compliance & resolution analytics.',
+          description: 'Process Safety Management Phase 1 June 2026 Audit tracking 121 internal audit findings across 13 Action Departments (76 Closed, 45 Open, 62.8% Compliance Rate) across 5 PSM Elements.',
           color: {
             bg: '#E8F6F5',
             primary: '#0D9488',
@@ -2212,7 +2215,7 @@
               <div class="flex flex-wrap items-center justify-center gap-3 w-full">
                 <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-900 border border-blue-200 shadow-2xs font-bold text-xs sm:text-sm">
                   <span class="w-3.5 h-3.5 rounded bg-blue-600 shadow-2xs"></span>
-                  <span>Plant Loss Recommendations (PLR): <strong class="font-mono text-blue-800 font-black">451 Total</strong> | <strong class="font-mono text-amber-700 font-black">31 Open</strong> (420 Closed • 93.1%)</span>
+                  <span>Plant Loss Recommendations (PLR): <strong class="font-mono text-blue-800 font-black">534 Total</strong> | <strong class="font-mono text-amber-700 font-black">42 Open</strong> (492 Closed • 92.1%)</span>
                 </span>
                 <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-teal-50 text-teal-900 border border-teal-200 shadow-2xs font-bold text-xs sm:text-sm">
                   <span class="w-3.5 h-3.5 rounded bg-teal-600 shadow-2xs"></span>
@@ -2978,6 +2981,7 @@
           document.getElementById('detail-title').style.color = '#1E293B';
           
           const descEl = document.getElementById('detail-description');
+          const extraToolbar = document.getElementById('detail-header-extra-toolbar');
           if (dashboardId === 'plr') {
             descEl.style.display = '';
             const dynamicDesc = (window.portalApp && typeof window.portalApp.getPlrDynamicDescription === 'function')
@@ -2985,10 +2989,22 @@
               : (dashboard.description || 'Plant Loss Recommendations tracking engineering and operational action items across plant units.');
             descEl.textContent = dynamicDesc;
             descEl.style.color = '#475569';
+          } else if (dashboardId === 'sub-hse-psm') {
+            descEl.style.display = '';
+            const psmDesc = (window.FPCL_PSM_SUITE && typeof window.FPCL_PSM_SUITE.getDynamicDescription === 'function')
+              ? window.FPCL_PSM_SUITE.getDynamicDescription()
+              : (dashboard.description || 'Process Safety Management internal audit findings and compliance tracking.');
+            descEl.textContent = psmDesc;
+            descEl.style.color = '#475569';
           } else {
             descEl.style.display = '';
             descEl.textContent = dashboard.description;
             descEl.style.color = '#475569';
+          }
+
+          if (dashboardId !== 'plr' && extraToolbar) {
+            extraToolbar.classList.add('hidden');
+            extraToolbar.innerHTML = '';
           }
 
           document.getElementById('detail-cadence').textContent = dashboard.cadence;
@@ -3055,10 +3071,16 @@
               }
             }
             if (sheetKeyEl) {
-              sheetKeyEl.textContent = 'PLRs white dashboard • 233 Incidents & 451 Recommendations';
+              const recCount = (window.FPCL_PLR_RECS_DATA && window.FPCL_PLR_RECS_DATA.length) || 534;
+              const incCount = (window.FPCL_PLR_DATA && window.FPCL_PLR_DATA.length) || 233;
+              sheetKeyEl.textContent = `PLRs white dashboard • ${incCount} Incidents & ${recCount} Recommendations`;
               sheetKeyEl.title = 'PLRs white dashboard (PLRStatus & Recommendations)';
             }
           } else if (dashboardId === 'sub-hse-psm') {
+            if (extraToolbar) {
+              extraToolbar.classList.add('hidden');
+              extraToolbar.innerHTML = '';
+            }
             if (stdContainer) stdContainer.classList.add('hidden');
             if (plrContainer) plrContainer.classList.add('hidden');
             if (psmContainer) {
@@ -3226,6 +3248,11 @@
           if (detailSelect) detailSelect.value = 'overview';
 
           document.getElementById('dashboard-detail-view').classList.add('hidden');
+          const extraToolbarEl = document.getElementById('detail-header-extra-toolbar');
+          if (extraToolbarEl) {
+            extraToolbarEl.classList.add('hidden');
+            extraToolbarEl.innerHTML = '';
+          }
           const plrContainer = document.getElementById('plr-specialized-container');
           if (plrContainer) plrContainer.classList.add('hidden');
           const psmContainer = document.getElementById('psm-specialized-container');

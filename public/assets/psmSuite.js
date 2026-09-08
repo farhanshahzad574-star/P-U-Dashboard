@@ -306,10 +306,84 @@
         }));
     },
 
+    // Dynamic description generation reflecting live filters and metrics
+    getDynamicDescription() {
+      const s = this.state;
+      const raw = this.getRawData();
+      const filtered = this.getFilteredData();
+      const totalRaw = raw.length || 121;
+      const totalFiltered = filtered.length;
+      const openCount = filtered.filter(d => (d.status || '').toLowerCase() === 'open').length;
+      const closedCount = totalFiltered - openCount;
+      const closureRate = totalFiltered > 0 ? ((closedCount / totalFiltered) * 100).toFixed(1) + '%' : '0.0%';
+
+      const totalDepts = new Set(raw.map(d => d.actionDepartment).filter(Boolean)).size || 13;
+      const totalElements = new Set(raw.map(d => d.psmElement).filter(Boolean)).size || 5;
+      const filteredDepts = new Set(filtered.map(d => d.actionDepartment).filter(Boolean)).size;
+      const filteredElements = new Set(filtered.map(d => d.psmElement).filter(Boolean)).size;
+
+      const activeFilters = [];
+      if (s.deptFilter && s.deptFilter !== 'all') activeFilters.push(`Dept: ${s.deptFilter}`);
+      if (s.unitFilter && s.unitFilter !== 'all') activeFilters.push(`Unit: ${s.unitFilter}`);
+      if (s.elementFilter && s.elementFilter !== 'all') activeFilters.push(`Element: ${s.elementFilter}`);
+      if (s.natureFilter && s.natureFilter !== 'all') activeFilters.push(`Severity: ${s.natureFilter}`);
+      if (s.auditFilter && s.auditFilter !== 'all') activeFilters.push(`Audit: ${s.auditFilter}`);
+      if (s.statusFilter && s.statusFilter !== 'all') activeFilters.push(`Status: ${s.statusFilter}`);
+      if (s.searchQuery && s.searchQuery.trim()) activeFilters.push(`Search: "${s.searchQuery.trim()}"`);
+
+      if (activeFilters.length === 0) {
+        return `Process Safety Management Phase 1 June 2026 Audit tracking ${totalRaw} internal audit findings across ${totalDepts} Action Departments (${closedCount} Closed, ${openCount} Open, ${closureRate} Compliance Rate) across ${totalElements} PSM Elements.`;
+      } else {
+        return `Filtered Scope (${activeFilters.join(', ')}): Tracking ${totalFiltered} internal audit findings across ${filteredDepts} Action Departments and ${filteredElements} Elements (${closedCount} Closed, ${openCount} Open, ${closureRate} Compliance Rate) of ${totalRaw} total observations.`;
+      }
+    },
+
+    // Handle interactive click on donut slices or legends to filter dashboard and open data modal
+    onDonutSliceClick(type, value) {
+      this.hideTooltip();
+      if (type === 'element') {
+        this.state.elementFilter = value;
+        const raw = this.getRawData();
+        const records = raw.filter(d => d.psmElement === value);
+        const openCount = records.filter(d => (d.status || '').toLowerCase() === 'open').length;
+        const closedCount = records.length - openCount;
+        this.render();
+        this.openDataModal({
+          title: `PSM Element: ${value}`,
+          badge: 'PSM Element',
+          subtitle: `${records.length} Findings in ${value} (${closedCount} Closed, ${openCount} Open)`,
+          filterElement: value,
+          filterStatus: 'all'
+        });
+      } else {
+        this.state.natureFilter = value;
+        const raw = this.getRawData();
+        const records = raw.filter(d => d.nature === value);
+        const openCount = records.filter(d => (d.status || '').toLowerCase() === 'open').length;
+        const closedCount = records.length - openCount;
+        this.render();
+        this.openDataModal({
+          title: `Severity: ${value}`,
+          badge: 'Severity',
+          subtitle: `${records.length} Findings with Severity ${value} (${closedCount} Closed, ${openCount} Open)`,
+          filterNature: value,
+          filterStatus: 'all'
+        });
+      }
+    },
+
     // Main render method mounted on #psm-specialized-container
     render() {
       const container = document.getElementById('psm-specialized-container');
       if (!container) return;
+
+      // Dynamically update upper dashboard description in detail-header-card
+      const descEl = document.getElementById('detail-description');
+      if (descEl) {
+        descEl.textContent = this.getDynamicDescription();
+        descEl.style.display = '';
+        descEl.style.color = '#475569';
+      }
 
       const raw = this.getRawData();
       const filtered = this.getFilteredData();
@@ -378,7 +452,7 @@
                     </span>
                   </div>
                   <p class="text-xs sm:text-sm text-teal-100 font-medium mt-0.5">
-                    Compliance, Action Department Tracking & Resolution Analytics • <span class="text-white font-bold">Phase 1 2026 Audit Findings Data</span>
+                    Compliance, Action Department Tracking & Resolution Analytics • <span class="text-white font-bold">${totalFiltered} Findings (${closedCount} Closed, ${openCount} Open, ${closurePercentage}% Closure Rate)</span>
                   </p>
                 </div>
               </div>
@@ -423,7 +497,7 @@
                   <span class="font-black text-sm sm:text-base px-3 py-1 rounded-lg bg-gradient-to-r from-teal-600 via-emerald-600 to-indigo-600 text-white shadow-xs tracking-wide">PSM INTERNAL AUDIT FINDINGS</span>
                   <span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200">Phase 1 2026 Audit</span>
                 </div>
-                <p class="text-xs text-slate-500 mt-1">Live Compliance, Action Department Tracking & Conditional % Closure Progress</p>
+                <p class="text-xs text-slate-500 mt-1">${totalFiltered} Findings across ${deptList.length} Action Departments • <span class="text-emerald-700 font-bold">${closedCount} Closed</span> • <span class="text-rose-600 font-bold">${openCount} Open</span> (${closurePercentage}% Closure Rate)</p>
               </div>
             </div>
 
@@ -486,7 +560,7 @@
                   <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
                 </span>
                 <span class="px-2.5 py-0.5 rounded text-xs font-bold font-mono bg-slate-100 text-slate-700 border border-slate-200">
-                  100% Ingested
+                  ${totalFiltered === totalRaw ? '100% Ingested' : `${totalFiltered} of ${totalRaw} (${Math.round((totalFiltered / totalRaw) * 100)}%)`}
                 </span>
               </div>
             </div>
@@ -516,7 +590,7 @@
                   <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
                 </span>
                 <span class="px-2.5 py-0.5 rounded text-xs font-bold font-mono bg-rose-50 text-rose-700 border border-rose-200">
-                  ${openPercentage}% Active
+                  ${openPercentage}% Active (${openCount}/${totalFiltered})
                 </span>
               </div>
             </div>
@@ -546,7 +620,7 @@
                   <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
                 </span>
                 <span class="px-2.5 py-0.5 rounded text-xs font-bold font-mono bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  ${closurePercentage}% Completed
+                  ${closurePercentage}% Completed (${closedCount}/${totalFiltered})
                 </span>
               </div>
             </div>
@@ -572,7 +646,7 @@
               <div class="mt-4 pt-3 border-t border-slate-100 flex flex-col gap-1.5 text-xs sm:text-sm">
                 <div class="flex items-center justify-between text-slate-600 text-xs font-semibold">
                   <span>Audit Resolution</span>
-                  <span class="font-mono font-bold text-slate-800">${closedCount} / ${totalFiltered}</span>
+                  <span class="font-mono font-bold text-slate-800">${closedCount} / ${totalFiltered} Resolved</span>
                 </div>
                 <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden flex">
                   <div class="bg-teal-500 h-2.5 rounded-full transition-all duration-500" style="width: ${closurePercentage}%;"></div>
@@ -1377,8 +1451,9 @@
             stroke-width="${isFiltered ? '24' : '20'}"
             stroke-dasharray="${sliceLength} ${circumference - sliceLength}"
             stroke-dashoffset="${offset}"
-            class="transition-all duration-300 cursor-pointer hover:opacity-80"
-            onclick="FPCL_PSM_SUITE.openDataModal({ title: '${isElement ? 'PSM Element: ' : 'Severity: '}${it.name.replace(/'/g, "\\'")}', badge: '${isElement ? 'PSM Element' : 'Severity'}', subtitle: '${it.count} Findings (${it.percentage}% of audit scope)', ${isElement ? "filterElement: '" + it.name.replace(/'/g, "\\'") + "'" : "filterNature: '" + it.name.replace(/'/g, "\\'") + "'"} })"
+            style="cursor: pointer; pointer-events: stroke;"
+            class="transition-all duration-300 hover:opacity-80"
+            onclick="FPCL_PSM_SUITE.onDonutSliceClick('${isElement ? 'element' : 'nature'}', '${it.name.replace(/'/g, "\\'")}')"
             onmouseenter="FPCL_PSM_SUITE.showTooltip(event, { title: '${it.name.replace(/'/g, "\\'")}', badge: '${isElement ? 'PSM Element' : 'Severity'}', color: '${color}', subtitle: 'Audit Breakdown Slice', metrics: [{ label: 'Count', value: '${it.count}' }, { label: 'Share of Audit', value: '${it.percentage}%' }, { label: 'Total In Scope', value: '${total}' }], hint: 'Click to open ${it.count} findings for ${it.name.replace(/'/g, "\\'")}' })"
             onmousemove="FPCL_PSM_SUITE.moveTooltip(event)"
             onmouseleave="FPCL_PSM_SUITE.hideTooltip()"
@@ -1393,7 +1468,7 @@
         const isFiltered = (isElement && this.state.elementFilter === it.name) || (!isElement && this.state.natureFilter === it.name);
         return `
           <button
-            onclick="FPCL_PSM_SUITE.openDataModal({ title: '${isElement ? 'PSM Element: ' : 'Severity: '}${it.name.replace(/'/g, "\\'")}', badge: '${isElement ? 'PSM Element' : 'Severity'}', subtitle: '${it.count} Findings (${it.percentage}% of audit scope)', ${isElement ? "filterElement: '" + it.name.replace(/'/g, "\\'") + "'" : "filterNature: '" + it.name.replace(/'/g, "\\'") + "'"} })"
+            onclick="FPCL_PSM_SUITE.onDonutSliceClick('${isElement ? 'element' : 'nature'}', '${it.name.replace(/'/g, "\\'")}')"
             onmouseenter="FPCL_PSM_SUITE.showTooltip(event, { title: '${it.name.replace(/'/g, "\\'")}', badge: '${isElement ? 'PSM Element' : 'Severity'}', color: '${color}', subtitle: 'Audit Filter Tag', metrics: [{ label: 'Count', value: '${it.count}' }, { label: 'Share', value: '${it.percentage}%' }], hint: 'Click to explore ${it.count} findings' })"
             onmousemove="FPCL_PSM_SUITE.moveTooltip(event)"
             onmouseleave="FPCL_PSM_SUITE.hideTooltip()"
@@ -1418,16 +1493,18 @@
               <circle cx="75" cy="75" r="${radius}" fill="transparent" stroke="#F1F5F9" stroke-width="20"/>
               ${slicesSvg}
             </svg>
-            <div
-              onclick="FPCL_PSM_SUITE.openDataModal({ title: 'Complete Audit Scope', badge: 'All Findings', subtitle: '${total} Total Findings Across All Elements' })"
-              onmouseenter="FPCL_PSM_SUITE.showTooltip(event, { title: 'Audit Scope', badge: 'All Findings', color: '#0F172A', subtitle: '${isElement ? 'All PSM Elements' : 'All Severity Levels'}', metrics: [{ label: 'Total In Scope', value: '${total}' }], hint: 'Click to open all ${total} audit records' })"
-              onmousemove="FPCL_PSM_SUITE.moveTooltip(event)"
-              onmouseleave="FPCL_PSM_SUITE.hideTooltip()"
-              class="absolute inset-0 flex flex-col items-center justify-center cursor-pointer text-center group rounded-full hover:bg-slate-100/50 transition-colors"
-              title="Click to view all ${total} findings"
-            >
-              <span class="text-xl font-black font-mono text-slate-900 group-hover:text-teal-700 transition-colors">${total}</span>
-              <span class="text-[9px] font-bold text-slate-500 uppercase tracking-wider group-hover:text-teal-600 transition-colors">FINDINGS</span>
+            <div class="absolute inset-0 flex items-center justify-center pointer-events-none text-center">
+              <div
+                onclick="FPCL_PSM_SUITE.openDataModal({ title: 'Complete Audit Scope', badge: 'All Findings', subtitle: '${total} Total Findings Across All Elements', filterStatus: 'all' })"
+                onmouseenter="FPCL_PSM_SUITE.showTooltip(event, { title: 'Audit Scope', badge: 'All Findings', color: '#0F172A', subtitle: '${isElement ? 'All PSM Elements' : 'All Severity Levels'}', metrics: [{ label: 'Total In Scope', value: '${total}' }], hint: 'Click to open all ${total} audit records' })"
+                onmousemove="FPCL_PSM_SUITE.moveTooltip(event)"
+                onmouseleave="FPCL_PSM_SUITE.hideTooltip()"
+                class="w-20 h-20 rounded-full flex flex-col items-center justify-center pointer-events-auto cursor-pointer hover:bg-slate-100/70 transition-colors group"
+                title="Click to view all ${total} findings"
+              >
+                <span class="text-xl font-black font-mono text-slate-900 group-hover:text-teal-700 transition-colors">${total}</span>
+                <span class="text-[9px] font-bold text-slate-500 uppercase tracking-wider group-hover:text-teal-600 transition-colors">FINDINGS</span>
+              </div>
             </div>
           </div>
 
@@ -2050,36 +2127,41 @@
     // =========================================================================
     // DYNAMIC INTERACTIVE DATA RECORDS MODAL
     // =========================================================================
-    openDataModal(config) {
+    openDataModal(config = {}) {
       this.hideTooltip();
       const raw = this.getRawData();
-      let records = [];
+      let baseRecords = [];
 
       if (Array.isArray(config.records)) {
-        records = config.records;
+        baseRecords = config.records;
       } else {
-        records = raw.filter(item => {
-          if (config.filterDept && item.actionDepartment !== config.filterDept) return false;
-          if (config.filterUnit && item.actionUnit !== config.filterUnit) return false;
-          if (config.filterElement && item.psmElement !== config.filterElement) return false;
-          if (config.filterNature && item.nature !== config.filterNature) return false;
-          if (config.filterStatus && config.filterStatus !== 'all' && item.status.toLowerCase() !== config.filterStatus.toLowerCase()) return false;
-          return true;
-        });
+        baseRecords = raw;
+      }
+
+      // Check filters: if passed in config, use them; otherwise inherit from main state or default to 'all'
+      const filterDept = config.filterDept !== undefined ? config.filterDept : (this.state.deptFilter !== 'all' ? this.state.deptFilter : 'all');
+      const filterUnit = config.filterUnit !== undefined ? config.filterUnit : (this.state.unitFilter !== 'all' ? this.state.unitFilter : 'all');
+      const filterElement = config.filterElement !== undefined ? config.filterElement : (this.state.elementFilter !== 'all' ? this.state.elementFilter : 'all');
+      const filterNature = config.filterNature !== undefined ? config.filterNature : (this.state.natureFilter !== 'all' ? this.state.natureFilter : 'all');
+      
+      let statusTab = 'all';
+      if (config.filterStatus && config.filterStatus !== 'all') {
+        statusTab = config.filterStatus;
+      } else if (this.state.statusFilter !== 'all') {
+        statusTab = this.state.statusFilter;
       }
 
       this.state.activeModal = {
         title: config.title || 'PSM Audit Data Records',
         subtitle: config.subtitle || 'Filtered Findings Explorer',
         badge: config.badge || 'Audit Findings',
-        filterDept: config.filterDept || null,
-        filterUnit: config.filterUnit || null,
-        filterElement: config.filterElement || null,
-        filterNature: config.filterNature || null,
-        filterStatus: config.filterStatus || 'all',
-        allRecords: records,
-        searchQuery: '',
-        activeStatusTab: config.filterStatus && config.filterStatus !== 'all' ? config.filterStatus : 'all'
+        filterDept: filterDept || 'all',
+        filterUnit: filterUnit || 'all',
+        filterElement: filterElement || 'all',
+        filterNature: filterNature || 'all',
+        baseRecords: baseRecords,
+        searchQuery: config.searchQuery || '',
+        activeStatusTab: statusTab
       };
 
       this.renderDataModal();
@@ -2089,6 +2171,35 @@
       this.state.activeModal = null;
       const modalEl = document.getElementById('psm-data-modal-container');
       if (modalEl) modalEl.innerHTML = '';
+    },
+
+    setModalDeptFilter(val) {
+      if (!this.state.activeModal) return;
+      this.state.activeModal.filterDept = val || 'all';
+      this.renderDataModal(false);
+    },
+
+    setModalElementFilter(val) {
+      if (!this.state.activeModal) return;
+      this.state.activeModal.filterElement = val || 'all';
+      this.renderDataModal(false);
+    },
+
+    setModalNatureFilter(val) {
+      if (!this.state.activeModal) return;
+      this.state.activeModal.filterNature = val || 'all';
+      this.renderDataModal(false);
+    },
+
+    resetModalFilters() {
+      if (!this.state.activeModal) return;
+      this.state.activeModal.filterDept = 'all';
+      this.state.activeModal.filterUnit = 'all';
+      this.state.activeModal.filterElement = 'all';
+      this.state.activeModal.filterNature = 'all';
+      this.state.activeModal.activeStatusTab = 'all';
+      this.state.activeModal.searchQuery = '';
+      this.renderDataModal(false);
     },
 
     filterDataModalSearch(val) {
@@ -2106,13 +2217,12 @@
     applyModalFiltersToMain() {
       if (!this.state.activeModal) return;
       const m = this.state.activeModal;
-      if (m.filterDept) this.state.deptFilter = m.filterDept;
-      if (m.filterUnit) this.state.unitFilter = m.filterUnit;
-      if (m.filterElement) this.state.elementFilter = m.filterElement;
-      if (m.filterNature) this.state.natureFilter = m.filterNature;
-      if (m.activeStatusTab && m.activeStatusTab !== 'all') {
-        this.state.statusFilter = m.activeStatusTab;
-      }
+      this.state.deptFilter = m.filterDept || 'all';
+      this.state.unitFilter = m.filterUnit || 'all';
+      this.state.elementFilter = m.filterElement || 'all';
+      this.state.natureFilter = m.filterNature || 'all';
+      this.state.statusFilter = m.activeStatusTab || 'all';
+      if (m.searchQuery) this.state.searchQuery = m.searchQuery;
       this.closeDataModal();
       this.render();
 
@@ -2174,17 +2284,31 @@
       document.body.removeChild(link);
     },
 
+    getModalScopedRecords() {
+      if (!this.state.activeModal) return [];
+      const m = this.state.activeModal;
+      const base = Array.isArray(m.baseRecords) ? m.baseRecords : this.getRawData();
+
+      return base.filter(item => {
+        if (m.filterDept && m.filterDept !== 'all' && item.actionDepartment !== m.filterDept) return false;
+        if (m.filterUnit && m.filterUnit !== 'all' && item.actionUnit !== m.filterUnit) return false;
+        if (m.filterElement && m.filterElement !== 'all' && item.psmElement !== m.filterElement) return false;
+        if (m.filterNature && m.filterNature !== 'all' && item.nature !== m.filterNature) return false;
+        return true;
+      });
+    },
+
     getModalFilteredRecords() {
       if (!this.state.activeModal) return [];
       const m = this.state.activeModal;
-      let records = m.allRecords || [];
+      let records = this.getModalScopedRecords();
 
-      if (m.activeStatusTab !== 'all') {
-        records = records.filter(r => r.status.toLowerCase() === m.activeStatusTab.toLowerCase());
+      if (m.activeStatusTab && m.activeStatusTab !== 'all') {
+        records = records.filter(r => (r.status || '').toLowerCase() === m.activeStatusTab.toLowerCase());
       }
 
-      if (m.searchQuery.trim()) {
-        const q = m.searchQuery.toLowerCase();
+      if (m.searchQuery && m.searchQuery.trim()) {
+        const q = m.searchQuery.toLowerCase().trim();
         records = records.filter(r =>
           (r.observationNo && r.observationNo.toLowerCase().includes(q)) ||
           (r.finding && r.finding.toLowerCase().includes(q)) ||
@@ -2192,7 +2316,9 @@
           (r.actionUnit && r.actionUnit.toLowerCase().includes(q)) ||
           (r.psmElement && r.psmElement.toLowerCase().includes(q)) ||
           (r.nature && r.nature.toLowerCase().includes(q)) ||
-          (r.auditNo && r.auditNo.toLowerCase().includes(q))
+          (r.auditNo && r.auditNo.toLowerCase().includes(q)) ||
+          (r.actionRemarks && r.actionRemarks.toLowerCase().includes(q)) ||
+          (r.hseqRemarks && r.hseqRemarks.toLowerCase().includes(q))
         );
       }
 
@@ -2205,12 +2331,19 @@
       const container = document.getElementById('psm-data-modal-container');
       if (!container) return;
 
+      const raw = this.getRawData();
+      const allDepts = Array.from(new Set(raw.map(d => d.actionDepartment).filter(Boolean))).sort();
+      const allElements = Array.from(new Set(raw.map(d => d.psmElement).filter(Boolean))).sort();
+      const allNatures = Array.from(new Set(raw.map(d => d.nature).filter(Boolean))).sort();
+
+      const scopedRecords = this.getModalScopedRecords();
       const records = this.getModalFilteredRecords();
-      const allRecords = m.allRecords || [];
-      const totalCount = allRecords.length;
-      const openCount = allRecords.filter(r => r.status === 'Open').length;
-      const closedCount = allRecords.filter(r => r.status === 'Close').length;
+      const totalCount = scopedRecords.length;
+      const openCount = scopedRecords.filter(r => (r.status || '').toLowerCase() === 'open').length;
+      const closedCount = totalCount - openCount;
       const closurePct = totalCount > 0 ? Math.round((closedCount / totalCount) * 100) : 0;
+
+      const hasActiveFilters = (m.filterDept !== 'all' || m.filterElement !== 'all' || m.filterNature !== 'all' || m.activeStatusTab !== 'all' || !!m.searchQuery.trim());
 
       container.innerHTML = `
         <div class="fixed inset-0 z-[60] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5" onclick="if(event.target === this) FPCL_PSM_SUITE.closeDataModal()">
@@ -2227,7 +2360,7 @@
                     <h3 class="text-base sm:text-lg font-black text-slate-900 tracking-tight truncate">${m.title}</h3>
                     <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-teal-100 text-teal-800 border border-teal-200 shrink-0 font-mono">${m.badge}</span>
                   </div>
-                  <p class="text-xs text-slate-500 mt-0.5 truncate">${m.subtitle}</p>
+                  <p class="text-xs text-slate-500 mt-0.5 truncate">${totalCount} Observations in Scope • ${closedCount} Closed • ${openCount} Open (${closurePct}% Compliance)</p>
                 </div>
               </div>
               
@@ -2251,47 +2384,90 @@
             </div>
 
             <!-- Metrics & Filter Bar -->
-            <div class="px-5 py-3 border-b border-slate-200 bg-white flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
-              <!-- Summary KPIs -->
-              <div class="flex items-center gap-3 flex-wrap text-xs">
-                <span class="font-bold text-slate-600">Total in Slice: <strong class="text-slate-900 font-mono text-sm">${totalCount}</strong></span>
-                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
-                  <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
-                  ${openCount} Open
-                </span>
-                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                  ${closedCount} Closed
-                </span>
-                <span class="text-xs font-bold text-teal-700 font-mono bg-teal-50 px-2 py-0.5 rounded border border-teal-200">
-                  ${closurePct}% Resolved
-                </span>
-              </div>
-
-              <!-- Status Toggle & Search -->
-              <div class="flex items-center gap-2">
-                <div class="inline-flex p-0.5 bg-slate-100 rounded-lg border border-slate-200 text-xs">
-                  <button
-                    onclick="FPCL_PSM_SUITE.setDataModalStatusTab('all')"
-                    class="px-2.5 py-1 rounded-md font-bold transition-all cursor-pointer ${m.activeStatusTab === 'all' ? 'bg-teal-600 text-white shadow-2xs' : 'text-slate-600 hover:text-slate-900'}"
-                  >
-                    All (${totalCount})
-                  </button>
-                  <button
-                    onclick="FPCL_PSM_SUITE.setDataModalStatusTab('Open')"
-                    class="px-2.5 py-1 rounded-md font-bold transition-all cursor-pointer ${m.activeStatusTab === 'Open' ? 'bg-rose-600 text-white shadow-2xs' : 'text-slate-600 hover:text-slate-900'}"
-                  >
-                    Open (${openCount})
-                  </button>
-                  <button
-                    onclick="FPCL_PSM_SUITE.setDataModalStatusTab('Close')"
-                    class="px-2.5 py-1 rounded-md font-bold transition-all cursor-pointer ${m.activeStatusTab === 'Close' ? 'bg-emerald-600 text-white shadow-2xs' : 'text-slate-600 hover:text-slate-900'}"
-                  >
-                    Closed (${closedCount})
-                  </button>
+            <div class="px-5 py-3 border-b border-slate-200 bg-white flex flex-col gap-3">
+              <!-- Top Row: Summary KPIs and Status Toggle -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                <!-- Summary KPIs -->
+                <div class="flex items-center gap-3 flex-wrap text-xs">
+                  <span class="font-bold text-slate-600">Total in Scope: <strong class="text-slate-900 font-mono text-sm">${totalCount}</strong></span>
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                    <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                    ${openCount} Open
+                  </span>
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                    ${closedCount} Closed
+                  </span>
+                  <span class="text-xs font-bold text-teal-700 font-mono bg-teal-50 px-2 py-0.5 rounded border border-teal-200">
+                    ${closurePct}% Resolved
+                  </span>
                 </div>
 
-                <div class="relative w-44 sm:w-56">
+                <!-- Status Toggle Buttons -->
+                <div class="flex items-center gap-2">
+                  <div class="inline-flex p-0.5 bg-slate-100 rounded-lg border border-slate-200 text-xs">
+                    <button
+                      onclick="FPCL_PSM_SUITE.setDataModalStatusTab('all')"
+                      class="px-2.5 py-1 rounded-md font-bold transition-all cursor-pointer ${m.activeStatusTab === 'all' ? 'bg-teal-600 text-white shadow-2xs' : 'text-slate-600 hover:text-slate-900'}"
+                    >
+                      All (${totalCount})
+                    </button>
+                    <button
+                      onclick="FPCL_PSM_SUITE.setDataModalStatusTab('Open')"
+                      class="px-2.5 py-1 rounded-md font-bold transition-all cursor-pointer ${m.activeStatusTab === 'Open' ? 'bg-rose-600 text-white shadow-2xs' : 'text-slate-600 hover:text-slate-900'}"
+                    >
+                      Open (${openCount})
+                    </button>
+                    <button
+                      onclick="FPCL_PSM_SUITE.setDataModalStatusTab('Close')"
+                      class="px-2.5 py-1 rounded-md font-bold transition-all cursor-pointer ${m.activeStatusTab === 'Close' ? 'bg-emerald-600 text-white shadow-2xs' : 'text-slate-600 hover:text-slate-900'}"
+                    >
+                      Closed (${closedCount})
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Bottom Row: Filter Dropdowns & Search Box -->
+              <div class="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100 text-xs">
+                <!-- Department Dropdown -->
+                <div class="flex items-center gap-1.5">
+                  <span class="text-[11px] font-bold text-slate-500 uppercase">Dept:</span>
+                  <select
+                    onchange="FPCL_PSM_SUITE.setModalDeptFilter(this.value)"
+                    class="py-1 px-2.5 rounded-lg border border-slate-300 bg-slate-50 text-slate-800 text-xs focus:ring-1 focus:ring-teal-500 font-medium cursor-pointer"
+                  >
+                    <option value="all" ${m.filterDept === 'all' ? 'selected' : ''}>All Departments</option>
+                    ${allDepts.map(d => `<option value="${d}" ${m.filterDept === d ? 'selected' : ''}>${d}</option>`).join('')}
+                  </select>
+                </div>
+
+                <!-- PSM Element Dropdown -->
+                <div class="flex items-center gap-1.5">
+                  <span class="text-[11px] font-bold text-slate-500 uppercase">Element:</span>
+                  <select
+                    onchange="FPCL_PSM_SUITE.setModalElementFilter(this.value)"
+                    class="py-1 px-2.5 rounded-lg border border-slate-300 bg-slate-50 text-slate-800 text-xs focus:ring-1 focus:ring-teal-500 font-medium cursor-pointer"
+                  >
+                    <option value="all" ${m.filterElement === 'all' ? 'selected' : ''}>All Elements</option>
+                    ${allElements.map(e => `<option value="${e}" ${m.filterElement === e ? 'selected' : ''}>${e}</option>`).join('')}
+                  </select>
+                </div>
+
+                <!-- Severity Dropdown -->
+                <div class="flex items-center gap-1.5">
+                  <span class="text-[11px] font-bold text-slate-500 uppercase">Severity:</span>
+                  <select
+                    onchange="FPCL_PSM_SUITE.setModalNatureFilter(this.value)"
+                    class="py-1 px-2.5 rounded-lg border border-slate-300 bg-slate-50 text-slate-800 text-xs focus:ring-1 focus:ring-teal-500 font-medium cursor-pointer"
+                  >
+                    <option value="all" ${m.filterNature === 'all' ? 'selected' : ''}>All Severities</option>
+                    ${allNatures.map(n => `<option value="${n}" ${m.filterNature === n ? 'selected' : ''}>${n}</option>`).join('')}
+                  </select>
+                </div>
+
+                <!-- Search Input -->
+                <div class="relative flex-1 min-w-[140px]">
                   <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-slate-400">
                     <i data-lucide="search" class="w-3.5 h-3.5"></i>
                   </div>
@@ -2300,23 +2476,42 @@
                     value="${m.searchQuery}"
                     oninput="FPCL_PSM_SUITE.filterDataModalSearch(this.value)"
                     placeholder="Search slice..."
-                    class="w-full pl-8 pr-7 py-1.5 text-xs rounded-lg border border-slate-300 bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-teal-500"
+                    class="w-full pl-8 pr-7 py-1 text-xs rounded-lg border border-slate-300 bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-teal-500"
                   />
                   ${m.searchQuery ? `
-                    <button onclick="FPCL_PSM_SUITE.filterDataModalSearch('')" class="absolute right-2 top-1.5 text-slate-400 hover:text-slate-600">
+                    <button onclick="FPCL_PSM_SUITE.filterDataModalSearch('')" class="absolute right-2 top-1.5 text-slate-400 hover:text-slate-600 cursor-pointer">
                       <i data-lucide="x" class="w-3 h-3"></i>
                     </button>
                   ` : ''}
                 </div>
+
+                <!-- Reset Filters Button -->
+                ${hasActiveFilters ? `
+                  <button
+                    onclick="FPCL_PSM_SUITE.resetModalFilters()"
+                    class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 transition-colors font-bold text-xs cursor-pointer"
+                    title="Reset all modal filters"
+                  >
+                    <i data-lucide="rotate-ccw" class="w-3 h-3"></i>
+                    <span>Reset</span>
+                  </button>
+                ` : ''}
               </div>
             </div>
 
             <!-- Table of Findings -->
             <div class="overflow-y-auto flex-1 max-h-[55vh]">
               ${records.length === 0 ? `
-                <div class="py-12 text-center text-slate-400 space-y-2">
+                <div class="py-12 text-center text-slate-400 space-y-3">
                   <i data-lucide="inbox" class="w-8 h-8 mx-auto text-slate-300"></i>
                   <p class="text-xs font-semibold">No records match your filter criteria in this slice.</p>
+                  <button
+                    onclick="FPCL_PSM_SUITE.resetModalFilters()"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-50 text-teal-700 border border-teal-200 hover:bg-teal-100 text-xs font-bold transition-colors cursor-pointer"
+                  >
+                    <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                    <span>Reset Filters to View All</span>
+                  </button>
                 </div>
               ` : `
                 <table class="w-full text-left text-xs border-collapse">
