@@ -6054,4 +6054,19 @@
     }
   });
 
+  // Automated background refresh every 60 seconds for continuous live Google Sheets updates
+  if (typeof window !== 'undefined') {
+    setTimeout(function () {
+      if (typeof portalApp.syncAllPlrSheets === 'function') {
+        portalApp.syncAllPlrSheets({ silent: true, target: 'both' });
+      }
+    }, 1200);
+
+    setInterval(function () {
+      if (typeof portalApp.syncAllPlrSheets === 'function') {
+        portalApp.syncAllPlrSheets({ silent: true, target: 'both' });
+      }
+    }, 60000);
+  }
+
 })();

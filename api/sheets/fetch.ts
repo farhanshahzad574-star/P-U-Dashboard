@@ -1,7 +1,12 @@
 /**
- * Vercel Serverless Function: /api/sheets/fetch
- * Live Google Sheets proxy for Vercel deployments
+ * Vercel Serverless Function / Next.js API Route: /api/sheets/fetch
+ * Live Google Sheets proxy with zero static caching guarantees
  */
+
+// Next.js App Router / Serverless Dynamic Directives
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const fetchCache = 'force-no-store';
 
 function convertGvizTableToCsv(table: any): string {
   if (!table || !Array.isArray(table.cols)) return '';
@@ -40,12 +45,28 @@ export default async function handler(req: any, res: any) {
   try {
     const body = req.body || {};
     const query = req.query || {};
-    const url = body.url || query.url;
+    let url = body.url || query.url;
     const sheetTab = body.sheetTab || query.sheetTab || 'Recommendations';
     const customGid = body.gid || query.gid;
 
+    // Resolve URL from environment variables if not provided in payload
     if (!url || typeof url !== 'string') {
-      res.status(400).json({ success: false, error: 'A valid Google Sheet URL is required.' });
+      const sLower = (sheetTab || '').toLowerCase();
+      if ((sLower.includes('plr') || sLower.includes('status')) && process.env.PLR_STATUS_SHEET_URL) {
+        url = process.env.PLR_STATUS_SHEET_URL;
+      } else if (sLower.includes('psm') && process.env.PSM_SHEET_URL) {
+        url = process.env.PSM_SHEET_URL;
+      } else if (process.env.RECOMMENDATIONS_SHEET_URL) {
+        url = process.env.RECOMMENDATIONS_SHEET_URL;
+      } else if (process.env.GOOGLE_SHEETS_CSV_URL) {
+        url = process.env.GOOGLE_SHEETS_CSV_URL;
+      } else if (process.env.NEXT_PUBLIC_SHEET_ID) {
+        url = `https://docs.google.com/spreadsheets/d/${process.env.NEXT_PUBLIC_SHEET_ID}/export?format=csv`;
+      }
+    }
+
+    if (!url || typeof url !== 'string') {
+      res.status(400).json({ success: false, error: 'A valid Google Sheet URL or NEXT_PUBLIC_SHEET_ID environment variable is required.' });
       return;
     }
 
@@ -122,6 +143,32 @@ export default async function handler(req: any, res: any) {
       'Pragma': 'no-cache',
       'Expires': '0'
     };
+
+    // Fast-path: Google Sheets API v4 if GOOGLE_API_KEY is configured
+    const apiKey = process.env.GOOGLE_API_KEY;
+    if (apiKey && spreadsheetId && !isPublished) {
+      for (const tab of candidateTabs) {
+        try {
+          const sheetsApiUrl = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(tab)}?key=${apiKey}&_t=${now}`;
+          const apiRes = await fetch(sheetsApiUrl, {
+            cache: 'no-store',
+            headers: noCacheHeaders
+          });
+          if (apiRes.ok) {
+            const apiJson = await apiRes.json();
+            if (apiJson && Array.isArray(apiJson.values) && apiJson.values.length > 0) {
+              csvText = apiJson.values.map((row: any[]) =>
+                row.map((val: any) => `"${String(val !== null && val !== undefined ? val : '').replace(/"/g, '""')}"`).join(',')
+              ).join('\r\n');
+              successUrl = sheetsApiUrl;
+              break;
+            }
+          }
+        } catch (apiErr) {
+          // continue to other candidate methods
+        }
+      }
+    }
 
     for (const fetchUrl of candidateUrls) {
       try {

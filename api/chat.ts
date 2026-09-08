@@ -1,7 +1,11 @@
 /**
- * Vercel Serverless Function: /api/chat
+ * Vercel Serverless Function / Next.js API Route: /api/chat
  * Scoped AI Assistant for FPCL Executive Operations & Compliance Portal
  */
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const fetchCache = 'force-no-store';
+
 import { GoogleGenAI } from '@google/genai';
 
 let aiClient: GoogleGenAI | null = null;

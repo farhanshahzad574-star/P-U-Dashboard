@@ -1340,14 +1340,66 @@
             <div class="text-[#2E6DA4] font-semibold pt-1">2. Target Data Range</div>
             <p class="text-slate-600 font-sans">Ensure row 1 contains headers: <code class="text-emerald-700 bg-white px-1 py-0.5 rounded border border-slate-200">Ref ID, Description, Owner, DueDate, Priority, Status</code>.</p>
           </div>
-          <div>
-            <label class="block text-slate-700 mb-1 font-semibold">Google Sheet URL or Document ID:</label>
-            <input
-              id="sheet-url-input"
-              type="text"
-              value="https://docs.google.com/spreadsheets/d/1LJOdN8T7UUjaZbSfsCrO_Hdg1eoAgqnuE7mJDGtB8qo/export?format=csv&gid=0"
-              class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-[#2B2E33] text-xs font-mono focus:ring-1 focus:ring-[#2E6DA4] focus:outline-none"
-            />
+          <div class="space-y-3 pt-1">
+            <!-- Row 1: PLR Recommendations Live Sheet -->
+            <div class="p-3 bg-emerald-50/50 rounded-xl border border-emerald-200 space-y-1.5">
+              <div class="flex items-center justify-between">
+                <label class="block text-emerald-950 font-bold text-[11px] uppercase tracking-wider flex items-center gap-1.5">
+                  <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-600"></i>
+                  <span>1. Plant Loss Recommendations (PLR) Live Sheet</span>
+                </label>
+                <span class="text-[10px] font-bold text-emerald-800 bg-emerald-100/90 px-2 py-0.5 rounded-full border border-emerald-300">
+                  Tab: Recommendations (gid=1344438021)
+                </span>
+              </div>
+              <input
+                id="sheet-url-input"
+                type="text"
+                value="https://docs.google.com/spreadsheets/d/1LJOdN8T7UUjaZbSfsCrO_Hdg1eoAgqnuE7mJDGtB8qo/export?format=csv&gid=1344438021"
+                class="w-full px-3 py-2 bg-white border border-emerald-300 rounded-lg text-[#2B2E33] text-xs font-mono focus:ring-1 focus:ring-emerald-600 focus:outline-none"
+              />
+              <p class="text-[10px] text-emerald-700">Feeds: Department Action Recommendations (451 Recs) &amp; Resolution Ratio</p>
+            </div>
+
+            <!-- Row 2: PLRs Status & Outages (Machine Breakdown & Incidents) -->
+            <div class="p-3 bg-sky-50/50 rounded-xl border border-sky-200 space-y-1.5">
+              <div class="flex items-center justify-between">
+                <label class="block text-sky-950 font-bold text-[11px] uppercase tracking-wider flex items-center gap-1.5">
+                  <i data-lucide="cpu" class="w-3.5 h-3.5 text-sky-600"></i>
+                  <span>2. PLRs Status &amp; Machine Incidents Live Sheet</span>
+                </label>
+                <span class="text-[10px] font-bold text-sky-800 bg-sky-100/90 px-2 py-0.5 rounded-full border border-sky-300">
+                  Tab: PLR / PLRstatus (gid=0)
+                </span>
+              </div>
+              <input
+                id="plr-status-sheet-url-portal-input"
+                type="text"
+                value="https://docs.google.com/spreadsheets/d/1LJOdN8T7UUjaZbSfsCrO_Hdg1eoAgqnuE7mJDGtB8qo/export?format=csv&gid=0"
+                class="w-full px-3 py-2 bg-white border border-sky-300 rounded-lg text-[#2B2E33] text-xs font-mono focus:ring-1 focus:ring-sky-600 focus:outline-none"
+              />
+              <p class="text-[10px] text-sky-700">Feeds: Incident Breakdown by Machine (Column G), PLR KPI Cards, and Plant Records Outage Log</p>
+            </div>
+
+            <!-- Row 3: Sub HSE - PSM Audit Findings Live Sheet -->
+            <div class="p-3 bg-indigo-50/50 rounded-xl border border-indigo-200 space-y-1.5">
+              <div class="flex items-center justify-between">
+                <label class="block text-indigo-950 font-bold text-[11px] uppercase tracking-wider flex items-center gap-1.5">
+                  <i data-lucide="shield-alert" class="w-3.5 h-3.5 text-indigo-600"></i>
+                  <span>3. Sub HSE - PSM Process Safety Audit Findings Live Sheet</span>
+                </label>
+                <span class="text-[10px] font-bold text-indigo-800 bg-indigo-100/90 px-2 py-0.5 rounded-full border border-indigo-300">
+                  Tab: PSM Audit (gid=0)
+                </span>
+              </div>
+              <input
+                id="psm-sheet-url-portal-input"
+                type="text"
+                value="https://docs.google.com/spreadsheets/d/1bFBRGKqIfO8Pn7qPSTU0pbdTB87ezDyXvVDnCbTGrx4/export?format=csv&gid=0"
+                class="w-full px-3 py-2 bg-white border border-indigo-300 rounded-lg text-[#2B2E33] text-xs font-mono focus:ring-1 focus:ring-indigo-600 focus:outline-none"
+              />
+              <p class="text-[10px] text-indigo-700">Feeds: PSM 13 Action Departments, Key Elements, and Internal Audit Observations Log</p>
+            </div>
           </div>
         </div>
 
@@ -3228,6 +3280,13 @@
          * Modal handling
          */
         openIntegrationModal() {
+          const recsInput = document.getElementById('sheet-url-input');
+          const statusInput = document.getElementById('plr-status-sheet-url-portal-input');
+          const psmInput = document.getElementById('psm-sheet-url-portal-input');
+          if (recsInput && this.state.connectedSheetUrl) recsInput.value = this.state.connectedSheetUrl;
+          if (statusInput && this.state.connectedPlrStatusSheetUrl) statusInput.value = this.state.connectedPlrStatusSheetUrl;
+          if (psmInput && this.state.connectedPsmSheetUrl) psmInput.value = this.state.connectedPsmSheetUrl;
+
           const modal = document.getElementById('integration-modal');
           if (modal) {
             modal.classList.remove('hidden');
@@ -3244,14 +3303,38 @@
         },
 
         saveSheetLink() {
-          const input = document.getElementById('sheet-url-input');
-          if (input && input.value) {
-            this.state.connectedSheetUrl = input.value;
-            try {
-              localStorage.setItem('FPCL_CONNECTED_SHEET_URL', input.value);
-            } catch (e) {}
+          const recsInput = document.getElementById('sheet-url-input');
+          const statusInput = document.getElementById('plr-status-sheet-url-portal-input');
+          const psmInput = document.getElementById('psm-sheet-url-portal-input');
+
+          let updatedAny = false;
+          if (recsInput && recsInput.value) {
+            this.state.connectedSheetUrl = recsInput.value;
+            try { localStorage.setItem('FPCL_CONNECTED_SHEET_URL', recsInput.value); } catch (e) {}
+            updatedAny = true;
+          }
+          if (statusInput && statusInput.value) {
+            this.state.connectedPlrStatusSheetUrl = statusInput.value;
+            try { localStorage.setItem('FPCL_CONNECTED_PLR_STATUS_SHEET_URL', statusInput.value); } catch (e) {}
+            updatedAny = true;
+          }
+          if (psmInput && psmInput.value) {
+            this.state.connectedPsmSheetUrl = psmInput.value;
+            try { localStorage.setItem('FPCL_CONNECTED_PSM_SHEET_URL', psmInput.value); } catch (e) {}
+            updatedAny = true;
+          }
+
+          if (updatedAny) {
             this.closeIntegrationModal();
-            this.showToast('Connection Saved', 'Google Sheet link updated and validated.', 'success');
+            this.showToast('Connections Saved', 'All Google Sheet links saved. Synchronizing live data now...', 'success');
+
+            // Trigger immediate background sync of PLR and PSM sheets
+            if (typeof this.syncAllPlrSheets === 'function') {
+              this.syncAllPlrSheets({ silent: false, target: 'both' });
+            }
+            if (window.FPCL_PSM_SUITE && typeof window.FPCL_PSM_SUITE.syncLiveFeed === 'function') {
+              window.FPCL_PSM_SUITE.syncLiveFeed({ silent: false });
+            }
           }
         },
 
