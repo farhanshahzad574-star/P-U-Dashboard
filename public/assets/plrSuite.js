@@ -737,14 +737,25 @@
    * Check if a raw Action Entity string matches a target entity filter
    * Accounts for any department mentioned in Column F
    */
+  /**
+   * Check if a raw Action Entity string matches a target entity filter
+   * Accounts for any department mentioned in Column F of Recommendations tab.
+   * Uses strict token equality to prevent cross-department false positives (e.g., E&I vs Finance or KE vs FPCL-KE O/C).
+   */
   function matchesActionEntity(rawActionBy, targetEntity) {
-    if (!targetEntity || targetEntity === 'all') return true;
-    const cleanTarget = normalizeActionEntity(targetEntity).toLowerCase();
-    const entities = splitAndNormalizeActionEntities(rawActionBy);
-    return entities.some(e => {
-      const el = e.toLowerCase();
-      return el === cleanTarget || cleanTarget.includes(el) || el.includes(cleanTarget);
-    });
+    if (!targetEntity || targetEntity === 'all' || targetEntity === '') return true;
+    if (!rawActionBy) return false;
+
+    // Split and normalize target tokens (e.g., "E&I" -> ["E&I"])
+    const targetTokens = splitAndNormalizeActionEntities(String(targetEntity).trim());
+    if (targetTokens.length === 0) return true;
+
+    // Split and normalize row's Action By tokens from Column F
+    const rowTokens = splitAndNormalizeActionEntities(String(rawActionBy).trim());
+    if (rowTokens.length === 0) return false;
+
+    const lowerTargets = targetTokens.map(t => t.toLowerCase());
+    return rowTokens.some(r => lowerTargets.includes(r.toLowerCase()));
   }
 
   /**
@@ -997,11 +1008,9 @@
         }
       }
 
-      // Dept filter
+      // Dept filter: strictly based on Recommendations tab Column F (Action By)
       if (s.selectedDept && s.selectedDept !== 'all') {
-        const itemMatches = matchesActionEntity(item.actionBy, s.selectedDept);
-        const parentMatches = parentPlr ? matchesActionEntity(parentPlr.dept, s.selectedDept) : false;
-        if (!itemMatches && !parentMatches) {
+        if (!matchesActionEntity(item.actionBy, s.selectedDept)) {
           return false;
         }
       }
@@ -1110,11 +1119,9 @@
         if (String(itemYear || '') !== String(s.selectedYear)) return false;
       }
 
-      // Resp Dept filter (incident level)
+      // Resp Dept filter: strictly based on Recommendations tab Column F (Action By)
       if (s.selectedDept && s.selectedDept !== 'all') {
-        const itemMatches = matchesActionEntity(item.actionBy, s.selectedDept);
-        const parentMatches = parentPlr ? matchesActionEntity(parentPlr.dept, s.selectedDept) : false;
-        if (!itemMatches && !parentMatches) return false;
+        if (!matchesActionEntity(item.actionBy, s.selectedDept)) return false;
       }
 
       // Machine filter
