@@ -10,18 +10,40 @@ export const fetchCache = 'force-no-store';
 
 function convertGvizTableToCsv(table: any): string {
   if (!table || !Array.isArray(table.cols)) return '';
-  const headers = table.cols.map((col: any) => {
-    const label = (col && (col.label || col.id)) || '';
-    return `"${String(label).replace(/"/g, '""')}"`;
-  }).join(',');
 
-  const rows = (table.rows || []).map((row: any) => {
-    if (!row || !Array.isArray(row.c)) return '';
-    return row.c.map((cell: any) => {
-      if (!cell || cell.v === null || cell.v === undefined) return '""';
-      const val = (cell.f !== undefined && cell.f !== null) ? cell.f : cell.v;
-      return `"${String(val).replace(/"/g, '""')}"`;
+  const colCount = table.cols.length;
+  const hasColLabels = table.cols.some((c: any) => c && c.label && c.label.trim().length > 0);
+  let headers = '';
+  let dataRows = table.rows || [];
+
+  if (hasColLabels) {
+    headers = table.cols.map((col: any) => {
+      const label = (col && (col.label || col.id)) || '';
+      return `"${String(label).replace(/"/g, '""')}"`;
     }).join(',');
+  } else if (dataRows.length > 0 && dataRows[0] && Array.isArray(dataRows[0].c)) {
+    headers = dataRows[0].c.map((cell: any) => {
+      const val = cell ? (cell.f !== undefined && cell.f !== null ? cell.f : cell.v) : '';
+      return `"${String(val || '').replace(/"/g, '""')}"`;
+    }).join(',');
+    dataRows = dataRows.slice(1);
+  } else {
+    headers = table.cols.map((col: any) => `"${String((col && col.id) || '').replace(/"/g, '""')}"`).join(',');
+  }
+
+  const rows = dataRows.map((row: any) => {
+    if (!row || !Array.isArray(row.c)) return '';
+    const cells = [];
+    for (let c = 0; c < colCount; c++) {
+      const cell = row.c[c];
+      if (!cell || cell.v === null || cell.v === undefined) {
+        cells.push('""');
+      } else {
+        const val = (cell.f !== undefined && cell.f !== null) ? cell.f : cell.v;
+        cells.push(`"${String(val).replace(/"/g, '""')}"`);
+      }
+    }
+    return cells.join(',');
   });
 
   return [headers, ...rows].join('\r\n');
@@ -105,11 +127,6 @@ export default async function handler(req: any, res: any) {
     }
 
     const candidateUrls: string[] = [];
-    if (trimmedUrl.includes('output=csv') || trimmedUrl.includes('format=csv') || trimmedUrl.includes('/pub?')) {
-      candidateUrls.push(trimmedUrl);
-    } else if (trimmedUrl.includes('/pubhtml')) {
-      candidateUrls.push(trimmedUrl.replace('/pubhtml', '/pub?output=csv'));
-    }
 
     if (isPublished) {
       if (gid) {
@@ -119,14 +136,28 @@ export default async function handler(req: any, res: any) {
         candidateUrls.push(`${pubBase}?output=csv&sheet=${encodeURIComponent(tab)}`);
       }
       candidateUrls.push(`${pubBase}?output=csv`);
+      if (trimmedUrl.includes('output=csv') || trimmedUrl.includes('format=csv') || trimmedUrl.includes('/pub?')) {
+        candidateUrls.push(trimmedUrl);
+      }
     } else {
+      // Prioritize gviz/tq out:csv directly - avoids Google 302 redirects on Vercel IPs
       if (gid) {
         candidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&gid=${gid}`);
-        candidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&gid=${gid}`);
       }
       for (const tab of candidateTabs) {
         candidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tab)}`);
+      }
+      if (trimmedUrl.includes('gviz/tq')) {
+        candidateUrls.push(trimmedUrl);
+      }
+      if (gid) {
+        candidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&gid=${gid}`);
+      }
+      for (const tab of candidateTabs) {
         candidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&sheet=${encodeURIComponent(tab)}`);
+      }
+      if (trimmedUrl.includes('output=csv') || trimmedUrl.includes('format=csv')) {
+        candidateUrls.push(trimmedUrl);
       }
     }
 

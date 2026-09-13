@@ -18,21 +18,41 @@
   function convertGvizTableToCsv(table) {
     if (!table || !Array.isArray(table.cols)) return '';
 
-    // Extract headers from column definitions
-    const headers = table.cols.map(col => {
-      const label = (col && (col.label || col.id)) || '';
-      return `"${String(label).replace(/"/g, '""')}"`;
-    }).join(',');
+    const colCount = table.cols.length;
+    const hasColLabels = table.cols.some(c => c && c.label && c.label.trim().length > 0);
+    let headers = '';
+    let dataRows = table.rows || [];
 
-    // Extract data rows
-    const rows = (table.rows || []).map(row => {
-      if (!row || !Array.isArray(row.c)) return '';
-      return row.c.map(cell => {
-        if (!cell || cell.v === null || cell.v === undefined) return '""';
-        // Prefer formatted value (f) if present (e.g. formatted dates, strings), else raw value (v)
-        const val = (cell.f !== undefined && cell.f !== null) ? cell.f : cell.v;
-        return `"${String(val).replace(/"/g, '""')}"`;
+    if (hasColLabels) {
+      headers = table.cols.map(col => {
+        const label = (col && (col.label || col.id)) || '';
+        return `"${String(label).replace(/"/g, '""')}"`;
       }).join(',');
+    } else if (dataRows.length > 0 && dataRows[0] && Array.isArray(dataRows[0].c)) {
+      // Headers were returned as first data row by Google Viz API
+      headers = dataRows[0].c.map(cell => {
+        const val = cell ? (cell.f !== undefined && cell.f !== null ? cell.f : cell.v) : '';
+        return `"${String(val || '').replace(/"/g, '""')}"`;
+      }).join(',');
+      dataRows = dataRows.slice(1);
+    } else {
+      headers = table.cols.map(col => `"${String((col && col.id) || '').replace(/"/g, '""')}"`).join(',');
+    }
+
+    // Extract data rows with uniform column width
+    const rows = dataRows.map(row => {
+      if (!row || !Array.isArray(row.c)) return '';
+      const cells = [];
+      for (let c = 0; c < colCount; c++) {
+        const cell = row.c[c];
+        if (!cell || cell.v === null || cell.v === undefined) {
+          cells.push('""');
+        } else {
+          const val = (cell.f !== undefined && cell.f !== null) ? cell.f : cell.v;
+          cells.push(`"${String(val).replace(/"/g, '""')}"`);
+        }
+      }
+      return cells.join(',');
     });
 
     return [headers, ...rows].join('\r\n');
@@ -180,25 +200,43 @@
       console.warn(`JSONP fetch failed for ${sheetTab} (${targetUrl}):`, jsonpErr);
     }
 
-    // 3. Third attempt: Direct fetch with strict zero-cache flags
+    // 3. Third attempt: Direct fetch with strict zero-cache flags (prioritizing gviz/tq out:csv)
     try {
-      let candidateUrl = targetUrl;
-      if (candidateUrl.includes('/edit')) {
-        candidateUrl = candidateUrl.split('/edit')[0] + (gid ? `/export?format=csv&gid=${gid}` : '/export?format=csv');
-      }
-      const separator = candidateUrl.includes('?') ? '&' : '?';
-      const cacheBustedUrl = `${candidateUrl}${separator}_t=${now}&_nocache=${nonce}&t=${now}`;
+      const idMatch = targetUrl.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+      const spreadsheetId = idMatch ? idMatch[1] : null;
+      const directCandidates = [];
 
-      const directRes = await fetch(cacheBustedUrl, {
-        method: 'GET',
-        cache: 'no-store',
-        headers: noCacheHeaders
-      });
-      if (directRes.ok) {
-        const text = await directRes.text();
-        if (text && !text.includes('<!DOCTYPE html>') && !text.includes('<html') && text.length > 50) {
-          return text;
+      if (spreadsheetId) {
+        if (gid !== null && gid !== undefined && gid !== '') {
+          directCandidates.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&gid=${gid}`);
+        } else if (sheetTab) {
+          directCandidates.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetTab)}`);
         }
+      }
+
+      let rawCandidate = targetUrl;
+      if (rawCandidate.includes('/edit')) {
+        rawCandidate = rawCandidate.split('/edit')[0] + (gid ? `/export?format=csv&gid=${gid}` : '/export?format=csv');
+      }
+      directCandidates.push(rawCandidate);
+
+      for (const cand of directCandidates) {
+        try {
+          const separator = cand.includes('?') ? '&' : '?';
+          const cacheBustedUrl = `${cand}${separator}_t=${now}&_nocache=${nonce}&t=${now}`;
+
+          const directRes = await fetch(cacheBustedUrl, {
+            method: 'GET',
+            cache: 'no-store',
+            headers: noCacheHeaders
+          });
+          if (directRes.ok) {
+            const text = await directRes.text();
+            if (text && !text.includes('<!DOCTYPE html>') && !text.includes('<html') && text.length > 50) {
+              return text;
+            }
+          }
+        } catch (subErr) {}
       }
     } catch (directErr) {
       // Direct fetch blocked by CORS or network

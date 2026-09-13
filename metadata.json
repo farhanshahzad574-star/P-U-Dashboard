@@ -1,6 +1,6 @@
 {
   "name": "Executive Operations & Compliance Portal",
-  "description": "FPCL Executive Operations & Compliance Portal featuring synchronized Overview, Plant Loss Recommendations (PLR with standardized machines & departments), and Sub HSE - PSM dashboards, with tab-color configured AI Assistants strictly scoped to dashboard metrics.",
+  "description": "FPCL Executive Operations & Compliance Portal featuring synchronized Overview, Production Loss Report (PLR with standardized machines & departments), and Sub HSE - PSM dashboards, with tab-color configured AI Assistants strictly scoped to dashboard metrics.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
