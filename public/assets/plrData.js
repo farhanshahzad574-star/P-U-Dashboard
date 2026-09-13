@@ -2568,6 +2568,7 @@ window.FPCL_PLR_DATA = [
     "dept": "KE"
   }
 ];
+if (!window.FPCL_PLR_RECOMMENDATIONS || window.FPCL_PLR_RECOMMENDATIONS.length < 50) {
 window.FPCL_PLR_RECOMMENDATIONS = [
   {
     "sNo": 1,
@@ -2858,3 +2859,4 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "status": "Closed"
   }
 ];
+}

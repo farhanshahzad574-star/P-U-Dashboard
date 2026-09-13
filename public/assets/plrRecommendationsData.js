@@ -6,7 +6,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "date": "01/Jan/2025",
     "recommendation": "Matter to be taken up with KE by FPCL/KE steering committee for resolution / way forward.",
     "actionBy": "Finance",
-    "status": "Closed",
+    "status": "Open",
     "category": "Finance"
   },
   {
@@ -16,7 +16,7 @@ window.FPCL_PLR_RECOMMENDATIONS = [
     "date": "01/Jan/2025",
     "recommendation": "Matter to be taken up with KE by FPCL/KE steering committee for resolution / way forward.",
     "actionBy": "FPCL-KE O/C",
-    "status": "Closed",
+    "status": "Open",
     "category": "FPCL-KE O/C"
   },
   {

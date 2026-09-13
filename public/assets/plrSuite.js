@@ -275,6 +275,7 @@
     if (window.DASHBOARD_REGISTRY) {
       const plrEntry = window.DASHBOARD_REGISTRY.find(d => d.id === 'plr');
       if (plrEntry) {
+        plrEntry.name = 'PLR recommendations';
         plrEntry.department = 'Process';
         plrEntry.description = dynamicDesc;
         plrEntry.kpis = { total, closed, inProgress: open, overdue: 0, compliance: rate };
@@ -1576,7 +1577,7 @@
             </div>
             <div class="flex items-center justify-between text-xs sm:text-sm text-slate-500 mt-2">
               <span>Historical Scope (2017–2025)</span>
-              <span class="font-bold text-[#2E6DA4] group-hover:underline flex items-center gap-1">
+              <span class="font-bold text-[#2E6DA4] group-hover:underline flex items-center gap-1 cursor-pointer" onclick="event.stopPropagation(); (window.portalApp || portalApp).openPlrKpiModal('closed-plrs')" title="Click to view ${closedPLRs} Closed PLRs in pop-up window">
                 <span>${closedPLRs} Closed</span>
                 <i data-lucide="chevron-right" class="w-3.5 h-3.5 inline"></i>
               </span>
@@ -1629,7 +1630,10 @@
               <span class="text-xs sm:text-sm font-bold text-[#2E6DA4] font-mono">16+ Entities</span>
             </div>
             <div class="flex items-center justify-between text-xs sm:text-sm text-slate-500 mt-2">
-              <span>${closedRecs} Closed (${recClosureRate}%)</span>
+              <span class="font-bold text-[#2E6DA4] group-hover:underline flex items-center gap-1 cursor-pointer" onclick="event.stopPropagation(); (window.portalApp || portalApp).openPlrKpiModal('closed-recs')" title="Click to view ${closedRecs} Closed Recommendations">
+                <span>${closedRecs} Closed (${recClosureRate}%)</span>
+                <i data-lucide="chevron-right" class="w-3.5 h-3.5 inline"></i>
+              </span>
               <span class="font-bold text-[#2E6DA4] group-hover:underline flex items-center gap-1">
                 <span>Inspect in Pop-up</span>
                 <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
@@ -3972,76 +3976,101 @@
    * Dedicated entry point for KPI cards click drill-down
    * Slices data precisely according to the clicked metric and inherits active dashboard filters
    */
+  let _lastKpiModalCallTime = 0;
+  let _lastKpiType = '';
   portalApp.openPlrKpiModal = function (kpiType) {
-    const s = getPlrState();
-    const rawData = getPlrData();
-    const rawRecs = getPlrRecs();
+    const now = Date.now();
+    if (kpiType === _lastKpiType && (now - _lastKpiModalCallTime) < 350) {
+      return;
+    }
+    _lastKpiModalCallTime = now;
+    _lastKpiType = kpiType;
 
-    // Inherit active filters from dashboard so drilldown matches the KPI card context
-    const activeMachine = s.selectedMachine !== 'all' ? s.selectedMachine : 'all';
-    const activePriority = s.selectedPriority !== 'all' ? s.selectedPriority : 'all';
-    const activeDept = s.selectedDept !== 'all' ? s.selectedDept : (s.selectedEntity !== 'all' ? s.selectedEntity : 'all');
-    const activeYear = s.selectedYear !== 'all' ? s.selectedYear : 'all';
+    const s = getPlrState();
+    const filteredIncidents = getFilteredPlrData();
+    const filteredRecs = getFilteredPlrRecs();
+
+    // Summary description of active filters for clear modal headers
+    const activeFilterDesc = [];
+    if (s.selectedMachine && s.selectedMachine !== 'all') activeFilterDesc.push(`Machine: ${s.selectedMachine}`);
+    if (s.selectedPriority && s.selectedPriority !== 'all') activeFilterDesc.push(`Priority: ${s.selectedPriority}`);
+    if (s.selectedDept && s.selectedDept !== 'all') activeFilterDesc.push(`Dept: ${s.selectedDept}`);
+    if (s.selectedEntity && s.selectedEntity !== 'all') activeFilterDesc.push(`Entity: ${s.selectedEntity}`);
+    if (s.selectedYear && s.selectedYear !== 'all') activeFilterDesc.push(`Year: ${s.selectedYear}`);
+    if (s.searchQuery && s.searchQuery.trim()) activeFilterDesc.push(`Search: "${s.searchQuery.trim()}"`);
+    const filterContextSuffix = activeFilterDesc.length > 0
+      ? ` • Filtered by ${activeFilterDesc.join(', ')}`
+      : '';
 
     if (kpiType === 'total-plrs') {
-      const openCount = rawData.filter(d => (d.status || '').toLowerCase() === 'open').length;
-      const closedCount = rawData.length - openCount;
-      const closureRate = rawData.length > 0 ? Math.round((closedCount / rawData.length) * 100) : 0;
+      const openCount = filteredIncidents.filter(d => (d.status || '').toLowerCase() === 'open').length;
+      const closedCount = filteredIncidents.length - openCount;
+      const closureRate = filteredIncidents.length > 0 ? Math.round((closedCount / filteredIncidents.length) * 100) : 0;
       portalApp.openPlrDataModal({
         type: 'incidents',
         title: 'Total Plant Loss Reports (PLR Incident Log)',
-        badge: `${rawData.length} Total Incidents`,
-        subtitle: `Complete historical plant loss and outage reports (2017–2025) across STG, Boilers & Auxiliaries • ${closedCount} Closed (${closureRate}%), ${openCount} Open`,
+        badge: `${filteredIncidents.length} Filtered Incidents`,
+        subtitle: `Plant loss and outage reports (${filteredIncidents.length} total • ${closedCount} Closed [${closureRate}%], ${openCount} Open)${filterContextSuffix}`,
         filterStatus: 'all',
-        filterMachine: activeMachine,
-        filterPriority: activePriority,
-        filterDept: activeDept,
-        filterYear: activeYear,
+        sourceRecords: filteredIncidents,
         kpiSource: 'total-plrs'
       });
     } else if (kpiType === 'open-plrs') {
-      const openCount = rawData.filter(d => (d.status || '').toLowerCase() === 'open').length;
+      const openCount = filteredIncidents.filter(d => (d.status || '').toLowerCase() === 'open').length;
       portalApp.openPlrDataModal({
         type: 'incidents',
         title: 'Open Plant Loss Reports Under Active Investigation',
         badge: `${openCount} Open Incidents`,
-        subtitle: 'Plant outages undergoing root-cause investigation, corrective maintenance, or pending closeout sign-off',
+        subtitle: `Active plant outages undergoing root-cause investigation or corrective maintenance (${openCount} Open)${filterContextSuffix}`,
         filterStatus: 'Open',
-        filterMachine: activeMachine,
-        filterPriority: activePriority,
-        filterDept: activeDept,
-        filterYear: activeYear,
+        sourceRecords: filteredIncidents,
         kpiSource: 'open-plrs'
       });
+    } else if (kpiType === 'closed-plrs') {
+      const closedCount = filteredIncidents.filter(d => (d.status || '').toLowerCase() === 'closed').length;
+      portalApp.openPlrDataModal({
+        type: 'incidents',
+        title: 'Closed & Resolved Plant Loss Reports',
+        badge: `${closedCount} Closed Incidents`,
+        subtitle: `Resolved plant outage reports (${closedCount} Closed)${filterContextSuffix}`,
+        filterStatus: 'Closed',
+        sourceRecords: filteredIncidents,
+        kpiSource: 'closed-plrs'
+      });
     } else if (kpiType === 'total-recs') {
-      const openRecs = rawRecs.filter(r => (r.status || '').toLowerCase() === 'open').length;
-      const closedRecs = rawRecs.length - openRecs;
-      const closureRate = rawRecs.length > 0 ? Math.round((closedRecs / rawRecs.length) * 100) : 0;
+      const openRecs = filteredRecs.filter(r => (r.status || '').toLowerCase() === 'open').length;
+      const closedRecs = filteredRecs.length - openRecs;
+      const closureRate = filteredRecs.length > 0 ? Math.round((closedRecs / filteredRecs.length) * 100) : 0;
       portalApp.openPlrDataModal({
         type: 'recommendations',
         title: 'Total Corrective Action Recommendations',
-        badge: `${rawRecs.length} Total Recommendations`,
-        subtitle: `Corrective action items extracted across 14+ standardized Action Entities • ${closedRecs} Closed (${closureRate}%), ${openRecs} Open`,
+        badge: `${filteredRecs.length} Recommendations`,
+        subtitle: `Corrective action items (${filteredRecs.length} total • ${closedRecs} Closed [${closureRate}%], ${openRecs} Open)${filterContextSuffix}`,
         filterStatus: 'all',
-        filterMachine: activeMachine,
-        filterPriority: activePriority,
-        filterDept: activeDept,
-        filterYear: activeYear,
+        sourceRecords: filteredRecs,
         kpiSource: 'total-recs'
       });
     } else if (kpiType === 'open-recs') {
-      const openRecs = rawRecs.filter(r => (r.status || '').toLowerCase() === 'open').length;
+      const openRecs = filteredRecs.filter(r => (r.status || '').toLowerCase() === 'open').length;
       portalApp.openPlrDataModal({
         type: 'recommendations',
         title: 'Open Action Recommendations (Active Corrective Backlog)',
         badge: `${openRecs} Open Recommendations`,
-        subtitle: 'Active corrective action items awaiting physical completion or engineering sign-off',
+        subtitle: `Active corrective action items awaiting physical completion or engineering sign-off (${openRecs} Open)${filterContextSuffix}`,
         filterStatus: 'Open',
-        filterMachine: activeMachine,
-        filterPriority: activePriority,
-        filterDept: activeDept,
-        filterYear: activeYear,
+        sourceRecords: filteredRecs,
         kpiSource: 'open-recs'
+      });
+    } else if (kpiType === 'closed-recs') {
+      const closedRecs = filteredRecs.filter(r => (r.status || '').toLowerCase() === 'closed').length;
+      portalApp.openPlrDataModal({
+        type: 'recommendations',
+        title: 'Closed Action Recommendations (Resolved Items)',
+        badge: `${closedRecs} Closed Recommendations`,
+        subtitle: `Resolved and completed corrective action recommendations (${closedRecs} Closed)${filterContextSuffix}`,
+        filterStatus: 'Closed',
+        sourceRecords: filteredRecs,
+        kpiSource: 'closed-recs'
       });
     }
   };
@@ -4054,12 +4083,15 @@
     const subtitle = opts.subtitle || 'Detailed operational records';
     const filterStatus = opts.filterStatus || 'all'; // 'all', 'Open', 'Closed'
     const filterMachine = opts.filterMachine || 'all';
-    const filterDept = opts.filterDept || opts.filterEntity || 'all';
+    const filterDept = opts.filterDept || 'all';
+    const filterEntity = opts.filterEntity || 'all';
     const filterPriority = opts.filterPriority || 'all';
     const filterYear = opts.filterYear ? String(opts.filterYear).trim() : 'all';
 
     let allRecords = [];
-    if (type === 'incidents') {
+    if (opts.sourceRecords && Array.isArray(opts.sourceRecords)) {
+      allRecords = opts.sourceRecords;
+    } else if (type === 'incidents') {
       allRecords = getPlrData();
     } else {
       allRecords = getPlrRecs();
@@ -4072,6 +4104,7 @@
       subtitle,
       filterMachine,
       filterDept,
+      filterEntity,
       filterPriority,
       filterYear,
       activeStatusTab: filterStatus,
@@ -4117,6 +4150,14 @@
     const s = getPlrState();
     if (!s.activePlrModal) return;
     s.activePlrModal.filterDept = dept;
+    s.activePlrModal.filterEntity = 'all'; // Allow explicit department change to take precedence
+    portalApp.renderPlrDataModal();
+  };
+
+  portalApp.setPlrDataModalEntity = function (entity) {
+    const s = getPlrState();
+    if (!s.activePlrModal) return;
+    s.activePlrModal.filterEntity = entity;
     portalApp.renderPlrDataModal();
   };
 
@@ -4130,10 +4171,12 @@
   portalApp.resetPlrDataModalFilters = function () {
     const s = getPlrState();
     if (!s.activePlrModal) return;
+    s.activePlrModal.allRecords = s.activePlrModal.type === 'incidents' ? getPlrData() : getPlrRecs();
     s.activePlrModal.activeStatusTab = 'all';
     s.activePlrModal.filterMachine = 'all';
     s.activePlrModal.filterPriority = 'all';
     s.activePlrModal.filterDept = 'all';
+    s.activePlrModal.filterEntity = 'all';
     s.activePlrModal.filterYear = 'all';
     s.activePlrModal.searchQuery = '';
     portalApp.renderPlrDataModal();
@@ -4158,85 +4201,83 @@
     }
   };
 
-  portalApp.getPlrModalFilteredRecords = function () {
+  /**
+   * Calculate all records matching Machine, Priority, Dept, Entity, Year & Search
+   * (Does NOT filter by activeStatusTab so count headers stay mathematically sound)
+   */
+  portalApp.getPlrModalScopedRecords = function () {
     const s = getPlrState();
     if (!s.activePlrModal) return [];
     const m = s.activePlrModal;
-    let records = m.allRecords || [];
+    const allRecords = m.allRecords || [];
     const plrsMap = getPlrsMap();
+    const recsMap = getRecsMapByPlr();
+    const isIncidents = m.type === 'incidents';
 
-    // 1. Filter by status tab (All, Open, Closed)
-    if (m.activeStatusTab && m.activeStatusTab !== 'all') {
-      const target = m.activeStatusTab.toLowerCase().trim();
-      records = records.filter(r => (r.status || '').toLowerCase().trim() === target);
-    }
+    return allRecords.filter(r => {
+      const parent = isIncidents ? null : plrsMap.get(String(r.plrNo).toUpperCase());
 
-    // 2. Filter by machine
-    if (m.filterMachine && m.filterMachine !== 'all') {
-      if (m.type === 'incidents') {
-        records = records.filter(r => matchesMachine(r.machine, m.filterMachine));
-      } else {
-        records = records.filter(r => {
-          const parent = plrsMap.get(String(r.plrNo).toUpperCase());
-          return parent ? matchesMachine(parent.machine, m.filterMachine) : false;
-        });
+      // 1. Filter by machine
+      if (m.filterMachine && m.filterMachine !== 'all') {
+        const machineToTest = isIncidents ? r.machine : (parent ? parent.machine : '');
+        if (!matchesMachine(machineToTest, m.filterMachine)) return false;
       }
-    }
 
-    // 3. Filter by priority (for incidents & recommendations linked to PLR)
-    if (m.filterPriority && m.filterPriority !== 'all') {
-      const targetPri = m.filterPriority.toLowerCase().trim();
-      if (m.type === 'incidents') {
-        records = records.filter(r => (r.priority || '').toLowerCase().trim() === targetPri);
-      } else {
-        records = records.filter(r => {
-          const parent = plrsMap.get(String(r.plrNo).toUpperCase());
-          return parent ? (parent.priority || '').toLowerCase().trim() === targetPri : false;
-        });
+      // 2. Filter by priority
+      if (m.filterPriority && m.filterPriority !== 'all') {
+        const priToTest = isIncidents ? r.priority : (parent ? parent.priority : '');
+        if ((priToTest || '').toLowerCase().trim() !== m.filterPriority.toLowerCase().trim()) return false;
       }
-    }
 
-    // 4. Filter by department / entity
-    if (m.filterDept && m.filterDept !== 'all') {
-      if (m.type === 'incidents') {
-        records = records.filter(r => matchesActionEntity(r.dept, m.filterDept));
-      } else {
-        records = records.filter(r => matchesActionEntity(r.actionBy, m.filterDept));
-      }
-    }
-
-    // 5. Filter by year
-    if (m.filterYear && m.filterYear !== 'all') {
-      const targetYear = String(m.filterYear).trim();
-      records = records.filter(r => {
-        let yr = r.year;
-        if (!yr && m.type !== 'incidents') {
-          const parent = plrsMap.get(String(r.plrNo).toUpperCase());
-          if (parent) yr = parent.year;
+      // 3. Filter by department (Resp Dept / COL F)
+      if (m.filterDept && m.filterDept !== 'all') {
+        if (isIncidents) {
+          const linkedRecs = recsMap.get(String(r.plrNo || '').toUpperCase()) || [];
+          const match = matchesActionEntity(r.dept, m.filterDept) ||
+            linkedRecs.some(rec => matchesActionEntity(rec.actionBy, m.filterDept));
+          if (!match) return false;
+        } else {
+          const itemMatches = matchesActionEntity(r.actionBy, m.filterDept);
+          const parentMatches = parent ? matchesActionEntity(parent.dept, m.filterDept) : false;
+          if (!itemMatches && !parentMatches) return false;
         }
-        return String(yr || '').trim() === targetYear;
-      });
-    }
+      }
 
-    // 6. Filter by search query
-    if (m.searchQuery && m.searchQuery.trim()) {
-      const q = m.searchQuery.toLowerCase().trim();
-      if (m.type === 'incidents') {
-        records = records.filter(r =>
-          String(r.plrNo || '').toLowerCase().includes(q) ||
-          String(r.incident || '').toLowerCase().includes(q) ||
-          String(r.machine || '').toLowerCase().includes(q) ||
-          String(r.dept || '').toLowerCase().includes(q) ||
-          String(r.priority || '').toLowerCase().includes(q) ||
-          String(r.status || '').toLowerCase().includes(q) ||
-          String(r.year || '').includes(q) ||
-          String(r.date || '').toLowerCase().includes(q)
-        );
-      } else {
-        records = records.filter(r => {
-          const parent = plrsMap.get(String(r.plrNo).toUpperCase());
+      // 4. Filter by Action Entity
+      if (m.filterEntity && m.filterEntity !== 'all') {
+        if (isIncidents) {
+          const linkedRecs = recsMap.get(String(r.plrNo || '').toUpperCase()) || [];
+          const match = linkedRecs.some(rec => matchesActionEntity(rec.actionBy, m.filterEntity)) ||
+            matchesActionEntity(r.dept, m.filterEntity);
+          if (!match) return false;
+        } else {
+          if (!matchesActionEntity(r.actionBy, m.filterEntity)) return false;
+        }
+      }
+
+      // 5. Filter by year
+      if (m.filterYear && m.filterYear !== 'all') {
+        const yr = isIncidents ? r.year : (r.year || (parent ? parent.year : null));
+        if (String(yr || '').trim() !== String(m.filterYear).trim()) return false;
+      }
+
+      // 6. Filter by search query
+      if (m.searchQuery && m.searchQuery.trim()) {
+        const q = m.searchQuery.toLowerCase().trim();
+        if (isIncidents) {
+          const match =
+            String(r.plrNo || '').toLowerCase().includes(q) ||
+            String(r.incident || '').toLowerCase().includes(q) ||
+            String(r.machine || '').toLowerCase().includes(q) ||
+            String(r.dept || '').toLowerCase().includes(q) ||
+            String(r.priority || '').toLowerCase().includes(q) ||
+            String(r.status || '').toLowerCase().includes(q) ||
+            String(r.year || '').includes(q) ||
+            String(r.date || '').toLowerCase().includes(q);
+          if (!match) return false;
+        } else {
           const parentMachine = parent ? parent.machine : '';
-          return (
+          const match =
             String(r.plrNo || '').toLowerCase().includes(q) ||
             String(r.sNo || '').toLowerCase().includes(q) ||
             String(r.recommendation || '').toLowerCase().includes(q) ||
@@ -4244,13 +4285,31 @@
             String(parentMachine).toLowerCase().includes(q) ||
             String(r.status || '').toLowerCase().includes(q) ||
             String(r.year || '').includes(q) ||
-            String(r.date || '').toLowerCase().includes(q)
-          );
-        });
+            String(r.date || '').toLowerCase().includes(q);
+          if (!match) return false;
+        }
       }
+
+      return true;
+    });
+  };
+
+  /**
+   * Get final filtered records to display in modal table
+   * (Applies scoped filter + status tab)
+   */
+  portalApp.getPlrModalFilteredRecords = function () {
+    const s = getPlrState();
+    if (!s.activePlrModal) return [];
+    const m = s.activePlrModal;
+    const scopedRecords = portalApp.getPlrModalScopedRecords();
+
+    if (m.activeStatusTab && m.activeStatusTab !== 'all') {
+      const target = m.activeStatusTab.toLowerCase().trim();
+      return scopedRecords.filter(r => (r.status || '').toLowerCase().trim() === target);
     }
 
-    return records;
+    return scopedRecords;
   };
 
   portalApp.renderPlrDataModal = function (maintainFocus = false) {
@@ -4264,87 +4323,12 @@
       document.body.appendChild(container);
     }
 
+    const scopedRecords = portalApp.getPlrModalScopedRecords();
     const records = portalApp.getPlrModalFilteredRecords();
     const allRecords = m.allRecords || [];
     const plrsMap = getPlrsMap();
+    const recsMap = getRecsMapByPlr();
     const isIncidents = m.type === 'incidents';
-
-    // Compute dimensional records that match current Machine, Priority, Dept, Year and Search (independent of status tab)
-    let scopedRecords = allRecords;
-
-    if (m.filterMachine && m.filterMachine !== 'all') {
-      if (isIncidents) {
-        scopedRecords = scopedRecords.filter(r => matchesMachine(r.machine, m.filterMachine));
-      } else {
-        scopedRecords = scopedRecords.filter(r => {
-          const parent = plrsMap.get(String(r.plrNo).toUpperCase());
-          return parent ? matchesMachine(parent.machine, m.filterMachine) : false;
-        });
-      }
-    }
-
-    if (m.filterPriority && m.filterPriority !== 'all') {
-      const targetPri = m.filterPriority.toLowerCase().trim();
-      if (isIncidents) {
-        scopedRecords = scopedRecords.filter(r => (r.priority || '').toLowerCase().trim() === targetPri);
-      } else {
-        scopedRecords = scopedRecords.filter(r => {
-          const parent = plrsMap.get(String(r.plrNo).toUpperCase());
-          return parent ? (parent.priority || '').toLowerCase().trim() === targetPri : false;
-        });
-      }
-    }
-
-    if (m.filterDept && m.filterDept !== 'all') {
-      if (isIncidents) {
-        scopedRecords = scopedRecords.filter(r => matchesActionEntity(r.dept, m.filterDept));
-      } else {
-        scopedRecords = scopedRecords.filter(r => matchesActionEntity(r.actionBy, m.filterDept));
-      }
-    }
-
-    if (m.filterYear && m.filterYear !== 'all') {
-      const targetYear = String(m.filterYear).trim();
-      scopedRecords = scopedRecords.filter(r => {
-        let yr = r.year;
-        if (!yr && !isIncidents) {
-          const parent = plrsMap.get(String(r.plrNo).toUpperCase());
-          if (parent) yr = parent.year;
-        }
-        return String(yr || '').trim() === targetYear;
-      });
-    }
-
-    if (m.searchQuery && m.searchQuery.trim()) {
-      const q = m.searchQuery.toLowerCase().trim();
-      if (isIncidents) {
-        scopedRecords = scopedRecords.filter(r =>
-          String(r.plrNo || '').toLowerCase().includes(q) ||
-          String(r.incident || '').toLowerCase().includes(q) ||
-          String(r.machine || '').toLowerCase().includes(q) ||
-          String(r.dept || '').toLowerCase().includes(q) ||
-          String(r.priority || '').toLowerCase().includes(q) ||
-          String(r.status || '').toLowerCase().includes(q) ||
-          String(r.year || '').includes(q) ||
-          String(r.date || '').toLowerCase().includes(q)
-        );
-      } else {
-        scopedRecords = scopedRecords.filter(r => {
-          const parent = plrsMap.get(String(r.plrNo).toUpperCase());
-          const parentMachine = parent ? parent.machine : '';
-          return (
-            String(r.plrNo || '').toLowerCase().includes(q) ||
-            String(r.sNo || '').toLowerCase().includes(q) ||
-            String(r.recommendation || '').toLowerCase().includes(q) ||
-            String(r.actionBy || '').toLowerCase().includes(q) ||
-            String(parentMachine).toLowerCase().includes(q) ||
-            String(r.status || '').toLowerCase().includes(q) ||
-            String(r.year || '').includes(q) ||
-            String(r.date || '').toLowerCase().includes(q)
-          );
-        });
-      }
-    }
 
     const totalCount = scopedRecords.length;
     const openCount = scopedRecords.filter(r => (r.status || '').toLowerCase().trim() === 'open').length;
@@ -4393,7 +4377,12 @@
       { id: 'all', label: `All Departments (${allRecords.length})` },
       ...baseDepts.map(deptName => {
         const count = allRecords.filter(r => {
-          return matchesActionEntity(isIncidents ? r.dept : r.actionBy, deptName);
+          if (isIncidents) {
+            const linked = recsMap.get(String(r.plrNo).toUpperCase()) || [];
+            return matchesActionEntity(r.dept, deptName) || linked.some(rec => matchesActionEntity(rec.actionBy, deptName));
+          } else {
+            return matchesActionEntity(r.actionBy, deptName);
+          }
         }).length;
         return { id: deptName, label: `${deptName} (${count})` };
       }).filter(d => d.id === 'all' || d.label.includes('('))
@@ -4448,6 +4437,12 @@
       activeFilters.push({
         label: `Dept: ${m.filterDept}`,
         clearCode: "portalApp.setPlrDataModalDept('all')"
+      });
+    }
+    if (m.filterEntity && m.filterEntity !== 'all') {
+      activeFilters.push({
+        label: `Entity: ${m.filterEntity}`,
+        clearCode: "portalApp.setPlrDataModalEntity('all')"
       });
     }
     if (m.filterPriority && m.filterPriority !== 'all') {
@@ -4586,11 +4581,11 @@
               <div>
                 <select
                   onchange="portalApp.setPlrDataModalDept(this.value)"
-                  class="w-full text-xs py-1.5 px-2 rounded-lg border ${m.filterDept !== 'all' ? 'border-[#2E6DA4] bg-blue-50/60 font-bold text-[#1e40af]' : 'border-slate-300 bg-slate-50 text-slate-700'} focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#2E6DA4] transition-colors cursor-pointer"
+                  class="w-full text-xs py-1.5 px-2 rounded-lg border ${(m.filterDept !== 'all' || m.filterEntity !== 'all') ? 'border-[#2E6DA4] bg-blue-50/60 font-bold text-[#1e40af]' : 'border-slate-300 bg-slate-50 text-slate-700'} focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#2E6DA4] transition-colors cursor-pointer"
                   title="Filter by Department / Action Entity"
                 >
                   ${availableDepts.map(opt => `
-                    <option value="${opt.id}" ${m.filterDept === opt.id ? 'selected' : ''}>${opt.label}</option>
+                    <option value="${opt.id}" ${(m.filterDept === opt.id || (m.filterDept === 'all' && m.filterEntity === opt.id)) ? 'selected' : ''}>${opt.label}</option>
                   `).join('')}
                 </select>
               </div>
@@ -5117,7 +5112,7 @@
         ];
         csv += row.join(',') + '\n';
       });
-      filename = 'FPCL_PLR_Recommendations_451.csv';
+      filename = 'FPCL_PLR_Recommendations_534.csv';
     }
 
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -6313,7 +6308,7 @@
    * Reset PLR Recommendations to Baseline
    */
   portalApp.resetPlrRecommendationsToBaseline = function () {
-    if (!confirm('Are you sure you want to reset recommendations to the original 451 records? Any manual additions or edits will be reverted.')) {
+    if (!confirm('Are you sure you want to reset recommendations to the original 534 records? Any manual additions or edits will be reverted.')) {
       return;
     }
 
@@ -6325,7 +6320,7 @@
     portalApp.closeActionModal();
     portalApp.saveAndReflectRecChanges(
       'Baseline Restored',
-      'Original 451 recommendations restored and reflected across the portal.'
+      'Original 534 recommendations restored and reflected across the portal.'
     );
   };
 
@@ -6352,7 +6347,7 @@
    * Reset All PLR Datasets to Baseline
    */
   portalApp.resetAllPlrToBaseline = function () {
-    if (!confirm('Reset BOTH Recommendations (451 records) and Incident Outages (233 records) back to authentic baseline?')) {
+    if (!confirm('Reset BOTH Recommendations (534 records) and Incident Outages (233 records) back to authentic baseline?')) {
       return;
     }
 
