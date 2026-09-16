@@ -2041,21 +2041,12 @@
 
     // Dynamic center feedback
     const nameEl = document.getElementById('plr-donut-center-name');
-    const badgeEl = document.getElementById('plr-donut-center-badge');
     const countEl = document.getElementById('plr-donut-center-count');
     const pctEl = document.getElementById('plr-donut-center-pct');
 
     if (nameEl) nameEl.textContent = m.name;
     if (countEl) countEl.textContent = String(m.count);
     if (pctEl) pctEl.textContent = `${m.pct}% of Total Outages`;
-    if (badgeEl) {
-      badgeEl.textContent = m.name.includes('STG # 4') ? 'Primary Outage Driver' : 'Machine Asset';
-      badgeEl.className = `inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full border mt-0.5 font-sans ${
-        m.name.includes('STG # 4')
-          ? 'text-[#1e40af] bg-blue-50/90 border-blue-200/80'
-          : 'text-slate-700 bg-slate-100 border-slate-200'
-      }`;
-    }
 
     // Show rich tooltip
     const totalRecords = getPlrData().length || 233;
@@ -2091,23 +2082,13 @@
 
     // Restore center text
     const activeMachine = machines.find(m => m.name === s.selectedMachine) || machines[0] || { name: 'STG # 4', count: 154, pct: 66 };
-    const isSTG4 = activeMachine.name.includes('STG # 4');
     const nameEl = document.getElementById('plr-donut-center-name');
-    const badgeEl = document.getElementById('plr-donut-center-badge');
     const countEl = document.getElementById('plr-donut-center-count');
     const pctEl = document.getElementById('plr-donut-center-pct');
 
     if (nameEl) nameEl.textContent = activeMachine.name;
     if (countEl) countEl.textContent = String(activeMachine.count);
     if (pctEl) pctEl.textContent = `${activeMachine.pct}% of Total Outages`;
-    if (badgeEl) {
-      badgeEl.textContent = isSTG4 ? 'Primary Outage Driver' : (s.selectedMachine === 'all' ? 'Focus Asset' : 'Equipment Unit');
-      badgeEl.className = `inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full border mt-0.5 font-sans ${
-        isSTG4
-          ? 'text-[#1e40af] bg-blue-50/90 border-blue-200/80'
-          : 'text-slate-700 bg-slate-100 border-slate-200'
-      }`;
-    }
   };
 
   /**
@@ -2231,7 +2212,6 @@
     });
 
     const activeMachine = machines.find(m => m.name === s.selectedMachine) || machines[0] || { name: 'STG # 4', count: 154, pct: 66 };
-    const isSTG4 = activeMachine.name.includes('STG # 4');
     const escapedActiveMachine = activeMachine.name.replace(/'/g, "\\'");
 
     // Center div is sized to diameter 184px (radius 92px) inside the 216px inner hole.
@@ -2253,13 +2233,6 @@
           title="Click to view outage records for ${activeMachine.name}"
         >
           <span id="plr-donut-center-name" class="text-xs font-extrabold text-slate-600 uppercase tracking-wider leading-tight font-sans group-hover:text-[#1e40af] transition-colors truncate max-w-[150px]">${activeMachine.name}</span>
-          <span id="plr-donut-center-badge" class="inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full border mt-0.5 font-sans ${
-            isSTG4
-              ? 'text-[#1e40af] bg-blue-50/90 border-blue-200/80'
-              : 'text-slate-700 bg-slate-100 border-slate-200'
-          }">
-            ${isSTG4 ? 'Primary Outage Driver' : (s.selectedMachine === 'all' ? 'Focus Asset' : 'Equipment Unit')}
-          </span>
           <span id="plr-donut-center-count" class="text-4xl sm:text-[42px] font-black text-slate-900 tracking-tight leading-none my-1 font-sans group-hover:scale-105 transition-transform">${activeMachine.count}</span>
           <span id="plr-donut-center-pct" class="text-xs font-bold text-slate-600 font-sans tracking-tight">${activeMachine.pct}% of Total Outages</span>
           <span class="text-[10px] font-extrabold text-[#1e40af] opacity-0 group-hover:opacity-100 transition-opacity mt-1 flex items-center gap-0.5">
