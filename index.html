@@ -90,9 +90,9 @@
     <script src="/assets/psmSuite.js?v=20260908"></script>
 
     <style>
-      /* Base font legibility boost across the portal */
+      /* Base font legibility calibrated for 8-foot control room & wall display viewing */
       html {
-        font-size: 16.5px;
+        font-size: 17.5px;
       }
       body {
         color: #1E293B;
@@ -299,123 +299,164 @@
       }
 
       /* ========================================================================= */
-      /* 8-FOOT DISPLAY DISTANCE HIGH-VISIBILITY MODE (CONTROL ROOM & LARGE DISPLAY)*/
+      /* 8-FOOT DISPLAY DISTANCE HIGH-VISIBILITY TYPOGRAPHY (CONTROL ROOM & WALL)  */
       /* ========================================================================= */
-      #btn-toggle-8ft {
-        font-size: 0.8rem;
-        font-weight: 700;
-      }
-      /* Hide 8-Ft Mode button on top right corner when viewing Sub HSE PSM dashboard */
-      body[data-active-dashboard="sub-hse-psm"] #btn-toggle-8ft {
-        display: none !important;
-      }
-      body.display-8ft {
-        font-size: 21px !important;
+      body {
+        font-size: 1.12rem !important;
         letter-spacing: 0.015em;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
       }
-      body.display-8ft #btn-toggle-8ft {
-        font-size: 0.8rem !important;
-        padding: 0.35rem 0.75rem !important;
-        border-width: 1px !important;
-      }
-      body.display-8ft #btn-toggle-8ft span {
-        font-size: 0.8rem !important;
-      }
-      body.display-8ft h1 {
-        font-size: 2.6rem !important;
+
+      /* Headings - Crisp, heavy, legible from 8 feet */
+      h1 {
+        font-size: 2.55rem !important;
         font-weight: 900 !important;
+        letter-spacing: -0.02em !important;
+        line-height: 1.15 !important;
       }
-      body.display-8ft h2 {
-        font-size: 2.2rem !important;
+      h2 {
+        font-size: 2.15rem !important;
         font-weight: 900 !important;
+        letter-spacing: -0.015em !important;
+        line-height: 1.2 !important;
       }
-      body.display-8ft h3 {
-        font-size: 1.8rem !important;
+      h3 {
+        font-size: 1.78rem !important;
         font-weight: 900 !important;
+        letter-spacing: -0.01em !important;
+        line-height: 1.25 !important;
       }
-      body.display-8ft h4 {
-        font-size: 1.5rem !important;
+      h4 {
+        font-size: 1.48rem !important;
         font-weight: 800 !important;
+        line-height: 1.3 !important;
       }
-      body.display-8ft .text-xs {
-        font-size: 1.15rem !important;
+
+      /* Micro text / metadata / tags - scaled up so 9px/10px/11px is crystal clear from 8 ft */
+      .text-\[9px\],
+      .text-\[10px\],
+      .text-\[11px\] {
+        font-size: 1.02rem !important;
+        font-weight: 700 !important;
+        line-height: 1.4 !important;
+      }
+      .text-xs {
+        font-size: 1.14rem !important;
+        line-height: 1.45 !important;
+      }
+      .text-sm {
+        font-size: 1.26rem !important;
         line-height: 1.5 !important;
       }
-      body.display-8ft .text-\[10px\],
-      body.display-8ft .text-\[11px\] {
-        font-size: 1.05rem !important;
-        font-weight: 700 !important;
+      .text-base {
+        font-size: 1.38rem !important;
+        line-height: 1.45 !important;
       }
-      body.display-8ft .text-sm {
-        font-size: 1.3rem !important;
-        line-height: 1.55 !important;
+      .text-lg {
+        font-size: 1.56rem !important;
+        line-height: 1.35 !important;
       }
-      body.display-8ft .text-base {
-        font-size: 1.45rem !important;
+      .text-xl {
+        font-size: 1.88rem !important;
+        line-height: 1.3 !important;
       }
-      body.display-8ft .text-xl {
-        font-size: 2rem !important;
-      }
-      body.display-8ft .text-2xl {
-        font-size: 2.75rem !important;
+      .text-2xl {
+        font-size: 2.45rem !important;
         font-weight: 900 !important;
+        line-height: 1.2 !important;
       }
-      body.display-8ft .text-3xl {
-        font-size: 3.5rem !important;
+      .text-3xl {
+        font-size: 3.15rem !important;
         font-weight: 900 !important;
+        line-height: 1.15 !important;
       }
-      body.display-8ft .text-4xl,
-      body.display-8ft .text-5xl,
-      body.display-8ft .text-6xl,
-      body.display-8ft .kpi-metric-val {
-        font-size: 4.4rem !important;
+      .text-4xl,
+      .text-5xl,
+      .text-6xl,
+      .kpi-metric-val {
+        font-size: 4.15rem !important;
         font-weight: 900 !important;
         line-height: 1.05 !important;
+        letter-spacing: -0.03em !important;
       }
-      body.display-8ft .card-stat-pill-val {
-        font-size: 1.55rem !important;
+
+      /* Metric Pills & Donut Centers */
+      .card-stat-pill-val {
+        font-size: 1.48rem !important;
         font-weight: 900 !important;
+        line-height: 1.1 !important;
       }
-      body.display-8ft .donut-center-val {
-        font-size: 1.95rem !important;
+      .donut-center-val {
+        font-size: 1.72rem !important;
         font-weight: 900 !important;
+        line-height: 1 !important;
       }
-      body.display-8ft .cmp-bar-num {
+      .cmp-bar-num {
         font-size: 20px !important;
         font-weight: 900 !important;
       }
-      body.display-8ft .cmp-x-label {
-        font-size: 16px !important;
-        font-weight: 900 !important;
+      .cmp-x-label {
+        font-size: 15.5px !important;
+        font-weight: 800 !important;
       }
-      body.display-8ft td,
-      body.display-8ft th {
-        font-size: 1.25rem !important;
-        padding-top: 1.15rem !important;
-        padding-bottom: 1.15rem !important;
+
+      /* Table rows, cells, and headers */
+      table td,
+      table th {
+        font-size: 1.16rem !important;
+        padding-top: 0.95rem !important;
+        padding-bottom: 0.95rem !important;
+        letter-spacing: 0.01em;
       }
-      body.display-8ft select,
-      body.display-8ft input {
-        font-size: 1.15rem !important;
-        padding: 0.65rem 1rem !important;
+      table th {
+        font-weight: 800 !important;
+        text-transform: uppercase;
+        letter-spacing: 0.04em !important;
       }
-      body.display-8ft .nav-menu-btn {
-        font-size: 1.15rem !important;
-        padding: 0.75rem 1.35rem !important;
+
+      /* Inputs, Select dropdowns */
+      select,
+      input {
+        font-size: 1.12rem !important;
+        padding: 0.55rem 0.85rem !important;
+      }
+
+      /* Navigation Menus, Category & Department Filters */
+      .nav-menu-btn {
+        font-size: 1.12rem !important;
+        font-weight: 700 !important;
+        padding: 0.65rem 1.2rem !important;
         white-space: nowrap !important;
       }
-      body.display-8ft .category-btn {
-        font-size: 1.1rem !important;
-        padding: 0.6rem 1.1rem !important;
+      .category-btn {
+        font-size: 1.08rem !important;
+        font-weight: 700 !important;
+        padding: 0.5rem 1rem !important;
         white-space: nowrap !important;
       }
-      body.display-8ft .plr-pill {
-        font-size: 1.15rem !important;
-        padding: 0.45rem 0.95rem !important;
+      .plr-pill {
+        font-size: 1.12rem !important;
+        font-weight: 700 !important;
+        padding: 0.4rem 0.85rem !important;
         white-space: nowrap !important;
       }
-      body.display-8ft button {
+      button {
         white-space: nowrap;
+      }
+
+      /* Modal and Dialog Typography Scaling */
+      #action-modal,
+      #plr-detail-modal,
+      #plr-inspect-modal,
+      #chatbot-drawer {
+        font-size: 1.12rem;
+      }
+      #action-modal h3,
+      #plr-detail-modal h3,
+      #plr-inspect-modal h3 {
+        font-size: 1.78rem !important;
+        font-weight: 900 !important;
       }
     </style>
   </head>
@@ -631,19 +672,10 @@
               </div>
             </div>
 
-            <!-- Header Quick Actions: 8-Ft Mode Toggle & Sync Registry in line with Search Bar -->
+            <!-- Header Quick Actions: Sync Registry in line with Search Bar -->
             <div class="flex items-center shrink-0 gap-2 pl-1 sm:pl-2 sm:border-l sm:border-slate-200">
-              <button
-                id="btn-toggle-8ft"
-                onclick="portalApp.toggle8FtMode()"
-                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-2xs border cursor-pointer bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-300"
-                title="Toggle 8-Foot Display Distance Mode (Enlarged fonts for control room / wall screen visibility)"
-              >
-                <i data-lucide="zoom-in" id="icon-zoom-btn" class="w-3.5 h-3.5 text-blue-600"></i>
-                <span id="label-8ft-mode">8-Ft Mode: <span class="text-slate-500 font-extrabold text-[10px] uppercase">OFF</span></span>
-              </button>
-              <button id="btn-refresh-portal" onclick="portalApp.refreshPortalData()" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 hover:border-slate-400 transition-colors shadow-2xs cursor-pointer" title="Sync & refresh dashboard registry">
-                <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-slate-600"></i>
+              <button id="btn-refresh-portal" onclick="portalApp.refreshPortalData()" class="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 hover:border-slate-400 transition-colors shadow-2xs cursor-pointer" title="Sync & refresh dashboard registry">
+                <i data-lucide="refresh-cw" class="w-4 h-4 text-slate-600"></i>
                 <span class="hidden sm:inline">Sync Registry</span>
               </button>
             </div>
@@ -2595,51 +2627,11 @@
         /**
          * Zoom Display Mode Toggle (Scaled for 8-Foot Wall & Large Screen Viewing)
          */
+        /**
+         * Zoom Display Mode Toggle (Deprecated - 12-Foot Visibility Mode is now active globally by default)
+         */
         toggle8FtMode() {
-          const body = document.body;
-          const is8Ft = body.classList.toggle('display-8ft');
-          const label = document.getElementById('label-8ft-mode');
-          const btn = document.getElementById('btn-toggle-8ft');
-          const icon = document.getElementById('icon-zoom-btn');
-          
-          try {
-            localStorage.setItem('fpcl_display_8ft', is8Ft ? '1' : '0');
-          } catch (e) {}
-
-          if (is8Ft) {
-            if (label) {
-              label.innerHTML = '8-Ft Mode: <span class="bg-blue-600 text-white px-1.5 py-0.5 rounded font-black text-[10px] uppercase shadow-2xs">ON</span>';
-            }
-            if (btn) {
-              btn.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-xs border cursor-pointer bg-blue-50 hover:bg-blue-100 text-blue-800 border-blue-400 ring-1 ring-blue-300';
-            }
-            if (icon && window.lucide) {
-              icon.setAttribute('data-lucide', 'zoom-out');
-              window.lucide.createIcons();
-            }
-            this.showToast('8-Foot Display Mode Enabled', 'High-contrast metrics and typography enlarged for optimal legibility from 8 feet distance.', 'success');
-          } else {
-            if (label) {
-              label.innerHTML = '8-Ft Mode: <span class="text-slate-500 font-extrabold text-[10px] uppercase">OFF</span>';
-            }
-            if (btn) {
-              btn.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-2xs border cursor-pointer bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-300';
-            }
-            if (icon && window.lucide) {
-              icon.setAttribute('data-lucide', 'zoom-in');
-              window.lucide.createIcons();
-            }
-            this.showToast('8-Foot Mode Disabled', 'Restored standard high-resolution display scale.', 'info');
-          }
-          // Re-render responsive charts to adapt to scaled container
-          this.renderTimelineChart();
-          this.renderComparisonChart();
-          if (window.FPCL_PSM_SUITE && typeof window.FPCL_PSM_SUITE.renderCharts === 'function') {
-            window.FPCL_PSM_SUITE.renderCharts();
-          }
-          if (window.FPCL_PLR_SUITE && typeof window.FPCL_PLR_SUITE.renderCharts === 'function') {
-            window.FPCL_PLR_SUITE.renderCharts();
-          }
+          // 12-Foot Visibility Mode is permanently active across all dashboards
         },
 
         /**
@@ -2854,16 +2846,6 @@
             if (connCard) connCard.classList.add('hidden');
             if (psmActions) psmActions.classList.remove('hidden');
 
-            // Remove / hide 8-Ft Mode button on top right corner in Sub HSE PSM dashboard
-            const btn8Ft = document.getElementById('btn-toggle-8ft');
-            if (btn8Ft) {
-              btn8Ft.classList.add('hidden');
-              btn8Ft.style.display = 'none';
-            }
-            if (document.body.classList.contains('display-8ft')) {
-              document.body.classList.remove('display-8ft');
-            }
-
           } else {
             // Standard / PLR styling
             if (headerCard) {
@@ -2923,13 +2905,6 @@
             }
 
             if (psmActions) psmActions.classList.add('hidden');
-
-            // Restore 8-Ft Mode button for other dashboards
-            const btn8Ft = document.getElementById('btn-toggle-8ft');
-            if (btn8Ft) {
-              btn8Ft.classList.remove('hidden');
-              btn8Ft.style.display = '';
-            }
 
             if (dashboardId === 'plr') {
               if (catBadge) {
@@ -3162,13 +3137,6 @@
           }
           this.state.activeDashboardId = null;
           document.body.removeAttribute('data-active-dashboard');
-
-          // Restore 8-Ft Mode button for Overview
-          const btn8Ft = document.getElementById('btn-toggle-8ft');
-          if (btn8Ft) {
-            btn8Ft.classList.remove('hidden');
-            btn8Ft.style.display = '';
-          }
 
           // Update Navigation Menu Bar selection
           this.renderNavMenu();

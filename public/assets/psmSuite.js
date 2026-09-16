@@ -385,13 +385,6 @@
         descEl.style.display = 'none';
       }
 
-      // Ensure 8-Ft Mode button on top right corner is removed/hidden when Sub HSE PSM dashboard renders
-      const btn8Ft = document.getElementById('btn-toggle-8ft');
-      if (btn8Ft) {
-        btn8Ft.classList.add('hidden');
-        btn8Ft.style.display = 'none';
-      }
-
       const raw = this.getRawData();
       const filtered = this.getFilteredData();
 
