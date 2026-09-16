@@ -305,6 +305,10 @@
         font-size: 0.8rem;
         font-weight: 700;
       }
+      /* Hide 8-Ft Mode button on top right corner when viewing Sub HSE PSM dashboard */
+      body[data-active-dashboard="sub-hse-psm"] #btn-toggle-8ft {
+        display: none !important;
+      }
       body.display-8ft {
         font-size: 21px !important;
         letter-spacing: 0.015em;
@@ -2723,6 +2727,7 @@
           if (!dashboard) return;
 
           this.state.activeDashboardId = dashboardId;
+          document.body.setAttribute('data-active-dashboard', dashboardId);
 
           // Update Navigation Menu Bar selection
           this.renderNavMenu();
@@ -2843,6 +2848,16 @@
             if (connCard) connCard.classList.add('hidden');
             if (psmActions) psmActions.classList.remove('hidden');
 
+            // Remove / hide 8-Ft Mode button on top right corner in Sub HSE PSM dashboard
+            const btn8Ft = document.getElementById('btn-toggle-8ft');
+            if (btn8Ft) {
+              btn8Ft.classList.add('hidden');
+              btn8Ft.style.display = 'none';
+            }
+            if (document.body.classList.contains('display-8ft')) {
+              document.body.classList.remove('display-8ft');
+            }
+
           } else {
             // Standard / PLR styling
             if (headerCard) {
@@ -2902,6 +2917,13 @@
             }
 
             if (psmActions) psmActions.classList.add('hidden');
+
+            // Restore 8-Ft Mode button for other dashboards
+            const btn8Ft = document.getElementById('btn-toggle-8ft');
+            if (btn8Ft) {
+              btn8Ft.classList.remove('hidden');
+              btn8Ft.style.display = '';
+            }
 
             if (dashboardId === 'plr') {
               if (catBadge) {
@@ -3133,6 +3155,14 @@
             window.location.hash = '';
           }
           this.state.activeDashboardId = null;
+          document.body.removeAttribute('data-active-dashboard');
+
+          // Restore 8-Ft Mode button for Overview
+          const btn8Ft = document.getElementById('btn-toggle-8ft');
+          if (btn8Ft) {
+            btn8Ft.classList.remove('hidden');
+            btn8Ft.style.display = '';
+          }
 
           // Update Navigation Menu Bar selection
           this.renderNavMenu();
