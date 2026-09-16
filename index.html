@@ -1398,7 +1398,7 @@
           category: 'Plant Integrity & Incident Analytics',
           department: 'Process',
           cadence: 'Continuous / Incident Driven',
-          description: 'Official Production Loss Reports tracking 451 engineering and operational action items across 13 standardized departments (420 Closed, 31 Open, 93.1% Closure Rate), linked to 233 generation loss incidents across standardized machine classes (206 Closed, 27 Open, 88.4% Resolution).',
+          description: 'Official Production Loss Reports tracking 534 engineering and operational action items across 13 standardized departments (490 Closed, 44 Open, 91.8% Closure Rate), linked to 233 generation loss incidents across standardized machine classes (206 Closed, 27 Open, 88.4% Resolution).',
           color: {
             bg: '#FFF7ED',
             primary: '#EA580C',
@@ -1409,10 +1409,10 @@
           gradientStop1: '#EA580C',
           gradientStop2: '#DC2626',
           tagStyle: 'bg-orange-50 text-orange-700 border-orange-200',
-          kpis: { total: 451, closed: 420, inProgress: 31, overdue: 0, compliance: '93.1%' },
-          punchList: { open: 31, closed: 420, total: 451, rate: '93.1%' },
+          kpis: { total: 534, closed: 490, inProgress: 44, overdue: 0, compliance: '91.8%' },
+          punchList: { open: 44, closed: 490, total: 534, rate: '91.8%' },
           dataReadiness: { master: '100%', signoff: '100%' },
-          statusComment: '451 Recommendations across standardized departments: 420 Closed, 31 Open (93.1% Closure) • 233 PLR Incidents across standardized machines: 206 Closed, 27 Open (88.4% Resolution).',
+          statusComment: '534 Recommendations across standardized departments: 490 Closed, 44 Open (91.8% Closure) • 233 PLR Incidents across standardized machines: 206 Closed, 27 Open (88.4% Resolution).',
           actions: [
             { id: 'PLR-216-R1', desc: 'Recalibrate STG-4 turbine high exhaust temperature thermocouple wiring and trip latch loop', owner: 'E&I Team', due: '2025-11-20', priority: 'Critical', status: 'In Progress' },
             { id: 'PLR-216-R2', desc: 'Inspect lube oil cooler auxiliary thermostatic bypass valve seating and replace gaskets', owner: 'Mech Team', due: '2025-11-25', priority: 'High', status: 'Completed' },
@@ -1722,6 +1722,9 @@
         }
       ];
 
+      // Export registry to window so external suites (PLR Suite, PSM Suite) can inspect and update
+      window.DASHBOARD_REGISTRY = DASHBOARD_REGISTRY;
+
       /**
        * State & Controller Object
        */
@@ -1758,6 +1761,9 @@
       window.FPCL_PLR_SUITE = portalApp;
       Object.assign(portalApp, {
         init() {
+          if (typeof this.syncPlrStatsToOverview === 'function') {
+            this.syncPlrStatsToOverview();
+          }
           this.updateRollupStats();
           this.renderTimelineChart();
           this.renderComparisonChart();
@@ -1915,8 +1921,8 @@
           const barW = Math.min(28, Math.max(16, (slotW - 12) / 2));
           const pairSpacing = 3;
 
-          // Max value scale (451 is highest total recommendations, so ceiling 500)
-          const yMax = 500;
+          // Max value scale (534 is highest total recommendations, so ceiling 600)
+          const yMax = 600;
 
           // Gradients definition for Total and Open bars
           const defsGradients = `
@@ -1933,8 +1939,8 @@
             </filter>
           `;
 
-          // Number grid lines (0, 100, 200, 300, 400, 500)
-          const gridSteps = [0, 100, 200, 300, 400, 500];
+          // Number grid lines (0, 100, 200, 300, 400, 500, 600)
+          const gridSteps = [0, 100, 200, 300, 400, 500, 600];
           const gridSvg = gridSteps.map(v => {
             const yPos = pad.top + plotH - (v / yMax) * plotH;
             return `
@@ -1946,8 +1952,8 @@
           // Grouped bars: Total Actions (Blue) and Open Actions (Amber/Orange)
           const barsSvg = items.map((d, i) => {
             // Dynamic Total and Open counts derived directly from live dashboard KPIs
-            const totalVal = (d.kpis && d.kpis.total !== undefined) ? d.kpis.total : (d.id === 'plr' ? 451 : 0);
-            const openVal = (d.kpis && d.kpis.inProgress !== undefined) ? d.kpis.inProgress : (d.id === 'plr' ? 31 : 0);
+            const totalVal = (d.kpis && d.kpis.total !== undefined) ? d.kpis.total : (d.id === 'plr' ? 534 : 0);
+            const openVal = (d.kpis && d.kpis.inProgress !== undefined) ? d.kpis.inProgress : (d.id === 'plr' ? 44 : 0);
 
             const totalH = yMax > 0 ? (totalVal / yMax) * plotH : 0;
             const openH = yMax > 0 ? (openVal / yMax) * plotH : 0;
@@ -2384,7 +2390,7 @@
                       <!-- Donut Center Label: Completed Action % -->
                       <div class="absolute inset-0 flex flex-col items-center justify-center text-center select-none pointer-events-none">
                         <span class="text-base sm:text-lg lg:text-xl font-black font-mono tracking-tight leading-none text-[#1E293B] donut-center-val">${compRate}</span>
-                        <span class="text-[9px] sm:text-[10px] font-extrabold text-slate-500 uppercase tracking-tighter mt-0.5">COMPLETED</span>
+                        <span class="text-[9px] sm:text-[10px] font-extrabold text-slate-500 uppercase tracking-tighter mt-0.5">CLOSURE</span>
                       </div>
                     </div>
 
@@ -2398,7 +2404,7 @@
                       </div>
                       <div class="flex items-center justify-between text-xs sm:text-sm">
                         <span class="text-slate-500 font-semibold flex items-center gap-1.5">
-                          <span class="w-2.5 h-2.5 rounded-full bg-[#8B5CF6]"></span> In-Progress:
+                          <span class="w-2.5 h-2.5 rounded-full bg-[#8B5CF6]"></span> Open:
                         </span>
                         <span class="font-mono font-black text-[#1E293B] text-base">${inProg}</span>
                       </div>
@@ -2418,8 +2424,8 @@
                   <!-- Synchronized Focus Tag for PLR and Sub HSE - PSM -->
                   ${item.id === 'plr' ? `
                     <div class="px-2.5 py-1.5 rounded-lg bg-orange-50 border border-orange-200 text-orange-900 text-xs font-bold flex items-center justify-between">
-                      <span>451 Recommendations</span>
-                      <span class="font-mono text-orange-800 font-bold text-sm">420 Closed • 31 Open</span>
+                      <span>${total} Recommendations</span>
+                      <span class="font-mono text-orange-800 font-bold text-sm">${closed} Closed • ${inProg} Open</span>
                     </div>
                   ` : ''}
                   ${item.id === 'sub-hse-psm' ? `
@@ -2429,10 +2435,10 @@
                     </div>
                   ` : ''}
 
-                  <!-- 4 ACTION METRICS PILLS (Completed % | Overdue | Closed | In-Progress) -->
+                  <!-- 4 ACTION METRICS PILLS (Closure % | Closed | Open | Overdue) -->
                   <div class="grid grid-cols-4 gap-1.5 sm:gap-2 text-center">
                     <div class="bg-white rounded-lg py-2 px-1 border border-slate-200 shadow-2xs">
-                      <div class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase">Rate</div>
+                      <div class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase">Closure</div>
                       <div class="text-base sm:text-lg lg:text-xl font-black font-mono text-emerald-600 card-stat-pill-val">${compRate}</div>
                     </div>
                     <div class="bg-white rounded-lg py-2 px-1 border border-slate-200 shadow-2xs">
@@ -2440,7 +2446,7 @@
                       <div class="text-base sm:text-lg lg:text-xl font-black font-mono text-blue-600 card-stat-pill-val">${closed}</div>
                     </div>
                     <div class="bg-white rounded-lg py-2 px-1 border border-slate-200 shadow-2xs">
-                      <div class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase">In-Prog</div>
+                      <div class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase">Open</div>
                       <div class="text-base sm:text-lg lg:text-xl font-black font-mono text-purple-600 card-stat-pill-val">${inProg}</div>
                     </div>
                     <div class="rounded-lg py-2 px-1 border shadow-2xs ${overdue > 0 ? 'bg-rose-50 border-rose-300' : 'bg-white border-slate-200'}">
@@ -2997,7 +3003,7 @@
               }
             }
             if (sheetKeyEl) {
-              sheetKeyEl.textContent = 'PLRs white dashboard • 233 Incidents & 451 Recommendations';
+              sheetKeyEl.textContent = 'PLRs white dashboard • 233 Incidents & 534 Recommendations';
               sheetKeyEl.title = 'PLRs white dashboard (PLRStatus & Recommendations)';
             }
           } else if (dashboardId === 'sub-hse-psm') {
@@ -3398,7 +3404,7 @@
             gradient: 'from-blue-600 via-indigo-600 to-purple-600',
             buttonGradient: 'linear-gradient(135deg, #2563EB, #4F46E5)',
             badgeClass: 'bg-blue-50 text-blue-700 border-blue-200',
-            welcomeMessage: 'Hello! I am the **Overview Assistant** for the Executive Operations & Compliance Portal.\n\nI can assist with:\n- **Portal Rollup Statistics** (572 total items, 496 closed • 86.7% rate)\n- **Cross-Dashboard Comparison** between PLR (451 recs) & Sub HSE - PSM (121 audit findings)\n- **Executive Benchmarks** & Timeline progress (87.8% actual vs 95.0% planned)\n- **Status of All 11 Dashboards** (Active vs Awaiting Sheet Links)\n\n*🔒 Scope Policy: I strictly answer questions regarding this dashboard portal and will regret any outside queries.*',
+            welcomeMessage: 'Hello! I am the **Overview Assistant** for the Executive Operations & Compliance Portal.\n\nI can assist with:\n- **Portal Rollup Statistics** (655 total items, 566 closed • 86.4% closure rate)\n- **Cross-Dashboard Comparison** between PLR (534 recs) & Sub HSE - PSM (121 audit findings)\n- **Executive Benchmarks** & Timeline progress (87.8% actual vs 95.0% planned)\n- **Status of All 11 Dashboards** (Active vs Awaiting Sheet Links)\n\n*🔒 Scope Policy: I strictly answer questions regarding this dashboard portal and will regret any outside queries.*',
             suggestions: [
               'What is the overall closure rate across dashboards?',
               'Compare PLR vs Sub HSE - PSM progress',
@@ -3417,7 +3423,7 @@
             gradient: 'from-amber-500 via-orange-500 to-rose-600',
             buttonGradient: 'linear-gradient(135deg, #EA580C, #DC2626)',
             badgeClass: 'bg-orange-50 text-orange-700 border-orange-200',
-            welcomeMessage: 'Hello! I am the **Production Loss Report (PLR) Assistant**.\n\nI can assist with:\n- **233 Incident Records**: Standardized machine breakdowns (STG # 4 with 155 outages, STG # 3 with 19, Boiler # 1 with 16, etc.)\n- **451 Action Items**: Department workloads across standardized entities (E&I with 196 items, FPCL-KE O/C with 79, Operations with 45, Mechanical with 38, etc.)\n- **PLR Resolution Metrics**: 420 Closed, 31 Open (93.1% Closure Rate)\n- **Specific Outage Causes**, MWh generation losses, and Priority rankings\n\n*🔒 Scope Policy: I strictly answer questions regarding the PLR dashboard and will regret any outside queries.*',
+            welcomeMessage: 'Hello! I am the **Production Loss Report (PLR) Assistant**.\n\nI can assist with:\n- **233 Incident Records**: Standardized machine breakdowns (STG # 4 with 155 outages, STG # 3 with 19, Boiler # 1 with 16, etc.)\n- **534 Action Items**: Department workloads across standardized entities (E&I with 240 items, FPCL-KE O/C with 83, Operations with 52, Mechanical with 49, etc.)\n- **PLR Resolution Metrics**: 490 Closed, 44 Open (91.8% Closure Rate)\n- **Specific Outage Causes**, MWh generation losses, and Priority rankings\n\n*🔒 Scope Policy: I strictly answer questions regarding the PLR dashboard and will regret any outside queries.*',
             suggestions: [
               'Which machine caused the most outages?',
               'Breakdown of recommendations by department',

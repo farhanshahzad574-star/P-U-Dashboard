@@ -158,7 +158,10 @@
     const savedRecs = localStorage.getItem('FPCL_PLR_RECOMMENDATIONS_UPDATED');
     if (savedRecs) {
       const parsedSaved = JSON.parse(savedRecs);
-      if (Array.isArray(parsedSaved) && parsedSaved.length >= 50) {
+      const minCount = Array.isArray(window.FPCL_PLR_RECOMMENDATIONS_BASELINE) && window.FPCL_PLR_RECOMMENDATIONS_BASELINE.length >= 500
+        ? window.FPCL_PLR_RECOMMENDATIONS_BASELINE.length
+        : 534;
+      if (Array.isArray(parsedSaved) && parsedSaved.length >= minCount) {
         const { recs, modified } = cleansePeEntities(parsedSaved);
         window.FPCL_PLR_RECOMMENDATIONS = recs;
         if (modified) {
@@ -272,8 +275,9 @@
 
     const dynamicDesc = portalApp.getPlrDynamicDescription();
 
-    if (window.DASHBOARD_REGISTRY) {
-      const plrEntry = window.DASHBOARD_REGISTRY.find(d => d.id === 'plr');
+    const registry = window.DASHBOARD_REGISTRY || (typeof DASHBOARD_REGISTRY !== 'undefined' ? DASHBOARD_REGISTRY : null);
+    if (registry) {
+      const plrEntry = registry.find(d => d.id === 'plr');
       if (plrEntry) {
         plrEntry.department = 'Process';
         plrEntry.description = dynamicDesc;
@@ -5076,7 +5080,7 @@
         ];
         csv += row.join(',') + '\n';
       });
-      filename = 'FPCL_PLR_Recommendations_451.csv';
+      filename = 'FPCL_PLR_Recommendations_534.csv';
     }
 
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -6272,7 +6276,7 @@
    * Reset PLR Recommendations to Baseline
    */
   portalApp.resetPlrRecommendationsToBaseline = function () {
-    if (!confirm('Are you sure you want to reset recommendations to the original 451 records? Any manual additions or edits will be reverted.')) {
+    if (!confirm('Are you sure you want to reset recommendations to the original 534 records? Any manual additions or edits will be reverted.')) {
       return;
     }
 
@@ -6284,7 +6288,7 @@
     portalApp.closeActionModal();
     portalApp.saveAndReflectRecChanges(
       'Baseline Restored',
-      'Original 451 recommendations restored and reflected across the portal.'
+      'Original 534 recommendations restored and reflected across the portal.'
     );
   };
 
@@ -6311,7 +6315,7 @@
    * Reset All PLR Datasets to Baseline
    */
   portalApp.resetAllPlrToBaseline = function () {
-    if (!confirm('Reset BOTH Recommendations (451 records) and Incident Outages (233 records) back to authentic baseline?')) {
+    if (!confirm('Reset BOTH Recommendations (534 records) and Incident Outages (233 records) back to authentic baseline?')) {
       return;
     }
 
