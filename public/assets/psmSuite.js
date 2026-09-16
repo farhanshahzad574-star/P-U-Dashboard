@@ -306,36 +306,9 @@
         }));
     },
 
-    // Dynamic description generation reflecting live filters and metrics
+    // Dynamic description generation reflecting live filters and metrics (empty per design)
     getDynamicDescription() {
-      const s = this.state;
-      const raw = this.getRawData();
-      const filtered = this.getFilteredData();
-      const totalRaw = raw.length || 121;
-      const totalFiltered = filtered.length;
-      const openCount = filtered.filter(d => (d.status || '').toLowerCase() === 'open').length;
-      const closedCount = totalFiltered - openCount;
-      const closureRate = totalFiltered > 0 ? ((closedCount / totalFiltered) * 100).toFixed(1) + '%' : '0.0%';
-
-      const totalDepts = new Set(raw.map(d => d.actionDepartment).filter(Boolean)).size || 13;
-      const totalElements = new Set(raw.map(d => d.psmElement).filter(Boolean)).size || 5;
-      const filteredDepts = new Set(filtered.map(d => d.actionDepartment).filter(Boolean)).size;
-      const filteredElements = new Set(filtered.map(d => d.psmElement).filter(Boolean)).size;
-
-      const activeFilters = [];
-      if (s.deptFilter && s.deptFilter !== 'all') activeFilters.push(`Dept: ${s.deptFilter}`);
-      if (s.unitFilter && s.unitFilter !== 'all') activeFilters.push(`Unit: ${s.unitFilter}`);
-      if (s.elementFilter && s.elementFilter !== 'all') activeFilters.push(`Element: ${s.elementFilter}`);
-      if (s.natureFilter && s.natureFilter !== 'all') activeFilters.push(`Severity: ${s.natureFilter}`);
-      if (s.auditFilter && s.auditFilter !== 'all') activeFilters.push(`Audit: ${s.auditFilter}`);
-      if (s.statusFilter && s.statusFilter !== 'all') activeFilters.push(`Status: ${s.statusFilter}`);
-      if (s.searchQuery && s.searchQuery.trim()) activeFilters.push(`Search: "${s.searchQuery.trim()}"`);
-
-      if (activeFilters.length === 0) {
-        return `Process Safety Management Phase 1 June 2026 Audit tracking ${totalRaw} internal audit findings across ${totalDepts} Action Departments (${closedCount} Closed, ${openCount} Open, ${closureRate} Compliance Rate) across ${totalElements} PSM Elements.`;
-      } else {
-        return `Filtered Scope (${activeFilters.join(', ')}): Tracking ${totalFiltered} internal audit findings across ${filteredDepts} Action Departments and ${filteredElements} Elements (${closedCount} Closed, ${openCount} Open, ${closureRate} Compliance Rate) of ${totalRaw} total observations.`;
-      }
+      return '';
     },
 
     // Handle interactive click on donut slices or legends to filter dashboard and open data modal
@@ -405,12 +378,11 @@
       const container = document.getElementById('psm-specialized-container');
       if (!container) return;
 
-      // Dynamically update upper dashboard description in detail-header-card
+      // Keep detail-description hidden and clean for Sub HSE PSM banner
       const descEl = document.getElementById('detail-description');
       if (descEl) {
-        descEl.textContent = this.getDynamicDescription();
-        descEl.style.display = '';
-        descEl.style.color = '#475569';
+        descEl.textContent = '';
+        descEl.style.display = 'none';
       }
 
       const raw = this.getRawData();
@@ -458,53 +430,7 @@
         <div class="space-y-6 font-sans antialiased text-slate-800">
 
           <!-- ========================================================================= -->
-          <!-- AUDIT STATUS BAR & QUICK ACTION CONTROLS                                  -->
-          <!-- ========================================================================= -->
-          <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div class="flex items-center gap-3">
-              <div class="p-2.5 rounded-xl bg-teal-50 text-teal-700 border border-teal-200">
-                <i data-lucide="file-check-2" class="w-5 h-5"></i>
-              </div>
-              <div>
-                <div class="flex flex-wrap items-center gap-2">
-                  <span class="font-black text-sm sm:text-base px-3 py-1 rounded-lg bg-gradient-to-r from-teal-600 via-emerald-600 to-indigo-600 text-white shadow-xs tracking-wide">PSM INTERNAL AUDIT FINDINGS</span>
-                  <span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200">Phase 1 2026 Audit</span>
-                </div>
-                <p class="text-xs text-slate-500 mt-1">${totalFiltered} Findings across ${deptList.length} Action Departments • <span class="text-emerald-700 font-bold">${closedCount} Closed</span> • <span class="text-rose-600 font-bold">${openCount} Open</span> (${closurePercentage}% Closure Rate)</p>
-              </div>
-            </div>
-
-            <div class="flex items-center gap-2">
-              <button
-                onclick="FPCL_PSM_SUITE.resetAllFilters()"
-                class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors shadow-2xs cursor-pointer"
-                title="Reset all filter selections"
-              >
-                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
-                <span>Reset All Filters</span>
-              </button>
-
-              <button
-                onclick="FPCL_PSM_SUITE.exportFilteredCSV()"
-                class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white transition-all shadow-sm cursor-pointer"
-                title="Export currently filtered records to CSV"
-              >
-                <i data-lucide="download" class="w-3.5 h-3.5"></i>
-                <span>Export CSV</span>
-              </button>
-
-              <button
-                onclick="FPCL_PSM_SUITE.syncLiveFeed()"
-                class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-teal-600 hover:bg-teal-700 text-white transition-all shadow-sm cursor-pointer"
-              >
-                <i data-lucide="refresh-cw" class="w-3.5 h-3.5 ${s.isSyncing ? 'animate-spin' : ''}"></i>
-                <span>Sync Feed</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- ========================================================================= -->
-          <!-- 3. TOP 4 EXECUTIVE KPI SUMMARY CARDS (DYNAMICALLY COMPUTED)               -->
+          <!-- TOP 4 EXECUTIVE KPI SUMMARY CARDS (DYNAMICALLY COMPUTED)                  -->
           <!-- ========================================================================= -->
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             
@@ -524,17 +450,8 @@
                 </span>
               </div>
               <div class="mt-3 flex items-baseline gap-2">
-                <span class="text-4xl sm:text-5xl font-black font-mono tracking-tight text-slate-900 kpi-metric-val">${totalFiltered}</span>
+                <span class="text-5xl sm:text-6xl font-black font-mono tracking-tight text-slate-900 kpi-metric-val">${totalFiltered}</span>
                 ${totalFiltered !== totalRaw ? `<span class="text-sm font-mono text-slate-400">/ ${totalRaw}</span>` : ''}
-              </div>
-              <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs sm:text-sm">
-                <span class="text-teal-600 font-semibold group-hover:underline flex items-center gap-1">
-                  <span>Explore records</span>
-                  <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
-                </span>
-                <span class="px-2.5 py-0.5 rounded text-xs font-bold font-mono bg-slate-100 text-slate-700 border border-slate-200">
-                  ${totalFiltered === totalRaw ? '100% Ingested' : `${totalFiltered} of ${totalRaw} (${Math.round((totalFiltered / totalRaw) * 100)}%)`}
-                </span>
               </div>
             </div>
 
@@ -554,17 +471,8 @@
                 </span>
               </div>
               <div class="mt-3 flex items-baseline gap-2">
-                <span class="text-4xl sm:text-5xl font-black font-mono tracking-tight text-rose-600 kpi-metric-val">${openCount}</span>
+                <span class="text-5xl sm:text-6xl font-black font-mono tracking-tight text-rose-600 kpi-metric-val">${openCount}</span>
                 <span class="text-sm font-mono font-bold text-rose-700">(${openPercentage}%)</span>
-              </div>
-              <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs sm:text-sm">
-                <span class="text-rose-600 font-semibold group-hover:underline flex items-center gap-1">
-                  <span>Explore open</span>
-                  <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
-                </span>
-                <span class="px-2.5 py-0.5 rounded text-xs font-bold font-mono bg-rose-50 text-rose-700 border border-rose-200">
-                  ${openPercentage}% Active (${openCount}/${totalFiltered})
-                </span>
               </div>
             </div>
 
@@ -584,17 +492,8 @@
                 </span>
               </div>
               <div class="mt-3 flex items-baseline gap-2">
-                <span class="text-4xl sm:text-5xl font-black font-mono tracking-tight text-emerald-600 kpi-metric-val">${closedCount}</span>
+                <span class="text-5xl sm:text-6xl font-black font-mono tracking-tight text-emerald-600 kpi-metric-val">${closedCount}</span>
                 <span class="text-sm font-mono font-bold text-emerald-700">(${closurePercentage}%)</span>
-              </div>
-              <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs sm:text-sm">
-                <span class="text-emerald-600 font-semibold group-hover:underline flex items-center gap-1">
-                  <span>Explore closed</span>
-                  <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
-                </span>
-                <span class="px-2.5 py-0.5 rounded text-xs font-bold font-mono bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  ${closurePercentage}% Completed (${closedCount}/${totalFiltered})
-                </span>
               </div>
             </div>
 
@@ -614,70 +513,25 @@
                 </span>
               </div>
               <div class="mt-3 flex items-baseline gap-2">
-                <span class="text-4xl sm:text-5xl font-black font-mono tracking-tight text-teal-600 kpi-metric-val">${closurePercentage}%</span>
-              </div>
-              <div class="mt-4 pt-3 border-t border-slate-100 flex flex-col gap-1.5 text-xs sm:text-sm">
-                <div class="flex items-center justify-between text-slate-600 text-xs font-semibold">
-                  <span>Audit Resolution</span>
-                  <span class="font-mono font-bold text-slate-800">${closedCount} / ${totalFiltered} Resolved</span>
-                </div>
-                <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden flex">
-                  <div class="bg-teal-500 h-2.5 rounded-full transition-all duration-500" style="width: ${closurePercentage}%;"></div>
-                </div>
+                <span class="text-5xl sm:text-6xl font-black font-mono tracking-tight text-teal-600 kpi-metric-val">${closurePercentage}%</span>
               </div>
             </div>
 
           </div>
 
           <!-- ========================================================================= -->
-          <!-- 4. INTERACTIVE DRILL-DOWN & FILTERS BAR                                   -->
+          <!-- 4. FILTER CONTROLS GRID                                                   -->
           <!-- ========================================================================= -->
-          <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-4">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
-              <div class="flex items-center gap-2 text-xs font-black text-slate-800 uppercase tracking-wider">
-                <i data-lucide="sliders-horizontal" class="w-4 h-4 text-teal-600"></i>
-                <span>INTERACTIVE DRILL-DOWN & FILTERS</span>
-                <span class="text-slate-400 normal-case font-medium text-[11px]">(Click any value, bar or chart to filter)</span>
-              </div>
-              <button
-                onclick="FPCL_PSM_SUITE.resetAllFilters()"
-                class="inline-flex items-center gap-1 text-xs font-bold text-slate-600 hover:text-teal-600 cursor-pointer self-start sm:self-auto"
-              >
-                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
-                <span>Reset All</span>
-              </button>
-            </div>
-
+          <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs space-y-3">
             <!-- Filter Controls Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-7 gap-3">
-              
-              <!-- 1. Search Findings -->
-              <div class="xl:col-span-1">
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1 flex items-center gap-1">
-                  <i data-lucide="search" class="w-3 h-3"></i> SEARCH FINDINGS
-                </label>
-                <div class="relative">
-                  <input
-                    type="text"
-                    value="${s.searchQuery}"
-                    oninput="FPCL_PSM_SUITE.setSearchQuery(this.value)"
-                    placeholder="Keywords, obs..."
-                    class="w-full pl-3 pr-7 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
-                  />
-                  ${s.searchQuery ? `
-                    <button onclick="FPCL_PSM_SUITE.clearSearch()" class="absolute right-2 top-2 text-slate-400 hover:text-slate-600">
-                      <i data-lucide="x" class="w-3.5 h-3.5"></i>
-                    </button>
-                  ` : ''}
-                </div>
-              </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
 
-              <!-- 2. Status Filter -->
+              <!-- 1. Status Filter -->
               <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">STATUS</label>
+                <label class="block text-xs sm:text-[13px] font-bold uppercase tracking-wider text-slate-600 mb-1.5">STATUS</label>
                 <select
                   onchange="FPCL_PSM_SUITE.setStatusFilter(this.value)"
-                  class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer"
+                  class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer shadow-2xs"
                 >
                   <option value="all" ${s.statusFilter === 'all' ? 'selected' : ''}>All Statuses (${totalRaw})</option>
                   <option value="Open" ${s.statusFilter === 'Open' ? 'selected' : ''}>Open</option>
@@ -685,66 +539,65 @@
                 </select>
               </div>
 
-              <!-- 3. Action Department -->
+              <!-- 2. Action Department -->
               <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">ACTION DEPT</label>
+                <label class="block text-xs sm:text-[13px] font-bold uppercase tracking-wider text-slate-600 mb-1.5">ACTION DEPT</label>
                 <select
                   onchange="FPCL_PSM_SUITE.setDeptFilter(this.value)"
-                  class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer"
+                  class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer shadow-2xs"
                 >
                   <option value="all" ${s.deptFilter === 'all' ? 'selected' : ''}>All Departments</option>
                   ${allDepts.map(d => `<option value="${d}" ${s.deptFilter === d ? 'selected' : ''}>${d}</option>`).join('')}
                 </select>
               </div>
 
-              <!-- 4. Action Unit -->
+              <!-- 3. Action Unit -->
               <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">ACTION UNIT</label>
+                <label class="block text-xs sm:text-[13px] font-bold uppercase tracking-wider text-slate-600 mb-1.5">ACTION UNIT</label>
                 <select
                   onchange="FPCL_PSM_SUITE.setUnitFilter(this.value)"
-                  class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer"
+                  class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer shadow-2xs"
                 >
                   <option value="all" ${s.unitFilter === 'all' ? 'selected' : ''}>All Action Units</option>
                   ${allUnits.map(u => `<option value="${u}" ${s.unitFilter === u ? 'selected' : ''}>${u}</option>`).join('')}
                 </select>
               </div>
 
-              <!-- 5. PSM Element -->
+              <!-- 4. PSM Element -->
               <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">PSM ELEMENT</label>
+                <label class="block text-xs sm:text-[13px] font-bold uppercase tracking-wider text-slate-600 mb-1.5">PSM ELEMENT</label>
                 <select
                   onchange="FPCL_PSM_SUITE.setElementFilter(this.value)"
-                  class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer"
+                  class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer shadow-2xs"
                 >
                   <option value="all" ${s.elementFilter === 'all' ? 'selected' : ''}>All PSM Elements</option>
                   ${allElements.map(e => `<option value="${e}" ${s.elementFilter === e ? 'selected' : ''}>${e}</option>`).join('')}
                 </select>
               </div>
 
-              <!-- 6. Nature / Severity -->
+              <!-- 5. Nature / Severity -->
               <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">NATURE / SEVERITY</label>
+                <label class="block text-xs sm:text-[13px] font-bold uppercase tracking-wider text-slate-600 mb-1.5">NATURE / SEVERITY</label>
                 <select
                   onchange="FPCL_PSM_SUITE.setNatureFilter(this.value)"
-                  class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer"
+                  class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer shadow-2xs"
                 >
                   <option value="all" ${s.natureFilter === 'all' ? 'selected' : ''}>All Severities</option>
                   ${allNatures.map(n => `<option value="${n}" ${s.natureFilter === n ? 'selected' : ''}>${n}</option>`).join('')}
                 </select>
               </div>
 
-              <!-- 7. Audit No -->
+              <!-- 6. Audit No -->
               <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">AUDIT NO</label>
+                <label class="block text-xs sm:text-[13px] font-bold uppercase tracking-wider text-slate-600 mb-1.5">AUDIT NO</label>
                 <select
                   onchange="FPCL_PSM_SUITE.setAuditFilter(this.value)"
-                  class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer"
+                  class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer shadow-2xs"
                 >
                   <option value="all" ${s.auditFilter === 'all' ? 'selected' : ''}>All Audit Numbers</option>
                   ${allAudits.map(a => `<option value="${a}" ${s.auditFilter === a ? 'selected' : ''}>${a}</option>`).join('')}
                 </select>
               </div>
-
             </div>
 
             <!-- Active Filter Badges (if any applied) -->
@@ -760,11 +613,10 @@
             <div class="lg:col-span-7 bg-white border border-slate-200 rounded-2xl p-5 shadow-xs flex flex-col justify-between space-y-4">
               <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
                 <div>
-                  <h3 class="text-xs sm:text-sm font-black tracking-wide text-slate-900 flex items-center gap-2 uppercase">
+                  <h3 class="text-sm sm:text-base font-black tracking-wider text-slate-900 flex items-center gap-2 uppercase">
                     <i data-lucide="bar-chart-3" class="w-4 h-4 text-teal-600"></i>
                     <span>OPEN VS. CLOSED FINDINGS BY ACTION DEPARTMENT</span>
                   </h3>
-                  <p class="text-[11px] text-slate-500">Click any department bar to filter & view items</p>
                 </div>
               </div>
 
@@ -802,7 +654,7 @@
             <!-- Right Chart (5 cols): Audit Breakdown Donut -->
             <div class="lg:col-span-5 bg-white border border-slate-200 rounded-2xl p-5 shadow-xs flex flex-col justify-between space-y-4">
               <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 class="text-xs sm:text-sm font-black tracking-wide text-slate-900 flex items-center gap-2 uppercase">
+                <h3 class="text-sm sm:text-base font-black tracking-wider text-slate-900 flex items-center gap-2 uppercase">
                   <i data-lucide="pie-chart" class="w-4 h-4 text-indigo-600"></i>
                   <span>AUDIT BREAKDOWN</span>
                 </h3>
@@ -874,15 +726,14 @@
               <div class="flex items-center justify-between pb-2 border-b border-slate-100">
                 <div class="flex items-center gap-2">
                   <div class="w-2 h-2 rounded-full bg-teal-500"></div>
-                  <h4 class="text-xs sm:text-sm font-black text-slate-900 uppercase">TABLE 1: FINDINGS STATUS BY ACTION DEPARTMENT</h4>
+                  <h4 class="text-sm sm:text-base font-black tracking-wider text-slate-900 uppercase">TABLE 1: FINDINGS STATUS BY ACTION DEPARTMENT</h4>
                 </div>
-                <span class="text-[11px] text-teal-600 font-semibold">🖱️ Click row or count to open</span>
               </div>
 
               <div class="overflow-x-auto">
-                <table class="w-full text-left text-xs border-collapse">
+                <table class="w-full text-left text-xs sm:text-sm border-collapse">
                   <thead>
-                    <tr class="border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[10px] bg-slate-50">
+                    <tr class="border-b border-slate-200 text-slate-600 font-black uppercase tracking-wider text-xs bg-slate-50">
                       <th class="py-2.5 px-3 cursor-pointer hover:text-teal-600" onclick="FPCL_PSM_SUITE.sortDeptTable('name')">
                         DEPARTMENT ${s.deptTableSort.col === 'name' ? (s.deptTableSort.dir === 'asc' ? '↑' : '↓') : '↕'}
                       </th>
@@ -963,15 +814,14 @@
               <div class="flex items-center justify-between pb-2 border-b border-slate-100">
                 <div class="flex items-center gap-2">
                   <div class="w-2 h-2 rounded-full bg-indigo-500"></div>
-                  <h4 class="text-xs sm:text-sm font-black text-slate-900 uppercase">TABLE 2: FINDINGS STATUS BY ACTION UNIT</h4>
+                  <h4 class="text-sm sm:text-base font-black tracking-wider text-slate-900 uppercase">TABLE 2: FINDINGS STATUS BY ACTION UNIT</h4>
                 </div>
-                <span class="text-[11px] text-indigo-600 font-semibold">🖱️ Click row or count to open</span>
               </div>
 
               <div class="overflow-x-auto max-h-[500px]">
-                <table class="w-full text-left text-xs border-collapse">
+                <table class="w-full text-left text-xs sm:text-sm border-collapse">
                   <thead class="sticky top-0 bg-slate-50 z-10">
-                    <tr class="border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[10px]">
+                    <tr class="border-b border-slate-200 text-slate-600 font-black uppercase tracking-wider text-xs bg-slate-50">
                       <th class="py-2.5 px-3 cursor-pointer hover:text-indigo-600" onclick="FPCL_PSM_SUITE.sortUnitTable('name')">
                         ACTION UNIT ${s.unitTableSort.col === 'name' ? (s.unitTableSort.dir === 'asc' ? '↑' : '↓') : '↕'}
                       </th>
@@ -1059,21 +909,18 @@
                   <i data-lucide="table" class="w-5 h-5"></i>
                 </div>
                 <div>
-                  <h3 class="text-xs sm:text-sm font-black text-slate-900 uppercase tracking-wide">
+                  <h3 class="text-sm sm:text-base font-black text-slate-900 uppercase tracking-wider">
                     PSM AUDIT OBSERVATION RECORDS
                   </h3>
-                  <p class="text-xs text-slate-500">
-                    Showing <strong class="text-slate-800">${pageItems.length}</strong> of <strong class="text-slate-800">${filtered.length}</strong> filtered findings (Click any row to inspect complete details)
-                  </p>
                 </div>
               </div>
 
               <div class="flex items-center gap-2 self-start sm:self-auto">
-                <label for="psm-page-size" class="text-xs font-bold text-slate-500">Rows:</label>
+                <label for="psm-page-size" class="text-xs sm:text-sm font-bold text-slate-500">Rows:</label>
                 <select
                   id="psm-page-size"
                   onchange="FPCL_PSM_SUITE.setPageSize(this.value)"
-                  class="px-2.5 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs font-bold text-slate-800 focus:outline-none focus:ring-1 focus:ring-teal-500 cursor-pointer"
+                  class="px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs sm:text-sm font-bold text-slate-800 focus:outline-none focus:ring-1 focus:ring-teal-500 cursor-pointer"
                 >
                   <option value="10" ${s.pageSize === '10' ? 'selected' : ''}>10</option>
                   <option value="15" ${s.pageSize === '15' ? 'selected' : ''}>15</option>
@@ -1086,9 +933,9 @@
 
             <!-- Findings Table -->
             <div class="overflow-x-auto">
-              <table class="w-full text-left text-xs border-collapse">
+              <table class="w-full text-left text-xs sm:text-sm border-collapse">
                 <thead>
-                  <tr class="border-b border-slate-200 bg-slate-50 text-slate-600 font-bold uppercase tracking-wider text-[10px]">
+                  <tr class="border-b border-slate-200 bg-slate-50 text-slate-600 font-black uppercase tracking-wider text-xs">
                     <th class="py-3 px-3">OBS #</th>
                     <th class="py-3 px-3">PSM ELEMENT</th>
                     <th class="py-3 px-3">ACTION DEPT</th>
@@ -1284,6 +1131,20 @@
       // Re-initialize icons
       if (window.lucide) {
         window.lucide.createIcons();
+      }
+
+      // Synchronize header Search Finding input and clear button with current state
+      const headerSearchInput = document.getElementById('psm-header-search-input');
+      const headerClearBtn = document.getElementById('psm-header-clear-search-btn');
+      if (headerSearchInput && document.activeElement !== headerSearchInput) {
+        headerSearchInput.value = s.searchQuery || '';
+      }
+      if (headerClearBtn) {
+        if (s.searchQuery) {
+          headerClearBtn.classList.remove('hidden');
+        } else {
+          headerClearBtn.classList.add('hidden');
+        }
       }
 
       // Keep header sync icon and timestamp synchronized
@@ -1651,15 +1512,44 @@
 
     // State Mutators & Filters
     setSearchQuery(val) {
-      this.state.searchQuery = val;
+      this.state.searchQuery = val || '';
       this.state.page = 1;
+      const headerInput = document.getElementById('psm-header-search-input');
+      const headerClearBtn = document.getElementById('psm-header-clear-search-btn');
+      if (headerInput && headerInput !== document.activeElement) {
+        headerInput.value = this.state.searchQuery;
+      }
+      if (headerClearBtn) {
+        if (this.state.searchQuery) {
+          headerClearBtn.classList.remove('hidden');
+        } else {
+          headerClearBtn.classList.add('hidden');
+        }
+      }
+      const gridInput = document.getElementById('psm-search-input');
+      if (gridInput && gridInput !== document.activeElement) {
+        gridInput.value = this.state.searchQuery;
+      }
       this.render();
     },
 
     clearSearch() {
       this.state.searchQuery = '';
       this.state.page = 1;
+      const headerInput = document.getElementById('psm-header-search-input');
+      const headerClearBtn = document.getElementById('psm-header-clear-search-btn');
+      if (headerInput) {
+        headerInput.value = '';
+      }
+      if (headerClearBtn) {
+        headerClearBtn.classList.add('hidden');
+      }
+      const gridInput = document.getElementById('psm-search-input');
+      if (gridInput) {
+        gridInput.value = '';
+      }
       this.render();
+      if (headerInput) headerInput.focus();
     },
 
     setStatusFilter(status) {

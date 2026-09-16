@@ -361,32 +361,34 @@
         font-weight: 900 !important;
       }
       body.display-8ft .text-4xl,
+      body.display-8ft .text-5xl,
+      body.display-8ft .text-6xl,
       body.display-8ft .kpi-metric-val {
-        font-size: 4.2rem !important;
+        font-size: 4.4rem !important;
         font-weight: 900 !important;
-        line-height: 1.1 !important;
+        line-height: 1.05 !important;
       }
       body.display-8ft .card-stat-pill-val {
-        font-size: 1.5rem !important;
+        font-size: 1.55rem !important;
         font-weight: 900 !important;
       }
       body.display-8ft .donut-center-val {
-        font-size: 1.6rem !important;
+        font-size: 1.95rem !important;
         font-weight: 900 !important;
       }
       body.display-8ft .cmp-bar-num {
-        font-size: 19px !important;
+        font-size: 20px !important;
         font-weight: 900 !important;
       }
       body.display-8ft .cmp-x-label {
-        font-size: 15px !important;
+        font-size: 16px !important;
         font-weight: 900 !important;
       }
       body.display-8ft td,
       body.display-8ft th {
         font-size: 1.25rem !important;
-        padding-top: 1.1rem !important;
-        padding-bottom: 1.1rem !important;
+        padding-top: 1.15rem !important;
+        padding-bottom: 1.15rem !important;
       }
       body.display-8ft select,
       body.display-8ft input {
@@ -394,16 +396,22 @@
         padding: 0.65rem 1rem !important;
       }
       body.display-8ft .nav-menu-btn {
-        font-size: 1.1rem !important;
-        padding: 0.7rem 1.3rem !important;
+        font-size: 1.15rem !important;
+        padding: 0.75rem 1.35rem !important;
+        white-space: nowrap !important;
       }
       body.display-8ft .category-btn {
-        font-size: 1.05rem !important;
-        padding: 0.55rem 1.05rem !important;
+        font-size: 1.1rem !important;
+        padding: 0.6rem 1.1rem !important;
+        white-space: nowrap !important;
       }
       body.display-8ft .plr-pill {
-        font-size: 1.1rem !important;
-        padding: 0.4rem 0.9rem !important;
+        font-size: 1.15rem !important;
+        padding: 0.45rem 0.95rem !important;
+        white-space: nowrap !important;
+      }
+      body.display-8ft button {
+        white-space: nowrap;
       }
     </style>
   </head>
@@ -619,8 +627,17 @@
               </div>
             </div>
 
-            <!-- Header Quick Actions: Sync Registry in line with Search Bar -->
-            <div class="flex items-center shrink-0 pl-1 sm:pl-2 sm:border-l sm:border-slate-200">
+            <!-- Header Quick Actions: 8-Ft Mode Toggle & Sync Registry in line with Search Bar -->
+            <div class="flex items-center shrink-0 gap-2 pl-1 sm:pl-2 sm:border-l sm:border-slate-200">
+              <button
+                id="btn-toggle-8ft"
+                onclick="portalApp.toggle8FtMode()"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-2xs border cursor-pointer bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-300"
+                title="Toggle 8-Foot Display Distance Mode (Enlarged fonts for control room / wall screen visibility)"
+              >
+                <i data-lucide="zoom-in" id="icon-zoom-btn" class="w-3.5 h-3.5 text-blue-600"></i>
+                <span id="label-8ft-mode">8-Ft Mode: <span class="text-slate-500 font-extrabold text-[10px] uppercase">OFF</span></span>
+              </button>
               <button id="btn-refresh-portal" onclick="portalApp.refreshPortalData()" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 hover:border-slate-400 transition-colors shadow-2xs cursor-pointer" title="Sync & refresh dashboard registry">
                 <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-slate-600"></i>
                 <span class="hidden sm:inline">Sync Registry</span>
@@ -767,12 +784,49 @@
               </div>
             </div>
 
-            <!-- Sub HSE PSM Header Actions (Live Sheets & Sync Feed Button) -->
+            <!-- Sub HSE PSM Header Actions (SEARCH FINDING & Control Buttons) -->
             <div id="detail-psm-actions" class="hidden shrink-0 flex items-center flex-wrap gap-2.5">
-              <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-white/15 text-white border border-white/25 shadow-2xs backdrop-blur-xs">
-                <span class="w-2 h-2 rounded-full bg-emerald-300 animate-pulse"></span>
-                <span>LIVE SHEETS CONNECTED</span>
+              <!-- SEARCH FINDING in Sub HSE-PSM Header -->
+              <div class="relative w-48 sm:w-56 md:w-64">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-white/80">
+                  <i data-lucide="search" class="w-3.5 h-3.5"></i>
+                </div>
+                <input
+                  id="psm-header-search-input"
+                  type="text"
+                  placeholder="SEARCH FINDING..."
+                  class="w-full pl-8 pr-7 py-2 bg-white/20 hover:bg-white/25 focus:bg-white text-white focus:text-slate-900 placeholder-white/75 focus:placeholder-slate-400 border border-white/30 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-white transition-all shadow-2xs"
+                  oninput="if(window.FPCL_PSM_SUITE) { FPCL_PSM_SUITE.setSearchQuery(this.value); }"
+                />
+                <button
+                  id="psm-header-clear-search-btn"
+                  onclick="if(window.FPCL_PSM_SUITE) { FPCL_PSM_SUITE.clearSearch(); }"
+                  class="hidden absolute inset-y-0 right-0 pr-2.5 flex items-center text-white/70 hover:text-white cursor-pointer"
+                  title="Clear search"
+                >
+                  <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                </button>
               </div>
+
+              <button
+                id="psm-header-reset-btn"
+                onclick="if(window.FPCL_PSM_SUITE && typeof window.FPCL_PSM_SUITE.resetAllFilters === 'function') { window.FPCL_PSM_SUITE.resetAllFilters(); }"
+                class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-white/20 hover:bg-white/30 text-white border border-white/30 transition-all shadow-xs cursor-pointer active:scale-95"
+                title="Reset all filter selections"
+              >
+                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                <span>Reset Filters</span>
+              </button>
+
+              <button
+                id="psm-header-export-btn"
+                onclick="if(window.FPCL_PSM_SUITE && typeof window.FPCL_PSM_SUITE.exportFilteredCSV === 'function') { window.FPCL_PSM_SUITE.exportFilteredCSV(); }"
+                class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-white/20 hover:bg-white/30 text-white border border-white/30 transition-all shadow-xs cursor-pointer active:scale-95"
+                title="Export currently filtered records to CSV"
+              >
+                <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                <span>Export CSV</span>
+              </button>
 
               <button
                 id="psm-header-sync-btn"
@@ -803,49 +857,49 @@
           <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <div id="kpi-card-1" class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm relative overflow-hidden transition-all">
             <div id="kpi-stripe-1" class="absolute top-0 left-0 right-0 h-1.5 bg-[#2E6DA4]"></div>
-            <div class="flex items-center justify-between text-slate-500 text-xs font-bold uppercase tracking-wider pt-1">
+            <div class="flex items-center justify-between text-slate-500 text-xs sm:text-sm font-bold uppercase tracking-wider pt-1">
               <span>Total Action Items</span>
               <i data-lucide="list-checks" id="kpi-icon-1" class="w-4 h-4 text-[#2E6DA4]"></i>
             </div>
             <div class="mt-2.5 flex items-baseline gap-2">
-              <span id="kpi-total-items" class="text-4xl sm:text-5xl font-black font-mono text-[#1E293B] tracking-tight kpi-metric-val">38</span>
-              <span class="text-xs text-emerald-600 font-bold">+4 this month</span>
+              <span id="kpi-total-items" class="text-5xl sm:text-6xl font-black font-mono text-[#1E293B] tracking-tight kpi-metric-val">38</span>
+              <span class="text-xs sm:text-sm text-emerald-600 font-bold">+4 this month</span>
             </div>
           </div>
 
           <div id="kpi-card-2" class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm relative overflow-hidden transition-all">
             <div id="kpi-stripe-2" class="absolute top-0 left-0 right-0 h-1.5 bg-[#2F9E58]"></div>
-            <div class="flex items-center justify-between text-emerald-700 text-xs font-bold uppercase tracking-wider pt-1">
+            <div class="flex items-center justify-between text-emerald-700 text-xs sm:text-sm font-bold uppercase tracking-wider pt-1">
               <span>Completed / Closed</span>
               <i data-lucide="check-circle-2" class="w-4 h-4 text-[#2F9E58]"></i>
             </div>
             <div class="mt-2.5 flex items-baseline gap-2">
-              <span id="kpi-closed-items" class="text-4xl sm:text-5xl font-black font-mono text-emerald-600 tracking-tight kpi-metric-val">32</span>
-              <span class="text-xs text-slate-500 font-bold">84.2% rate</span>
+              <span id="kpi-closed-items" class="text-5xl sm:text-6xl font-black font-mono text-emerald-600 tracking-tight kpi-metric-val">32</span>
+              <span class="text-xs sm:text-sm text-slate-500 font-bold">84.2% rate</span>
             </div>
           </div>
 
           <div id="kpi-card-3" class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm relative overflow-hidden transition-all">
             <div id="kpi-stripe-3" class="absolute top-0 left-0 right-0 h-1.5 bg-[#C98A2B]"></div>
-            <div class="flex items-center justify-between text-amber-700 text-xs font-bold uppercase tracking-wider pt-1">
+            <div class="flex items-center justify-between text-amber-700 text-xs sm:text-sm font-bold uppercase tracking-wider pt-1">
               <span>In Progress / Pending</span>
               <i data-lucide="clock-3" class="w-4 h-4 text-[#C98A2B]"></i>
             </div>
             <div class="mt-2.5 flex items-baseline gap-2">
-              <span id="kpi-pending-items" class="text-4xl sm:text-5xl font-black font-mono text-amber-600 tracking-tight kpi-metric-val">6</span>
-              <span class="text-xs text-slate-500 font-bold">On schedule</span>
+              <span id="kpi-pending-items" class="text-5xl sm:text-6xl font-black font-mono text-amber-600 tracking-tight kpi-metric-val">6</span>
+              <span class="text-xs sm:text-sm text-slate-500 font-bold">On schedule</span>
             </div>
           </div>
 
           <div id="kpi-card-4" class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm relative overflow-hidden transition-all">
             <div id="kpi-stripe-4" class="absolute top-0 left-0 right-0 h-1.5 bg-[#C3564F]"></div>
-            <div class="flex items-center justify-between text-rose-700 text-xs font-bold uppercase tracking-wider pt-1">
+            <div class="flex items-center justify-between text-rose-700 text-xs sm:text-sm font-bold uppercase tracking-wider pt-1">
               <span>Critical / Overdue</span>
               <i data-lucide="alert-triangle" class="w-4 h-4 text-[#C3564F]"></i>
             </div>
             <div class="mt-2.5 flex items-baseline gap-2">
-              <span id="kpi-overdue-items" class="text-4xl sm:text-5xl font-black font-mono text-emerald-600 tracking-tight kpi-metric-val">0</span>
-              <span class="text-xs text-emerald-600 font-bold">Zero breaches</span>
+              <span id="kpi-overdue-items" class="text-5xl sm:text-6xl font-black font-mono text-emerald-600 tracking-tight kpi-metric-val">0</span>
+              <span class="text-xs sm:text-sm text-emerald-600 font-bold">Zero breaches</span>
             </div>
           </div>
         </div>
@@ -1471,14 +1525,14 @@
         },
         {
           id: 'sub-hse-psm',
-          name: 'Sub HSE-PSM • Sub HSE Committees',
+          name: 'Sub HSE-PSM',
           code: 'Sub HSE-PSM',
           icon: 'shield-check',
           status: 'Active',
           hasSheetLink: true,
           category: 'Sub HSE Committees',
           department: 'HSEQ',
-          cadence: 'Phase 1 June 2026 Audit',
+          cadence: 'Monthly',
           description: 'Process Safety Management internal audit findings, action department tracking, PSM elements compliance & resolution analytics.',
           color: {
             bg: '#E8F6F5',
@@ -2538,9 +2592,13 @@
           const btn = document.getElementById('btn-toggle-8ft');
           const icon = document.getElementById('icon-zoom-btn');
           
+          try {
+            localStorage.setItem('fpcl_display_8ft', is8Ft ? '1' : '0');
+          } catch (e) {}
+
           if (is8Ft) {
             if (label) {
-              label.innerHTML = 'Zoom: <span class="bg-blue-600 text-white px-1.5 py-0.5 rounded font-black text-[10px] uppercase shadow-2xs">ON</span>';
+              label.innerHTML = '8-Ft Mode: <span class="bg-blue-600 text-white px-1.5 py-0.5 rounded font-black text-[10px] uppercase shadow-2xs">ON</span>';
             }
             if (btn) {
               btn.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-xs border cursor-pointer bg-blue-50 hover:bg-blue-100 text-blue-800 border-blue-400 ring-1 ring-blue-300';
@@ -2549,10 +2607,10 @@
               icon.setAttribute('data-lucide', 'zoom-out');
               window.lucide.createIcons();
             }
-            this.showToast('Zoom Mode Enabled', 'High-contrast visuals and values enlarged for easy viewing from 8 feet.', 'success');
+            this.showToast('8-Foot Display Mode Enabled', 'High-contrast metrics and typography enlarged for optimal legibility from 8 feet distance.', 'success');
           } else {
             if (label) {
-              label.innerHTML = 'Zoom: <span class="text-slate-500 font-extrabold text-[10px] uppercase">OFF</span>';
+              label.innerHTML = '8-Ft Mode: <span class="text-slate-500 font-extrabold text-[10px] uppercase">OFF</span>';
             }
             if (btn) {
               btn.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-2xs border cursor-pointer bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-300';
@@ -2561,11 +2619,17 @@
               icon.setAttribute('data-lucide', 'zoom-in');
               window.lucide.createIcons();
             }
-            this.showToast('Zoom Mode Disabled', 'Restored standard desktop display scale.', 'info');
+            this.showToast('8-Foot Mode Disabled', 'Restored standard high-resolution display scale.', 'info');
           }
           // Re-render responsive charts to adapt to scaled container
           this.renderTimelineChart();
           this.renderComparisonChart();
+          if (window.FPCL_PSM_SUITE && typeof window.FPCL_PSM_SUITE.renderCharts === 'function') {
+            window.FPCL_PSM_SUITE.renderCharts();
+          }
+          if (window.FPCL_PLR_SUITE && typeof window.FPCL_PLR_SUITE.renderCharts === 'function') {
+            window.FPCL_PLR_SUITE.renderCharts();
+          }
         },
 
         /**
@@ -2721,9 +2785,9 @@
             if (glow1) glow1.classList.remove('hidden');
             if (glow2) glow2.classList.remove('hidden');
 
-            document.getElementById('breadcrumb-active-name').textContent = 'Sub HSE-PSM • Sub HSE Committees';
+            document.getElementById('breadcrumb-active-name').textContent = 'Sub HSE-PSM';
             if (titleEl) {
-              titleEl.textContent = 'Sub HSE-PSM • Sub HSE Committees';
+              titleEl.textContent = 'Sub HSE-PSM';
               titleEl.className = 'text-xl sm:text-2xl font-black tracking-tight text-white flex items-center gap-2';
               titleEl.style.color = '#FFFFFF';
             }
@@ -3332,7 +3396,7 @@
             ]
           },
           'sub-hse-psm': {
-            name: 'Sub HSE-PSM • Sub HSE Committees Assistant',
+            name: 'Sub HSE-PSM Assistant',
             shortName: 'Sub HSE-PSM',
             subtitle: 'PSM Internal Audit Phase 1 Findings • HSEQ',
             icon: 'shield-check',
@@ -3342,7 +3406,7 @@
             gradient: 'from-teal-600 via-emerald-600 to-indigo-600',
             buttonGradient: 'linear-gradient(135deg, #0D9488, #0891B2)',
             badgeClass: 'bg-teal-50 text-teal-700 border-teal-200',
-            welcomeMessage: 'Hello! I am the **Sub HSE-PSM • Sub HSE Committees Assistant** (Responsible Unit: HSEQ).\n\nI can assist with:\n- **121 Audit Observations**: 76 Closed, 45 Open (**62.8% Closure Rate**)\n- **13 Action Departments**: Operations CASH (34 findings), Operations PSG (32), E&I (16), Mechanical (14), HSE (10), etc.\n- **Key PSM Elements**: Operating Procedures (SOPs), PHA, MOC, Mechanical Integrity, Training & Competency, PSSR\n- **Audit Status Tracking** and compliance roadmaps\n\n*🔒 Scope Policy: I strictly answer questions regarding the Sub HSE-PSM • Sub HSE Committees dashboard and will regret any outside queries.*',
+            welcomeMessage: 'Hello! I am the **Sub HSE-PSM Assistant** (Responsible Unit: HSEQ).\n\nI can assist with:\n- **121 Audit Observations**: 76 Closed, 45 Open (**62.8% Closure Rate**)\n- **13 Action Departments**: Operations CASH (34 findings), Operations PSG (32), E&I (16), Mechanical (14), HSE (10), etc.\n- **Key PSM Elements**: Operating Procedures (SOPs), PHA, MOC, Mechanical Integrity, Training & Competency, PSSR\n- **Audit Status Tracking** and compliance roadmaps\n\n*🔒 Scope Policy: I strictly answer questions regarding the Sub HSE-PSM dashboard and will regret any outside queries.*',
             suggestions: [
               'Which department has the most open audit findings?',
               'Show resolution rate for Operations CASH vs PSG',

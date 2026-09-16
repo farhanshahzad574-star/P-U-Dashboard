@@ -94,11 +94,11 @@ PLR Data Summary (linked to Google Sheet tabs PLRstatus & Recommendations):
 `
   },
   'sub-hse-psm': {
-    name: 'Sub HSE-PSM • Sub HSE Committees',
+    name: 'Sub HSE-PSM',
     description: 'Process Safety Management (PSM) Internal Audit Findings Executive Dashboard (Responsible Unit: HSEQ)',
     scopeKeywords: ['psm', 'sub hse', 'audit', 'findings', 'process safety', 'observation', 'cash', 'psg', 'operations', 'e&i', 'mechanical', 'hse', 'hseq', 'l&d', 'pha', 'moc', 'pssr', 'sop', 'mechanical integrity', 'training', 'contractor', 'emergency', 'closure', 'compliance'],
     context: `
-You are the Sub HSE-PSM • Sub HSE Committees Assistant for the Process Safety Management internal audit dashboard under the HSEQ department.
+You are the Sub HSE-PSM Assistant for the Process Safety Management internal audit dashboard under the HSEQ department.
 PSM Audit Data Summary (Phase 1 Internal Audit Findings June 2026):
 - Total Observations/Findings: 121 items.
 - Status: 76 Closed, 45 Open (62.8% Resolution Rate).

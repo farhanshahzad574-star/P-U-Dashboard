@@ -3393,9 +3393,9 @@
     // Table Content matching exact columns:
     // S_NO | PLR # | YEAR | DATE | INCIDENT DESCRIPTION | MACHINE (COL G) | PRIORITY (COL H) | ACTION ENTITY (COL F) | STATUS (COL F) | VIEW
     tableBody.innerHTML = `
-      <table class="w-full text-left text-xs">
+      <table class="w-full text-left text-xs sm:text-sm">
         <thead>
-          <tr class="border-b border-slate-200 bg-slate-50 text-[11px] font-black uppercase tracking-wider text-slate-600">
+          <tr class="border-b border-slate-200 bg-slate-50 text-xs font-black uppercase tracking-wider text-slate-600">
             <th class="py-3 px-3 w-14 text-center">S_NO</th>
             <th class="py-3 px-3 w-24">PLR #</th>
             <th class="py-3 px-3 w-20">YEAR</th>
@@ -3603,9 +3603,9 @@
 
     // Table Content with Reciprocal PLR Linking
     tableBody.innerHTML = `
-      <table class="w-full text-left text-xs">
+      <table class="w-full text-left text-xs sm:text-sm">
         <thead>
-          <tr class="border-b border-slate-200 bg-slate-50 text-[11px] font-black uppercase tracking-wider text-slate-600">
+          <tr class="border-b border-slate-200 bg-slate-50 text-xs font-black uppercase tracking-wider text-slate-600">
             <th class="py-3 px-3 w-14 text-center">S_NO</th>
             <th class="py-3 px-3 w-28">PLR # (COL B)</th>
             <th class="py-3 px-3 w-20">YEAR</th>
@@ -3613,7 +3613,7 @@
             <th class="py-3 px-4 min-w-[340px]">
               <div class="flex items-center gap-1.5">
                 <span>RECOMMENDATIONS (COL E)</span>
-                <span class="inline-block px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">Tab: Recommendations</span>
+                <span class="inline-block px-1.5 py-0.5 rounded text-[11px] font-mono font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">Tab: Recommendations</span>
               </div>
             </th>
             <th class="py-3 px-3 w-36">ACTION ENTITY (COL F)</th>
