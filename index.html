@@ -719,7 +719,11 @@
         <!-- Prominent Title Header & Metadata Card (Themed dynamically to Dashboard Color Scheme) -->
         <div id="detail-header-card" class="!mt-2.5 sm:!mt-3 bg-gradient-to-b from-white to-slate-50/90 rounded-2xl p-5 sm:p-6 shadow-md transition-all duration-300 border border-slate-200 relative overflow-hidden">
           <div id="detail-header-stripe" class="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500"></div>
-          <div class="flex flex-col md:flex-row md:items-center justify-between gap-5 pt-1">
+          <!-- Subtle backdrop gradient glows for dark/gradient themes -->
+          <div id="detail-glow-1" class="hidden absolute -right-20 -top-20 w-80 h-80 bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
+          <div id="detail-glow-2" class="hidden absolute -left-20 -bottom-20 w-80 h-80 bg-teal-300/20 rounded-full blur-3xl pointer-events-none"></div>
+
+          <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5 pt-1">
             <div class="flex items-start gap-4">
               <div id="detail-icon-box" class="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-sm">
                 <i data-lucide="activity" id="detail-icon-el" class="w-7 h-7"></i>
@@ -740,15 +744,15 @@
                 <p id="detail-description" class="text-xs sm:text-sm max-w-2xl font-medium">
                   Operational metrics, action items, and compliance reporting engine.
                 </p>
-                <div class="flex flex-wrap items-center gap-y-1 gap-x-4 pt-1 text-xs font-mono">
-                  <span class="flex items-center gap-1"><i data-lucide="calendar" class="w-3.5 h-3.5"></i> Review Cadence: <strong id="detail-cadence" class="font-sans font-bold">Monthly</strong></span>
-                  <span class="flex items-center gap-1"><i data-lucide="users" class="w-3.5 h-3.5"></i> Responsible Unit: <strong id="detail-owner" class="font-sans font-bold">Executive Team</strong></span>
-                  <span class="flex items-center gap-1"><i data-lucide="clock" class="w-3.5 h-3.5"></i> Last Synced: <span id="detail-last-sync" class="font-sans">Just now</span></span>
+                <div id="detail-metadata-row" class="flex flex-wrap items-center gap-y-1 gap-x-4 pt-1 text-xs font-mono">
+                  <span id="detail-cadence-container" class="flex items-center gap-1"><i data-lucide="calendar" class="w-3.5 h-3.5"></i> Review Cadence: <strong id="detail-cadence" class="font-sans font-bold">Monthly</strong></span>
+                  <span id="detail-owner-container" class="flex items-center gap-1"><i data-lucide="users" class="w-3.5 h-3.5"></i> Responsible Unit: <strong id="detail-owner" class="font-sans font-bold">Executive Team</strong></span>
+                  <span id="detail-sync-container" class="flex items-center gap-1"><i data-lucide="clock" class="w-3.5 h-3.5"></i> Last Synced: <span id="detail-last-sync" class="font-sans">Just now</span></span>
                 </div>
               </div>
             </div>
 
-            <!-- Connection Status Badge Card -->
+            <!-- Connection Status Badge Card (standard dashboards) -->
             <div id="detail-connection-card" class="shrink-0 p-3.5 bg-white/85 backdrop-blur-xs rounded-xl border text-xs space-y-1.5 min-w-[210px] shadow-xs">
               <div class="flex items-center justify-between">
                 <span class="text-slate-500 font-medium">Google Sheet Link:</span>
@@ -761,6 +765,32 @@
                 <span>Data Auto-Refresh:</span>
                 <span id="detail-refresh-cadence" class="font-semibold">Every 15m</span>
               </div>
+            </div>
+
+            <!-- Sub HSE PSM Header Actions (Live Sheets & Sync Feed Button) -->
+            <div id="detail-psm-actions" class="hidden shrink-0 flex items-center flex-wrap gap-2.5">
+              <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-white/15 text-white border border-white/25 shadow-2xs backdrop-blur-xs">
+                <span class="w-2 h-2 rounded-full bg-emerald-300 animate-pulse"></span>
+                <span>LIVE SHEETS CONNECTED</span>
+              </div>
+
+              <button
+                id="psm-header-sync-btn"
+                onclick="if(window.FPCL_PSM_SUITE && typeof window.FPCL_PSM_SUITE.syncLiveFeed === 'function') { window.FPCL_PSM_SUITE.syncLiveFeed(); } else if (window.portalApp && window.portalApp.syncAllData) { window.portalApp.syncAllData(); }"
+                class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-white/20 hover:bg-white/30 text-white border border-white/30 transition-all shadow-xs cursor-pointer active:scale-95"
+                title="Force re-sync from Google Sheets"
+              >
+                <i data-lucide="refresh-cw" id="psm-header-sync-icon" class="w-3.5 h-3.5"></i>
+                <span id="psm-header-sync-label">Sync Feed</span>
+              </button>
+
+              <button
+                onclick="if(window.FPCL_PSM_SUITE && typeof window.FPCL_PSM_SUITE.openConfigModal === 'function') { window.FPCL_PSM_SUITE.openConfigModal(); }"
+                class="inline-flex items-center gap-1.5 p-2 rounded-xl text-xs font-bold bg-white/20 hover:bg-white/30 text-white border border-white/30 transition-all shadow-xs cursor-pointer active:scale-95"
+                title="Configure Google Sheet Link"
+              >
+                <i data-lucide="settings" class="w-4 h-4"></i>
+              </button>
             </div>
           </div>
         </div>
@@ -1441,13 +1471,13 @@
         },
         {
           id: 'sub-hse-psm',
-          name: 'Sub HSE - PSM',
+          name: 'Sub HSE-PSM • Sub HSE Committees',
           code: 'Sub HSE-PSM',
-          icon: 'shield-alert',
+          icon: 'shield-check',
           status: 'Active',
           hasSheetLink: true,
           category: 'Sub HSE Committees',
-          department: 'Process Safety Management Sub-Committee',
+          department: 'HSEQ',
           cadence: 'Phase 1 June 2026 Audit',
           description: 'Process Safety Management internal audit findings, action department tracking, PSM elements compliance & resolution analytics.',
           color: {
@@ -2659,105 +2689,200 @@
 
           // Dynamically Theme the Detail Header Card with dashboard's family color
           const headerCard = document.getElementById('detail-header-card');
-          if (headerCard) {
-            headerCard.style.backgroundColor = '#ffffff';
-            headerCard.style.color = '#1E293B';
-            headerCard.style.borderColor = dashboard.color.secondary || '#E2E8F0';
-            headerCard.style.boxShadow = '0 10px 25px -5px rgba(0,0,0,0.06)';
-          }
-
           const headerStripe = document.getElementById('detail-header-stripe');
-          if (headerStripe) {
-            headerStripe.className = 'absolute top-0 left-0 right-0 h-2.5 bg-gradient-to-r ' + dashboard.gradient;
-          }
-
-          // Populate Detail Header Elements
-          document.getElementById('breadcrumb-active-name').textContent = dashboard.name;
-          document.getElementById('detail-title').textContent = dashboard.name;
-          document.getElementById('detail-title').style.color = '#1E293B';
-          
+          const glow1 = document.getElementById('detail-glow-1');
+          const glow2 = document.getElementById('detail-glow-2');
+          const psmActions = document.getElementById('detail-psm-actions');
+          const titleEl = document.getElementById('detail-title');
           const descEl = document.getElementById('detail-description');
-          if (dashboardId === 'plr') {
-            descEl.textContent = '';
-            descEl.style.display = 'none';
-          } else {
-            descEl.textContent = dashboard.description;
-            descEl.style.display = '';
-            descEl.style.color = '#475569';
-          }
-
-          document.getElementById('detail-cadence').textContent = dashboard.cadence;
-          document.getElementById('detail-owner').textContent = dashboard.department;
-          document.getElementById('detail-last-sync').textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-          // Detail Icon Box styling (Gradient background, white icon)
+          const cadenceEl = document.getElementById('detail-cadence');
+          const ownerEl = document.getElementById('detail-owner');
+          const syncEl = document.getElementById('detail-last-sync');
+          const metaRow = document.getElementById('detail-metadata-row');
           const iconBox = document.getElementById('detail-icon-box');
-          iconBox.className = 'w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-md text-white bg-gradient-to-r ' + dashboard.gradient;
-          iconBox.style = '';
           const iconEl = document.getElementById('detail-icon-el');
-          if (iconEl) {
-            iconEl.setAttribute('data-lucide', dashboard.icon);
-          }
-
-          // Category Badge styling with dashboard family color (hidden for PLR)
           const catBadge = document.getElementById('detail-category-badge');
-          if (dashboardId === 'plr') {
+          const statusBadge = document.getElementById('detail-status-badge');
+          const statusDot = document.getElementById('detail-status-dot');
+          const statusText = document.getElementById('detail-status-text');
+          const connCard = document.getElementById('detail-connection-card');
+          const isActive = dashboard.status === 'Active';
+
+          if (dashboardId === 'sub-hse-psm') {
+            // Theme Sub HSE banner exactly same color as PSM INTERNAL AUDIT FINDINGS (Teal-Emerald-Indigo gradient)
+            if (headerCard) {
+              headerCard.className = '!mt-2.5 sm:!mt-3 bg-gradient-to-r from-teal-600 via-emerald-600 to-indigo-600 text-white rounded-2xl p-5 sm:p-6 shadow-xl border border-teal-400/40 relative overflow-hidden transition-all duration-300';
+              headerCard.style.backgroundColor = '';
+              headerCard.style.borderColor = '';
+              headerCard.style.boxShadow = '';
+              headerCard.style.color = '#FFFFFF';
+            }
+            if (headerStripe) headerStripe.classList.add('hidden');
+            if (glow1) glow1.classList.remove('hidden');
+            if (glow2) glow2.classList.remove('hidden');
+
+            document.getElementById('breadcrumb-active-name').textContent = 'Sub HSE-PSM • Sub HSE Committees';
+            if (titleEl) {
+              titleEl.textContent = 'Sub HSE-PSM • Sub HSE Committees';
+              titleEl.className = 'text-xl sm:text-2xl font-black tracking-tight text-white flex items-center gap-2';
+              titleEl.style.color = '#FFFFFF';
+            }
+
+            if (descEl) {
+              descEl.textContent = '';
+              descEl.style.display = 'none';
+            }
+
+            if (cadenceEl) {
+              cadenceEl.textContent = dashboard.cadence;
+              cadenceEl.className = 'font-sans font-bold text-white';
+            }
+            if (ownerEl) {
+              ownerEl.textContent = 'HSEQ';
+              ownerEl.className = 'font-sans font-bold text-white';
+            }
+            if (syncEl) {
+              syncEl.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+              syncEl.className = 'font-sans font-bold text-white';
+            }
+            if (metaRow) {
+              metaRow.className = 'flex flex-wrap items-center gap-y-1 gap-x-4 pt-1 text-xs font-mono text-teal-100';
+            }
+
+            if (iconBox) {
+              iconBox.className = 'w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-white/20 text-white flex items-center justify-center shadow-lg backdrop-blur-xs shrink-0 border border-white/25';
+              iconBox.style = '';
+            }
+            if (iconEl) {
+              iconEl.setAttribute('data-lucide', 'shield-check');
+            }
+
+            // Remove Sub HSE - PSM category pill to avoid duplication
             if (catBadge) {
               catBadge.textContent = '';
               catBadge.classList.add('hidden');
             }
-          } else if (catBadge) {
-            catBadge.classList.remove('hidden');
-            catBadge.textContent = dashboard.code + ' • ' + dashboard.category;
-            catBadge.className = 'px-3 py-1 rounded-full text-xs font-mono font-extrabold uppercase border shadow-2xs';
-            catBadge.style.backgroundColor = dashboard.color.bg;
-            catBadge.style.color = dashboard.color.primary;
-            catBadge.style.borderColor = dashboard.color.secondary;
-          }
 
-          // Status Badge styling (for PLR: remove text and keep green light)
-          const statusBadge = document.getElementById('detail-status-badge');
-          const statusDot = document.getElementById('detail-status-dot');
-          const statusText = document.getElementById('detail-status-text');
-          const isActive = dashboard.status === 'Active';
-
-          if (dashboardId === 'plr') {
             if (statusText) {
               statusText.textContent = '';
               statusText.classList.add('hidden');
             }
             if (statusBadge) {
-              statusBadge.className = 'inline-flex items-center justify-center p-1.5 rounded-full bg-emerald-50 border border-emerald-200 shadow-2xs';
+              statusBadge.className = 'inline-flex items-center justify-center p-1.5 rounded-full bg-white/20 border border-white/30 shadow-2xs backdrop-blur-xs';
               statusBadge.title = 'Active';
             }
             if (statusDot) {
-              statusDot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.85)] animate-pulse';
+              statusDot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-300 shadow-[0_0_8px_rgba(110,231,183,0.9)] animate-pulse';
               statusDot.style = '';
             }
-          } else {
-            if (statusText) {
-              statusText.textContent = dashboard.status;
-              statusText.classList.remove('hidden');
-            }
-            if (statusBadge) {
-              statusBadge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold shadow-2xs bg-slate-100 text-slate-800 border border-slate-200';
-              statusBadge.title = '';
-            }
-            if (statusDot) {
-              statusDot.className = 'w-2 h-2 rounded-full ' + (isActive ? 'bg-emerald-500' : 'bg-amber-500');
-              statusDot.style = '';
-            }
-          }
 
-          // Connection Card with dashboard family color (hidden for PLR)
-          const connCard = document.getElementById('detail-connection-card');
-          if (connCard) {
+            if (connCard) connCard.classList.add('hidden');
+            if (psmActions) psmActions.classList.remove('hidden');
+
+          } else {
+            // Standard / PLR styling
+            if (headerCard) {
+              headerCard.className = '!mt-2.5 sm:!mt-3 bg-gradient-to-b from-white to-slate-50/90 rounded-2xl p-5 sm:p-6 shadow-md transition-all duration-300 border border-slate-200 relative overflow-hidden';
+              headerCard.style.backgroundColor = '#ffffff';
+              headerCard.style.color = '#1E293B';
+              headerCard.style.borderColor = dashboard.color.secondary || '#E2E8F0';
+              headerCard.style.boxShadow = '0 10px 25px -5px rgba(0,0,0,0.06)';
+            }
+            if (headerStripe) {
+              headerStripe.classList.remove('hidden');
+              headerStripe.className = 'absolute top-0 left-0 right-0 h-2.5 bg-gradient-to-r ' + dashboard.gradient;
+            }
+            if (glow1) glow1.classList.add('hidden');
+            if (glow2) glow2.classList.add('hidden');
+
+            document.getElementById('breadcrumb-active-name').textContent = dashboard.name;
+            if (titleEl) {
+              titleEl.textContent = dashboard.name;
+              titleEl.className = 'text-xl sm:text-2xl font-bold tracking-tight';
+              titleEl.style.color = '#1E293B';
+            }
+
             if (dashboardId === 'plr') {
-              connCard.classList.add('hidden');
+              if (descEl) {
+                descEl.textContent = '';
+                descEl.style.display = 'none';
+              }
+            } else if (descEl) {
+              descEl.textContent = dashboard.description;
+              descEl.style.display = '';
+              descEl.style.color = '#475569';
+            }
+
+            if (cadenceEl) {
+              cadenceEl.textContent = dashboard.cadence;
+              cadenceEl.className = 'font-sans font-bold text-[#1E293B]';
+            }
+            if (ownerEl) {
+              ownerEl.textContent = dashboard.department;
+              ownerEl.className = 'font-sans font-bold text-[#1E293B]';
+            }
+            if (syncEl) {
+              syncEl.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+              syncEl.className = 'font-sans text-slate-600';
+            }
+            if (metaRow) {
+              metaRow.className = 'flex flex-wrap items-center gap-y-1 gap-x-4 pt-1 text-xs font-mono text-slate-500';
+            }
+
+            if (iconBox) {
+              iconBox.className = 'w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-md text-white bg-gradient-to-r ' + dashboard.gradient;
+              iconBox.style = '';
+            }
+            if (iconEl) {
+              iconEl.setAttribute('data-lucide', dashboard.icon);
+            }
+
+            if (psmActions) psmActions.classList.add('hidden');
+
+            if (dashboardId === 'plr') {
+              if (catBadge) {
+                catBadge.textContent = '';
+                catBadge.classList.add('hidden');
+              }
+              if (statusText) {
+                statusText.textContent = '';
+                statusText.classList.add('hidden');
+              }
+              if (statusBadge) {
+                statusBadge.className = 'inline-flex items-center justify-center p-1.5 rounded-full bg-emerald-50 border border-emerald-200 shadow-2xs';
+                statusBadge.title = 'Active';
+              }
+              if (statusDot) {
+                statusDot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.85)] animate-pulse';
+                statusDot.style = '';
+              }
+              if (connCard) connCard.classList.add('hidden');
             } else {
-              connCard.classList.remove('hidden');
-              connCard.style.borderColor = dashboard.color.secondary;
-              connCard.style.backgroundColor = dashboard.color.bg;
+              if (catBadge) {
+                catBadge.classList.remove('hidden');
+                catBadge.textContent = dashboard.code + ' • ' + dashboard.category;
+                catBadge.className = 'px-3 py-1 rounded-full text-xs font-mono font-extrabold uppercase border shadow-2xs';
+                catBadge.style.backgroundColor = dashboard.color.bg;
+                catBadge.style.color = dashboard.color.primary;
+                catBadge.style.borderColor = dashboard.color.secondary;
+              }
+              if (statusText) {
+                statusText.textContent = dashboard.status;
+                statusText.classList.remove('hidden');
+              }
+              if (statusBadge) {
+                statusBadge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold shadow-2xs bg-slate-100 text-slate-800 border border-slate-200';
+                statusBadge.title = '';
+              }
+              if (statusDot) {
+                statusDot.className = 'w-2 h-2 rounded-full ' + (isActive ? 'bg-emerald-500' : 'bg-amber-500');
+                statusDot.style = '';
+              }
+              if (connCard) {
+                connCard.classList.remove('hidden');
+                connCard.style.borderColor = dashboard.color.secondary;
+                connCard.style.backgroundColor = dashboard.color.bg;
+              }
             }
           }
           const sheetStatus = document.getElementById('detail-sheet-status');
@@ -2790,7 +2915,9 @@
               sheetKeyEl.title = 'PLRs white dashboard (PLRStatus & Recommendations)';
             }
           } else if (dashboardId === 'sub-hse-psm') {
-            if (connCard) connCard.classList.remove('hidden');
+            if (connCard) connCard.classList.add('hidden');
+            const psmActions = document.getElementById('detail-psm-actions');
+            if (psmActions) psmActions.classList.remove('hidden');
             if (stdContainer) stdContainer.classList.add('hidden');
             if (plrContainer) plrContainer.classList.add('hidden');
             if (psmContainer) {
@@ -3205,17 +3332,17 @@
             ]
           },
           'sub-hse-psm': {
-            name: 'Sub HSE - PSM Assistant',
+            name: 'Sub HSE-PSM • Sub HSE Committees Assistant',
             shortName: 'Sub HSE-PSM',
-            subtitle: 'PSM Internal Audit Phase 1 Findings',
-            icon: 'shield-alert',
+            subtitle: 'PSM Internal Audit Phase 1 Findings • HSEQ',
+            icon: 'shield-check',
             colorBg: '#E8F6F5',
             borderColor: '#14B8A6',
             textColor: '#0D9488',
             gradient: 'from-teal-600 via-emerald-600 to-indigo-600',
             buttonGradient: 'linear-gradient(135deg, #0D9488, #0891B2)',
             badgeClass: 'bg-teal-50 text-teal-700 border-teal-200',
-            welcomeMessage: 'Hello! I am the **Sub HSE - PSM Assistant**.\n\nI can assist with:\n- **121 Audit Observations**: 76 Closed, 45 Open (**62.8% Closure Rate**)\n- **13 Action Departments**: Operations CASH (34 findings), Operations PSG (32), E&I (16), Mechanical (14), HSE (10), etc.\n- **Key PSM Elements**: Operating Procedures (SOPs), PHA, MOC, Mechanical Integrity, Training & Competency, PSSR\n- **Audit Status Tracking** and compliance roadmaps\n\n*🔒 Scope Policy: I strictly answer questions regarding the Sub HSE - PSM dashboard and will regret any outside queries.*',
+            welcomeMessage: 'Hello! I am the **Sub HSE-PSM • Sub HSE Committees Assistant** (Responsible Unit: HSEQ).\n\nI can assist with:\n- **121 Audit Observations**: 76 Closed, 45 Open (**62.8% Closure Rate**)\n- **13 Action Departments**: Operations CASH (34 findings), Operations PSG (32), E&I (16), Mechanical (14), HSE (10), etc.\n- **Key PSM Elements**: Operating Procedures (SOPs), PHA, MOC, Mechanical Integrity, Training & Competency, PSSR\n- **Audit Status Tracking** and compliance roadmaps\n\n*🔒 Scope Policy: I strictly answer questions regarding the Sub HSE-PSM • Sub HSE Committees dashboard and will regret any outside queries.*',
             suggestions: [
               'Which department has the most open audit findings?',
               'Show resolution rate for Operations CASH vs PSG',

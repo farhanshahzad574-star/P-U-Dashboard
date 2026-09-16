@@ -456,64 +456,9 @@
 
       container.innerHTML = `
         <div class="space-y-6 font-sans antialiased text-slate-800">
-          
-          <!-- ========================================================================= -->
-          <!-- 1. TOP EXECUTIVE BI HEADER BAR                                           -->
-          <!-- ========================================================================= -->
-          <div class="bg-gradient-to-r from-teal-600 via-emerald-600 to-indigo-600 text-white rounded-2xl p-5 sm:p-6 shadow-xl border border-teal-400/40 relative overflow-hidden">
-            <!-- Subtle backdrop gradient glow -->
-            <div class="absolute -right-20 -top-20 w-80 h-80 bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
-            <div class="absolute -left-20 -bottom-20 w-80 h-80 bg-teal-300/20 rounded-full blur-3xl pointer-events-none"></div>
-
-            <div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-              <div class="flex items-start sm:items-center gap-3.5">
-                <div class="w-12 h-12 rounded-xl bg-white/20 text-white flex items-center justify-center shadow-lg backdrop-blur-xs shrink-0 border border-white/25">
-                  <i data-lucide="shield-check" class="w-6 h-6"></i>
-                </div>
-                <div>
-                  <div class="flex flex-wrap items-center gap-2.5">
-                    <h2 class="text-xl sm:text-2xl font-black tracking-tight text-white flex items-center gap-2">
-                      PSM INTERNAL AUDIT FINDINGS
-                    </h2>
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded text-[11px] font-black uppercase tracking-wider bg-white/20 text-white border border-white/30 backdrop-blur-xs">
-                      EXECUTIVE BI
-                    </span>
-                  </div>
-                  <p class="text-xs sm:text-sm text-teal-100 font-medium mt-0.5">
-                    Compliance, Action Department Tracking & Resolution Analytics • <span class="text-white font-bold">${totalFiltered} Findings (${closedCount} Closed, ${openCount} Open, ${closurePercentage}% Closure Rate)</span>
-                  </p>
-                </div>
-              </div>
-
-              <!-- Top Right Controls -->
-              <div class="flex items-center flex-wrap gap-2.5">
-                <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-white/15 text-white border border-white/25">
-                  <span class="w-2 h-2 rounded-full bg-emerald-300 animate-pulse"></span>
-                  <span>LIVE SHEETS CONNECTED</span>
-                </div>
-
-                <button
-                  onclick="FPCL_PSM_SUITE.syncLiveFeed()"
-                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-white/15 hover:bg-white/25 text-white border border-white/25 transition-all shadow-xs cursor-pointer"
-                  title="Force re-sync from Google Sheets"
-                >
-                  <i data-lucide="refresh-cw" class="w-3.5 h-3.5 ${s.isSyncing ? 'animate-spin' : ''}"></i>
-                  <span>Sync Feed</span>
-                </button>
-
-                <button
-                  onclick="FPCL_PSM_SUITE.openConfigModal()"
-                  class="inline-flex items-center gap-1.5 p-2 rounded-xl text-xs font-bold bg-white/15 hover:bg-white/25 text-white border border-white/25 transition-all shadow-xs cursor-pointer"
-                  title="Configure Google Sheet Link"
-                >
-                  <i data-lucide="settings" class="w-4 h-4"></i>
-                </button>
-              </div>
-            </div>
-          </div>
 
           <!-- ========================================================================= -->
-          <!-- 2. AUDIT STATUS BAR & QUICK ACTION CONTROLS                               -->
+          <!-- AUDIT STATUS BAR & QUICK ACTION CONTROLS                                  -->
           <!-- ========================================================================= -->
           <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div class="flex items-center gap-3">
@@ -1340,6 +1285,20 @@
       if (window.lucide) {
         window.lucide.createIcons();
       }
+
+      // Keep header sync icon and timestamp synchronized
+      const headerSyncIcon = document.getElementById('psm-header-sync-icon');
+      if (headerSyncIcon) {
+        if (s.isSyncing) {
+          headerSyncIcon.classList.add('animate-spin');
+        } else {
+          headerSyncIcon.classList.remove('animate-spin');
+        }
+      }
+      const lastSyncEl = document.getElementById('detail-last-sync');
+      if (lastSyncEl && this.state.lastSynced) {
+        lastSyncEl.textContent = this.state.lastSynced;
+      }
     },
 
     // Horizontal grouped/stacked bar chart for departments
@@ -1945,6 +1904,8 @@
       }
 
       this.state.isSyncing = true;
+      const headerSyncIcon = document.getElementById('psm-header-sync-icon');
+      if (headerSyncIcon) headerSyncIcon.classList.add('animate-spin');
       if (!isSilent) this.render();
 
       this._syncPromise = (async () => {
@@ -2062,6 +2023,12 @@
       })().finally(() => {
         this.state.isSyncing = false;
         this._syncPromise = null;
+        const headerSyncIcon = document.getElementById('psm-header-sync-icon');
+        if (headerSyncIcon) headerSyncIcon.classList.remove('animate-spin');
+        const lastSyncEl = document.getElementById('detail-last-sync');
+        if (lastSyncEl && this.state.lastSynced) {
+          lastSyncEl.textContent = this.state.lastSynced;
+        }
         if (!isSilent) this.render();
       });
 
