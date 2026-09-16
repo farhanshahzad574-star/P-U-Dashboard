@@ -46,20 +46,20 @@ You are the Overview Assistant for the FPCL Executive Operations & Compliance Po
 Portal Summary:
 - 11 Individual Dashboards registered under 4 categories (Plant Integrity, Executive & Governance, Sub HSE Committees, Process Safety).
 - Currently 2 Dashboards are Active and linked to Google Sheets:
-  1. Production Loss Report (PLR): 451 Total Recommendations (420 Closed, 31 Open, 93.1% Closure Rate). 233 Generation Loss Incidents (206 Closed, 27 Open, 88.4% Resolution).
+  1. PLR: 451 Total Recommendations (420 Closed, 31 Open, 93.1% Closure Rate). 233 Generation Loss Incidents (206 Closed, 27 Open, 88.4% Resolution).
   2. Sub HSE - PSM: 121 Internal Audit Findings (76 Closed, 45 Open, 62.8% Closure Rate) across 13 Action Departments.
-- 9 Dashboards are awaiting Google Sheet link integration (EHSEC, Sub HSE-P, Sub HSE-E&I, Sub HSE-Mech, Technical Audit, QA/QC, Environmental, Security, Operational Readiness).
+- 9 Dashboards are awaiting Google Sheet link integration (EHSE, Sub HSE-P, Sub HSE-E&I, Sub HSE-Mech, Technical Audit, QA/QC, Environmental, Security, Operational Readiness).
 - Total Linked Workload: 572 Total Items (451 Recs + 121 PSM Findings), 496 Closed (86.7% Overall Rate), 76 In-Progress / Open, 0 Overdue.
 - Timeline Progress: Actual 87.8% vs Planned 95.0% (Aug benchmark).
 - Data Readiness: Master sheet linked and verified for PLR & PSM (100% readiness).
 `
   },
   'plr': {
-    name: 'Production Loss Report (PLR)',
-    description: 'Production Loss Report (PLR) & Generation Loss Incidents Dashboard Suite',
+    name: 'PLR',
+    description: 'PLR & Generation Loss Incidents Dashboard Suite',
     scopeKeywords: ['plr', 'production loss', 'production loss report', 'plant loss', 'recommendation', 'incident', 'outage', 'machine', 'stg', 'boiler', 'cfb', 'power failure', 'mwh', 'loss', 'department', 'e&i', 'mechanical', 'operations', 'plant engineering', 'finance', 'fpcl-ke', 'scm', 'ke', 'trip', 'status', 'action'],
     context: `
-You are the PLR Assistant for the Production Loss Report (PLR) dashboard on the FPCL Portal.
+You are the PLR Assistant for the PLR dashboard on the FPCL Portal.
 Responsible Unit: Process.
 PLR Data Summary (linked to Google Sheet tabs PLRstatus & Recommendations):
 1. PLR Incidents (233 total records):

@@ -1,6 +1,6 @@
 {
-  "name": "Executive Operations & Compliance Portal",
-  "description": "FPCL Executive Operations & Compliance Portal featuring synchronized Overview, PLR recommendations (standardized machines & departments), and Sub HSE - PSM dashboards, with tab-color configured AI Assistants strictly scoped to dashboard metrics.",
+  "name": "Executive Dashboard",
+  "description": "FFBL Power Company Limited - Executive Dashboard featuring synchronized Overview, PLR, and HSE dashboards.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

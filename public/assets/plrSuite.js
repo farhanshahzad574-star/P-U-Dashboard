@@ -275,7 +275,6 @@
     if (window.DASHBOARD_REGISTRY) {
       const plrEntry = window.DASHBOARD_REGISTRY.find(d => d.id === 'plr');
       if (plrEntry) {
-        plrEntry.name = 'PLR recommendations';
         plrEntry.department = 'Process';
         plrEntry.description = dynamicDesc;
         plrEntry.kpis = { total, closed, inProgress: open, overdue: 0, compliance: rate };
@@ -288,9 +287,8 @@
     const ownerEl = document.getElementById('detail-owner');
     if (portalApp.state && portalApp.state.activeDashboardId === 'plr') {
       if (descEl) {
-        descEl.textContent = dynamicDesc;
-        descEl.style.display = '';
-        descEl.style.color = '#475569';
+        descEl.textContent = '';
+        descEl.style.display = 'none';
       }
       if (ownerEl) ownerEl.textContent = 'Process';
     }
@@ -737,25 +735,14 @@
    * Check if a raw Action Entity string matches a target entity filter
    * Accounts for any department mentioned in Column F
    */
-  /**
-   * Check if a raw Action Entity string matches a target entity filter
-   * Accounts for any department mentioned in Column F of Recommendations tab.
-   * Uses strict token equality to prevent cross-department false positives (e.g., E&I vs Finance or KE vs FPCL-KE O/C).
-   */
   function matchesActionEntity(rawActionBy, targetEntity) {
-    if (!targetEntity || targetEntity === 'all' || targetEntity === '') return true;
-    if (!rawActionBy) return false;
-
-    // Split and normalize target tokens (e.g., "E&I" -> ["E&I"])
-    const targetTokens = splitAndNormalizeActionEntities(String(targetEntity).trim());
-    if (targetTokens.length === 0) return true;
-
-    // Split and normalize row's Action By tokens from Column F
-    const rowTokens = splitAndNormalizeActionEntities(String(rawActionBy).trim());
-    if (rowTokens.length === 0) return false;
-
-    const lowerTargets = targetTokens.map(t => t.toLowerCase());
-    return rowTokens.some(r => lowerTargets.includes(r.toLowerCase()));
+    if (!targetEntity || targetEntity === 'all') return true;
+    const cleanTarget = normalizeActionEntity(targetEntity).toLowerCase();
+    const entities = splitAndNormalizeActionEntities(rawActionBy);
+    return entities.some(e => {
+      const el = e.toLowerCase();
+      return el === cleanTarget || cleanTarget.includes(el) || el.includes(cleanTarget);
+    });
   }
 
   /**
@@ -1008,9 +995,11 @@
         }
       }
 
-      // Dept filter: strictly based on Recommendations tab Column F (Action By)
+      // Dept filter
       if (s.selectedDept && s.selectedDept !== 'all') {
-        if (!matchesActionEntity(item.actionBy, s.selectedDept)) {
+        const itemMatches = matchesActionEntity(item.actionBy, s.selectedDept);
+        const parentMatches = parentPlr ? matchesActionEntity(parentPlr.dept, s.selectedDept) : false;
+        if (!itemMatches && !parentMatches) {
           return false;
         }
       }
@@ -1119,9 +1108,11 @@
         if (String(itemYear || '') !== String(s.selectedYear)) return false;
       }
 
-      // Resp Dept filter: strictly based on Recommendations tab Column F (Action By)
+      // Resp Dept filter (incident level)
       if (s.selectedDept && s.selectedDept !== 'all') {
-        if (!matchesActionEntity(item.actionBy, s.selectedDept)) return false;
+        const itemMatches = matchesActionEntity(item.actionBy, s.selectedDept);
+        const parentMatches = parentPlr ? matchesActionEntity(parentPlr.dept, s.selectedDept) : false;
+        if (!itemMatches && !parentMatches) return false;
       }
 
       // Machine filter
@@ -1327,12 +1318,33 @@
     const container = document.getElementById('plr-specialized-container');
     if (!container) return;
 
-    // Dynamically update the description below the upper Plant Loss Recommendations title
+    // Hide description below upper Plant Loss Recommendations title
     const descEl = document.getElementById('detail-description');
     if (descEl) {
-      descEl.textContent = portalApp.getPlrDynamicDescription();
-      descEl.style.display = '';
-      descEl.style.color = '#475569';
+      descEl.textContent = '';
+      descEl.style.display = 'none';
+    }
+
+    // Hide Google Sheet link connection card in PLR header
+    const connCard = document.getElementById('detail-connection-card');
+    if (connCard) {
+      connCard.classList.add('hidden');
+    }
+
+    // Keep green light and remove Active text in PLR header badge
+    const statusText = document.getElementById('detail-status-text');
+    if (statusText) {
+      statusText.textContent = '';
+      statusText.classList.add('hidden');
+    }
+    const statusBadge = document.getElementById('detail-status-badge');
+    if (statusBadge) {
+      statusBadge.className = 'inline-flex items-center justify-center p-1.5 rounded-full bg-emerald-50 border border-emerald-200 shadow-2xs';
+      statusBadge.title = 'Active';
+    }
+    const statusDot = document.getElementById('detail-status-dot');
+    if (statusDot) {
+      statusDot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.85)] animate-pulse';
     }
 
     const data = getFilteredPlrData();
@@ -1425,63 +1437,37 @@
         <!-- ========================================================================= -->
         <!-- EXECUTIVE FILTER SUITE (ATTACHED IMAGE FILTER CONTROLS)                   -->
         <!-- ========================================================================= -->
-        <div class="rounded-2xl p-4 sm:p-5 shadow-lg border relative overflow-hidden" style="background: linear-gradient(135deg, #091a32 0%, #0c2340 100%); border-color: #1e3a5f;">
+        <div class="rounded-2xl p-4 sm:p-5.5 shadow-lg border relative overflow-hidden" style="background: linear-gradient(135deg, #091a32 0%, #0c2340 100%); border-color: #1e3a5f;">
           <!-- Subtle ambient backdrop lighting -->
           <div class="absolute -right-20 -top-20 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
           <div class="absolute -left-20 -bottom-20 w-64 h-64 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
 
-          <!-- Top Filter Header / Status Row -->
-          <div class="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3.5 mb-3.5 border-b border-[#1e3e66]">
-            <div class="flex items-center gap-2.5">
-              <span class="p-1.5 rounded-lg bg-cyan-500/20 text-cyan-300 border border-cyan-400/30">
-                <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
-              </span>
-              <div>
-                <h4 class="text-xs sm:text-sm font-black text-white uppercase tracking-wider font-mono flex items-center gap-2">
-                  <span>Executive Filter Controls</span>
-                  <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-900/60 text-cyan-300 border border-cyan-500/30">
-                    PLR Dynamic Slicers
-                  </span>
-                </h4>
-                <p class="text-[11px] text-slate-300 font-medium">
-                  Direct cross-sheet filtering across Machine, Priority, Resp Dept, Year &amp; Action Entity
-                </p>
-              </div>
-            </div>
-            
-            <div class="flex items-center gap-2">
-              <span class="text-xs font-mono font-bold text-cyan-300 px-3 py-1 rounded-lg bg-[#0d2747] border border-[#1e4470] shadow-inner">
-                ${hasActiveFilters ? `${activeFilterCount} Active Filters (${totalPLRs} PLRs • ${totalRecs} Recs)` : `All Combined (${totalPLRs} PLRs • ${totalRecs} Recs)`}
-              </span>
-            </div>
-          </div>
-
-          <!-- The 5 Dropdown Filters + Reset Button Grid (Matching Attached Image) -->
-          <div class="relative z-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5 items-end">
+          <!-- The 5 Dropdown Filters + Reset Button Grid -->
+          <div class="relative z-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5 sm:gap-4 items-end">
             
             <!-- Filter 1: MACHINE (COL G) -->
-            <div class="space-y-1.5">
-              <div class="flex items-center gap-1.5 text-[11px] font-mono font-black text-cyan-300 uppercase tracking-wider">
-                <i data-lucide="cpu" class="w-3.5 h-3.5 text-cyan-400"></i>
+            <div class="space-y-1.5 sm:space-y-2">
+              <div class="flex items-center gap-1.5 text-xs sm:text-[13px] font-mono font-black text-cyan-300 uppercase tracking-wider">
+                <i data-lucide="cpu" class="w-4 h-4 text-cyan-400"></i>
                 <span>MACHINE (COL G)</span>
               </div>
               <select
                 onchange="portalApp.handlePlrMachineChange(this.value)"
-                class="w-full text-xs font-semibold px-3 py-2 rounded-xl border border-[#1e3e66] bg-[#0c2138] text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 cursor-pointer shadow-inner"
+                class="w-full text-xs sm:text-sm font-semibold px-3.5 py-2.5 rounded-xl border border-[#1e3e66] bg-[#0c2138] text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 cursor-pointer shadow-inner"
               >
                 ${renderMachineSelectOptions(s.selectedMachine)}
               </select>
             </div>
 
             <!-- Filter 2: PRIORITY (COL H) -->
-            <div class="space-y-1.5">
-              <div class="flex items-center gap-1.5 text-[11px] font-mono font-black text-rose-300 uppercase tracking-wider">
-                <i data-lucide="shield-alert" class="w-3.5 h-3.5 text-rose-400"></i>
+            <div class="space-y-1.5 sm:space-y-2">
+              <div class="flex items-center gap-1.5 text-xs sm:text-[13px] font-mono font-black text-rose-300 uppercase tracking-wider">
+                <i data-lucide="shield-alert" class="w-4 h-4 text-rose-400"></i>
                 <span>PRIORITY (COL H)</span>
               </div>
               <select
                 onchange="portalApp.handlePlrPriorityChange(this.value)"
-                class="w-full text-xs font-semibold px-3 py-2 rounded-xl border border-[#1e3e66] bg-[#0c2138] text-white focus:outline-none focus:border-rose-400 focus:ring-1 focus:ring-rose-400 cursor-pointer shadow-inner"
+                class="w-full text-xs sm:text-sm font-semibold px-3.5 py-2.5 rounded-xl border border-[#1e3e66] bg-[#0c2138] text-white focus:outline-none focus:border-rose-400 focus:ring-1 focus:ring-rose-400 cursor-pointer shadow-inner"
               >
                 <option value="all" ${s.selectedPriority === 'all' ? 'selected' : ''}>All Priorities</option>
                 <option value="Critical" ${s.selectedPriority === 'Critical' ? 'selected' : ''}>Critical Priority</option>
@@ -1492,28 +1478,28 @@
             </div>
 
             <!-- Filter 3: DEPARTMENT (COL F) -->
-            <div class="space-y-1.5">
-              <div class="flex items-center gap-1.5 text-[11px] font-mono font-black text-amber-300 uppercase tracking-wider">
-                <i data-lucide="briefcase" class="w-3.5 h-3.5 text-amber-400"></i>
+            <div class="space-y-1.5 sm:space-y-2">
+              <div class="flex items-center gap-1.5 text-xs sm:text-[13px] font-mono font-black text-amber-300 uppercase tracking-wider">
+                <i data-lucide="briefcase" class="w-4 h-4 text-amber-400"></i>
                 <span>DEPARTMENT (COL F)</span>
               </div>
               <select
                 onchange="portalApp.handlePlrDeptChange(this.value)"
-                class="w-full text-xs font-semibold px-3 py-2 rounded-xl border border-[#1e3e66] bg-[#0c2138] text-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 cursor-pointer shadow-inner"
+                class="w-full text-xs sm:text-sm font-semibold px-3.5 py-2.5 rounded-xl border border-[#1e3e66] bg-[#0c2138] text-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 cursor-pointer shadow-inner"
               >
                 ${renderActionEntitySelectOptions(s.selectedDept)}
               </select>
             </div>
 
             <!-- Filter 4: YEAR FILTER -->
-            <div class="space-y-1.5">
-              <div class="flex items-center gap-1.5 text-[11px] font-mono font-black text-indigo-300 uppercase tracking-wider">
-                <i data-lucide="calendar" class="w-3.5 h-3.5 text-indigo-400"></i>
+            <div class="space-y-1.5 sm:space-y-2">
+              <div class="flex items-center gap-1.5 text-xs sm:text-[13px] font-mono font-black text-indigo-300 uppercase tracking-wider">
+                <i data-lucide="calendar" class="w-4 h-4 text-indigo-400"></i>
                 <span>YEAR FILTER</span>
               </div>
               <select
                 onchange="portalApp.handlePlrYearChange(this.value)"
-                class="w-full text-xs font-semibold px-3 py-2 rounded-xl border border-[#1e3e66] bg-[#0c2138] text-white focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 cursor-pointer shadow-inner"
+                class="w-full text-xs sm:text-sm font-semibold px-3.5 py-2.5 rounded-xl border border-[#1e3e66] bg-[#0c2138] text-white focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 cursor-pointer shadow-inner"
               >
                 <option value="all" ${s.selectedYear === 'all' ? 'selected' : ''}>All Combined (2017–2025)</option>
                 <option value="2025" ${s.selectedYear === '2025' ? 'selected' : ''}>2025</option>
@@ -1529,30 +1515,30 @@
             </div>
 
             <!-- Filter 5: ACTION ENTITY -->
-            <div class="space-y-1.5">
-              <div class="flex items-center gap-1.5 text-[11px] font-mono font-black text-emerald-300 uppercase tracking-wider">
-                <i data-lucide="building-2" class="w-3.5 h-3.5 text-emerald-400"></i>
+            <div class="space-y-1.5 sm:space-y-2">
+              <div class="flex items-center gap-1.5 text-xs sm:text-[13px] font-mono font-black text-emerald-300 uppercase tracking-wider">
+                <i data-lucide="building-2" class="w-4 h-4 text-emerald-400"></i>
                 <span>ACTION ENTITY</span>
               </div>
               <select
                 onchange="portalApp.handlePlrEntityChange(this.value)"
-                class="w-full text-xs font-semibold px-3 py-2 rounded-xl border border-[#1e3e66] bg-[#0c2138] text-white focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 cursor-pointer shadow-inner"
+                class="w-full text-xs sm:text-sm font-semibold px-3.5 py-2.5 rounded-xl border border-[#1e3e66] bg-[#0c2138] text-white focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 cursor-pointer shadow-inner"
               >
                 ${renderActionEntitySelectOptions(s.selectedEntity)}
               </select>
             </div>
 
             <!-- Filter 6: Reset All Button -->
-            <div class="space-y-1.5">
-              <div class="text-[11px] font-mono font-black text-slate-400 uppercase tracking-wider invisible">
+            <div class="space-y-1.5 sm:space-y-2">
+              <div class="text-xs sm:text-[13px] font-mono font-black text-slate-400 uppercase tracking-wider invisible">
                 <span>ACTION</span>
               </div>
               <button
                 onclick="portalApp.resetAllPlrImageFilters()"
-                class="w-full flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl text-xs font-black text-white bg-[#132e4f] hover:bg-[#1a3d68] border border-[#254b77] hover:border-cyan-400 transition-all shadow-sm cursor-pointer"
+                class="w-full flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-black text-white bg-[#132e4f] hover:bg-[#1a3d68] border border-[#254b77] hover:border-cyan-400 transition-all shadow-sm cursor-pointer"
                 title="Reset all filters back to default"
               >
-                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5 text-cyan-300"></i>
+                <i data-lucide="rotate-ccw" class="w-4 h-4 text-cyan-300"></i>
                 <span>Reset All</span>
               </button>
             </div>
@@ -1569,25 +1555,18 @@
           <div
             data-plr-kpi="total-plrs"
             onclick="(window.portalApp || portalApp).openPlrKpiModal('total-plrs')"
-            class="bg-white border border-slate-200 hover:border-[#2E6DA4] hover:shadow-md hover:-translate-y-0.5 rounded-2xl p-4 sm:p-5 shadow-sm relative overflow-hidden group transition-all cursor-pointer"
+            class="bg-white border border-slate-200 hover:border-[#2E6DA4] hover:shadow-md hover:-translate-y-0.5 rounded-2xl p-5 sm:p-6 shadow-sm relative overflow-hidden group transition-all cursor-pointer flex flex-col justify-between"
             title="Click to view all ${totalPLRs} Plant Loss Reports in pop-up window"
           >
             <div class="flex items-center justify-between text-slate-500 text-xs sm:text-sm font-bold uppercase tracking-wider">
               <span>Total PLRs</span>
-              <span class="p-1.5 rounded-lg bg-blue-50 text-[#2E6DA4] border border-blue-100 group-hover:bg-blue-100 transition-colors">
-                <i data-lucide="file-text" class="w-4 h-4"></i>
+              <span class="p-2 rounded-xl bg-blue-50 text-[#2E6DA4] border border-blue-100 group-hover:bg-blue-100 transition-colors">
+                <i data-lucide="file-text" class="w-4 h-4 sm:w-5 sm:h-5"></i>
               </span>
             </div>
-            <div class="mt-3 mb-1.5 flex items-baseline gap-2">
+            <div class="mt-4 flex items-baseline justify-between gap-2">
               <span class="text-5xl sm:text-6xl font-black font-mono text-slate-900 tracking-tight kpi-metric-val">${totalPLRs}</span>
               <span class="text-xs sm:text-sm font-bold text-[#2E6DA4] font-mono">100%</span>
-            </div>
-            <div class="flex items-center justify-between text-xs sm:text-sm text-slate-500 mt-2">
-              <span>Historical Scope (2017–2025)</span>
-              <span class="font-bold text-[#2E6DA4] group-hover:underline flex items-center gap-1 cursor-pointer" onclick="event.stopPropagation(); (window.portalApp || portalApp).openPlrKpiModal('closed-plrs')" title="Click to view ${closedPLRs} Closed PLRs in pop-up window">
-                <span>${closedPLRs} Closed</span>
-                <i data-lucide="chevron-right" class="w-3.5 h-3.5 inline"></i>
-              </span>
             </div>
           </div>
 
@@ -1595,26 +1574,19 @@
           <div
             data-plr-kpi="open-plrs"
             onclick="(window.portalApp || portalApp).openPlrKpiModal('open-plrs')"
-            class="bg-white border border-rose-200 hover:border-rose-400 hover:shadow-md hover:-translate-y-0.5 rounded-2xl p-4 sm:p-5 shadow-sm relative overflow-hidden group transition-all cursor-pointer"
+            class="bg-white border border-rose-200 hover:border-rose-400 hover:shadow-md hover:-translate-y-0.5 rounded-2xl p-5 sm:p-6 shadow-sm relative overflow-hidden group transition-all cursor-pointer flex flex-col justify-between"
             title="Click to inspect all ${openPLRs} Open PLRs in pop-up window"
           >
             <div class="flex items-center justify-between text-slate-500 text-xs sm:text-sm font-bold uppercase tracking-wider">
               <span>Open PLRs</span>
-              <span class="p-1.5 rounded-lg bg-rose-50 text-rose-600 border border-rose-200 group-hover:bg-rose-100 transition-colors">
-                <i data-lucide="alert-circle" class="w-4 h-4"></i>
+              <span class="p-2 rounded-xl bg-rose-50 text-rose-600 border border-rose-200 group-hover:bg-rose-100 transition-colors">
+                <i data-lucide="alert-circle" class="w-4 h-4 sm:w-5 sm:h-5"></i>
               </span>
             </div>
-            <div class="mt-3 mb-1.5 flex items-baseline gap-2">
+            <div class="mt-4 flex items-baseline justify-between gap-2">
               <span class="text-5xl sm:text-6xl font-black font-mono text-rose-600 tracking-tight kpi-metric-val">${openPLRs}</span>
-              <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200">
+              <span class="px-2.5 py-0.5 rounded-full text-xs sm:text-sm font-bold bg-rose-50 text-rose-700 border border-rose-200 font-mono">
                 ${totalPLRs > 0 ? ((openPLRs / totalPLRs) * 100).toFixed(0) : 0}% of Total
-              </span>
-            </div>
-            <div class="flex items-center justify-between text-xs sm:text-sm text-slate-500 mt-2">
-              <span>Under Active Investigation</span>
-              <span class="font-bold text-rose-600 group-hover:underline flex items-center gap-1">
-                <span>Inspect in Pop-up</span>
-                <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
               </span>
             </div>
           </div>
@@ -1623,28 +1595,17 @@
           <div
             data-plr-kpi="total-recs"
             onclick="(window.portalApp || portalApp).openPlrKpiModal('total-recs')"
-            class="bg-white border border-slate-200 hover:border-blue-400 hover:shadow-md hover:-translate-y-0.5 rounded-2xl p-4 sm:p-5 shadow-sm relative overflow-hidden group transition-all cursor-pointer"
+            class="bg-white border border-slate-200 hover:border-blue-400 hover:shadow-md hover:-translate-y-0.5 rounded-2xl p-5 sm:p-6 shadow-sm relative overflow-hidden group transition-all cursor-pointer flex flex-col justify-between"
             title="Click to view all ${totalRecs} Recommendations in pop-up window"
           >
             <div class="flex items-center justify-between text-slate-500 text-xs sm:text-sm font-bold uppercase tracking-wider">
               <span>Total Recommendations</span>
-              <span class="p-1.5 rounded-lg bg-sky-50 text-sky-600 border border-sky-100 group-hover:bg-sky-100 transition-colors">
-                <i data-lucide="layers" class="w-4 h-4"></i>
+              <span class="p-2 rounded-xl bg-sky-50 text-sky-600 border border-sky-100 group-hover:bg-sky-100 transition-colors">
+                <i data-lucide="layers" class="w-4 h-4 sm:w-5 sm:h-5"></i>
               </span>
             </div>
-            <div class="mt-3 mb-1.5 flex items-baseline gap-2">
+            <div class="mt-4 flex items-baseline justify-between gap-2">
               <span class="text-5xl sm:text-6xl font-black font-mono text-slate-900 tracking-tight kpi-metric-val">${totalRecs}</span>
-              <span class="text-xs sm:text-sm font-bold text-[#2E6DA4] font-mono">16+ Entities</span>
-            </div>
-            <div class="flex items-center justify-between text-xs sm:text-sm text-slate-500 mt-2">
-              <span class="font-bold text-[#2E6DA4] group-hover:underline flex items-center gap-1 cursor-pointer" onclick="event.stopPropagation(); (window.portalApp || portalApp).openPlrKpiModal('closed-recs')" title="Click to view ${closedRecs} Closed Recommendations">
-                <span>${closedRecs} Closed (${recClosureRate}%)</span>
-                <i data-lucide="chevron-right" class="w-3.5 h-3.5 inline"></i>
-              </span>
-              <span class="font-bold text-[#2E6DA4] group-hover:underline flex items-center gap-1">
-                <span>Inspect in Pop-up</span>
-                <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
-              </span>
             </div>
           </div>
 
@@ -1652,26 +1613,19 @@
           <div
             data-plr-kpi="open-recs"
             onclick="(window.portalApp || portalApp).openPlrKpiModal('open-recs')"
-            class="bg-white border border-amber-200 hover:border-amber-400 hover:shadow-md hover:-translate-y-0.5 rounded-2xl p-4 sm:p-5 shadow-sm relative overflow-hidden group transition-all cursor-pointer"
+            class="bg-white border border-amber-200 hover:border-amber-400 hover:shadow-md hover:-translate-y-0.5 rounded-2xl p-5 sm:p-6 shadow-sm relative overflow-hidden group transition-all cursor-pointer flex flex-col justify-between"
             title="Click to view all ${openRecs} Open Recommendations in pop-up window"
           >
             <div class="flex items-center justify-between text-slate-500 text-xs sm:text-sm font-bold uppercase tracking-wider">
               <span>Open Recommendations</span>
-              <span class="p-1.5 rounded-lg bg-amber-50 text-amber-600 border border-amber-200 group-hover:bg-amber-100 transition-colors">
-                <i data-lucide="clock" class="w-4 h-4"></i>
+              <span class="p-2 rounded-xl bg-amber-50 text-amber-600 border border-amber-200 group-hover:bg-amber-100 transition-colors">
+                <i data-lucide="clock" class="w-4 h-4 sm:w-5 sm:h-5"></i>
               </span>
             </div>
-            <div class="mt-3 mb-1.5 flex items-baseline gap-2">
+            <div class="mt-4 flex items-baseline justify-between gap-2">
               <span class="text-5xl sm:text-6xl font-black font-mono text-amber-600 tracking-tight kpi-metric-val">${openRecs}</span>
-              <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200">
+              <span class="px-2.5 py-0.5 rounded-full text-xs sm:text-sm font-bold bg-amber-50 text-amber-800 border border-amber-200 font-mono">
                 ${totalRecs > 0 ? ((openRecs / totalRecs) * 100).toFixed(0) : 0}% Open Obs
-              </span>
-            </div>
-            <div class="flex items-center justify-between text-xs sm:text-sm text-slate-500 mt-2">
-              <span>Active Corrective Actions</span>
-              <span class="font-bold text-amber-700 group-hover:underline flex items-center gap-1">
-                <span>Inspect in Pop-up</span>
-                <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
               </span>
             </div>
           </div>
@@ -1714,7 +1668,6 @@
                         PLR Tab • Column G
                       </span>
                     </div>
-                    <p class="text-[11px] text-slate-500 mt-0.5">Outages across STG units, Boilers &amp; Auxiliary Equipment (from Column G of PLR tab)</p>
                   </div>
                 </div>
                 <span class="px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-[#1e40af] border border-blue-200 shrink-0">
@@ -1753,7 +1706,6 @@
                         ${isIncidents ? 'Column F Incident Status' : 'Recommendations Status'}
                       </span>
                     </div>
-                    <p class="text-[11px] text-slate-500 mt-0.5">Open (Action Pending) vs. Closed (Resolved) • Click pie or metrics to explore records</p>
                   </div>
                 </div>
                 <div class="flex items-center gap-2 shrink-0">
@@ -1840,7 +1792,6 @@
                   <h4 class="text-xs sm:text-sm font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
                     <span>OPEN VS. CLOSED FINDINGS BY RECOMMENDATIONS DEPARTMENT</span>
                   </h4>
-                  <p class="text-[11px] text-slate-500 mt-0.5">Click any bar or table row to open detailed data records • <span class="font-mono font-bold text-slate-700">${totalRecs}</span> Total Recommendations (<span class="text-emerald-700 font-mono font-bold">${closedRecs} Closed</span> • <span class="text-rose-600 font-mono font-bold">${openRecs} Open</span>)</p>
                 </div>
               </div>
               <div class="flex items-center gap-4 flex-wrap">
@@ -1921,9 +1872,6 @@
               </div>
               <div>
                 <h3 class="text-base font-black text-slate-900 uppercase tracking-wider">Plant Records &amp; Outage Log</h3>
-                <p class="text-xs text-slate-500 mt-0.5">
-                  ${s.activeTab === 'incidents' ? 'PLR Incident Investigation Rows (Tab: PLRStatus)' : 'Corrective Action Plan Rows (Tab: Recommendations)'}
-                </p>
               </div>
             </div>
 
@@ -3983,101 +3931,76 @@
    * Dedicated entry point for KPI cards click drill-down
    * Slices data precisely according to the clicked metric and inherits active dashboard filters
    */
-  let _lastKpiModalCallTime = 0;
-  let _lastKpiType = '';
   portalApp.openPlrKpiModal = function (kpiType) {
-    const now = Date.now();
-    if (kpiType === _lastKpiType && (now - _lastKpiModalCallTime) < 350) {
-      return;
-    }
-    _lastKpiModalCallTime = now;
-    _lastKpiType = kpiType;
-
     const s = getPlrState();
-    const filteredIncidents = getFilteredPlrData();
-    const filteredRecs = getFilteredPlrRecs();
+    const rawData = getPlrData();
+    const rawRecs = getPlrRecs();
 
-    // Summary description of active filters for clear modal headers
-    const activeFilterDesc = [];
-    if (s.selectedMachine && s.selectedMachine !== 'all') activeFilterDesc.push(`Machine: ${s.selectedMachine}`);
-    if (s.selectedPriority && s.selectedPriority !== 'all') activeFilterDesc.push(`Priority: ${s.selectedPriority}`);
-    if (s.selectedDept && s.selectedDept !== 'all') activeFilterDesc.push(`Dept: ${s.selectedDept}`);
-    if (s.selectedEntity && s.selectedEntity !== 'all') activeFilterDesc.push(`Entity: ${s.selectedEntity}`);
-    if (s.selectedYear && s.selectedYear !== 'all') activeFilterDesc.push(`Year: ${s.selectedYear}`);
-    if (s.searchQuery && s.searchQuery.trim()) activeFilterDesc.push(`Search: "${s.searchQuery.trim()}"`);
-    const filterContextSuffix = activeFilterDesc.length > 0
-      ? ` • Filtered by ${activeFilterDesc.join(', ')}`
-      : '';
+    // Inherit active filters from dashboard so drilldown matches the KPI card context
+    const activeMachine = s.selectedMachine !== 'all' ? s.selectedMachine : 'all';
+    const activePriority = s.selectedPriority !== 'all' ? s.selectedPriority : 'all';
+    const activeDept = s.selectedDept !== 'all' ? s.selectedDept : (s.selectedEntity !== 'all' ? s.selectedEntity : 'all');
+    const activeYear = s.selectedYear !== 'all' ? s.selectedYear : 'all';
 
     if (kpiType === 'total-plrs') {
-      const openCount = filteredIncidents.filter(d => (d.status || '').toLowerCase() === 'open').length;
-      const closedCount = filteredIncidents.length - openCount;
-      const closureRate = filteredIncidents.length > 0 ? Math.round((closedCount / filteredIncidents.length) * 100) : 0;
+      const openCount = rawData.filter(d => (d.status || '').toLowerCase() === 'open').length;
+      const closedCount = rawData.length - openCount;
+      const closureRate = rawData.length > 0 ? Math.round((closedCount / rawData.length) * 100) : 0;
       portalApp.openPlrDataModal({
         type: 'incidents',
         title: 'Total Plant Loss Reports (PLR Incident Log)',
-        badge: `${filteredIncidents.length} Filtered Incidents`,
-        subtitle: `Plant loss and outage reports (${filteredIncidents.length} total • ${closedCount} Closed [${closureRate}%], ${openCount} Open)${filterContextSuffix}`,
+        badge: `${rawData.length} Total Incidents`,
+        subtitle: `Complete historical plant loss and outage reports (2017–2025) across STG, Boilers & Auxiliaries • ${closedCount} Closed (${closureRate}%), ${openCount} Open`,
         filterStatus: 'all',
-        sourceRecords: filteredIncidents,
+        filterMachine: activeMachine,
+        filterPriority: activePriority,
+        filterDept: activeDept,
+        filterYear: activeYear,
         kpiSource: 'total-plrs'
       });
     } else if (kpiType === 'open-plrs') {
-      const openCount = filteredIncidents.filter(d => (d.status || '').toLowerCase() === 'open').length;
+      const openCount = rawData.filter(d => (d.status || '').toLowerCase() === 'open').length;
       portalApp.openPlrDataModal({
         type: 'incidents',
         title: 'Open Plant Loss Reports Under Active Investigation',
         badge: `${openCount} Open Incidents`,
-        subtitle: `Active plant outages undergoing root-cause investigation or corrective maintenance (${openCount} Open)${filterContextSuffix}`,
+        subtitle: 'Plant outages undergoing root-cause investigation, corrective maintenance, or pending closeout sign-off',
         filterStatus: 'Open',
-        sourceRecords: filteredIncidents,
+        filterMachine: activeMachine,
+        filterPriority: activePriority,
+        filterDept: activeDept,
+        filterYear: activeYear,
         kpiSource: 'open-plrs'
       });
-    } else if (kpiType === 'closed-plrs') {
-      const closedCount = filteredIncidents.filter(d => (d.status || '').toLowerCase() === 'closed').length;
-      portalApp.openPlrDataModal({
-        type: 'incidents',
-        title: 'Closed & Resolved Plant Loss Reports',
-        badge: `${closedCount} Closed Incidents`,
-        subtitle: `Resolved plant outage reports (${closedCount} Closed)${filterContextSuffix}`,
-        filterStatus: 'Closed',
-        sourceRecords: filteredIncidents,
-        kpiSource: 'closed-plrs'
-      });
     } else if (kpiType === 'total-recs') {
-      const openRecs = filteredRecs.filter(r => (r.status || '').toLowerCase() === 'open').length;
-      const closedRecs = filteredRecs.length - openRecs;
-      const closureRate = filteredRecs.length > 0 ? Math.round((closedRecs / filteredRecs.length) * 100) : 0;
+      const openRecs = rawRecs.filter(r => (r.status || '').toLowerCase() === 'open').length;
+      const closedRecs = rawRecs.length - openRecs;
+      const closureRate = rawRecs.length > 0 ? Math.round((closedRecs / rawRecs.length) * 100) : 0;
       portalApp.openPlrDataModal({
         type: 'recommendations',
         title: 'Total Corrective Action Recommendations',
-        badge: `${filteredRecs.length} Recommendations`,
-        subtitle: `Corrective action items (${filteredRecs.length} total • ${closedRecs} Closed [${closureRate}%], ${openRecs} Open)${filterContextSuffix}`,
+        badge: `${rawRecs.length} Total Recommendations`,
+        subtitle: `Corrective action items extracted across 14+ standardized Action Entities • ${closedRecs} Closed (${closureRate}%), ${openRecs} Open`,
         filterStatus: 'all',
-        sourceRecords: filteredRecs,
+        filterMachine: activeMachine,
+        filterPriority: activePriority,
+        filterDept: activeDept,
+        filterYear: activeYear,
         kpiSource: 'total-recs'
       });
     } else if (kpiType === 'open-recs') {
-      const openRecs = filteredRecs.filter(r => (r.status || '').toLowerCase() === 'open').length;
+      const openRecs = rawRecs.filter(r => (r.status || '').toLowerCase() === 'open').length;
       portalApp.openPlrDataModal({
         type: 'recommendations',
         title: 'Open Action Recommendations (Active Corrective Backlog)',
         badge: `${openRecs} Open Recommendations`,
-        subtitle: `Active corrective action items awaiting physical completion or engineering sign-off (${openRecs} Open)${filterContextSuffix}`,
+        subtitle: 'Active corrective action items awaiting physical completion or engineering sign-off',
         filterStatus: 'Open',
-        sourceRecords: filteredRecs,
+        filterMachine: activeMachine,
+        filterPriority: activePriority,
+        filterDept: activeDept,
+        filterYear: activeYear,
         kpiSource: 'open-recs'
-      });
-    } else if (kpiType === 'closed-recs') {
-      const closedRecs = filteredRecs.filter(r => (r.status || '').toLowerCase() === 'closed').length;
-      portalApp.openPlrDataModal({
-        type: 'recommendations',
-        title: 'Closed Action Recommendations (Resolved Items)',
-        badge: `${closedRecs} Closed Recommendations`,
-        subtitle: `Resolved and completed corrective action recommendations (${closedRecs} Closed)${filterContextSuffix}`,
-        filterStatus: 'Closed',
-        sourceRecords: filteredRecs,
-        kpiSource: 'closed-recs'
       });
     }
   };
@@ -4090,15 +4013,12 @@
     const subtitle = opts.subtitle || 'Detailed operational records';
     const filterStatus = opts.filterStatus || 'all'; // 'all', 'Open', 'Closed'
     const filterMachine = opts.filterMachine || 'all';
-    const filterDept = opts.filterDept || 'all';
-    const filterEntity = opts.filterEntity || 'all';
+    const filterDept = opts.filterDept || opts.filterEntity || 'all';
     const filterPriority = opts.filterPriority || 'all';
     const filterYear = opts.filterYear ? String(opts.filterYear).trim() : 'all';
 
     let allRecords = [];
-    if (opts.sourceRecords && Array.isArray(opts.sourceRecords)) {
-      allRecords = opts.sourceRecords;
-    } else if (type === 'incidents') {
+    if (type === 'incidents') {
       allRecords = getPlrData();
     } else {
       allRecords = getPlrRecs();
@@ -4111,7 +4031,6 @@
       subtitle,
       filterMachine,
       filterDept,
-      filterEntity,
       filterPriority,
       filterYear,
       activeStatusTab: filterStatus,
@@ -4157,14 +4076,6 @@
     const s = getPlrState();
     if (!s.activePlrModal) return;
     s.activePlrModal.filterDept = dept;
-    s.activePlrModal.filterEntity = 'all'; // Allow explicit department change to take precedence
-    portalApp.renderPlrDataModal();
-  };
-
-  portalApp.setPlrDataModalEntity = function (entity) {
-    const s = getPlrState();
-    if (!s.activePlrModal) return;
-    s.activePlrModal.filterEntity = entity;
     portalApp.renderPlrDataModal();
   };
 
@@ -4178,12 +4089,10 @@
   portalApp.resetPlrDataModalFilters = function () {
     const s = getPlrState();
     if (!s.activePlrModal) return;
-    s.activePlrModal.allRecords = s.activePlrModal.type === 'incidents' ? getPlrData() : getPlrRecs();
     s.activePlrModal.activeStatusTab = 'all';
     s.activePlrModal.filterMachine = 'all';
     s.activePlrModal.filterPriority = 'all';
     s.activePlrModal.filterDept = 'all';
-    s.activePlrModal.filterEntity = 'all';
     s.activePlrModal.filterYear = 'all';
     s.activePlrModal.searchQuery = '';
     portalApp.renderPlrDataModal();
@@ -4208,83 +4117,85 @@
     }
   };
 
-  /**
-   * Calculate all records matching Machine, Priority, Dept, Entity, Year & Search
-   * (Does NOT filter by activeStatusTab so count headers stay mathematically sound)
-   */
-  portalApp.getPlrModalScopedRecords = function () {
+  portalApp.getPlrModalFilteredRecords = function () {
     const s = getPlrState();
     if (!s.activePlrModal) return [];
     const m = s.activePlrModal;
-    const allRecords = m.allRecords || [];
+    let records = m.allRecords || [];
     const plrsMap = getPlrsMap();
-    const recsMap = getRecsMapByPlr();
-    const isIncidents = m.type === 'incidents';
 
-    return allRecords.filter(r => {
-      const parent = isIncidents ? null : plrsMap.get(String(r.plrNo).toUpperCase());
+    // 1. Filter by status tab (All, Open, Closed)
+    if (m.activeStatusTab && m.activeStatusTab !== 'all') {
+      const target = m.activeStatusTab.toLowerCase().trim();
+      records = records.filter(r => (r.status || '').toLowerCase().trim() === target);
+    }
 
-      // 1. Filter by machine
-      if (m.filterMachine && m.filterMachine !== 'all') {
-        const machineToTest = isIncidents ? r.machine : (parent ? parent.machine : '');
-        if (!matchesMachine(machineToTest, m.filterMachine)) return false;
+    // 2. Filter by machine
+    if (m.filterMachine && m.filterMachine !== 'all') {
+      if (m.type === 'incidents') {
+        records = records.filter(r => matchesMachine(r.machine, m.filterMachine));
+      } else {
+        records = records.filter(r => {
+          const parent = plrsMap.get(String(r.plrNo).toUpperCase());
+          return parent ? matchesMachine(parent.machine, m.filterMachine) : false;
+        });
       }
+    }
 
-      // 2. Filter by priority
-      if (m.filterPriority && m.filterPriority !== 'all') {
-        const priToTest = isIncidents ? r.priority : (parent ? parent.priority : '');
-        if ((priToTest || '').toLowerCase().trim() !== m.filterPriority.toLowerCase().trim()) return false;
+    // 3. Filter by priority (for incidents & recommendations linked to PLR)
+    if (m.filterPriority && m.filterPriority !== 'all') {
+      const targetPri = m.filterPriority.toLowerCase().trim();
+      if (m.type === 'incidents') {
+        records = records.filter(r => (r.priority || '').toLowerCase().trim() === targetPri);
+      } else {
+        records = records.filter(r => {
+          const parent = plrsMap.get(String(r.plrNo).toUpperCase());
+          return parent ? (parent.priority || '').toLowerCase().trim() === targetPri : false;
+        });
       }
+    }
 
-      // 3. Filter by department (Resp Dept / COL F)
-      if (m.filterDept && m.filterDept !== 'all') {
-        if (isIncidents) {
-          const linkedRecs = recsMap.get(String(r.plrNo || '').toUpperCase()) || [];
-          const match = matchesActionEntity(r.dept, m.filterDept) ||
-            linkedRecs.some(rec => matchesActionEntity(rec.actionBy, m.filterDept));
-          if (!match) return false;
-        } else {
-          const itemMatches = matchesActionEntity(r.actionBy, m.filterDept);
-          const parentMatches = parent ? matchesActionEntity(parent.dept, m.filterDept) : false;
-          if (!itemMatches && !parentMatches) return false;
+    // 4. Filter by department / entity
+    if (m.filterDept && m.filterDept !== 'all') {
+      if (m.type === 'incidents') {
+        records = records.filter(r => matchesActionEntity(r.dept, m.filterDept));
+      } else {
+        records = records.filter(r => matchesActionEntity(r.actionBy, m.filterDept));
+      }
+    }
+
+    // 5. Filter by year
+    if (m.filterYear && m.filterYear !== 'all') {
+      const targetYear = String(m.filterYear).trim();
+      records = records.filter(r => {
+        let yr = r.year;
+        if (!yr && m.type !== 'incidents') {
+          const parent = plrsMap.get(String(r.plrNo).toUpperCase());
+          if (parent) yr = parent.year;
         }
-      }
+        return String(yr || '').trim() === targetYear;
+      });
+    }
 
-      // 4. Filter by Action Entity
-      if (m.filterEntity && m.filterEntity !== 'all') {
-        if (isIncidents) {
-          const linkedRecs = recsMap.get(String(r.plrNo || '').toUpperCase()) || [];
-          const match = linkedRecs.some(rec => matchesActionEntity(rec.actionBy, m.filterEntity)) ||
-            matchesActionEntity(r.dept, m.filterEntity);
-          if (!match) return false;
-        } else {
-          if (!matchesActionEntity(r.actionBy, m.filterEntity)) return false;
-        }
-      }
-
-      // 5. Filter by year
-      if (m.filterYear && m.filterYear !== 'all') {
-        const yr = isIncidents ? r.year : (r.year || (parent ? parent.year : null));
-        if (String(yr || '').trim() !== String(m.filterYear).trim()) return false;
-      }
-
-      // 6. Filter by search query
-      if (m.searchQuery && m.searchQuery.trim()) {
-        const q = m.searchQuery.toLowerCase().trim();
-        if (isIncidents) {
-          const match =
-            String(r.plrNo || '').toLowerCase().includes(q) ||
-            String(r.incident || '').toLowerCase().includes(q) ||
-            String(r.machine || '').toLowerCase().includes(q) ||
-            String(r.dept || '').toLowerCase().includes(q) ||
-            String(r.priority || '').toLowerCase().includes(q) ||
-            String(r.status || '').toLowerCase().includes(q) ||
-            String(r.year || '').includes(q) ||
-            String(r.date || '').toLowerCase().includes(q);
-          if (!match) return false;
-        } else {
+    // 6. Filter by search query
+    if (m.searchQuery && m.searchQuery.trim()) {
+      const q = m.searchQuery.toLowerCase().trim();
+      if (m.type === 'incidents') {
+        records = records.filter(r =>
+          String(r.plrNo || '').toLowerCase().includes(q) ||
+          String(r.incident || '').toLowerCase().includes(q) ||
+          String(r.machine || '').toLowerCase().includes(q) ||
+          String(r.dept || '').toLowerCase().includes(q) ||
+          String(r.priority || '').toLowerCase().includes(q) ||
+          String(r.status || '').toLowerCase().includes(q) ||
+          String(r.year || '').includes(q) ||
+          String(r.date || '').toLowerCase().includes(q)
+        );
+      } else {
+        records = records.filter(r => {
+          const parent = plrsMap.get(String(r.plrNo).toUpperCase());
           const parentMachine = parent ? parent.machine : '';
-          const match =
+          return (
             String(r.plrNo || '').toLowerCase().includes(q) ||
             String(r.sNo || '').toLowerCase().includes(q) ||
             String(r.recommendation || '').toLowerCase().includes(q) ||
@@ -4292,31 +4203,13 @@
             String(parentMachine).toLowerCase().includes(q) ||
             String(r.status || '').toLowerCase().includes(q) ||
             String(r.year || '').includes(q) ||
-            String(r.date || '').toLowerCase().includes(q);
-          if (!match) return false;
-        }
+            String(r.date || '').toLowerCase().includes(q)
+          );
+        });
       }
-
-      return true;
-    });
-  };
-
-  /**
-   * Get final filtered records to display in modal table
-   * (Applies scoped filter + status tab)
-   */
-  portalApp.getPlrModalFilteredRecords = function () {
-    const s = getPlrState();
-    if (!s.activePlrModal) return [];
-    const m = s.activePlrModal;
-    const scopedRecords = portalApp.getPlrModalScopedRecords();
-
-    if (m.activeStatusTab && m.activeStatusTab !== 'all') {
-      const target = m.activeStatusTab.toLowerCase().trim();
-      return scopedRecords.filter(r => (r.status || '').toLowerCase().trim() === target);
     }
 
-    return scopedRecords;
+    return records;
   };
 
   portalApp.renderPlrDataModal = function (maintainFocus = false) {
@@ -4330,12 +4223,87 @@
       document.body.appendChild(container);
     }
 
-    const scopedRecords = portalApp.getPlrModalScopedRecords();
     const records = portalApp.getPlrModalFilteredRecords();
     const allRecords = m.allRecords || [];
     const plrsMap = getPlrsMap();
-    const recsMap = getRecsMapByPlr();
     const isIncidents = m.type === 'incidents';
+
+    // Compute dimensional records that match current Machine, Priority, Dept, Year and Search (independent of status tab)
+    let scopedRecords = allRecords;
+
+    if (m.filterMachine && m.filterMachine !== 'all') {
+      if (isIncidents) {
+        scopedRecords = scopedRecords.filter(r => matchesMachine(r.machine, m.filterMachine));
+      } else {
+        scopedRecords = scopedRecords.filter(r => {
+          const parent = plrsMap.get(String(r.plrNo).toUpperCase());
+          return parent ? matchesMachine(parent.machine, m.filterMachine) : false;
+        });
+      }
+    }
+
+    if (m.filterPriority && m.filterPriority !== 'all') {
+      const targetPri = m.filterPriority.toLowerCase().trim();
+      if (isIncidents) {
+        scopedRecords = scopedRecords.filter(r => (r.priority || '').toLowerCase().trim() === targetPri);
+      } else {
+        scopedRecords = scopedRecords.filter(r => {
+          const parent = plrsMap.get(String(r.plrNo).toUpperCase());
+          return parent ? (parent.priority || '').toLowerCase().trim() === targetPri : false;
+        });
+      }
+    }
+
+    if (m.filterDept && m.filterDept !== 'all') {
+      if (isIncidents) {
+        scopedRecords = scopedRecords.filter(r => matchesActionEntity(r.dept, m.filterDept));
+      } else {
+        scopedRecords = scopedRecords.filter(r => matchesActionEntity(r.actionBy, m.filterDept));
+      }
+    }
+
+    if (m.filterYear && m.filterYear !== 'all') {
+      const targetYear = String(m.filterYear).trim();
+      scopedRecords = scopedRecords.filter(r => {
+        let yr = r.year;
+        if (!yr && !isIncidents) {
+          const parent = plrsMap.get(String(r.plrNo).toUpperCase());
+          if (parent) yr = parent.year;
+        }
+        return String(yr || '').trim() === targetYear;
+      });
+    }
+
+    if (m.searchQuery && m.searchQuery.trim()) {
+      const q = m.searchQuery.toLowerCase().trim();
+      if (isIncidents) {
+        scopedRecords = scopedRecords.filter(r =>
+          String(r.plrNo || '').toLowerCase().includes(q) ||
+          String(r.incident || '').toLowerCase().includes(q) ||
+          String(r.machine || '').toLowerCase().includes(q) ||
+          String(r.dept || '').toLowerCase().includes(q) ||
+          String(r.priority || '').toLowerCase().includes(q) ||
+          String(r.status || '').toLowerCase().includes(q) ||
+          String(r.year || '').includes(q) ||
+          String(r.date || '').toLowerCase().includes(q)
+        );
+      } else {
+        scopedRecords = scopedRecords.filter(r => {
+          const parent = plrsMap.get(String(r.plrNo).toUpperCase());
+          const parentMachine = parent ? parent.machine : '';
+          return (
+            String(r.plrNo || '').toLowerCase().includes(q) ||
+            String(r.sNo || '').toLowerCase().includes(q) ||
+            String(r.recommendation || '').toLowerCase().includes(q) ||
+            String(r.actionBy || '').toLowerCase().includes(q) ||
+            String(parentMachine).toLowerCase().includes(q) ||
+            String(r.status || '').toLowerCase().includes(q) ||
+            String(r.year || '').includes(q) ||
+            String(r.date || '').toLowerCase().includes(q)
+          );
+        });
+      }
+    }
 
     const totalCount = scopedRecords.length;
     const openCount = scopedRecords.filter(r => (r.status || '').toLowerCase().trim() === 'open').length;
@@ -4384,12 +4352,7 @@
       { id: 'all', label: `All Departments (${allRecords.length})` },
       ...baseDepts.map(deptName => {
         const count = allRecords.filter(r => {
-          if (isIncidents) {
-            const linked = recsMap.get(String(r.plrNo).toUpperCase()) || [];
-            return matchesActionEntity(r.dept, deptName) || linked.some(rec => matchesActionEntity(rec.actionBy, deptName));
-          } else {
-            return matchesActionEntity(r.actionBy, deptName);
-          }
+          return matchesActionEntity(isIncidents ? r.dept : r.actionBy, deptName);
         }).length;
         return { id: deptName, label: `${deptName} (${count})` };
       }).filter(d => d.id === 'all' || d.label.includes('('))
@@ -4444,12 +4407,6 @@
       activeFilters.push({
         label: `Dept: ${m.filterDept}`,
         clearCode: "portalApp.setPlrDataModalDept('all')"
-      });
-    }
-    if (m.filterEntity && m.filterEntity !== 'all') {
-      activeFilters.push({
-        label: `Entity: ${m.filterEntity}`,
-        clearCode: "portalApp.setPlrDataModalEntity('all')"
       });
     }
     if (m.filterPriority && m.filterPriority !== 'all') {
@@ -4588,11 +4545,11 @@
               <div>
                 <select
                   onchange="portalApp.setPlrDataModalDept(this.value)"
-                  class="w-full text-xs py-1.5 px-2 rounded-lg border ${(m.filterDept !== 'all' || m.filterEntity !== 'all') ? 'border-[#2E6DA4] bg-blue-50/60 font-bold text-[#1e40af]' : 'border-slate-300 bg-slate-50 text-slate-700'} focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#2E6DA4] transition-colors cursor-pointer"
+                  class="w-full text-xs py-1.5 px-2 rounded-lg border ${m.filterDept !== 'all' ? 'border-[#2E6DA4] bg-blue-50/60 font-bold text-[#1e40af]' : 'border-slate-300 bg-slate-50 text-slate-700'} focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#2E6DA4] transition-colors cursor-pointer"
                   title="Filter by Department / Action Entity"
                 >
                   ${availableDepts.map(opt => `
-                    <option value="${opt.id}" ${(m.filterDept === opt.id || (m.filterDept === 'all' && m.filterEntity === opt.id)) ? 'selected' : ''}>${opt.label}</option>
+                    <option value="${opt.id}" ${m.filterDept === opt.id ? 'selected' : ''}>${opt.label}</option>
                   `).join('')}
                 </select>
               </div>
@@ -5119,7 +5076,7 @@
         ];
         csv += row.join(',') + '\n';
       });
-      filename = 'FPCL_PLR_Recommendations_534.csv';
+      filename = 'FPCL_PLR_Recommendations_451.csv';
     }
 
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -6315,7 +6272,7 @@
    * Reset PLR Recommendations to Baseline
    */
   portalApp.resetPlrRecommendationsToBaseline = function () {
-    if (!confirm('Are you sure you want to reset recommendations to the original 534 records? Any manual additions or edits will be reverted.')) {
+    if (!confirm('Are you sure you want to reset recommendations to the original 451 records? Any manual additions or edits will be reverted.')) {
       return;
     }
 
@@ -6327,7 +6284,7 @@
     portalApp.closeActionModal();
     portalApp.saveAndReflectRecChanges(
       'Baseline Restored',
-      'Original 534 recommendations restored and reflected across the portal.'
+      'Original 451 recommendations restored and reflected across the portal.'
     );
   };
 
@@ -6354,7 +6311,7 @@
    * Reset All PLR Datasets to Baseline
    */
   portalApp.resetAllPlrToBaseline = function () {
-    if (!confirm('Reset BOTH Recommendations (534 records) and Incident Outages (233 records) back to authentic baseline?')) {
+    if (!confirm('Reset BOTH Recommendations (451 records) and Incident Outages (233 records) back to authentic baseline?')) {
       return;
     }
 
