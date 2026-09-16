@@ -1637,24 +1637,9 @@
         </div>
 
         <!-- ========================================================================= -->
-        <!-- 3. VISUAL DIAGNOSTICS & OUTAGE ANALYTICS (Non-scrollable, Cover Page Area)  -->
+        <!-- 3. MACHINE BREAKDOWN & RECOMMENDATIONS RESOLUTION (Non-scrollable, Cover Page Area)  -->
         <!-- ========================================================================= -->
         <div class="space-y-5">
-          <!-- Section Header -->
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1">
-            <div class="flex items-center gap-2.5 flex-wrap">
-              <span class="w-2.5 h-2.5 rounded-full bg-[#2E6DA4]"></span>
-              <h3 class="text-sm sm:text-base font-black tracking-wider text-slate-900 uppercase">
-                Visual Diagnostics &amp; Outage Analytics
-              </h3>
-              <span class="px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-[#2E6DA4] border border-blue-200 flex items-center gap-1.5">
-                <i data-lucide="mouse-pointer" class="w-3 h-3"></i>
-                Interactive Boardroom Analytics: Hover &amp; Click Any Element
-              </span>
-            </div>
-            <span class="text-xs font-medium text-slate-500">Plant-Wide Historical Scope: ${totalPLRs} Outages (${closedPLRs} Closed • ${openPLRs} Open)</span>
-          </div>
-
           <!-- Row 1: Machine Breakdown & Overall recommendations Resolution (Balanced 2-Col Layout) -->
           <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
             
@@ -1686,10 +1671,6 @@
 
               <!-- Quick Select Buttons (Non-scrollable, fully visible covering page area) -->
               <div class="pt-3 border-t border-slate-100">
-                <div class="flex items-center justify-between text-xs font-bold text-slate-600 mb-2">
-                  <span>Filter by Asset / Machine:</span>
-                  <span class="text-[11px] font-normal text-slate-400">Click to isolate records</span>
-                </div>
                 <div class="flex flex-wrap items-center gap-2" id="plr-machine-quick-select">
                   <!-- Rendered dynamically -->
                 </div>
@@ -1704,12 +1685,7 @@
                     <i data-lucide="pie-chart" class="w-5 h-5"></i>
                   </div>
                   <div>
-                    <div class="flex items-center gap-2 flex-wrap">
-                      <h4 class="text-xs sm:text-sm font-extrabold text-slate-900 tracking-wide uppercase">Overall recommendations Resolution</h4>
-                      <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-slate-100 text-slate-600 border border-slate-200">
-                        ${isIncidents ? 'Column F Incident Status' : 'Recommendations Status'}
-                      </span>
-                    </div>
+                    <h4 class="text-xs sm:text-sm font-extrabold text-slate-900 tracking-wide uppercase">Overall recommendations Resolution</h4>
                   </div>
                 </div>
                 <div class="flex items-center gap-2 shrink-0">
@@ -1739,17 +1715,13 @@
 
               <!-- Resolution Metrics & Quick Actions (Non-scrollable, fully visible covering page area) -->
               <div class="pt-3 border-t border-slate-100 space-y-3">
-                <div class="flex items-center justify-between text-xs">
-                  <span class="font-bold text-slate-700">Resolution Ratio: <strong data-plr-action="resolution-modal" data-status="Closed" class="text-[#047857] font-sans font-extrabold cursor-pointer hover:underline" onclick="(window.portalApp || portalApp).openResolutionDataModal('Closed')">${resClosureRate}% Closed (${resClosedCount}/${resTotalCount})</strong></span>
-                  <span class="text-xs text-slate-500 font-medium">Pending: <strong data-plr-action="resolution-modal" data-status="Open" class="text-[#B91C1C] font-sans font-extrabold cursor-pointer hover:underline" onclick="(window.portalApp || portalApp).openResolutionDataModal('Open')">${100 - resClosureRate}% Open (${resOpenCount})</strong></span>
-                </div>
                 <!-- Closure Progress Bar with Darker Corporate Tones (Interactive) -->
-                <div class="w-full h-3 rounded-full bg-slate-100 overflow-hidden flex cursor-pointer shadow-inner" title="Click green for Closed records, red for Open records">
+                <div class="w-full h-3.5 rounded-full bg-slate-100 overflow-hidden flex cursor-pointer shadow-inner" title="${resClosureRate}% Closed (${resClosedCount}), ${100 - resClosureRate}% Open (${resOpenCount}) - Click green for Closed records, red for Open records">
                   <div data-plr-action="resolution-modal" data-status="Closed" class="h-full bg-[#047857] hover:brightness-110 transition-all" style="width: ${resClosureRate}%;" onclick="(window.portalApp || portalApp).openResolutionDataModal('Closed')"></div>
                   <div data-plr-action="resolution-modal" data-status="Open" class="h-full bg-[#B91C1C] hover:brightness-110 transition-all" style="width: ${100 - resClosureRate}%;" onclick="(window.portalApp || portalApp).openResolutionDataModal('Open')"></div>
                 </div>
                 <!-- Action Buttons Filter & Inspect -->
-                <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
+                <div class="flex flex-wrap items-center justify-between gap-2 pt-0.5">
                   <div class="flex items-center gap-2">
                     <button
                       data-plr-action="resolution-modal"
@@ -1810,21 +1782,20 @@
                     <span class="text-slate-600">Closed Findings</span>
                   </span>
                 </div>
-                <!-- Live Sheet Sync Button & Modal Trigger -->
-                <div class="flex items-center gap-1.5">
+                <!-- Google Sheet Sync & Config Modal Triggers -->
+                <div class="flex items-center gap-1">
                   <button
                     type="button"
                     onclick="portalApp.refreshFromLiveSheet()"
-                    class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-200 transition-colors inline-flex items-center gap-1.5 cursor-pointer shadow-xs"
+                    class="p-1.5 rounded-lg text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-colors inline-flex items-center justify-center cursor-pointer shadow-xs"
                     title="Sync live status and rows directly from Google Sheet tab Recommendations"
                   >
-                    <i data-lucide="refresh-cw" class="w-3 h-3 text-emerald-600"></i>
-                    <span>Live Sheet Sync</span>
+                    <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-emerald-600"></i>
                   </button>
                   <button
                     type="button"
                     onclick="portalApp.openPlrSheetSyncModal()"
-                    class="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 border border-transparent hover:border-slate-200 transition-colors cursor-pointer"
+                    class="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 border border-transparent hover:border-slate-200 transition-colors cursor-pointer"
                     title="Configure Google Sheet URL & Integration"
                   >
                     <i data-lucide="settings" class="w-3.5 h-3.5"></i>
@@ -2043,10 +2014,15 @@
     const nameEl = document.getElementById('plr-donut-center-name');
     const countEl = document.getElementById('plr-donut-center-count');
     const pctEl = document.getElementById('plr-donut-center-pct');
+    const dotEl = document.getElementById('plr-donut-center-dot');
 
-    if (nameEl) nameEl.textContent = m.name;
+    if (nameEl) {
+      nameEl.textContent = m.name;
+      nameEl.title = m.name;
+    }
     if (countEl) countEl.textContent = String(m.count);
     if (pctEl) pctEl.textContent = `${m.pct}% of Total Outages`;
+    if (dotEl) dotEl.style.backgroundColor = m.color;
 
     // Show rich tooltip
     const totalRecords = getPlrData().length || 233;
@@ -2081,14 +2057,19 @@
     }
 
     // Restore center text
-    const activeMachine = machines.find(m => m.name === s.selectedMachine) || machines[0] || { name: 'STG # 4', count: 154, pct: 66 };
+    const activeMachine = machines.find(m => m.name === s.selectedMachine) || machines[0] || { name: 'STG # 4', count: 154, pct: 66, color: '#1e40af' };
     const nameEl = document.getElementById('plr-donut-center-name');
     const countEl = document.getElementById('plr-donut-center-count');
     const pctEl = document.getElementById('plr-donut-center-pct');
+    const dotEl = document.getElementById('plr-donut-center-dot');
 
-    if (nameEl) nameEl.textContent = activeMachine.name;
+    if (nameEl) {
+      nameEl.textContent = activeMachine.name;
+      nameEl.title = activeMachine.name;
+    }
     if (countEl) countEl.textContent = String(activeMachine.count);
     if (pctEl) pctEl.textContent = `${activeMachine.pct}% of Total Outages`;
+    if (dotEl) dotEl.style.backgroundColor = activeMachine.color || '#1e40af';
   };
 
   /**
@@ -2211,10 +2192,10 @@
       `);
     });
 
-    const activeMachine = machines.find(m => m.name === s.selectedMachine) || machines[0] || { name: 'STG # 4', count: 154, pct: 66 };
+    const activeMachine = machines.find(m => m.name === s.selectedMachine) || machines[0] || { name: 'STG # 4', count: 154, pct: 66, color: '#1e40af' };
     const escapedActiveMachine = activeMachine.name.replace(/'/g, "\\'");
 
-    // Center div is sized to diameter 184px (radius 92px) inside the 216px inner hole.
+    // Center interactive circle is sized to diameter 196px (radius 98px) inside the 216px inner hole.
     // This strictly prevents the center overlay from covering or intercepting clicks on the donut slices!
     container.innerHTML = `
       <div class="relative w-[300px] h-[300px] sm:w-[320px] sm:h-[320px] max-w-full aspect-square flex items-center justify-center">
@@ -2226,16 +2207,26 @@
         <div
           data-plr-action="donut-center"
           onclick="(window.portalApp || portalApp).onCenterDonutClick()"
-          onmouseenter="portalApp.showTooltip(event, { title: '${escapedActiveMachine}', badge: 'Active Asset View', color: '#1e40af', subtitle: 'Incident Outages Explorer', metrics: [{ label: 'Selected Outages', value: '${activeMachine.count}' }, { label: 'Share', value: '${activeMachine.pct}%' }], hint: 'Click to open matching investigation records' })"
+          onmouseenter="portalApp.showTooltip(event, { title: '${escapedActiveMachine}', badge: 'Active Asset View', color: '${activeMachine.color || '#1e40af'}', subtitle: 'Incident Outages Explorer', metrics: [{ label: 'Selected Outages', value: '${activeMachine.count}' }, { label: 'Share', value: '${activeMachine.pct}%' }], hint: 'Click to open matching investigation records' })"
           onmousemove="portalApp.moveTooltip(event)"
           onmouseleave="portalApp.hideTooltip()"
-          class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[184px] h-[184px] rounded-full flex flex-col items-center justify-center cursor-pointer text-center p-3 font-sans hover:bg-slate-50/85 transition-all group z-10"
+          class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[196px] h-[196px] rounded-full flex flex-col items-center justify-center cursor-pointer text-center px-2.5 py-2 font-sans bg-white/95 hover:bg-slate-50 transition-all duration-150 group z-10 select-none shadow-[inset_0_1px_3px_rgba(0,0,0,0.03)]"
           title="Click to view outage records for ${activeMachine.name}"
         >
-          <span id="plr-donut-center-name" class="text-xs font-extrabold text-slate-600 uppercase tracking-wider leading-tight font-sans group-hover:text-[#1e40af] transition-colors truncate max-w-[150px]">${activeMachine.name}</span>
+          <!-- Machine Name Badge (fitted cleanly into upper circular chord) -->
+          <div id="plr-donut-center-badge" class="flex items-center justify-center gap-1.5 px-3 py-1 rounded-full bg-slate-100/95 border border-slate-200/90 max-w-[164px] shadow-2xs group-hover:bg-blue-50/80 group-hover:border-blue-200 transition-all">
+            <span id="plr-donut-center-dot" class="w-2 h-2 rounded-full shrink-0 transition-colors" style="background-color: ${activeMachine.color || '#1e40af'}"></span>
+            <span id="plr-donut-center-name" class="text-[11px] sm:text-xs font-black text-slate-800 uppercase tracking-wide truncate max-w-[130px] leading-none group-hover:text-[#1e40af] transition-colors" title="${activeMachine.name}">${activeMachine.name}</span>
+          </div>
+
+          <!-- Outages Count in center -->
           <span id="plr-donut-center-count" class="text-4xl sm:text-[42px] font-black text-slate-900 tracking-tight leading-none my-1 font-sans group-hover:scale-105 transition-transform">${activeMachine.count}</span>
-          <span id="plr-donut-center-pct" class="text-xs font-bold text-slate-600 font-sans tracking-tight">${activeMachine.pct}% of Total Outages</span>
-          <span class="text-[10px] font-extrabold text-[#1e40af] opacity-0 group-hover:opacity-100 transition-opacity mt-1 flex items-center gap-0.5">
+
+          <!-- Outage Share Subtitle (fitted on single line with whitespace-nowrap) -->
+          <span id="plr-donut-center-pct" class="text-[11.5px] font-bold text-slate-600 font-sans tracking-tight whitespace-nowrap leading-none">${activeMachine.pct}% of Total Outages</span>
+
+          <!-- Interactive inspect action hint -->
+          <span class="text-[9.5px] font-extrabold text-[#1e40af] opacity-0 group-hover:opacity-100 transition-opacity mt-1 flex items-center gap-0.5 leading-none">
             <span>Inspect records</span>
             <i data-lucide="arrow-up-right" class="w-2.5 h-2.5"></i>
           </span>
@@ -2287,6 +2278,10 @@
           Clear Filter
         </button>
       ` : '');
+    }
+
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons();
     }
   };
 
@@ -2719,9 +2714,9 @@
     const closedPct = ((closed / total) * 100).toFixed(1);
     const openPct = ((open / total) * 100).toFixed(1);
 
-    const r = 96;
-    const cx = 130;
-    const cy = 130;
+    const r = 140;
+    const cx = 160;
+    const cy = 160;
 
     const closedAngle = (closed / total) * 2 * Math.PI;
     const startAngle = -Math.PI / 2;
@@ -2732,13 +2727,16 @@
     const x2 = cx + r * Math.cos(endClosed);
     const y2 = cy + r * Math.sin(endClosed);
 
-    const dClosed = `M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 1 1 ${x2} ${y2} Z`;
-    const dOpen = `M ${cx} ${cy} L ${x2} ${y2} A ${r} ${r} 0 0 1 ${x1} ${y1} Z`;
+    const largeArcClosed = closedAngle > Math.PI ? 1 : 0;
+    const largeArcOpen = (2 * Math.PI - closedAngle) > Math.PI ? 1 : 0;
+
+    const dClosed = `M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${largeArcClosed} 1 ${x2} ${y2} Z`;
+    const dOpen = `M ${cx} ${cy} L ${x2} ${y2} A ${r} ${r} 0 ${largeArcOpen} 1 ${x1} ${y1} Z`;
 
     // Midpoints for labels
     const midClosed = startAngle + closedAngle / 2;
-    const lxClosed = cx + (r * 0.52) * Math.cos(midClosed);
-    const lyClosed = cy + (r * 0.52) * Math.sin(midClosed);
+    const lxClosed = cx + (r * 0.54) * Math.cos(midClosed);
+    const lyClosed = cy + (r * 0.54) * Math.sin(midClosed);
 
     const midOpen = endClosed + ((2 * Math.PI - closedAngle) / 2);
     const lxOpen = cx + (r * 0.72) * Math.cos(midOpen);
@@ -2751,8 +2749,8 @@
     const labelNoun = isIncidents ? 'Outages' : 'Recs';
 
     container.innerHTML = `
-      <div class="relative w-[260px] h-[260px]">
-        <svg viewBox="0 0 260 260" class="w-full h-full select-none filter drop-shadow-sm">
+      <div class="relative w-[300px] h-[300px] sm:w-[320px] sm:h-[320px] max-w-full aspect-square flex items-center justify-center">
+        <svg viewBox="0 0 320 320" class="w-full h-full select-none filter drop-shadow-sm">
           <defs>
             <filter id="plrTextShadow" x="-20%" y="-20%" width="140%" height="140%">
               <feDropShadow dx="0" dy="1" stdDeviation="1.5" flood-color="#000000" flood-opacity="0.45"/>
@@ -2788,15 +2786,15 @@
           </path>
 
           <!-- Clean White Slices Divider Lines -->
-          <line x1="${cx}" y1="${cy}" x2="${x1}" y2="${y1}" stroke="#ffffff" stroke-width="2.5"/>
-          <line x1="${cx}" y1="${cy}" x2="${x2}" y2="${y2}" stroke="#ffffff" stroke-width="2.5"/>
+          <line x1="${cx}" y1="${cy}" x2="${x1}" y2="${y1}" stroke="#ffffff" stroke-width="3"/>
+          <line x1="${cx}" y1="${cy}" x2="${x2}" y2="${y2}" stroke="#ffffff" stroke-width="3"/>
           
           <!-- Closed slice labels -->
           <text
             x="${lxClosed}"
-            y="${lyClosed - 6}"
+            y="${lyClosed - 8}"
             fill="#ffffff"
-            font-size="24"
+            font-size="30"
             font-weight="900"
             font-family="'Plus Jakarta Sans', system-ui, sans-serif"
             text-anchor="middle"
@@ -2805,9 +2803,9 @@
           >${closed}</text>
           <text
             x="${lxClosed}"
-            y="${lyClosed + 12}"
+            y="${lyClosed + 16}"
             fill="#E2E8F0"
-            font-size="13"
+            font-size="15"
             font-weight="700"
             font-family="'Plus Jakarta Sans', system-ui, sans-serif"
             text-anchor="middle"
@@ -2818,9 +2816,9 @@
           <!-- Open slice labels -->
           <text
             x="${lxOpen}"
-            y="${lyOpen - 5}"
+            y="${lyOpen - 6}"
             fill="#ffffff"
-            font-size="19"
+            font-size="20"
             font-weight="900"
             font-family="'Plus Jakarta Sans', system-ui, sans-serif"
             text-anchor="middle"
@@ -2829,9 +2827,9 @@
           >${open}</text>
           <text
             x="${lxOpen}"
-            y="${lyOpen + 11}"
+            y="${lyOpen + 12}"
             fill="#FEE2E2"
-            font-size="11.5"
+            font-size="12"
             font-weight="700"
             font-family="'Plus Jakarta Sans', system-ui, sans-serif"
             text-anchor="middle"
