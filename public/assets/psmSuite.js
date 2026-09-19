@@ -133,6 +133,21 @@
           psmEntry.punchList = { open, closed, total, rate };
           psmEntry.statusComment = `${total} audit observations tracked across ${depts.size} Action Departments (${closed} Closed, ${open} Open, ${rate} Closure Rate).`;
         }
+
+        const valEntry = window.DASHBOARD_REGISTRY.find(d => d.id === 'psm-validation');
+        if (valEntry) {
+          const valRaw = (typeof this.getRawValidationData === 'function') ? this.getRawValidationData() : (window.FPCL_PSM_VALIDATION_DATA || []);
+          if (valRaw && valRaw.length > 0) {
+            const vTotal = valRaw.length;
+            const vPassed = valRaw.filter(i => (i.status || '').toLowerCase() === 'pass').length;
+            const vFailed = valRaw.filter(i => (i.status || '').toLowerCase() === 'fail').length;
+            const vPending = vTotal - vPassed - vFailed;
+            const vRate = vTotal > 0 ? ((vPassed / vTotal) * 100).toFixed(1) + '%' : '0.0%';
+            valEntry.kpis = { total: vTotal, closed: vPassed, inProgress: vPending, overdue: 0, compliance: vRate };
+            valEntry.punchList = { open: vPending, closed: vPassed, total: vTotal, rate: vRate };
+            valEntry.statusComment = `${vTotal} personnel tracked in PSM Validation (${vPassed} Passed, ${vPending} Pending, ${vRate} Qualification Rate).`;
+          }
+        }
       }
 
       if (window.portalApp) {
@@ -414,6 +429,14 @@
     // Switch between PSM Audits and PSM Validation sub-dashboards
     setSubDashboard(tab) {
       this.state.activeSubDashboard = tab === 'validation' ? 'validation' : 'audits';
+
+      if (window.portalApp && window.portalApp.state) {
+        window.portalApp.state.activeDashboardId = (tab === 'validation') ? 'psm-validation' : 'sub-hse-psm';
+        document.body.setAttribute('data-active-dashboard', window.portalApp.state.activeDashboardId);
+        if (typeof window.portalApp.renderNavMenu === 'function') {
+          window.portalApp.renderNavMenu();
+        }
+      }
 
       const headerCard = document.getElementById('detail-header-card');
       const breadcrumbEl = document.getElementById('breadcrumb-active-name');
@@ -789,9 +812,7 @@
             } catch (e) {}
 
             vs.lastSynced = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            if (window.portalApp && typeof window.portalApp.renderComparisonChart === 'function') {
-              window.portalApp.renderComparisonChart();
-            }
+            this.syncPsmStatsToOverview();
             if (!silent && window.portalApp && window.portalApp.showToast) {
               window.portalApp.showToast(
                 'Live Sheet Synced',
