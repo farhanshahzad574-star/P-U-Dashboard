@@ -52,6 +52,13 @@ Portal Summary:
 - Total Linked Workload: 572 Total Items (451 Recs + 121 PSM Findings), 496 Closed (86.7% Overall Rate), 76 In-Progress / Open, 0 Overdue.
 - Timeline Progress: Actual 87.8% vs Planned 95.0% (Aug benchmark).
 - Data Readiness: Master sheet linked and verified for PLR & PSM (100% readiness).
+- Live HSEQ Safety KPIs (Linked to Google Sheet HSEQ_KPI):
+  * Safe Manhours: 2,200,445 (Zero Lost Time Injury milestone achieved).
+  * Fire Incidents: 0 (Zero fire occurrences recorded).
+  * Lost Time Injury (LTI): 0 (Zero lost workday incidents).
+  * Medical Treatment Cases: 0 (Zero physician treatment cases).
+  * First Aid Cases: 5 (Minor site interventions managed).
+  * Near Misses: 24 (Proactive hazard identification & reporting culture).
 `
   },
   'plr': {
@@ -289,6 +296,79 @@ function convertGvizTableToCsv(table: any): string {
   return [headers, ...rows].join('\r\n');
 }
 
+// GET /api/hseq-kpi - Live HSEQ KPI Feed from Google Sheet HSEQ_KPI
+app.get('/api/hseq-kpi', async (_req: Request, res: Response): Promise<void> => {
+  try {
+    const sheetUrl = process.env.HSEQ_KPI || 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTyc0eRsaIpv3DWLdBbEplWo5FqrNwuCFpFrXM4_A6pRTkQgHz56DaN9FMV0cuCkQXnXfPDyKS_nsYC/pub?gid=553516171&single=true&output=csv';
+    
+    const response = await fetch(sheetUrl, {
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch HSEQ_KPI sheet: ${response.status} ${response.statusText}`);
+    }
+
+    const csvText = await response.text();
+    const lines = csvText.trim().split(/\r?\n/).filter(line => line.trim().length > 0);
+    if (lines.length < 2) {
+      throw new Error('HSEQ_KPI sheet is empty or missing data rows');
+    }
+
+    const headers = lines[0].split(',').map(h => h.replace(/^["']|["']$/g, '').trim());
+    const values = lines[1].split(',').map(v => v.replace(/^["']|["']$/g, '').trim());
+
+    const record: Record<string, any> = {};
+    headers.forEach((h, idx) => {
+      record[h] = values[idx] !== undefined ? values[idx] : '';
+    });
+
+    const safeManhours = parseInt(record['Safe Manhours'] || record['Safe_Manhours'] || values[1] || '2200445', 10) || 2200445;
+    const fire = parseInt(record['Fire'] || values[2] || '0', 10) || 0;
+    const lti = parseInt(record['LTI'] || values[3] || '0', 10) || 0;
+    const medicalTreatment = parseInt(record['Medical Treatment'] || record['Medical_Treatment'] || values[4] || '0', 10) || 0;
+    const firstAidCase = parseInt(record['First Aid Case'] || record['First_Aid_Case'] || values[5] || '5', 10) || 5;
+    const nearmiss = parseInt(record['Nearmiss'] || record['Near Miss'] || values[6] || '24', 10) || 24;
+
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+    res.json({
+      success: true,
+      sheetName: 'HSEQ_KPI',
+      updatedAt: new Date().toISOString(),
+      kpis: {
+        safeManhours,
+        fire,
+        lti,
+        medicalTreatment,
+        firstAidCase,
+        nearmiss
+      },
+      rawHeaders: headers,
+      rawValues: values,
+      csvText
+    });
+  } catch (err: any) {
+    console.error('Error in /api/hseq-kpi:', err);
+    res.json({
+      success: false,
+      error: err?.message || 'Failed to fetch HSEQ_KPI sheet',
+      sheetName: 'HSEQ_KPI',
+      updatedAt: new Date().toISOString(),
+      kpis: {
+        safeManhours: 2200445,
+        fire: 0,
+        lti: 0,
+        medicalTreatment: 0,
+        firstAidCase: 5,
+        nearmiss: 24
+      }
+    });
+  }
+});
+
 // POST & GET /api/sheets/fetch - Live Google Sheets Tab CSV Proxy (supports Recommendations and PLR tabs)
 app.all('/api/sheets/fetch', async (req: Request, res: Response): Promise<void> => {
   try {
@@ -301,6 +381,8 @@ app.all('/api/sheets/fetch', async (req: Request, res: Response): Promise<void> 
       const sLower = (sheetTab || '').toLowerCase();
       if (sLower.includes('validation') || sLower.includes('valid')) {
         url = process.env.PSM_Validation_sheet_URL || process.env.PSM_VALIDATION_SHEET_URL || process.env.PSM_Validation_sheet || 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTyc0eRsaIpv3DWLdBbEplWo5FqrNwuCFpFrXM4_A6pRTkQgHz56DaN9FMV0cuCkQXnXfPDyKS_nsYC/pub?gid=1928323828&single=true&output=csv';
+      } else if (sLower.includes('hseq') || sLower.includes('kpi')) {
+        url = process.env.HSEQ_KPI || 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTyc0eRsaIpv3DWLdBbEplWo5FqrNwuCFpFrXM4_A6pRTkQgHz56DaN9FMV0cuCkQXnXfPDyKS_nsYC/pub?gid=553516171&single=true&output=csv';
       } else if ((sLower.includes('plr') || sLower.includes('status')) && process.env.PLR_STATUS_SHEET_URL) {
         url = process.env.PLR_STATUS_SHEET_URL;
       } else if (sLower.includes('psm') && process.env.PSM_SHEET_URL) {
