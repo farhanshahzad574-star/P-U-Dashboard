@@ -70,7 +70,8 @@ window.parseValidationCSV = function(csvText) {
       status: String(r[8] || '').trim(),
       module: String(r[9] || '').trim(),
       endUserRemarks: String(r[10] || '').trim(),
-      safetyRemarks: String(r[11] || '').trim()
+      safetyRemarks: String(r[11] || '').trim(),
+      openClose: String(r[12] || (String(r[8] || '').trim().toLowerCase() === 'pass' ? 'Close' : 'Open')).trim()
     });
   }
   return records;
@@ -3564,3 +3565,12 @@ window.FPCL_PSM_VALIDATION_DATA = [
     "safetyRemarks": ""
   }
 ];
+
+// Ensure openClose is populated on all static validation records (Column M / Open Close point)
+if (Array.isArray(window.FPCL_PSM_VALIDATION_DATA)) {
+  window.FPCL_PSM_VALIDATION_DATA.forEach(r => {
+    if (!r.openClose) {
+      r.openClose = (r.status || '').toLowerCase() === 'pass' ? 'Close' : 'Open';
+    }
+  });
+}

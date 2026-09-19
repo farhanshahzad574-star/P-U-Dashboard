@@ -417,7 +417,7 @@
         line-height: 1.1 !important;
       }
       .donut-center-val {
-        font-size: 1.55rem !important;
+        font-size: 2.1rem !important;
         font-weight: 900 !important;
         line-height: 1 !important;
       }
@@ -683,37 +683,85 @@
               <!-- Dynamically populated via portalApp.renderNavMenu() -->
             </div>
 
-            <!-- Top Search Bar (In line with dashboard menu) -->
-            <div class="relative w-44 sm:w-52 lg:w-60 shrink-0">
-              <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-slate-400">
-                <i data-lucide="search" class="w-3.5 h-3.5"></i>
+            <!-- Top Search Bar (In line with dashboard menu, same size as dashboard buttons) -->
+            <div class="relative w-40 sm:w-48 lg:w-56 shrink-0">
+              <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none text-slate-400">
+                <i data-lucide="search" class="w-3 h-3"></i>
               </div>
               <input
                 id="search-input"
                 type="text"
                 placeholder="Search dashboards..."
-                class="w-full pl-8 pr-8 py-1.5 bg-slate-50 hover:bg-white focus:bg-white border border-slate-300 rounded-lg text-xs text-[#2B2E33] placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2E6DA4] focus:border-transparent transition-all shadow-2xs"
+                class="w-full pl-7 pr-7 py-1 bg-slate-50 hover:bg-white focus:bg-white border border-slate-300 rounded-[7px] text-[11px] font-medium text-[#2B2E33] placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2E6DA4] focus:border-transparent transition-all shadow-2xs leading-tight"
                 oninput="portalApp.handleSearch(this.value)"
               />
-              <div class="absolute inset-y-0 right-0 pr-2 flex items-center gap-1">
+              <div class="absolute inset-y-0 right-0 pr-1.5 flex items-center gap-1">
                 <button
                   id="btn-clear-search"
                   onclick="portalApp.clearSearch()"
                   class="hidden p-0.5 text-slate-400 hover:text-slate-600 rounded transition-colors cursor-pointer"
                   title="Clear search"
                 >
-                  <i data-lucide="x" class="w-3 h-3"></i>
+                  <i data-lucide="x" class="w-2.5 h-2.5"></i>
                 </button>
-                <span class="hidden sm:inline-block px-1 py-0.2 text-[9px] font-mono text-slate-400 bg-white border border-slate-200 rounded">
+                <span class="hidden sm:inline-block px-1 py-0.2 text-[8px] font-mono text-slate-400 bg-white border border-slate-200 rounded">
                   /
                 </span>
               </div>
             </div>
 
-            <!-- Header Quick Actions: Sync Registry in line with Search Bar -->
+            <!-- External Enterprise Portals: Colorful Buttons in line with Search Bar -->
+            <div id="overview-quick-links-bar" class="flex flex-wrap items-center gap-1.5 shrink-0 pl-1 sm:pl-2 sm:border-l sm:border-slate-200">
+              <!-- 1. FFC Apps -->
+              <a
+                id="link-btn-ffc-apps"
+                href="https://pqapps.ffc.com.pk/staff-login"
+                target="_blank"
+                rel="noopener noreferrer"
+                onclick="event.stopPropagation();"
+                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[7px] text-[11px] font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 border border-emerald-500/40 shadow-2xs hover:shadow-xs transition-all cursor-pointer whitespace-nowrap select-none"
+                title="FFC Apps • https://pqapps.ffc.com.pk/staff-login"
+              >
+                <i data-lucide="layout-grid" class="w-3 h-3 text-white shrink-0"></i>
+                <span>FFC Apps</span>
+                <i data-lucide="external-link" class="w-2.5 h-2.5 text-emerald-100/90 shrink-0"></i>
+              </a>
+
+              <!-- 2. Travel requests -->
+              <a
+                id="link-btn-travel-requests"
+                href="https://prd.optimus-ffg.org:44380/sap/bc/ui2/flp?sap-client=900&amp;sap-language=EN#TravelRequest-manageByTraveler&amp;/TravelRequest(PersonnelNumber='0',TravelTripNumber='0',TravelReqUUID=guid'67480ef3-842c-1fe1-aba2-8fcc5ebc5fee',IsActiveEntity=false)/?sap-iapp-state=TASQZ77DR3G7LNPEVQ4TSFBVMOS0V7FBDCDC3ZXJW&amp;sap-iapp-state--history=TASLXJKGZQ1H5GFO6WQ7IXLRYWF0H7DEOPY998353"
+                target="_blank"
+                rel="noopener noreferrer"
+                onclick="event.stopPropagation();"
+                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[7px] text-[11px] font-bold text-white bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:from-amber-600 hover:via-orange-600 hover:to-rose-600 border border-orange-500/40 shadow-2xs hover:shadow-xs transition-all cursor-pointer whitespace-nowrap select-none"
+                title="Travel requests • SAP Traveler Management Portal"
+              >
+                <i data-lucide="plane" class="w-3 h-3 text-white shrink-0"></i>
+                <span>Travel requests</span>
+                <i data-lucide="external-link" class="w-2.5 h-2.5 text-amber-100/90 shrink-0"></i>
+              </a>
+
+              <!-- 3. Netweaver -->
+              <a
+                id="link-btn-netweaver"
+                href="https://ffcportal.ffc.com.pk/irj/portal#Shell-home"
+                target="_blank"
+                rel="noopener noreferrer"
+                onclick="event.stopPropagation();"
+                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[7px] text-[11px] font-bold text-white bg-gradient-to-r from-indigo-600 via-purple-600 to-violet-600 hover:from-indigo-700 hover:via-purple-700 hover:to-violet-700 border border-indigo-500/40 shadow-2xs hover:shadow-xs transition-all cursor-pointer whitespace-nowrap select-none"
+                title="Netweaver • https://ffcportal.ffc.com.pk/irj/portal#Shell-home"
+              >
+                <i data-lucide="globe" class="w-3 h-3 text-white shrink-0"></i>
+                <span>Netweaver</span>
+                <i data-lucide="external-link" class="w-2.5 h-2.5 text-indigo-100/90 shrink-0"></i>
+              </a>
+            </div>
+
+            <!-- Header Quick Actions: Sync Registry in line with Search Bar (same size as dashboard buttons) -->
             <div class="flex items-center shrink-0 gap-2 pl-1 sm:pl-2 sm:border-l sm:border-slate-200">
-              <button id="btn-refresh-portal" onclick="portalApp.refreshPortalData()" class="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 hover:border-slate-400 transition-colors shadow-2xs cursor-pointer" title="Sync & refresh dashboard registry">
-                <i data-lucide="refresh-cw" class="w-4 h-4 text-slate-600"></i>
+              <button id="btn-refresh-portal" onclick="portalApp.refreshPortalData()" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[7px] text-[11px] font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 hover:border-slate-400 transition-colors shadow-2xs cursor-pointer" title="Sync & refresh dashboard registry">
+                <i data-lucide="refresh-cw" class="w-3 h-3 text-slate-600"></i>
                 <span class="hidden sm:inline">Sync Registry</span>
               </button>
             </div>
@@ -769,100 +817,100 @@
             </div>
           </div>
 
-          <!-- 6 Colorful Professional KPI Cards -->
+          <!-- 6 Colorful Professional KPI Cards (Center Aligned) -->
           <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
             
             <!-- 1. Safe Manhours (Emerald / Green) -->
-            <div class="card-hover-effect relative overflow-hidden rounded-xl border border-emerald-200/90 bg-gradient-to-b from-emerald-50/70 via-white to-emerald-50/30 p-3.5 sm:p-4 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between min-h-[120px] sm:min-h-[135px]">
+            <div class="card-hover-effect relative overflow-hidden rounded-xl border border-emerald-200/90 bg-gradient-to-b from-emerald-50/70 via-white to-emerald-50/30 p-3.5 sm:p-4 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between items-center text-center min-h-[120px] sm:min-h-[135px]">
               <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-500 to-teal-500"></div>
-              <div class="flex items-start justify-between gap-2">
-                <span class="text-[11px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider font-mono">Safe Manhours</span>
-                <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 shadow-2xs border border-emerald-200">
+              <div class="flex items-center justify-center gap-2 w-full text-center">
+                <div class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 shadow-2xs border border-emerald-200">
                   <i data-lucide="shield-check" class="w-4 h-4"></i>
                 </div>
+                <span class="text-[11px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider font-mono text-center">Safe Manhours</span>
               </div>
-              <div class="pt-2 sm:pt-3 pb-1 flex flex-col justify-center min-w-0 w-full overflow-hidden">
-                <div id="kpi-val-safe-manhours" class="text-2xl sm:text-3xl lg:text-[1.7rem] xl:text-[2.1rem] 2xl:text-[2.4rem] font-black font-mono tracking-tighter text-emerald-800 leading-none whitespace-nowrap" title="Safe Manhours">
+              <div class="pt-2 sm:pt-3 pb-1 flex flex-col justify-center items-center text-center min-w-0 w-full overflow-hidden">
+                <div id="kpi-val-safe-manhours" class="text-2xl sm:text-3xl lg:text-[1.7rem] xl:text-[2.1rem] 2xl:text-[2.4rem] font-black font-mono tracking-tighter text-emerald-800 leading-none whitespace-nowrap text-center" title="Safe Manhours">
                   2,200,445
                 </div>
               </div>
             </div>
 
             <!-- 2. Fire Incidents (Rose / Coral) -->
-            <div class="card-hover-effect relative overflow-hidden rounded-xl border border-rose-200/90 bg-gradient-to-b from-rose-50/70 via-white to-orange-50/20 p-3.5 sm:p-4 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between min-h-[120px] sm:min-h-[135px]">
+            <div class="card-hover-effect relative overflow-hidden rounded-xl border border-rose-200/90 bg-gradient-to-b from-rose-50/70 via-white to-orange-50/20 p-3.5 sm:p-4 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between items-center text-center min-h-[120px] sm:min-h-[135px]">
               <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-rose-500 to-red-500"></div>
-              <div class="flex items-start justify-between gap-2">
-                <span class="text-[11px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider font-mono">Fire</span>
-                <div class="w-8 h-8 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center shrink-0 shadow-2xs border border-rose-200">
+              <div class="flex items-center justify-center gap-2 w-full text-center">
+                <div class="w-7 h-7 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center shrink-0 shadow-2xs border border-rose-200">
                   <i data-lucide="flame" class="w-4 h-4"></i>
                 </div>
+                <span class="text-[11px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider font-mono text-center">Fire</span>
               </div>
-              <div class="pt-2 sm:pt-3 pb-1 flex flex-col justify-center">
-                <div id="kpi-val-fire" class="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-black font-mono tracking-tight text-rose-700 leading-none">
+              <div class="pt-2 sm:pt-3 pb-1 flex flex-col justify-center items-center text-center">
+                <div id="kpi-val-fire" class="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-black font-mono tracking-tight text-rose-700 leading-none text-center">
                   0
                 </div>
               </div>
             </div>
 
             <!-- 3. Lost Time Injury (LTI) (Royal Blue / Indigo) -->
-            <div class="card-hover-effect relative overflow-hidden rounded-xl border border-indigo-200/90 bg-gradient-to-b from-indigo-50/70 via-white to-blue-50/20 p-3.5 sm:p-4 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between min-h-[120px] sm:min-h-[135px]">
+            <div class="card-hover-effect relative overflow-hidden rounded-xl border border-indigo-200/90 bg-gradient-to-b from-indigo-50/70 via-white to-blue-50/20 p-3.5 sm:p-4 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between items-center text-center min-h-[120px] sm:min-h-[135px]">
               <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-indigo-500 to-blue-600"></div>
-              <div class="flex items-start justify-between gap-2">
-                <span class="text-[11px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider font-mono">LTI</span>
-                <div class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center shrink-0 shadow-2xs border border-indigo-200">
+              <div class="flex items-center justify-center gap-2 w-full text-center">
+                <div class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center shrink-0 shadow-2xs border border-indigo-200">
                   <i data-lucide="activity" class="w-4 h-4"></i>
                 </div>
+                <span class="text-[11px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider font-mono text-center">LTI</span>
               </div>
-              <div class="pt-2 sm:pt-3 pb-1 flex flex-col justify-center">
-                <div id="kpi-val-lti" class="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-black font-mono tracking-tight text-indigo-800 leading-none">
+              <div class="pt-2 sm:pt-3 pb-1 flex flex-col justify-center items-center text-center">
+                <div id="kpi-val-lti" class="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-black font-mono tracking-tight text-indigo-800 leading-none text-center">
                   0
                 </div>
               </div>
             </div>
 
             <!-- 4. Medical Treatment (Violet / Purple) -->
-            <div class="card-hover-effect relative overflow-hidden rounded-xl border border-purple-200/90 bg-gradient-to-b from-purple-50/70 via-white to-violet-50/20 p-3.5 sm:p-4 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between min-h-[120px] sm:min-h-[135px]">
+            <div class="card-hover-effect relative overflow-hidden rounded-xl border border-purple-200/90 bg-gradient-to-b from-purple-50/70 via-white to-violet-50/20 p-3.5 sm:p-4 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between items-center text-center min-h-[120px] sm:min-h-[135px]">
               <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-purple-500 to-violet-600"></div>
-              <div class="flex items-start justify-between gap-2">
-                <span class="text-[11px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider font-mono">Medical Treatment</span>
-                <div class="w-8 h-8 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center shrink-0 shadow-2xs border border-purple-200">
+              <div class="flex items-center justify-center gap-2 w-full text-center">
+                <div class="w-7 h-7 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center shrink-0 shadow-2xs border border-purple-200">
                   <i data-lucide="stethoscope" class="w-4 h-4"></i>
                 </div>
+                <span class="text-[11px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider font-mono text-center">Medical Treatment</span>
               </div>
-              <div class="pt-2 sm:pt-3 pb-1 flex flex-col justify-center">
-                <div id="kpi-val-medical" class="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-black font-mono tracking-tight text-purple-800 leading-none">
+              <div class="pt-2 sm:pt-3 pb-1 flex flex-col justify-center items-center text-center">
+                <div id="kpi-val-medical" class="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-black font-mono tracking-tight text-purple-800 leading-none text-center">
                   0
                 </div>
               </div>
             </div>
 
             <!-- 5. First Aid Case (Amber / Orange) -->
-            <div class="card-hover-effect relative overflow-hidden rounded-xl border border-amber-200/90 bg-gradient-to-b from-amber-50/70 via-white to-yellow-50/20 p-3.5 sm:p-4 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between min-h-[120px] sm:min-h-[135px]">
+            <div class="card-hover-effect relative overflow-hidden rounded-xl border border-amber-200/90 bg-gradient-to-b from-amber-50/70 via-white to-yellow-50/20 p-3.5 sm:p-4 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between items-center text-center min-h-[120px] sm:min-h-[135px]">
               <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-500 to-orange-500"></div>
-              <div class="flex items-start justify-between gap-2">
-                <span class="text-[11px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider font-mono">First Aid Case</span>
-                <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center shrink-0 shadow-2xs border border-amber-200">
+              <div class="flex items-center justify-center gap-2 w-full text-center">
+                <div class="w-7 h-7 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center shrink-0 shadow-2xs border border-amber-200">
                   <i data-lucide="bandage" class="w-4 h-4"></i>
                 </div>
+                <span class="text-[11px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider font-mono text-center">First Aid Case</span>
               </div>
-              <div class="pt-2 sm:pt-3 pb-1 flex flex-col justify-center">
-                <div id="kpi-val-first-aid" class="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-black font-mono tracking-tight text-amber-800 leading-none">
+              <div class="pt-2 sm:pt-3 pb-1 flex flex-col justify-center items-center text-center">
+                <div id="kpi-val-first-aid" class="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-black font-mono tracking-tight text-amber-800 leading-none text-center">
                   5
                 </div>
               </div>
             </div>
 
             <!-- 6. Nearmiss (Sky / Cyan) -->
-            <div class="card-hover-effect relative overflow-hidden rounded-xl border border-sky-200/90 bg-gradient-to-b from-sky-50/70 via-white to-cyan-50/20 p-3.5 sm:p-4 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between min-h-[120px] sm:min-h-[135px]">
+            <div class="card-hover-effect relative overflow-hidden rounded-xl border border-sky-200/90 bg-gradient-to-b from-sky-50/70 via-white to-cyan-50/20 p-3.5 sm:p-4 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between items-center text-center min-h-[120px] sm:min-h-[135px]">
               <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-sky-500 to-cyan-600"></div>
-              <div class="flex items-start justify-between gap-2">
-                <span class="text-[11px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider font-mono">Nearmiss</span>
-                <div class="w-8 h-8 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center shrink-0 shadow-2xs border border-sky-200">
+              <div class="flex items-center justify-center gap-2 w-full text-center">
+                <div class="w-7 h-7 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center shrink-0 shadow-2xs border border-sky-200">
                   <i data-lucide="alert-triangle" class="w-4 h-4"></i>
                 </div>
+                <span class="text-[11px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider font-mono text-center">Nearmiss</span>
               </div>
-              <div class="pt-2 sm:pt-3 pb-1 flex flex-col justify-center">
-                <div id="kpi-val-nearmiss" class="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-black font-mono tracking-tight text-sky-800 leading-none">
+              <div class="pt-2 sm:pt-3 pb-1 flex flex-col justify-center items-center text-center">
+                <div id="kpi-val-nearmiss" class="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-black font-mono tracking-tight text-sky-800 leading-none text-center">
                   24
                 </div>
               </div>
@@ -872,13 +920,13 @@
         </div>
 
         <!-- ========================================================================= -->
-        <!-- PROGRESS COMPARISON Status (Expanded Full-Width Bar Chart)                -->
+        <!-- PROGRESS COMPARISON STATUS (Expanded Full-Width Bar Chart)                -->
         <!-- ========================================================================= -->
         <div class="bg-gradient-to-b from-white to-slate-50/90 border border-slate-200/90 rounded-2xl p-5 sm:p-6 shadow-xs space-y-3">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-2.5 border-b border-slate-100 gap-2">
             <div>
               <h3 class="text-sm sm:text-base font-black text-[#1E293B] tracking-wide flex items-center gap-2">
-                <span class="text-lg">📊</span> PROGRESS COMPARISON Status
+                <span class="text-lg">📊</span> PROGRESS COMPARISON STATUS
               </h3>
             </div>
             <div class="flex flex-wrap items-center gap-2 text-xs font-mono font-bold">
@@ -899,6 +947,150 @@
           <!-- Interactive SVG Bar Chart Container -->
           <div id="comparison-chart-container" class="w-full overflow-hidden min-h-[300px]">
             <!-- Dynamically populated by portalApp.renderComparisonChart() -->
+          </div>
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- CROSS-DASHBOARD OVERVIEW FILTERS: DEPARTMENT & OPEN/CLOSE STATUS          -->
+        <!-- Positioned below PROGRESS COMPARISON STATUS, applies to all summary cards -->
+        <!-- ========================================================================= -->
+        <div
+          id="overview-cross-filters-bar"
+          class="bg-white/95 backdrop-blur-sm border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-xs mb-6 transition-all duration-300 relative overflow-hidden"
+        >
+          <!-- Top Accent Line -->
+          <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 via-indigo-600 to-teal-500"></div>
+
+          <!-- Filter Controls & Actions Row (In the same line) -->
+          <div class="flex flex-col lg:flex-row lg:items-end gap-3.5 sm:gap-4">
+            <!-- Filter 1: Department Selector -->
+            <div class="flex-1 min-w-[220px] space-y-1.5">
+              <label for="overview-department-select" class="text-xs font-extrabold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                <i data-lucide="building-2" class="w-3.5 h-3.5 text-blue-600"></i>
+                <span>Filter by Department</span>
+              </label>
+
+              <div class="relative">
+                <select
+                  id="overview-department-select"
+                  onchange="portalApp.handleOverviewDeptFilter(this.value)"
+                  class="w-full pl-3.5 pr-9 py-2.5 bg-slate-50 hover:bg-white focus:bg-white border border-slate-300 focus:border-blue-600 rounded-xl text-xs sm:text-sm font-bold text-slate-800 shadow-2xs focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer outline-none appearance-none"
+                >
+                  <option value="all">All Departments (Consolidated View)</option>
+                  <option value="Mechanical">Mechanical</option>
+                  <option value="Operations">Operations</option>
+                  <option value="E&I">E&I (Electrical & Instrumentation)</option>
+                  <option value="Finance">Finance</option>
+                  <option value="HSEQ">HSEQ / HSE</option>
+                  <option value="SCM">SCM (Supply Chain Management)</option>
+                  <option value="PE">PE (Plant Engineering)</option>
+                  <option value="Technical">Technical & HSE</option>
+                  <option value="Inspection">Inspection & Workshop Services</option>
+                  <option value="Reliability">Reliability</option>
+                  <option value="Planning">Planning</option>
+                  <option value="Machinery">Machinery</option>
+                  <option value="Equipment">Equipment</option>
+                  <option value="Civil">Civil</option>
+                  <option value="Admin & Security">Admin & Security</option>
+                  <option value="L&D">L&D (Learning & Development)</option>
+                  <option value="Asset Integrity & IMS">Asset Integrity & IMS</option>
+                  <option value="HCM">HCM (Human Capital)</option>
+                  <option value="Information Technology">Information Technology</option>
+                  <option value="Business Development">Business Development</option>
+                  <option value="FPCL-KE O/C">FPCL-KE O/C</option>
+                  <option value="FFBL">FFBL</option>
+                </select>
+                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+                  <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                </div>
+              </div>
+            </div>
+
+            <!-- Filter 2: Open / Close Status Filter -->
+            <div class="flex-1 min-w-[280px] space-y-1.5">
+              <label class="text-xs font-extrabold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-amber-600"></i>
+                <span>Filter by Action Status (Open / Close)</span>
+              </label>
+
+              <!-- Tactile Segmented Toggle for Status -->
+              <div class="flex items-center gap-1 p-1 bg-slate-100/90 rounded-xl border border-slate-200">
+                <button
+                  type="button"
+                  id="overview-btn-status-all"
+                  onclick="portalApp.handleOverviewOpenCloseFilter('all')"
+                  class="flex-1 py-2 px-2.5 rounded-lg text-xs font-black transition-all text-center bg-white text-slate-900 shadow-2xs cursor-pointer"
+                  title="View both open and closed actions"
+                >
+                  All Statuses
+                </button>
+                <button
+                  type="button"
+                  id="overview-btn-status-open"
+                  onclick="portalApp.handleOverviewOpenCloseFilter('open')"
+                  class="flex-1 py-2 px-2.5 rounded-lg text-xs font-extrabold transition-all text-center text-amber-800 hover:text-amber-950 hover:bg-amber-100/70 cursor-pointer flex items-center justify-center gap-1.5"
+                  title="View only open action items across all dashboards"
+                >
+                  <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                  <span>Open Actions</span>
+                </button>
+                <button
+                  type="button"
+                  id="overview-btn-status-close"
+                  onclick="portalApp.handleOverviewOpenCloseFilter('close')"
+                  class="flex-1 py-2 px-2.5 rounded-lg text-xs font-extrabold transition-all text-center text-emerald-800 hover:text-emerald-950 hover:bg-emerald-100/70 cursor-pointer flex items-center justify-center gap-1.5"
+                  title="View only closed action items across all dashboards"
+                >
+                  <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                  <span>Closed Actions</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Action Buttons: Column References, Export CSV & Filter Reset in same line -->
+            <div class="flex items-center gap-2 shrink-0 self-end flex-wrap sm:flex-nowrap">
+              <button
+                type="button"
+                id="overview-sheet-refs-btn"
+                onclick="portalApp.openSheetColumnRefsModal()"
+                class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-slate-700 hover:text-blue-700 bg-white hover:bg-slate-50 border border-slate-300 hover:border-blue-300 shadow-2xs transition-all cursor-pointer active:scale-95 whitespace-nowrap"
+                title="View attached sheets and column references used for filtering"
+              >
+                <i data-lucide="table-2" class="w-4 h-4 text-blue-600"></i>
+                <span>Column References</span>
+              </button>
+
+              <button
+                type="button"
+                id="overview-export-csv-btn"
+                onclick="portalApp.exportOverviewFilteredCSV()"
+                class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 transition-all cursor-pointer shadow-xs active:scale-95 whitespace-nowrap"
+                title="Export currently filtered records to CSV based on applied filters"
+              >
+                <i data-lucide="download" class="w-4 h-4"></i>
+                <span>Export CSV</span>
+              </button>
+
+              <button
+                id="overview-reset-filters-btn"
+                type="button"
+                onclick="portalApp.resetOverviewFilters()"
+                class="hidden items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200/80 border border-slate-200 transition-all cursor-pointer active:scale-95 shadow-2xs whitespace-nowrap"
+                title="Reset department and status filters to view all records"
+              >
+                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5 text-slate-500"></i>
+                <span>Reset</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Active Filter Badge (Displayed dynamically when filter is active) -->
+          <div
+            id="overview-active-filter-badge"
+            class="hidden items-center gap-2 px-3 py-1.5 mt-3 rounded-xl bg-blue-50 border border-blue-200 text-xs font-bold text-blue-900 shadow-2xs"
+          >
+            <i data-lucide="filter" class="w-3.5 h-3.5 text-blue-600"></i>
+            <span id="overview-filter-summary-text">Showing All Dashboards</span>
           </div>
         </div>
 
@@ -1417,6 +1609,194 @@
           </button>
           <button onclick="portalApp.saveSheetLink()" class="px-4 py-2 rounded-lg text-xs font-semibold bg-[#2E6DA4] hover:bg-[#235885] text-white transition-colors">
             Save & Test Link
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sheet & Column References Modal -->
+    <div
+      id="sheet-refs-modal"
+      onclick="if(event.target === this) portalApp.closeSheetColumnRefsModal()"
+      class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs hidden items-center justify-center p-4"
+    >
+      <div class="bg-white border border-slate-200 rounded-2xl max-w-3xl w-full p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] flex flex-col">
+        <!-- Header -->
+        <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+          <div class="flex items-center gap-2.5">
+            <span class="p-2 rounded-xl bg-blue-50 text-blue-700 border border-blue-200 shadow-2xs">
+              <i data-lucide="table-2" class="w-5 h-5"></i>
+            </span>
+            <div>
+              <h3 class="text-base font-black text-slate-900 tracking-tight">Attached Sheets & Filter Column References</h3>
+              <p class="text-xs text-slate-500 font-medium">Detailed mapping of sheets, tabs, and columns powering the Department & Status filters</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onclick="portalApp.closeSheetColumnRefsModal()"
+            class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+            title="Close modal"
+          >
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <!-- Scrollable Content -->
+        <div class="overflow-y-auto flex-1 pr-1 space-y-3.5 text-xs">
+          <!-- Helpful Info Banner -->
+          <div class="p-3 bg-blue-50/80 border border-blue-200 rounded-xl text-blue-900 flex items-start gap-2.5">
+            <i data-lucide="info" class="w-4 h-4 text-blue-600 shrink-0 mt-0.5"></i>
+            <div class="text-[11px] leading-relaxed">
+              <span class="font-bold">Clean Dashboard Architecture:</span> Rather than cluttering the executive dashboard with long column formulas and notes, all attached Google Sheets correlate their cross-dashboard filters through the structured column references detailed below.
+            </div>
+          </div>
+
+          <!-- Mapped Data Sources List -->
+          <div class="space-y-3">
+            <!-- Source 1: PSM Internal Audit Findings -->
+            <div class="border border-slate-200 rounded-xl p-3.5 bg-slate-50/70 hover:bg-slate-50 transition-colors">
+              <div class="flex items-center justify-between flex-wrap gap-2 mb-2.5">
+                <div class="flex items-center gap-2">
+                  <span class="px-2.5 py-0.5 rounded-md text-[10px] font-mono font-bold bg-amber-100 text-amber-900 border border-amber-200">
+                    PSM Internal Audits
+                  </span>
+                  <span class="font-bold text-slate-900 text-xs sm:text-sm">PSM Internal Audit Findings Data</span>
+                </div>
+                <span class="text-[10px] font-mono text-slate-500 bg-white px-2 py-0.5 rounded border border-slate-200">
+                  Tab: PSM Audit (55 Findings)
+                </span>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+                <div class="p-2.5 bg-white rounded-lg border border-slate-200/90 shadow-2xs">
+                  <div class="text-slate-500 font-bold mb-1 flex items-center gap-1">
+                    <i data-lucide="building-2" class="w-3 h-3 text-blue-600"></i>
+                    <span>Department Filter Reference</span>
+                  </div>
+                  <div class="font-mono text-blue-700 font-bold text-xs">Column H: <span class="text-slate-800 font-semibold font-sans">Action Department</span></div>
+                  <div class="text-[10px] text-slate-400 mt-1">Fallback: Column E (Auditee Department) • Column I (Action Unit)</div>
+                </div>
+                <div class="p-2.5 bg-white rounded-lg border border-slate-200/90 shadow-2xs">
+                  <div class="text-slate-500 font-bold mb-1 flex items-center gap-1">
+                    <i data-lucide="check-circle-2" class="w-3 h-3 text-amber-600"></i>
+                    <span>Status Filter Reference</span>
+                  </div>
+                  <div class="font-mono text-emerald-700 font-bold text-xs">Column L: <span class="text-slate-800 font-semibold font-sans">Status</span></div>
+                  <div class="text-[10px] text-slate-400 mt-1">Values: "Open", "Close", "Overdue" (Col B: Observation No, Col F: Finding)</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Source 2: PSM Personnel Validation & Training -->
+            <div class="border border-slate-200 rounded-xl p-3.5 bg-slate-50/70 hover:bg-slate-50 transition-colors">
+              <div class="flex items-center justify-between flex-wrap gap-2 mb-2.5">
+                <div class="flex items-center gap-2">
+                  <span class="px-2.5 py-0.5 rounded-md text-[10px] font-mono font-bold bg-teal-100 text-teal-900 border border-teal-200">
+                    PSM Validation
+                  </span>
+                  <span class="font-bold text-slate-900 text-xs sm:text-sm">PSM Personnel Training & Validation</span>
+                </div>
+                <span class="text-[10px] font-mono text-slate-500 bg-white px-2 py-0.5 rounded border border-slate-200">
+                  Tab: Validation Data (110 Personnel)
+                </span>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+                <div class="p-2.5 bg-white rounded-lg border border-slate-200/90 shadow-2xs">
+                  <div class="text-slate-500 font-bold mb-1 flex items-center gap-1">
+                    <i data-lucide="building-2" class="w-3 h-3 text-blue-600"></i>
+                    <span>Department Filter Reference</span>
+                  </div>
+                  <div class="font-mono text-blue-700 font-bold text-xs">Column F: <span class="text-slate-800 font-semibold font-sans">Department</span></div>
+                  <div class="text-[10px] text-slate-400 mt-1">Matched against employee organizational department & unit</div>
+                </div>
+                <div class="p-2.5 bg-white rounded-lg border border-slate-200/90 shadow-2xs">
+                  <div class="text-slate-500 font-bold mb-1 flex items-center gap-1">
+                    <i data-lucide="check-circle-2" class="w-3 h-3 text-amber-600"></i>
+                    <span>Status Filter Reference</span>
+                  </div>
+                  <div class="font-mono text-emerald-700 font-bold text-xs">Column M: <span class="text-slate-800 font-semibold font-sans">Open/Close</span> & Col I: <span class="text-slate-800 font-semibold font-sans">Status</span></div>
+                  <div class="text-[10px] text-slate-400 mt-1">Pass / Close = Closed action; Pending / Fail = Open action</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Source 3: Plant Learning Recommendations (PLR) -->
+            <div class="border border-slate-200 rounded-xl p-3.5 bg-slate-50/70 hover:bg-slate-50 transition-colors">
+              <div class="flex items-center justify-between flex-wrap gap-2 mb-2.5">
+                <div class="flex items-center gap-2">
+                  <span class="px-2.5 py-0.5 rounded-md text-[10px] font-mono font-bold bg-indigo-100 text-indigo-900 border border-indigo-200">
+                    PLR Recommendations
+                  </span>
+                  <span class="font-bold text-slate-900 text-xs sm:text-sm">Plant Learning Recommendations (534 Recommendations)</span>
+                </div>
+                <span class="text-[10px] font-mono text-slate-500 bg-white px-2 py-0.5 rounded border border-slate-200">
+                  Tab: PLR Recs (Sheet GID 1344438021)
+                </span>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+                <div class="p-2.5 bg-white rounded-lg border border-slate-200/90 shadow-2xs">
+                  <div class="text-slate-500 font-bold mb-1 flex items-center gap-1">
+                    <i data-lucide="building-2" class="w-3 h-3 text-blue-600"></i>
+                    <span>Department Filter Reference</span>
+                  </div>
+                  <div class="font-mono text-blue-700 font-bold text-xs">Column F: <span class="text-slate-800 font-semibold font-sans">Action By / Category</span></div>
+                  <div class="text-[10px] text-slate-400 mt-1">Identifies responsible department (Mechanical, Operations, E&I, etc.)</div>
+                </div>
+                <div class="p-2.5 bg-white rounded-lg border border-slate-200/90 shadow-2xs">
+                  <div class="text-slate-500 font-bold mb-1 flex items-center gap-1">
+                    <i data-lucide="check-circle-2" class="w-3 h-3 text-amber-600"></i>
+                    <span>Status Filter Reference</span>
+                  </div>
+                  <div class="font-mono text-emerald-700 font-bold text-xs">Column G: <span class="text-slate-800 font-semibold font-sans">Status</span></div>
+                  <div class="text-[10px] text-slate-400 mt-1">Values: "Open", "Close", "In Progress" (Col B: PLR No, Col E: Recommendation)</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Source 4: Additional Registered Dashboards & Future Sheets -->
+            <div class="border border-slate-200 rounded-xl p-3.5 bg-slate-50/70 hover:bg-slate-50 transition-colors">
+              <div class="flex items-center justify-between flex-wrap gap-2 mb-2.5">
+                <div class="flex items-center gap-2">
+                  <span class="px-2.5 py-0.5 rounded-md text-[10px] font-mono font-bold bg-slate-200 text-slate-800 border border-slate-300">
+                    Other Modules & Future Sheets
+                  </span>
+                  <span class="font-bold text-slate-900 text-xs sm:text-sm">HSEQ, Operations, Maintenance, SCM & Connected Sheets</span>
+                </div>
+                <span class="text-[10px] font-mono text-slate-500 bg-white px-2 py-0.5 rounded border border-slate-200">
+                  Dynamic Column Matcher
+                </span>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+                <div class="p-2.5 bg-white rounded-lg border border-slate-200/90 shadow-2xs">
+                  <div class="text-slate-500 font-bold mb-1 flex items-center gap-1">
+                    <i data-lucide="building-2" class="w-3 h-3 text-blue-600"></i>
+                    <span>Department Filter Reference</span>
+                  </div>
+                  <div class="font-mono text-blue-700 font-bold text-xs">Owner / Dept Column: <span class="text-slate-800 font-semibold font-sans">"Department", "Owner", "Area"</span></div>
+                  <div class="text-[10px] text-slate-400 mt-1">Auto-detected from sheet headers using smart department token mapping</div>
+                </div>
+                <div class="p-2.5 bg-white rounded-lg border border-slate-200/90 shadow-2xs">
+                  <div class="text-slate-500 font-bold mb-1 flex items-center gap-1">
+                    <i data-lucide="check-circle-2" class="w-3 h-3 text-amber-600"></i>
+                    <span>Status Filter Reference</span>
+                  </div>
+                  <div class="font-mono text-emerald-700 font-bold text-xs">Status / State Column: <span class="text-slate-800 font-semibold font-sans">"Status", "Completion", "State"</span></div>
+                  <div class="text-[10px] text-slate-400 mt-1">Correlated automatically to Open (in-progress/pending) or Closed (completed)</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="flex items-center justify-between pt-3 border-t border-slate-200 text-xs">
+          <span class="text-slate-500 text-[11px]">Multiple sheets can be attached without altering the main UI layout.</span>
+          <button
+            type="button"
+            onclick="portalApp.closeSheetColumnRefsModal()"
+            class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors cursor-pointer"
+          >
+            Close
           </button>
         </div>
       </div>
@@ -2029,6 +2409,8 @@
         searchQuery: '',
         statusFilter: 'all', // 'all', 'Active', 'Awaiting Sheet Data'
         categoryFilter: 'all', // 'all', 'Executive & Governance', etc.
+        overviewDeptFilter: 'all',
+        overviewOpenCloseFilter: 'all',
         activeDashboardId: null,
         connectedSheetUrl: (typeof localStorage !== 'undefined' && localStorage.getItem('FPCL_CONNECTED_SHEET_URL')) || 'https://docs.google.com/spreadsheets/d/1LJOdN8T7UUjaZbSfsCrO_Hdg1eoAgqnuE7mJDGtB8qo/export?format=csv&gid=1344438021',
         connectedPlrStatusSheetUrl: (typeof localStorage !== 'undefined' && localStorage.getItem('FPCL_CONNECTED_PLR_STATUS_SHEET_URL')) || 'https://docs.google.com/spreadsheets/d/1LJOdN8T7UUjaZbSfsCrO_Hdg1eoAgqnuE7mJDGtB8qo/export?format=csv&gid=0',
@@ -2064,6 +2446,7 @@
             this.syncPlrStatsToOverview();
           }
           this.updateRollupStats();
+          this.updateOverviewFilterUI();
           this.renderTimelineChart();
           this.renderComparisonChart();
           this.fetchHseqKpis();
@@ -2206,25 +2589,623 @@
         },
 
         /**
+         * Robust Department Matcher across disparate dataset notations
+         */
+        isDeptMatch(itemDept, filterDept) {
+          if (!filterDept || filterDept === 'all') return true;
+          if (!itemDept) return false;
+          
+          const d1 = String(itemDept).trim().toLowerCase();
+          const d2 = String(filterDept).trim().toLowerCase();
+          if (d1 === d2) return true;
+
+          // Normalized alphanumeric comparison (e.g. "E & I" === "E&I")
+          const c1 = d1.replace(/[^a-z0-9]/g, '');
+          const c2 = d2.replace(/[^a-z0-9]/g, '');
+          if (c1 === c2) return true;
+
+          // Handle common singular/plural & acronym equivalences
+          if ((c1 === 'operations' && c2 === 'operation') || (c1 === 'operation' && c2 === 'operations')) return true;
+          if ((c1 === 'hseq' && c2 === 'hse') || (c1 === 'hse' && c2 === 'hseq')) return true;
+
+          if (c1.includes(c2) || c2.includes(c1)) {
+            if (c2.length >= 4) return true;
+            if (d1.split(/[\s&/,-]+/).some(token => token === d2 || token.replace(/[^a-z0-9]/g, '') === c2)) return true;
+          }
+          return false;
+        },
+
+        /**
+         * PSM Audit: Column H (actionDepartment) for department search, Column L (status) for open/close point
+         */
+        getPsmAuditFilteredKpis(deptFilter, openCloseFilter) {
+          let raw = [];
+          if (Array.isArray(window.FPCL_PSM_DATA) && window.FPCL_PSM_DATA.length > 0) {
+            raw = window.FPCL_PSM_DATA;
+          } else if (window.FPCL_PSM_RAW_CSV && typeof window.parsePSMCSV === 'function') {
+            window.FPCL_PSM_DATA = window.parsePSMCSV(window.FPCL_PSM_RAW_CSV);
+            raw = window.FPCL_PSM_DATA;
+          }
+
+          const deptRows = raw.filter(r => this.isDeptMatch(r.actionDepartment, deptFilter));
+          const deptTotal = deptRows.length;
+          const deptClosed = deptRows.filter(r => (r.status || '').toLowerCase().includes('close')).length;
+          const deptOpen = deptRows.filter(r => (r.status || '').toLowerCase() === 'open' || (r.status || '').toLowerCase() === 'overdue').length;
+          const deptOverdue = deptRows.filter(r => (r.status || '').toLowerCase() === 'overdue').length;
+          const deptRate = deptTotal > 0 ? ((deptClosed / deptTotal) * 100).toFixed(1) + '%' : '0.0%';
+
+          if (openCloseFilter === 'open') {
+            return {
+              total: deptOpen,
+              closed: 0,
+              inProgress: deptOpen,
+              overdue: deptOverdue,
+              compliance: deptOpen + ' Open',
+              deptTotal,
+              deptClosed,
+              deptOpen,
+              deptRate,
+              mode: 'open'
+            };
+          } else if (openCloseFilter === 'close') {
+            return {
+              total: deptClosed,
+              closed: deptClosed,
+              inProgress: 0,
+              overdue: 0,
+              compliance: deptClosed + ' Closed',
+              deptTotal,
+              deptClosed,
+              deptOpen,
+              deptRate,
+              mode: 'close'
+            };
+          } else {
+            return {
+              total: deptTotal,
+              closed: deptClosed,
+              inProgress: deptOpen,
+              overdue: deptOverdue,
+              compliance: deptRate,
+              deptTotal,
+              deptClosed,
+              deptOpen,
+              deptRate,
+              mode: 'all'
+            };
+          }
+        },
+
+        /**
+         * PSM Validation: Column F (department) for department search, Column M (openClose / status) for open/close point
+         */
+        getPsmValidationFilteredKpis(deptFilter, openCloseFilter) {
+          let raw = [];
+          if (Array.isArray(window.FPCL_PSM_VALIDATION_DATA) && window.FPCL_PSM_VALIDATION_DATA.length > 0) {
+            raw = window.FPCL_PSM_VALIDATION_DATA;
+          } else if (window.FPCL_PSM_SUITE && typeof window.FPCL_PSM_SUITE.getRawValidationData === 'function') {
+            raw = window.FPCL_PSM_SUITE.getRawValidationData();
+          }
+
+          if (raw.length === 0) {
+            try {
+              const cached = localStorage.getItem('FPCL_PSM_VALIDATION_CACHE');
+              if (cached) {
+                const parsed = JSON.parse(cached);
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                  raw = parsed;
+                }
+              }
+            } catch (e) {}
+          }
+
+          if (raw.length === 0) {
+            const regEntry = Array.isArray(DASHBOARD_REGISTRY) ? DASHBOARD_REGISTRY.find(d => d.id === 'psm-validation') : null;
+            if (regEntry && regEntry.kpis && regEntry.kpis.total > 0) {
+              const k = regEntry.kpis;
+              return {
+                total: k.total || 0,
+                closed: k.closed || 0,
+                inProgress: k.inProgress || 0,
+                overdue: k.overdue || 0,
+                compliance: k.compliance || '0.0%',
+                deptTotal: k.total || 0,
+                deptClosed: k.closed || 0,
+                deptOpen: k.inProgress || 0,
+                deptRate: k.compliance || '0.0%',
+                mode: openCloseFilter
+              };
+            }
+          }
+
+          const deptRows = raw.filter(r => this.isDeptMatch(r.department, deptFilter));
+          const deptTotal = deptRows.length;
+          const deptClosed = deptRows.filter(r => (r.openClose || '').toLowerCase().includes('close') || (r.status || '').toLowerCase() === 'pass').length;
+          const deptOpen = deptRows.filter(r => (r.openClose || '').toLowerCase() === 'open' || (!(r.openClose || '').toLowerCase().includes('close') && (r.status || '').toLowerCase() !== 'pass')).length;
+          const deptRate = deptTotal > 0 ? ((deptClosed / deptTotal) * 100).toFixed(1) + '%' : '0.0%';
+
+          if (openCloseFilter === 'open') {
+            return {
+              total: deptOpen,
+              closed: 0,
+              inProgress: deptOpen,
+              overdue: 0,
+              compliance: deptOpen + ' Pending',
+              deptTotal,
+              deptClosed,
+              deptOpen,
+              deptRate,
+              mode: 'open'
+            };
+          } else if (openCloseFilter === 'close') {
+            return {
+              total: deptClosed,
+              closed: deptClosed,
+              inProgress: 0,
+              overdue: 0,
+              compliance: deptClosed + ' Passed',
+              deptTotal,
+              deptClosed,
+              deptOpen,
+              deptRate,
+              mode: 'close'
+            };
+          } else {
+            return {
+              total: deptTotal,
+              closed: deptClosed,
+              inProgress: deptOpen,
+              overdue: 0,
+              compliance: deptRate,
+              deptTotal,
+              deptClosed,
+              deptOpen,
+              deptRate,
+              mode: 'all'
+            };
+          }
+        },
+
+        /**
+         * PLR Recommendations: Column F (actionBy / category) for department search, Column G (status) for open/close point
+         */
+        getPlrFilteredKpis(deptFilter, openCloseFilter) {
+          let raw = [];
+          if (Array.isArray(window.FPCL_PLR_RECOMMENDATIONS) && window.FPCL_PLR_RECOMMENDATIONS.length > 0) {
+            raw = window.FPCL_PLR_RECOMMENDATIONS;
+          } else if (typeof getPlrRecs === 'function') {
+            raw = getPlrRecs();
+          }
+
+          const deptRows = raw.filter(r => this.isDeptMatch(r.actionBy || r.category, deptFilter));
+          const deptTotal = deptRows.length;
+          const deptClosed = deptRows.filter(r => (r.status || '').toLowerCase().includes('close')).length;
+          const deptOpen = deptRows.filter(r => (r.status || '').toLowerCase() === 'open').length;
+          const deptRate = deptTotal > 0 ? ((deptClosed / deptTotal) * 100).toFixed(1) + '%' : '0.0%';
+
+          if (openCloseFilter === 'open') {
+            return {
+              total: deptOpen,
+              closed: 0,
+              inProgress: deptOpen,
+              overdue: 0,
+              compliance: deptOpen + ' Open',
+              deptTotal,
+              deptClosed,
+              deptOpen,
+              deptRate,
+              mode: 'open'
+            };
+          } else if (openCloseFilter === 'close') {
+            return {
+              total: deptClosed,
+              closed: deptClosed,
+              inProgress: 0,
+              overdue: 0,
+              compliance: deptClosed + ' Closed',
+              deptTotal,
+              deptClosed,
+              deptOpen,
+              deptRate,
+              mode: 'close'
+            };
+          } else {
+            return {
+              total: deptTotal,
+              closed: deptClosed,
+              inProgress: deptOpen,
+              overdue: 0,
+              compliance: deptRate,
+              deptTotal,
+              deptClosed,
+              deptOpen,
+              deptRate,
+              mode: 'all'
+            };
+          }
+        },
+
+        /**
+         * Get live filtered KPIs for any summary dashboard card based on overview filters
+         */
+        getEffectiveCardKpis(item) {
+          if (!item) return { total: 0, closed: 0, inProgress: 0, overdue: 0, compliance: '0.0%', deptTotal: 0, deptClosed: 0, deptOpen: 0, deptRate: '0.0%', mode: 'all' };
+
+          const deptFilter = (this.state && this.state.overviewDeptFilter) || 'all';
+          const openCloseFilter = (this.state && this.state.overviewOpenCloseFilter) || 'all';
+
+          if (item.id === 'sub-hse-psm') {
+            return this.getPsmAuditFilteredKpis(deptFilter, openCloseFilter);
+          }
+          if (item.id === 'psm-validation') {
+            return this.getPsmValidationFilteredKpis(deptFilter, openCloseFilter);
+          }
+          if (item.id === 'plr') {
+            return this.getPlrFilteredKpis(deptFilter, openCloseFilter);
+          }
+
+          if (deptFilter === 'all' && openCloseFilter === 'all') {
+            const k = item.kpis || { total: 0, closed: 0, inProgress: 0, overdue: 0, compliance: '0.0%' };
+            return Object.assign({}, k, {
+              deptTotal: k.total || 0,
+              deptClosed: k.closed || 0,
+              deptOpen: k.inProgress ?? k.pending ?? 0,
+              deptRate: k.compliance || '0.0%',
+              mode: 'all'
+            });
+          }
+
+          // For other cards
+          const matchesDept = (deptFilter === 'all') || 
+            this.isDeptMatch(item.department, deptFilter) ||
+            this.isDeptMatch(item.name, deptFilter) ||
+            this.isDeptMatch(item.code, deptFilter);
+
+          if (!matchesDept) {
+            return {
+              total: 0,
+              closed: 0,
+              inProgress: 0,
+              overdue: 0,
+              compliance: '0.0%',
+              deptTotal: 0,
+              deptClosed: 0,
+              deptOpen: 0,
+              deptRate: '0.0%',
+              mode: openCloseFilter
+            };
+          }
+
+          const base = item.kpis || { total: 0, closed: 0, inProgress: 0, overdue: 0, compliance: '0.0%' };
+          const inProg = base.inProgress ?? base.pending ?? 0;
+          const closed = base.closed || 0;
+          const total = base.total || 0;
+          const overdue = base.overdue || 0;
+
+          if (openCloseFilter === 'open') {
+            return {
+              total: inProg,
+              closed: 0,
+              inProgress: inProg,
+              overdue: overdue,
+              compliance: inProg + ' Open',
+              deptTotal: total,
+              deptClosed: closed,
+              deptOpen: inProg,
+              deptRate: base.compliance || '0.0%',
+              mode: 'open'
+            };
+          } else if (openCloseFilter === 'close') {
+            return {
+              total: closed,
+              closed: closed,
+              inProgress: 0,
+              overdue: 0,
+              compliance: closed + ' Closed',
+              deptTotal: total,
+              deptClosed: closed,
+              deptOpen: inProg,
+              deptRate: base.compliance || '0.0%',
+              mode: 'close'
+            };
+          } else {
+            return {
+              total,
+              closed,
+              inProgress: inProg,
+              overdue,
+              compliance: base.compliance || '0.0%',
+              deptTotal: total,
+              deptClosed: closed,
+              deptOpen: inProg,
+              deptRate: base.compliance || '0.0%',
+              mode: 'all'
+            };
+          }
+        },
+
+        handleOverviewDeptFilter(dept) {
+          this.state.overviewDeptFilter = dept || 'all';
+          this.updateOverviewFilterUI();
+          this.renderCards();
+          this.renderComparisonChart();
+          this.updateRollupStats();
+        },
+
+        handleOverviewOpenCloseFilter(status) {
+          this.state.overviewOpenCloseFilter = status || 'all';
+          this.updateOverviewFilterUI();
+          this.renderCards();
+          this.renderComparisonChart();
+          this.updateRollupStats();
+        },
+
+        resetOverviewFilters() {
+          this.state.overviewDeptFilter = 'all';
+          this.state.overviewOpenCloseFilter = 'all';
+          this.updateOverviewFilterUI();
+          this.renderCards();
+          this.renderComparisonChart();
+          this.updateRollupStats();
+        },
+
+        /**
+         * Export CSV of all cross-dashboard action records based on applied Department & Open/Close filters
+         */
+        exportOverviewFilteredCSV() {
+          const dept = (this.state && this.state.overviewDeptFilter) || 'all';
+          const status = (this.state && this.state.overviewOpenCloseFilter) || 'all';
+
+          const exportRows = [];
+
+          // 1. Gather PSM Internal Audit Findings
+          let psmRaw = [];
+          if (Array.isArray(window.FPCL_PSM_DATA) && window.FPCL_PSM_DATA.length > 0) {
+            psmRaw = window.FPCL_PSM_DATA;
+          } else if (window.FPCL_PSM_RAW_CSV && typeof window.parsePSMCSV === 'function') {
+            window.FPCL_PSM_DATA = window.parsePSMCSV(window.FPCL_PSM_RAW_CSV);
+            psmRaw = window.FPCL_PSM_DATA;
+          }
+
+          psmRaw.forEach(r => {
+            if (!this.isDeptMatch(r.actionDepartment || r.auditeeDepartment, dept)) return;
+            const rStatus = (r.status || '').toLowerCase();
+            if (status === 'open' && !(rStatus === 'open' || rStatus === 'overdue')) return;
+            if (status === 'close' && !rStatus.includes('close')) return;
+
+            exportRows.push({
+              module: 'PSM Internal Audits',
+              refId: r.observationNo || `PSM-${r.sr || ''}`,
+              dept: r.actionDepartment || r.auditeeDepartment || '-',
+              status: r.status || 'Open',
+              desc: r.finding || '',
+              category: r.psmElement || 'PSM Finding',
+              unit: r.actionUnit || r.auditeeUnit || '-',
+              remarks: r.actionRemarks || r.hseqRemarks || ''
+            });
+          });
+
+          // 2. Gather PSM Validation Personnel Records
+          let valRaw = [];
+          if (Array.isArray(window.FPCL_PSM_VALIDATION_DATA) && window.FPCL_PSM_VALIDATION_DATA.length > 0) {
+            valRaw = window.FPCL_PSM_VALIDATION_DATA;
+          } else if (window.FPCL_PSM_SUITE && typeof window.FPCL_PSM_SUITE.getRawValidationData === 'function') {
+            valRaw = window.FPCL_PSM_SUITE.getRawValidationData();
+          }
+
+          valRaw.forEach(r => {
+            if (!this.isDeptMatch(r.department, dept)) return;
+            const rOpenClose = (r.openClose || '').toLowerCase();
+            const rStatus = (r.status || '').toLowerCase();
+            const isClosed = rOpenClose.includes('close') || rStatus === 'pass';
+            if (status === 'open' && isClosed) return;
+            if (status === 'close' && !isClosed) return;
+
+            exportRows.push({
+              module: 'PSM Validation',
+              refId: r.pNo || `VAL-${r.sr || ''}`,
+              dept: r.department || '-',
+              status: isClosed ? 'Closed / Pass' : 'Open / Pending',
+              desc: `${r.name || ''}${r.position ? ' (' + r.position + ')' : ''}`,
+              category: r.module || 'T&D Validation',
+              unit: r.unit || '-',
+              remarks: r.endUserRemarks || r.safetyRemarks || `Cadre: ${r.cadre || '-'}, Training: ${r.training || '-'}`
+            });
+          });
+
+          // 3. Gather PLR Recommendations
+          let plrRaw = [];
+          if (Array.isArray(window.FPCL_PLR_RECOMMENDATIONS) && window.FPCL_PLR_RECOMMENDATIONS.length > 0) {
+            plrRaw = window.FPCL_PLR_RECOMMENDATIONS;
+          } else if (typeof getPlrRecs === 'function') {
+            plrRaw = getPlrRecs();
+          }
+
+          plrRaw.forEach(r => {
+            if (!this.isDeptMatch(r.actionBy || r.category, dept)) return;
+            const rStatus = (r.status || '').toLowerCase();
+            if (status === 'open' && rStatus !== 'open') return;
+            if (status === 'close' && !rStatus.includes('close')) return;
+
+            exportRows.push({
+              module: 'PLR Recommendations',
+              refId: `PLR-${r.plrNo || r.sNo || ''}`,
+              dept: r.actionBy || r.category || '-',
+              status: r.status || 'Open',
+              desc: r.recommendation || '',
+              category: r.category || 'PLR Action',
+              unit: r.date || `${r.year || '-'}`,
+              remarks: `Priority: ${r.priority || 'Normal'}, Year: ${r.year || '-'}`
+            });
+          });
+
+          // 4. Other Modules' Actions in DASHBOARD_REGISTRY if defined
+          if (Array.isArray(DASHBOARD_REGISTRY)) {
+            DASHBOARD_REGISTRY.forEach(d => {
+              if (d.id === 'sub-hse-psm' || d.id === 'psm-validation' || d.id === 'plr') return;
+              if (Array.isArray(d.actions) && d.actions.length > 0) {
+                d.actions.forEach(a => {
+                  const actDept = a.owner || d.department || '';
+                  if (!this.isDeptMatch(actDept, dept)) return;
+                  const actStatus = (a.status || '').toLowerCase();
+                  const isClosed = actStatus.includes('close') || actStatus.includes('complete');
+                  if (status === 'open' && isClosed) return;
+                  if (status === 'close' && !isClosed) return;
+
+                  exportRows.push({
+                    module: d.name || d.code || 'Other Module',
+                    refId: a.id || '-',
+                    dept: actDept,
+                    status: a.status || 'Open',
+                    desc: a.desc || '',
+                    category: d.category || '',
+                    unit: a.due ? `Due: ${a.due}` : '-',
+                    remarks: a.priority ? `Priority: ${a.priority}` : ''
+                  });
+                });
+              }
+            });
+          }
+
+          if (exportRows.length === 0) {
+            if (typeof this.showToast === 'function') {
+              this.showToast('No Records Found', 'No action items match your current filter criteria.', 'warning');
+            } else {
+              alert('No records match your selected criteria.');
+            }
+            return;
+          }
+
+          const headers = [
+            'Sr #',
+            'Module',
+            'Reference ID',
+            'Department',
+            'Action Status',
+            'Description / Finding / Personnel',
+            'Category / Element',
+            'Unit / Date',
+            'Remarks / Notes'
+          ];
+
+          const csvRows = exportRows.map((r, i) => [
+            i + 1,
+            `"${String(r.module || '').replace(/"/g, '""')}"`,
+            `"${String(r.refId || '').replace(/"/g, '""')}"`,
+            `"${String(r.dept || '').replace(/"/g, '""')}"`,
+            `"${String(r.status || '').replace(/"/g, '""')}"`,
+            `"${String(r.desc || '').replace(/"/g, '""')}"`,
+            `"${String(r.category || '').replace(/"/g, '""')}"`,
+            `"${String(r.unit || '').replace(/"/g, '""')}"`,
+            `"${String(r.remarks || '').replace(/"/g, '""')}"`
+          ]);
+
+          const csvContent = '\uFEFF' + [headers.join(','), ...csvRows.map(r => r.join(','))].join('\r\n');
+          const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.setAttribute('href', url);
+
+          const safeDept = (dept === 'all' ? 'All_Departments' : dept.replace(/[^a-zA-Z0-9_-]/g, '_'));
+          const safeStatus = (status === 'all' ? 'All_Statuses' : (status === 'open' ? 'Open_Actions' : 'Closed_Actions'));
+          const dateStr = new Date().toISOString().slice(0, 10);
+          link.setAttribute('download', `FPCL_Overview_Actions_${safeDept}_${safeStatus}_${dateStr}.csv`);
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+
+          if (typeof this.showToast === 'function') {
+            this.showToast(
+              'Export Successful',
+              `Exported ${exportRows.length} records matching ${dept === 'all' ? 'All Departments' : dept} (${status === 'all' ? 'All Statuses' : (status === 'open' ? 'Open Actions' : 'Closed Actions')}) to CSV.`,
+              'success'
+            );
+          }
+        },
+
+        updateOverviewFilterUI() {
+          const dept = (this.state && this.state.overviewDeptFilter) || 'all';
+          const status = (this.state && this.state.overviewOpenCloseFilter) || 'all';
+
+          // Sync select element
+          const sel = document.getElementById('overview-department-select');
+          if (sel) sel.value = dept;
+
+          // Sync status segmented buttons
+          const btnAll = document.getElementById('overview-btn-status-all');
+          const btnOpen = document.getElementById('overview-btn-status-open');
+          const btnClose = document.getElementById('overview-btn-status-close');
+
+          if (btnAll) {
+            btnAll.className = status === 'all'
+              ? 'flex-1 py-2 px-2.5 rounded-lg text-xs font-black transition-all text-center bg-white text-slate-900 shadow-2xs cursor-pointer'
+              : 'flex-1 py-2 px-2.5 rounded-lg text-xs font-extrabold transition-all text-center text-slate-600 hover:text-slate-900 hover:bg-white/60 cursor-pointer';
+          }
+          if (btnOpen) {
+            btnOpen.className = status === 'open'
+              ? 'flex-1 py-2 px-2.5 rounded-lg text-xs font-black transition-all text-center bg-amber-500 text-white shadow-2xs ring-2 ring-amber-300 cursor-pointer flex items-center justify-center gap-1.5'
+              : 'flex-1 py-2 px-2.5 rounded-lg text-xs font-extrabold transition-all text-center text-amber-800 hover:text-amber-950 hover:bg-amber-100/70 cursor-pointer flex items-center justify-center gap-1.5';
+          }
+          if (btnClose) {
+            btnClose.className = status === 'close'
+              ? 'flex-1 py-2 px-2.5 rounded-lg text-xs font-black transition-all text-center bg-emerald-600 text-white shadow-2xs ring-2 ring-emerald-300 cursor-pointer flex items-center justify-center gap-1.5'
+              : 'flex-1 py-2 px-2.5 rounded-lg text-xs font-extrabold transition-all text-center text-emerald-800 hover:text-emerald-950 hover:bg-emerald-100/70 cursor-pointer flex items-center justify-center gap-1.5';
+          }
+
+          // Update active filter badge & reset button
+          const badge = document.getElementById('overview-active-filter-badge');
+          const summaryText = document.getElementById('overview-filter-summary-text');
+          const resetBtn = document.getElementById('overview-reset-filters-btn');
+
+          const isFiltered = (dept !== 'all' || status !== 'all');
+          if (badge && summaryText && resetBtn) {
+            if (isFiltered) {
+              badge.classList.remove('hidden');
+              badge.classList.add('inline-flex');
+              resetBtn.classList.remove('hidden');
+              resetBtn.classList.add('inline-flex');
+
+              // Compute total matching across core dashboards
+              const psmK = this.getPsmAuditFilteredKpis(dept, status);
+              const valK = this.getPsmValidationFilteredKpis(dept, status);
+              const plrK = this.getPlrFilteredKpis(dept, status);
+
+              const activeCount = status === 'open'
+                ? (psmK.inProgress + valK.inProgress + plrK.inProgress)
+                : (status === 'close'
+                  ? (psmK.closed + valK.closed + plrK.closed)
+                  : (psmK.total + valK.total + plrK.total));
+
+              const statusLabel = status === 'open' ? 'Open Actions' : (status === 'close' ? 'Closed Actions' : 'Actions / Personnel');
+              const deptLabel = dept === 'all' ? 'All Departments' : dept;
+
+              summaryText.textContent = `${deptLabel} • ${activeCount} ${statusLabel} (PSM: ${status === 'open' ? psmK.inProgress : (status === 'close' ? psmK.closed : psmK.total)}, PLR: ${status === 'open' ? plrK.inProgress : (status === 'close' ? plrK.closed : plrK.total)}, Validation: ${status === 'open' ? valK.inProgress : (status === 'close' ? valK.closed : valK.total)})`;
+            } else {
+              badge.classList.add('hidden');
+              badge.classList.remove('inline-flex');
+              resetBtn.classList.add('hidden');
+              resetBtn.classList.remove('inline-flex');
+            }
+          }
+          if (window.lucide) window.lucide.createIcons();
+        },
+
+        /**
          * Render SVG Module-by-Module Progress Comparison (Synchronized Total & Open Actions/Findings & Validation)
          */
         renderComparisonChart() {
           const container = document.getElementById('comparison-chart-container');
           if (!container) return;
 
+          const deptFilter = (this.state && this.state.overviewDeptFilter) || 'all';
+          const openCloseFilter = (this.state && this.state.overviewOpenCloseFilter) || 'all';
+
           // Retrieve live dynamic validation data numbers (Total personnel & Validation passed)
-          let valTotal = 249;
-          let valPassed = 249;
-          if (window.FPCL_PSM_VALIDATION_DATA && Array.isArray(window.FPCL_PSM_VALIDATION_DATA) && window.FPCL_PSM_VALIDATION_DATA.length > 0) {
-            valTotal = window.FPCL_PSM_VALIDATION_DATA.length;
-            valPassed = window.FPCL_PSM_VALIDATION_DATA.filter(i => (i.status || '').toLowerCase() === 'pass').length;
-          } else if (window.FPCL_PSM_SUITE && typeof window.FPCL_PSM_SUITE.getRawValidationData === 'function') {
-            const raw = window.FPCL_PSM_SUITE.getRawValidationData();
-            if (raw && raw.length > 0) {
-              valTotal = raw.length;
-              valPassed = raw.filter(i => (i.status || '').toLowerCase() === 'pass').length;
-            }
-          }
+          const valEntry = (Array.isArray(DASHBOARD_REGISTRY) ? DASHBOARD_REGISTRY.find(d => d.id === 'psm-validation') : null) || { id: 'psm-validation' };
+          let valKpi = this.getPsmValidationFilteredKpis(deptFilter, openCloseFilter);
+          let valTotal = (openCloseFilter === 'open') ? valKpi.inProgress : ((openCloseFilter === 'close') ? valKpi.closed : (valKpi.deptTotal !== undefined ? valKpi.deptTotal : valKpi.total));
+          let valPassed = (openCloseFilter === 'open') ? 0 : valKpi.closed;
 
           // Build comparison items: Includes all modules, labeling PSM as PSM Audits, and plotting PSM Validation bars
           const chartItems = [];
@@ -2244,8 +3225,9 @@
             }
 
             const isPsmAudit = (d.id === 'sub-hse-psm');
-            const totalVal = (d.kpis && d.kpis.total !== undefined) ? d.kpis.total : (d.id === 'plr' ? 534 : 0);
-            const openVal = (d.kpis && d.kpis.inProgress !== undefined) ? d.kpis.inProgress : (d.id === 'plr' ? 44 : 0);
+            const dKpi = this.getEffectiveCardKpis(d);
+            const totalVal = (openCloseFilter === 'open') ? dKpi.inProgress : ((openCloseFilter === 'close') ? dKpi.closed : (dKpi.deptTotal !== undefined ? dKpi.deptTotal : (dKpi.total || 0)));
+            const openVal = dKpi.inProgress || 0;
 
             chartItems.push({
               id: d.id,
@@ -2275,8 +3257,9 @@
           const barW = Math.min(23, Math.max(16, (slotW - 14) / 2));
           const pairSpacing = 9;
 
-          // Max value scale (534 is highest total recommendations, so ceiling 600)
-          const yMax = 600;
+          // Max value scale (dynamic based on highest value in comparison)
+          const maxVal = Math.max(...chartItems.map(i => Math.max(i.val1 || 0, i.val2 || 0)), 10);
+          const yMax = maxVal > 300 ? 600 : Math.max(20, Math.ceil((maxVal * 1.25) / 10) * 10);
 
           // Gradients definition for Total, Open, and Validation Passed bars
           const defsGradients = `
@@ -2297,8 +3280,14 @@
             </filter>
           `;
 
-          // Number grid lines (0, 100, 200, 300, 400, 500, 600)
-          const gridSteps = [0, 100, 200, 300, 400, 500, 600];
+          // Number grid lines dynamically calculated
+          const stepDelta = yMax <= 30 ? 5 : (yMax <= 80 ? 10 : (yMax <= 200 ? 25 : (yMax <= 400 ? 50 : 100)));
+          const gridSteps = [];
+          for (let v = 0; v <= yMax; v += stepDelta) {
+            gridSteps.push(v);
+          }
+          if (gridSteps[gridSteps.length - 1] < yMax) gridSteps.push(yMax);
+
           const gridSvg = gridSteps.map(v => {
             const yPos = pad.top + plotH - (v / yMax) * plotH;
             return `
@@ -2664,10 +3653,11 @@
          */
         updateRollupStats() {
           const linkedDashboards = DASHBOARD_REGISTRY.filter(item => item.hasSheetLink === true);
-          const total = linkedDashboards.reduce((acc, item) => acc + (item.kpis.total || 0), 0);
-          const closed = linkedDashboards.reduce((acc, item) => acc + (item.kpis.closed || 0), 0);
-          const inProgress = linkedDashboards.reduce((acc, item) => acc + (item.kpis.inProgress ?? item.kpis.pending ?? 0), 0);
-          const overdue = linkedDashboards.reduce((acc, item) => acc + (item.kpis.overdue || 0), 0);
+          const effectiveKpis = linkedDashboards.map(d => this.getEffectiveCardKpis(d));
+          const total = effectiveKpis.reduce((acc, k) => acc + (k.total || 0), 0);
+          const closed = effectiveKpis.reduce((acc, k) => acc + (k.closed || 0), 0);
+          const inProgress = effectiveKpis.reduce((acc, k) => acc + (k.inProgress ?? k.pending ?? 0), 0);
+          const overdue = effectiveKpis.reduce((acc, k) => acc + (k.overdue || 0), 0);
           const rate = total > 0 ? ((closed / total) * 100).toFixed(1) + '%' : '0.0%';
 
           const elTotal = document.getElementById('rollup-total');
@@ -2763,22 +3753,54 @@
 
           noResults.classList.add('hidden');
 
+          const deptFilter = (this.state && this.state.overviewDeptFilter) || 'all';
+          const openCloseFilter = (this.state && this.state.overviewOpenCloseFilter) || 'all';
+          const isDeptOrStatusActive = (deptFilter !== 'all' || openCloseFilter !== 'all');
+
           container.innerHTML = filtered.map((item) => {
             const isActive = item.status === 'Active';
-            const k = item.kpis;
+            const k = this.getEffectiveCardKpis(item);
             const inProg = k.inProgress ?? k.pending ?? 0;
-            const total = k.total || 1;
-            const displayTotal = k.total !== undefined ? k.total : 0;
             const closed = k.closed || 0;
             const overdue = k.overdue || 0;
-            const compRate = k.compliance || (Math.round((closed / total) * 100) + '%');
+            const total = k.total !== undefined ? k.total : 0;
+            const displayTotal = total;
+            const compRate = k.compliance || (total > 0 ? (Math.round((closed / total) * 100) + '%') : '0.0%');
+
+            // Donut center label logic based on openCloseFilter
+            let donutCenterVal = compRate;
+            let donutCenterSubtext = item.id === 'psm-validation' ? 'QUALIFIED' : 'CLOSURE';
+            if (openCloseFilter === 'open') {
+              donutCenterVal = inProg;
+              donutCenterSubtext = item.id === 'psm-validation' ? 'PENDING' : 'OPEN';
+            } else if (openCloseFilter === 'close') {
+              donutCenterVal = closed;
+              donutCenterSubtext = item.id === 'psm-validation' ? 'PASSED' : 'CLOSED';
+            }
 
             // SVG Donut Calculations (radius = 38, circumference = 238.76, viewBox = 0 0 96 96)
             const radius = 38;
             const circumference = 2 * Math.PI * radius;
-            const closedLength = (closed / total) * circumference;
-            const inProgLength = (inProg / total) * circumference;
-            const overdueLength = (overdue / total) * circumference;
+            let closedLength = 0;
+            let inProgLength = 0;
+            let overdueLength = 0;
+
+            if (openCloseFilter === 'open') {
+              if (inProg > 0) {
+                overdueLength = overdue > 0 ? Math.min(circumference, (overdue / inProg) * circumference) : 0;
+                inProgLength = circumference - overdueLength;
+              }
+            } else if (openCloseFilter === 'close') {
+              if (closed > 0) {
+                closedLength = circumference;
+              }
+            } else {
+              if (total > 0) {
+                closedLength = (closed / total) * circumference;
+                inProgLength = (inProg / total) * circumference;
+                overdueLength = (overdue / total) * circumference;
+              }
+            }
 
             const closedOffset = 0;
             const inProgOffset = -closedLength;
@@ -2831,10 +3853,22 @@
                     <span>${item.department}</span>
                   </div>
 
+                  ${isDeptOrStatusActive ? `
+                  <div class="px-2 py-1 rounded-lg bg-blue-50/90 border border-blue-200/80 text-[11px] font-bold text-blue-900 flex items-center justify-between">
+                    <span class="flex items-center gap-1">
+                      <i data-lucide="filter" class="w-3 h-3 text-blue-600"></i>
+                      <span>${deptFilter !== 'all' ? deptFilter : 'All Depts'} • ${openCloseFilter === 'open' ? 'Open Only' : (openCloseFilter === 'close' ? 'Closed Only' : 'All Status')}</span>
+                    </span>
+                    <span class="font-mono font-black text-blue-950">
+                      ${openCloseFilter === 'open' ? inProg + ' Open' : (openCloseFilter === 'close' ? closed + ' Closed' : (k.deptTotal !== undefined ? k.deptTotal : displayTotal) + ' Dept Total')}
+                    </span>
+                  </div>
+                  ` : ''}
+
                   <!-- DEPARTMENT DONUT CHART PANEL (White with Subtle Border) -->
-                  <div class="bg-slate-50/80 rounded-xl p-3.5 sm:p-4 border border-slate-200/90 shadow-2xs flex items-center justify-between gap-3.5 sm:gap-4">
-                    <!-- SVG Donut Chart with Centered Completed % (Enlarged visual with increased thickness) -->
-                    <div class="relative flex items-center justify-center shrink-0 w-32 h-32 sm:w-36 sm:h-36">
+                  <div class="bg-slate-50/80 rounded-xl p-3 sm:p-4 border border-slate-200/90 shadow-2xs flex items-end justify-between gap-2.5 sm:gap-3.5 min-h-[175px]">
+                    <!-- SVG Donut Chart with Centered Value & Label -->
+                    <div class="relative flex items-center justify-center shrink-0 w-36 h-36 sm:w-44 sm:h-44 lg:w-48 lg:h-48">
                       <svg class="w-full h-full transform -rotate-90" viewBox="0 0 96 96">
                         <defs>
                           <linearGradient id="donut-grad-${item.id}" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -2846,23 +3880,23 @@
                         <circle cx="48" cy="48" r="${radius}" fill="transparent" stroke="#E2E8F0" stroke-width="11"></circle>
                         
                         <!-- Closed Actions Arc (Gradient Fill with thicker stroke) -->
-                        ${closed > 0 ? `
+                        ${closedLength > 0 ? `
                         <circle cx="48" cy="48" r="${radius}" fill="transparent"
                           stroke="url(#donut-grad-${item.id})" stroke-width="11.5"
                           stroke-dasharray="${closedLength} ${circumference - closedLength}"
                           stroke-dashoffset="${closedOffset}"
                           stroke-linecap="round"></circle>` : ''}
 
-                        <!-- In-Progress Actions Arc (Purple / Slate) -->
-                        ${inProg > 0 ? `
+                        <!-- In-Progress Actions Arc (Purple / Amber / Slate) -->
+                        ${inProgLength > 0 ? `
                         <circle cx="48" cy="48" r="${radius}" fill="transparent"
-                          stroke="#8B5CF6" stroke-width="11"
+                          stroke="${openCloseFilter === 'open' ? '#F59E0B' : '#8B5CF6'}" stroke-width="11"
                           stroke-dasharray="${inProgLength} ${circumference - inProgLength}"
                           stroke-dashoffset="${inProgOffset}"
                           stroke-linecap="round"></circle>` : ''}
 
                         <!-- Overdue Actions Arc (Red / Alert) -->
-                        ${overdue > 0 ? `
+                        ${overdueLength > 0 ? `
                         <circle cx="48" cy="48" r="${radius}" fill="transparent"
                           stroke="#EF4444" stroke-width="11.5"
                           stroke-dasharray="${overdueLength} ${circumference - overdueLength}"
@@ -2870,61 +3904,56 @@
                           stroke-linecap="round"></circle>` : ''}
                       </svg>
 
-                      <!-- Donut Center Label: Increased size of text and value inside donut without overlapping visual -->
+                      <!-- Donut Center Label: Dynamically displays closure rate or open/close count -->
                       <div class="absolute inset-0 flex flex-col items-center justify-center text-center select-none pointer-events-none px-1">
-                        <span class="text-xl sm:text-2xl font-black font-mono tracking-tight leading-none text-[#1E293B] donut-center-val">${compRate}</span>
-                        <span class="text-[10px] sm:text-[11px] font-extrabold text-slate-500 uppercase tracking-tight mt-1 leading-none">${item.id === 'psm-validation' ? 'QUALIFIED' : 'CLOSURE'}</span>
+                        <span class="text-2xl sm:text-3xl lg:text-[32px] font-black font-mono tracking-tight leading-none text-[#1E293B] donut-center-val">${donutCenterVal}</span>
+                        <span class="text-xs sm:text-[13px] font-black text-slate-500 uppercase tracking-wider mt-1.5 leading-none">${donutCenterSubtext}</span>
                       </div>
                     </div>
 
-                    <!-- Breakdown Legend List (Reduced horizontal space between values and text) -->
-                    <div class="flex-1 flex flex-col justify-center space-y-1.5 text-xs sm:text-sm pl-1 sm:pl-2">
-                      <div class="flex items-center gap-2 sm:gap-3">
-                        <span class="text-slate-600 font-semibold flex items-center gap-1.5 min-w-[72px] sm:min-w-[82px]">
-                          <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: ${item.gradientStop1};"></span> ${item.id === 'psm-validation' ? 'Passed:' : 'Closed:'}
+                    <!-- Breakdown Legend List (Right and Bottom aligned to maximize space for donut chart) -->
+                    <div class="flex-1 flex flex-col justify-end items-end self-end text-right space-y-1.5 text-xs sm:text-sm pl-2">
+                      <div class="flex items-center justify-end gap-2 sm:gap-2.5 w-full text-right">
+                        <span class="text-slate-600 font-semibold flex items-center justify-end gap-1.5 text-right">
+                          <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: ${item.gradientStop1};"></span>
+                          <span>${item.id === 'psm-validation' ? 'Passed:' : 'Closed:'}</span>
                         </span>
-                        <span class="font-mono font-black text-[#1E293B] text-base sm:text-lg">${closed}</span>
+                        <span class="font-mono font-black text-[#1E293B] text-base sm:text-lg text-right min-w-[32px]">${closed}</span>
                       </div>
-                      <div class="flex items-center gap-2 sm:gap-3">
-                        <span class="text-slate-600 font-semibold flex items-center gap-1.5 min-w-[72px] sm:min-w-[82px]">
-                          <span class="w-2.5 h-2.5 rounded-full bg-[#8B5CF6] shrink-0"></span> ${item.id === 'psm-validation' ? 'Pending:' : 'Open:'}
+                      <div class="flex items-center justify-end gap-2 sm:gap-2.5 w-full text-right">
+                        <span class="text-slate-600 font-semibold flex items-center justify-end gap-1.5 text-right">
+                          <span class="w-2.5 h-2.5 rounded-full bg-[#8B5CF6] shrink-0"></span>
+                          <span>${item.id === 'psm-validation' ? 'Pending:' : 'Open:'}</span>
                         </span>
-                        <span class="font-mono font-black text-[#1E293B] text-base sm:text-lg">${inProg}</span>
+                        <span class="font-mono font-black text-[#1E293B] text-base sm:text-lg text-right min-w-[32px]">${inProg}</span>
                       </div>
-                      <div class="flex items-center gap-2 sm:gap-3">
-                        <span class="font-semibold flex items-center gap-1.5 min-w-[72px] sm:min-w-[82px] ${overdue > 0 ? 'text-rose-700 font-bold' : 'text-slate-600'}">
-                          <span class="w-2.5 h-2.5 rounded-full bg-[#EF4444] shrink-0"></span> Overdue:
+                      <div class="flex items-center justify-end gap-2 sm:gap-2.5 w-full text-right">
+                        <span class="font-semibold flex items-center justify-end gap-1.5 text-right ${overdue > 0 ? 'text-rose-700 font-bold' : 'text-slate-600'}">
+                          <span class="w-2.5 h-2.5 rounded-full bg-[#EF4444] shrink-0"></span>
+                          <span>Overdue:</span>
                         </span>
-                        <span class="font-mono font-black text-base sm:text-lg ${overdue > 0 ? 'text-rose-600 px-1.5 py-0.5 bg-rose-50 rounded border border-rose-200' : 'text-slate-700'}">${overdue}</span>
+                        <span class="font-mono font-black text-base sm:text-lg text-right min-w-[32px] ${overdue > 0 ? 'text-rose-600 px-1.5 py-0.5 bg-rose-50 rounded border border-rose-200' : 'text-slate-700'}">${overdue}</span>
                       </div>
-                      <div class="pt-1.5 border-t border-slate-200/90 flex items-center gap-2 sm:gap-3">
-                        <span class="text-slate-700 font-bold min-w-[72px] sm:min-w-[82px]">${item.id === 'psm-validation' ? 'Personnel:' : 'Total:'}</span>
-                        <span class="font-mono font-black text-[#1E293B] text-base sm:text-xl">${displayTotal}</span>
+                      <div class="pt-1.5 mt-0.5 border-t border-slate-200/90 flex items-center justify-end gap-2 sm:gap-2.5 w-full text-right">
+                        <span class="text-slate-700 font-bold text-right">${item.id === 'psm-validation' ? 'Personnel:' : 'Total:'}</span>
+                        <span class="font-mono font-black text-[#1E293B] text-base sm:text-xl text-right min-w-[32px]">${displayTotal}</span>
                       </div>
                     </div>
                   </div>
-
-                  <!-- Synchronized Focus Tag for PSM -->
-                  ${item.id === 'sub-hse-psm' ? `
-                    <div class="px-2.5 py-1.5 rounded-lg bg-teal-50 border border-teal-200 text-teal-900 text-xs font-bold flex items-center justify-between">
-                      <span>${total} Audit Observations</span>
-                      <span class="font-mono text-teal-800 font-bold text-sm">${closed} Closed • ${inProg} Open</span>
-                    </div>
-                  ` : ''}
 
                   <!-- 4 ACTION METRICS PILLS (Closure % | Closed | Open | Overdue) shifted a little to bottom -->
                   <div class="grid grid-cols-4 gap-1.5 sm:gap-2 text-center mt-3.5 sm:mt-4 pt-1">
                     <div class="bg-white rounded-lg py-2 px-1 border border-slate-200 shadow-2xs">
                       <div class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase">${item.id === 'psm-validation' ? 'Qualified' : 'Closure'}</div>
-                      <div class="text-base sm:text-lg lg:text-xl font-black font-mono text-emerald-600 card-stat-pill-val">${compRate}</div>
+                      <div class="text-base sm:text-lg lg:text-xl font-black font-mono text-emerald-600 card-stat-pill-val">${k.deptRate || compRate}</div>
                     </div>
                     <div class="bg-white rounded-lg py-2 px-1 border border-slate-200 shadow-2xs">
                       <div class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase">${item.id === 'psm-validation' ? 'Passed' : 'Closed'}</div>
                       <div class="text-base sm:text-lg lg:text-xl font-black font-mono text-blue-600 card-stat-pill-val">${closed}</div>
                     </div>
-                    <div class="bg-white rounded-lg py-2 px-1 border border-slate-200 shadow-2xs">
-                      <div class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase">${item.id === 'psm-validation' ? 'Pending' : 'Open'}</div>
-                      <div class="text-base sm:text-lg lg:text-xl font-black font-mono text-purple-600 card-stat-pill-val">${inProg}</div>
+                    <div class="bg-white rounded-lg py-2 px-1 border border-slate-200 shadow-2xs ${openCloseFilter === 'open' && inProg > 0 ? 'bg-amber-50/80 border-amber-300 ring-1 ring-amber-200' : ''}">
+                      <div class="text-[10px] sm:text-xs font-bold ${openCloseFilter === 'open' && inProg > 0 ? 'text-amber-800' : 'text-slate-500'} uppercase">${item.id === 'psm-validation' ? 'Pending' : 'Open'}</div>
+                      <div class="text-base sm:text-lg lg:text-xl font-black font-mono ${openCloseFilter === 'open' && inProg > 0 ? 'text-amber-700' : 'text-purple-600'} card-stat-pill-val">${inProg}</div>
                     </div>
                     <div class="rounded-lg py-2 px-1 border shadow-2xs ${overdue > 0 ? 'bg-rose-50 border-rose-300' : 'bg-white border-slate-200'}">
                       <div class="text-[10px] sm:text-xs font-bold ${overdue > 0 ? 'text-rose-700' : 'text-slate-500'} uppercase">Overdue</div>
@@ -3726,6 +4755,28 @@
           }
         },
 
+        /**
+         * Attached Sheet & Column References Modal
+         */
+        openSheetColumnRefsModal() {
+          const modal = document.getElementById('sheet-refs-modal');
+          if (modal) {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            if (window.lucide && typeof window.lucide.createIcons === 'function') {
+              window.lucide.createIcons();
+            }
+          }
+        },
+
+        closeSheetColumnRefsModal() {
+          const modal = document.getElementById('sheet-refs-modal');
+          if (modal) {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+          }
+        },
+
         saveSheetLink() {
           const input = document.getElementById('sheet-url-input');
           if (input && input.value) {
@@ -3841,6 +4892,7 @@
               } else {
                 this.closeIntegrationModal();
                 this.closePaletteModal();
+                this.closeSheetColumnRefsModal();
               }
             }
           });
