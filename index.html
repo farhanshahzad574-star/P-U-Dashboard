@@ -91,10 +91,22 @@
     <script src="/assets/psmSuite.js?v=20260919b"></script>
 
     <style>
-      /* Base font legibility calibrated for 8-foot control room & wall display viewing */
+      /* Base font legibility: standard across devices, calibrated for wall displays */
       html {
-        font-size: 17.5px;
-        zoom: 75%;
+        font-size: 14px;
+        zoom: 100%;
+        -webkit-text-size-adjust: 100%;
+      }
+      @media (min-width: 640px) {
+        html {
+          font-size: 15px;
+        }
+      }
+      @media (min-width: 1024px) {
+        html {
+          font-size: 17.5px;
+          zoom: 75%;
+        }
       }
       body {
         color: #1E293B;
@@ -308,193 +320,342 @@
 
       /* Prominent Executive Dashboard Title & Compact Company Name (aligned with top) */
       #app-title {
-        font-size: 2.85rem !important;
         font-weight: 900 !important;
         letter-spacing: -0.03em !important;
-        line-height: 1.05 !important;
         color: #0F172A !important;
         margin: 0 !important;
         padding: 0 !important;
       }
       #company-name {
-        font-size: 0.76rem !important;
         font-weight: 800 !important;
         letter-spacing: 0.09em !important;
         color: #64748B !important;
         text-transform: uppercase !important;
         margin: 0 !important;
-        margin-top: 0.25rem !important;
         line-height: 1.2 !important;
       }
 
       /* ========================================================================= */
-      /* 8-FOOT DISPLAY DISTANCE HIGH-VISIBILITY TYPOGRAPHY (CONTROL ROOM & WALL)  */
+      /* 1. MOBILE RESPONSIVE TYPOGRAPHY (< 768px) - PREVENTS OVERFLOW & CLIPPING */
       /* ========================================================================= */
-      body {
-        font-size: 1.12rem !important;
-        letter-spacing: 0.015em;
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
+      @media (max-width: 767px) {
+        body {
+          font-size: 0.95rem;
+          letter-spacing: normal;
+        }
+        #app-title {
+          font-size: 1.55rem !important;
+          line-height: 1.15 !important;
+        }
+        #company-name {
+          font-size: 0.65rem !important;
+          margin-top: 0.15rem !important;
+        }
+        #kpi-val-safe-manhours {
+          font-size: clamp(1.05rem, 4.8vw, 1.35rem) !important;
+          font-weight: 900 !important;
+          letter-spacing: -0.04em !important;
+          line-height: 1.1 !important;
+          white-space: nowrap !important;
+          max-width: 100% !important;
+          overflow: hidden !important;
+          text-overflow: ellipsis !important;
+        }
+        .hseq-kpi-val {
+          font-size: 1.95rem !important;
+          line-height: 1.05 !important;
+        }
+        .donut-center-val {
+          font-size: 1.32rem !important;
+          font-weight: 900 !important;
+          line-height: 1 !important;
+          letter-spacing: -0.02em !important;
+        }
+        .donut-center-subtext {
+          font-size: 0.65rem !important;
+          font-weight: 800 !important;
+          letter-spacing: 0.08em !important;
+          margin-top: 0.2rem !important;
+          line-height: 1 !important;
+        }
+        .card-stat-pill-val {
+          font-size: 1.02rem !important;
+          font-weight: 900 !important;
+          line-height: 1.15 !important;
+        }
+        .card-stat-pill-label {
+          font-size: 0.62rem !important;
+          font-weight: 800 !important;
+          letter-spacing: 0.02em !important;
+          line-height: 1.2 !important;
+        }
+        .kpi-metric-val {
+          font-size: 2.15rem !important;
+          font-weight: 900 !important;
+          line-height: 1.1 !important;
+          letter-spacing: -0.02em !important;
+        }
+        .donut-legend-val {
+          font-size: 0.95rem !important;
+        }
+        .donut-legend-label {
+          font-size: 0.78rem !important;
+        }
+        .cmp-bar-num {
+          font-size: 12px !important;
+          font-weight: 800 !important;
+          font-family: 'Plus Jakarta Sans', system-ui, sans-serif !important;
+        }
+        .cmp-bar-zero {
+          font-size: 10px !important;
+          font-weight: 700 !important;
+          font-family: 'Plus Jakarta Sans', system-ui, sans-serif !important;
+        }
+        .cmp-x-label {
+          font-size: 11px !important;
+          font-weight: 800 !important;
+        }
+        table td,
+        table th {
+          font-size: 0.84rem !important;
+          padding: 0.45rem 0.55rem !important;
+        }
+        select,
+        input {
+          font-size: 0.88rem !important;
+          padding: 0.4rem 0.65rem !important;
+        }
+        .nav-menu-btn {
+          font-size: 0.78rem !important;
+          padding: 0.35rem 0.65rem !important;
+        }
+        .category-btn {
+          font-size: 0.85rem !important;
+          padding: 0.38rem 0.75rem !important;
+        }
+        .plr-pill {
+          font-size: 0.82rem !important;
+          padding: 0.35rem 0.65rem !important;
+        }
+        #action-modal,
+        #plr-detail-modal,
+        #plr-inspect-modal,
+        #chatbot-drawer {
+          font-size: 0.95rem !important;
+        }
+        #action-modal h3,
+        #plr-detail-modal h3,
+        #plr-inspect-modal h3 {
+          font-size: 1.25rem !important;
+          font-weight: 800 !important;
+        }
       }
 
-      /* Headings - Crisp, heavy, legible from 8 feet */
-      h1 {
-        font-size: 2.55rem !important;
-        font-weight: 900 !important;
-        letter-spacing: -0.02em !important;
-        line-height: 1.15 !important;
-      }
-      h2 {
-        font-size: 2.15rem !important;
-        font-weight: 900 !important;
-        letter-spacing: -0.015em !important;
-        line-height: 1.2 !important;
-      }
-      h3 {
-        font-size: 1.78rem !important;
-        font-weight: 900 !important;
-        letter-spacing: -0.01em !important;
-        line-height: 1.25 !important;
-      }
-      h4 {
-        font-size: 1.48rem !important;
-        font-weight: 800 !important;
-        line-height: 1.3 !important;
-      }
-
-      /* Micro text / metadata / tags - scaled up so 9px/10px/11px is crystal clear from 8 ft */
-      .text-\[9px\],
-      .text-\[10px\],
-      .text-\[11px\] {
-        font-size: 1.02rem !important;
-        font-weight: 700 !important;
-        line-height: 1.4 !important;
-      }
-      .text-xs {
-        font-size: 1.14rem !important;
-        line-height: 1.45 !important;
-      }
-      .text-sm {
-        font-size: 1.26rem !important;
-        line-height: 1.5 !important;
-      }
-      .text-base {
-        font-size: 1.38rem !important;
-        line-height: 1.45 !important;
-      }
-      .text-lg {
-        font-size: 1.56rem !important;
-        line-height: 1.35 !important;
-      }
-      .text-xl {
-        font-size: 1.88rem !important;
-        line-height: 1.3 !important;
-      }
-      .text-2xl {
-        font-size: 2.45rem !important;
-        font-weight: 900 !important;
-        line-height: 1.2 !important;
-      }
-      .text-3xl {
-        font-size: 3.15rem !important;
-        font-weight: 900 !important;
-        line-height: 1.15 !important;
-      }
-      .text-4xl,
-      .text-5xl,
-      .text-6xl,
-      .kpi-metric-val {
-        font-size: 4.15rem !important;
-        font-weight: 900 !important;
-        line-height: 1.05 !important;
-        letter-spacing: -0.03em !important;
+      /* ========================================================================= */
+      /* 2. TABLET RESPONSIVE TYPOGRAPHY (768px - 1023px)                          */
+      /* ========================================================================= */
+      @media (min-width: 768px) and (max-width: 1023px) {
+        #app-title {
+          font-size: 2.15rem !important;
+          line-height: 1.1 !important;
+        }
+        #company-name {
+          font-size: 0.72rem !important;
+          margin-top: 0.2rem !important;
+        }
+        .kpi-metric-val {
+          font-size: 2.85rem !important;
+          line-height: 1.1 !important;
+        }
+        .donut-center-val {
+          font-size: 1.65rem !important;
+        }
+        .card-stat-pill-val {
+          font-size: 1.25rem !important;
+        }
+        .cmp-bar-num {
+          font-size: 12px !important;
+        }
       }
 
-      /* Metric Pills & Donut Centers */
-      .card-stat-pill-val {
-        font-size: 1.48rem !important;
-        font-weight: 900 !important;
-        line-height: 1.1 !important;
-      }
-      .donut-center-val {
-        font-size: 2.1rem !important;
-        font-weight: 900 !important;
-        line-height: 1 !important;
-      }
-      .cmp-bar-num {
-        font-size: 13px !important;
-        font-weight: 800 !important;
-        font-family: 'Plus Jakarta Sans', system-ui, sans-serif !important;
-      }
-      .cmp-bar-zero {
-        font-size: 11px !important;
-        font-weight: 700 !important;
-        font-family: 'Plus Jakarta Sans', system-ui, sans-serif !important;
-      }
-      .cmp-x-label {
-        font-size: 14px !important;
-        font-weight: 800 !important;
-      }
+      /* ========================================================================= */
+      /* 3. 8-FOOT DISPLAY DISTANCE HIGH-VISIBILITY TYPOGRAPHY (DESKTOP & WALL >= 1024px) */
+      /* ========================================================================= */
+      @media (min-width: 1024px) {
+        #app-title {
+          font-size: 2.85rem !important;
+          line-height: 1.05 !important;
+        }
+        #company-name {
+          font-size: 0.76rem !important;
+          margin-top: 0.25rem !important;
+        }
+        body {
+          font-size: 1.12rem !important;
+          letter-spacing: 0.015em;
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+        }
 
-      /* Table rows, cells, and headers */
-      table td,
-      table th {
-        font-size: 1.16rem !important;
-        padding-top: 0.95rem !important;
-        padding-bottom: 0.95rem !important;
-        letter-spacing: 0.01em;
-      }
-      table th {
-        font-weight: 800 !important;
-        text-transform: uppercase;
-        letter-spacing: 0.04em !important;
-      }
+        /* Headings - Crisp, heavy, legible from 8 feet */
+        h1 {
+          font-size: 2.55rem !important;
+          font-weight: 900 !important;
+          letter-spacing: -0.02em !important;
+          line-height: 1.15 !important;
+        }
+        h2 {
+          font-size: 2.15rem !important;
+          font-weight: 900 !important;
+          letter-spacing: -0.015em !important;
+          line-height: 1.2 !important;
+        }
+        h3 {
+          font-size: 1.78rem !important;
+          font-weight: 900 !important;
+          letter-spacing: -0.01em !important;
+          line-height: 1.25 !important;
+        }
+        h4 {
+          font-size: 1.48rem !important;
+          font-weight: 800 !important;
+          line-height: 1.3 !important;
+        }
 
-      /* Inputs, Select dropdowns */
-      select,
-      input {
-        font-size: 1.12rem !important;
-        padding: 0.55rem 0.85rem !important;
-      }
+        /* Micro text / metadata / tags - scaled up so 9px/10px/11px is crystal clear from 8 ft */
+        .text-\[9px\],
+        .text-\[10px\],
+        .text-\[11px\] {
+          font-size: 1.02rem !important;
+          font-weight: 700 !important;
+          line-height: 1.4 !important;
+        }
+        .text-xs {
+          font-size: 1.14rem !important;
+          line-height: 1.45 !important;
+        }
+        .text-sm {
+          font-size: 1.26rem !important;
+          line-height: 1.5 !important;
+        }
+        .text-base {
+          font-size: 1.38rem !important;
+          line-height: 1.45 !important;
+        }
+        .text-lg {
+          font-size: 1.56rem !important;
+          line-height: 1.35 !important;
+        }
+        .text-xl {
+          font-size: 1.88rem !important;
+          line-height: 1.3 !important;
+        }
+        .text-2xl {
+          font-size: 2.45rem !important;
+          font-weight: 900 !important;
+          line-height: 1.2 !important;
+        }
+        .text-3xl {
+          font-size: 3.15rem !important;
+          font-weight: 900 !important;
+          line-height: 1.15 !important;
+        }
+        .text-4xl,
+        .text-5xl,
+        .text-6xl,
+        .kpi-metric-val {
+          font-size: 4.15rem !important;
+          font-weight: 900 !important;
+          line-height: 1.05 !important;
+          letter-spacing: -0.03em !important;
+        }
 
-      /* Navigation Menus, Category & Department Filters - Prominent Dashboard Buttons */
-      .nav-menu-btn {
-        font-size: 0.95rem !important;
-        font-weight: 800 !important;
-        padding: 0.44rem 0.85rem !important;
-        white-space: nowrap !important;
-        border-radius: 9px !important;
-        line-height: 1.3 !important;
-        letter-spacing: 0.015em !important;
-      }
-      .category-btn {
-        font-size: 1.08rem !important;
-        font-weight: 700 !important;
-        padding: 0.5rem 1rem !important;
-        white-space: nowrap !important;
-      }
-      .plr-pill {
-        font-size: 1.12rem !important;
-        font-weight: 700 !important;
-        padding: 0.4rem 0.85rem !important;
-        white-space: nowrap !important;
-      }
-      button {
-        white-space: nowrap;
-      }
+        /* Metric Pills & Donut Centers */
+        .card-stat-pill-val {
+          font-size: 1.48rem !important;
+          font-weight: 900 !important;
+          line-height: 1.1 !important;
+        }
+        .donut-center-val {
+          font-size: 2.1rem !important;
+          font-weight: 900 !important;
+          line-height: 1 !important;
+        }
+        .cmp-bar-num {
+          font-size: 13px !important;
+          font-weight: 800 !important;
+          font-family: 'Plus Jakarta Sans', system-ui, sans-serif !important;
+        }
+        .cmp-bar-zero {
+          font-size: 11px !important;
+          font-weight: 700 !important;
+          font-family: 'Plus Jakarta Sans', system-ui, sans-serif !important;
+        }
+        .cmp-x-label {
+          font-size: 14px !important;
+          font-weight: 800 !important;
+        }
 
-      /* Modal and Dialog Typography Scaling */
-      #action-modal,
-      #plr-detail-modal,
-      #plr-inspect-modal,
-      #chatbot-drawer {
-        font-size: 1.12rem;
-      }
-      #action-modal h3,
-      #plr-detail-modal h3,
-      #plr-inspect-modal h3 {
-        font-size: 1.78rem !important;
-        font-weight: 900 !important;
+        /* Table rows, cells, and headers */
+        table td,
+        table th {
+          font-size: 1.16rem !important;
+          padding-top: 0.95rem !important;
+          padding-bottom: 0.95rem !important;
+          letter-spacing: 0.01em;
+        }
+        table th {
+          font-weight: 800 !important;
+          text-transform: uppercase;
+          letter-spacing: 0.04em !important;
+        }
+
+        /* Inputs, Select dropdowns */
+        select,
+        input {
+          font-size: 1.12rem !important;
+          padding: 0.55rem 0.85rem !important;
+        }
+
+        /* Navigation Menus, Category & Department Filters */
+        .nav-menu-btn {
+          font-size: 0.95rem !important;
+          font-weight: 800 !important;
+          padding: 0.44rem 0.85rem !important;
+          white-space: nowrap !important;
+          border-radius: 9px !important;
+          line-height: 1.3 !important;
+          letter-spacing: 0.015em !important;
+        }
+        .category-btn {
+          font-size: 1.08rem !important;
+          font-weight: 700 !important;
+          padding: 0.5rem 1rem !important;
+          white-space: nowrap !important;
+        }
+        .plr-pill {
+          font-size: 1.12rem !important;
+          font-weight: 700 !important;
+          padding: 0.4rem 0.85rem !important;
+          white-space: nowrap !important;
+        }
+        button {
+          white-space: nowrap;
+        }
+
+        /* Modal and Dialog Typography Scaling */
+        #action-modal,
+        #plr-detail-modal,
+        #plr-inspect-modal,
+        #chatbot-drawer {
+          font-size: 1.12rem;
+        }
+        #action-modal h3,
+        #plr-detail-modal h3,
+        #plr-inspect-modal h3 {
+          font-size: 1.78rem !important;
+          font-weight: 900 !important;
+        }
       }
     </style>
   </head>
@@ -512,12 +673,12 @@
         <div class="flex flex-col xl:flex-row xl:items-start xl:justify-between gap-3 sm:gap-4">
           
           <!-- Brand Header: Rotating FPCL Logo & Executive Dashboard Title (Aligned with Top) -->
-          <div class="flex items-start gap-3.5 sm:gap-4.5 shrink-0">
-            <!-- 3D FPCL Rotating Emblem Stage (Scaled up to be clearly visible from 10 feet) -->
+          <div class="flex items-center sm:items-start gap-2.5 sm:gap-4.5 shrink-0">
+            <!-- 3D FPCL Rotating Emblem Stage (Responsive for mobile, large for 10-ft wall displays) -->
             <div
               id="fpcl-emblem-stage"
               onclick="portalApp.handleDropdownSelect('overview')"
-              class="relative w-[112px] h-[112px] sm:w-[124px] sm:h-[124px] lg:w-[136px] lg:h-[136px] flex items-center justify-center shrink-0 cursor-pointer select-none group fpcl-3d-scene"
+              class="relative w-16 h-16 min-[400px]:w-20 min-[400px]:h-20 sm:w-[124px] sm:h-[124px] lg:w-[136px] lg:h-[136px] flex items-center justify-center shrink-0 cursor-pointer select-none group fpcl-3d-scene"
               title="FPCL • FFBL Power Company Limited (Click to Return to Overview)"
             >
               <!-- 1. ORBITING CIRCLE WITH ORANGE AND BLUE COLOR (ROTATES AROUND THE LOGO IN 360° INFINITE LOOP) -->
@@ -595,7 +756,7 @@
               <!-- 2. CENTRAL FPCL LOGO BADGE (ROTATES HORIZONTALLY 360° IN INFINITE LOOP) -->
               <div
                 id="fpcl-horizontal-logo-core"
-                class="w-[82px] h-[82px] sm:w-[92px] sm:h-[92px] lg:w-[102px] lg:h-[102px] relative flex items-center justify-center fpcl-rotate-horizontal-loop"
+                class="w-12 h-12 min-[400px]:w-14 min-[400px]:h-14 sm:w-[92px] sm:h-[92px] lg:w-[102px] lg:h-[102px] relative flex items-center justify-center fpcl-rotate-horizontal-loop"
               >
                 <!-- FRONT FACE OF BADGE (Facing viewer at 0°, upright & crystal clear) -->
                 <div
@@ -772,7 +933,7 @@
     </header>
 
     <!-- MAIN CONTAINER -->
-    <main id="main-content" class="flex-1 w-full px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12 pt-2.5 sm:pt-3 pb-6 sm:pb-8">
+    <main id="main-content" class="flex-1 w-full px-2 sm:px-6 lg:px-8 xl:px-10 2xl:px-12 pt-2 sm:pt-3 pb-6 sm:pb-8">
 
       <!-- ========================================================================= -->
       <!-- VIEW 1: MAIN LANDING PAGE / INDEX VIEW (DEPARTMENT DONUT ANALYTICS)        -->
@@ -782,15 +943,15 @@
         <!-- ========================================================================= -->
         <!-- HSEQ KEY PERFORMANCE INDICATORS (Live Google Sheet: HSEQ_KPI)             -->
         <!-- ========================================================================= -->
-        <div id="hseq-kpi-container" class="bg-gradient-to-b from-white to-slate-50/90 border border-slate-200/90 rounded-2xl p-5 sm:p-6 shadow-xs space-y-4">
+        <div id="hseq-kpi-container" class="bg-gradient-to-b from-white to-slate-50/90 border border-slate-200/90 rounded-2xl p-3 sm:p-6 shadow-xs space-y-3 sm:space-y-4">
           <!-- Executive Section Header: Center-aligned Title -->
           <div class="relative flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-100 gap-3">
             <div class="w-full flex items-center justify-center gap-3">
-              <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-600 text-white flex items-center justify-center shadow-xs shrink-0">
-                <i data-lucide="shield-check" class="w-5 h-5"></i>
+              <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-600 text-white flex items-center justify-center shadow-xs shrink-0">
+                <i data-lucide="shield-check" class="w-4 h-4 sm:w-5 sm:h-5"></i>
               </div>
-              <div class="flex items-center gap-2.5">
-                <h3 class="text-base sm:text-lg lg:text-xl font-black text-[#1E293B] tracking-wide text-center">
+              <div class="flex items-center gap-2">
+                <h3 class="text-sm sm:text-lg lg:text-xl font-black text-[#1E293B] tracking-wide text-center">
                   HSEQ KEY PERFORMANCE INDICATORS
                 </h3>
                 <span class="relative flex h-2.5 w-2.5 shrink-0" title="Live Active">
@@ -818,99 +979,99 @@
           </div>
 
           <!-- 6 Colorful Professional KPI Cards (Center Aligned) -->
-          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-4">
             
             <!-- 1. Safe Manhours (Emerald / Green) -->
-            <div class="card-hover-effect relative overflow-hidden rounded-xl border border-emerald-200/90 bg-gradient-to-b from-emerald-50/70 via-white to-emerald-50/30 p-3.5 sm:p-4 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between items-center text-center min-h-[120px] sm:min-h-[135px]">
+            <div class="card-hover-effect relative overflow-hidden rounded-xl border border-emerald-200/90 bg-gradient-to-b from-emerald-50/70 via-white to-emerald-50/30 p-2.5 sm:p-4 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between items-center text-center min-h-[105px] sm:min-h-[135px]">
               <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-500 to-teal-500"></div>
-              <div class="flex items-center justify-center gap-2 w-full text-center">
-                <div class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 shadow-2xs border border-emerald-200">
-                  <i data-lucide="shield-check" class="w-4 h-4"></i>
+              <div class="flex items-center justify-center gap-1.5 w-full text-center">
+                <div class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 shadow-2xs border border-emerald-200">
+                  <i data-lucide="shield-check" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
                 </div>
-                <span class="text-[11px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider font-mono text-center">Safe Manhours</span>
+                <span class="text-[10px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider font-mono text-center truncate">Safe Manhours</span>
               </div>
-              <div class="pt-2 sm:pt-3 pb-1 flex flex-col justify-center items-center text-center min-w-0 w-full overflow-hidden">
-                <div id="kpi-val-safe-manhours" class="text-2xl sm:text-3xl lg:text-[1.7rem] xl:text-[2.1rem] 2xl:text-[2.4rem] font-black font-mono tracking-tighter text-emerald-800 leading-none whitespace-nowrap text-center" title="Safe Manhours">
+              <div class="pt-1.5 sm:pt-3 pb-1 flex flex-col justify-center items-center text-center min-w-0 w-full overflow-hidden">
+                <div id="kpi-val-safe-manhours" class="text-base min-[360px]:text-lg min-[400px]:text-xl sm:text-3xl lg:text-[1.7rem] xl:text-[2.1rem] 2xl:text-[2.4rem] font-black font-mono tracking-tight text-emerald-800 leading-none whitespace-nowrap text-center" title="Safe Manhours">
                   2,200,445
                 </div>
               </div>
             </div>
 
             <!-- 2. Fire Incidents (Rose / Coral) -->
-            <div class="card-hover-effect relative overflow-hidden rounded-xl border border-rose-200/90 bg-gradient-to-b from-rose-50/70 via-white to-orange-50/20 p-3.5 sm:p-4 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between items-center text-center min-h-[120px] sm:min-h-[135px]">
+            <div class="card-hover-effect relative overflow-hidden rounded-xl border border-rose-200/90 bg-gradient-to-b from-rose-50/70 via-white to-orange-50/20 p-2.5 sm:p-4 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between items-center text-center min-h-[105px] sm:min-h-[135px]">
               <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-rose-500 to-red-500"></div>
-              <div class="flex items-center justify-center gap-2 w-full text-center">
-                <div class="w-7 h-7 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center shrink-0 shadow-2xs border border-rose-200">
-                  <i data-lucide="flame" class="w-4 h-4"></i>
+              <div class="flex items-center justify-center gap-1.5 w-full text-center">
+                <div class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center shrink-0 shadow-2xs border border-rose-200">
+                  <i data-lucide="flame" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
                 </div>
-                <span class="text-[11px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider font-mono text-center">Fire</span>
+                <span class="text-[10px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider font-mono text-center truncate">Fire</span>
               </div>
-              <div class="pt-2 sm:pt-3 pb-1 flex flex-col justify-center items-center text-center">
-                <div id="kpi-val-fire" class="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-black font-mono tracking-tight text-rose-700 leading-none text-center">
+              <div class="pt-1.5 sm:pt-3 pb-1 flex flex-col justify-center items-center text-center">
+                <div id="kpi-val-fire" class="text-2xl sm:text-4xl lg:text-5xl xl:text-6xl font-black font-mono tracking-tight text-rose-700 leading-none text-center hseq-kpi-val">
                   0
                 </div>
               </div>
             </div>
 
             <!-- 3. Lost Time Injury (LTI) (Royal Blue / Indigo) -->
-            <div class="card-hover-effect relative overflow-hidden rounded-xl border border-indigo-200/90 bg-gradient-to-b from-indigo-50/70 via-white to-blue-50/20 p-3.5 sm:p-4 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between items-center text-center min-h-[120px] sm:min-h-[135px]">
+            <div class="card-hover-effect relative overflow-hidden rounded-xl border border-indigo-200/90 bg-gradient-to-b from-indigo-50/70 via-white to-blue-50/20 p-2.5 sm:p-4 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between items-center text-center min-h-[105px] sm:min-h-[135px]">
               <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-indigo-500 to-blue-600"></div>
-              <div class="flex items-center justify-center gap-2 w-full text-center">
-                <div class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center shrink-0 shadow-2xs border border-indigo-200">
-                  <i data-lucide="activity" class="w-4 h-4"></i>
+              <div class="flex items-center justify-center gap-1.5 w-full text-center">
+                <div class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center shrink-0 shadow-2xs border border-indigo-200">
+                  <i data-lucide="activity" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
                 </div>
-                <span class="text-[11px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider font-mono text-center">LTI</span>
+                <span class="text-[10px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider font-mono text-center truncate">LTI</span>
               </div>
-              <div class="pt-2 sm:pt-3 pb-1 flex flex-col justify-center items-center text-center">
-                <div id="kpi-val-lti" class="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-black font-mono tracking-tight text-indigo-800 leading-none text-center">
+              <div class="pt-1.5 sm:pt-3 pb-1 flex flex-col justify-center items-center text-center">
+                <div id="kpi-val-lti" class="text-2xl sm:text-4xl lg:text-5xl xl:text-6xl font-black font-mono tracking-tight text-indigo-800 leading-none text-center hseq-kpi-val">
                   0
                 </div>
               </div>
             </div>
 
             <!-- 4. Medical Treatment (Violet / Purple) -->
-            <div class="card-hover-effect relative overflow-hidden rounded-xl border border-purple-200/90 bg-gradient-to-b from-purple-50/70 via-white to-violet-50/20 p-3.5 sm:p-4 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between items-center text-center min-h-[120px] sm:min-h-[135px]">
+            <div class="card-hover-effect relative overflow-hidden rounded-xl border border-purple-200/90 bg-gradient-to-b from-purple-50/70 via-white to-violet-50/20 p-2.5 sm:p-4 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between items-center text-center min-h-[105px] sm:min-h-[135px]">
               <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-purple-500 to-violet-600"></div>
-              <div class="flex items-center justify-center gap-2 w-full text-center">
-                <div class="w-7 h-7 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center shrink-0 shadow-2xs border border-purple-200">
-                  <i data-lucide="stethoscope" class="w-4 h-4"></i>
+              <div class="flex items-center justify-center gap-1.5 w-full text-center">
+                <div class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center shrink-0 shadow-2xs border border-purple-200">
+                  <i data-lucide="stethoscope" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
                 </div>
-                <span class="text-[11px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider font-mono text-center">Medical Treatment</span>
+                <span class="text-[10px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider font-mono text-center truncate">Medical Treatment</span>
               </div>
-              <div class="pt-2 sm:pt-3 pb-1 flex flex-col justify-center items-center text-center">
-                <div id="kpi-val-medical" class="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-black font-mono tracking-tight text-purple-800 leading-none text-center">
+              <div class="pt-1.5 sm:pt-3 pb-1 flex flex-col justify-center items-center text-center">
+                <div id="kpi-val-medical" class="text-2xl sm:text-4xl lg:text-5xl xl:text-6xl font-black font-mono tracking-tight text-purple-800 leading-none text-center hseq-kpi-val">
                   0
                 </div>
               </div>
             </div>
 
             <!-- 5. First Aid Case (Amber / Orange) -->
-            <div class="card-hover-effect relative overflow-hidden rounded-xl border border-amber-200/90 bg-gradient-to-b from-amber-50/70 via-white to-yellow-50/20 p-3.5 sm:p-4 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between items-center text-center min-h-[120px] sm:min-h-[135px]">
+            <div class="card-hover-effect relative overflow-hidden rounded-xl border border-amber-200/90 bg-gradient-to-b from-amber-50/70 via-white to-yellow-50/20 p-2.5 sm:p-4 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between items-center text-center min-h-[105px] sm:min-h-[135px]">
               <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-500 to-orange-500"></div>
-              <div class="flex items-center justify-center gap-2 w-full text-center">
-                <div class="w-7 h-7 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center shrink-0 shadow-2xs border border-amber-200">
-                  <i data-lucide="bandage" class="w-4 h-4"></i>
+              <div class="flex items-center justify-center gap-1.5 w-full text-center">
+                <div class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center shrink-0 shadow-2xs border border-amber-200">
+                  <i data-lucide="bandage" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
                 </div>
-                <span class="text-[11px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider font-mono text-center">First Aid Case</span>
+                <span class="text-[10px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider font-mono text-center truncate">First Aid Case</span>
               </div>
-              <div class="pt-2 sm:pt-3 pb-1 flex flex-col justify-center items-center text-center">
-                <div id="kpi-val-first-aid" class="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-black font-mono tracking-tight text-amber-800 leading-none text-center">
+              <div class="pt-1.5 sm:pt-3 pb-1 flex flex-col justify-center items-center text-center">
+                <div id="kpi-val-first-aid" class="text-2xl sm:text-4xl lg:text-5xl xl:text-6xl font-black font-mono tracking-tight text-amber-800 leading-none text-center hseq-kpi-val">
                   5
                 </div>
               </div>
             </div>
 
             <!-- 6. Nearmiss (Sky / Cyan) -->
-            <div class="card-hover-effect relative overflow-hidden rounded-xl border border-sky-200/90 bg-gradient-to-b from-sky-50/70 via-white to-cyan-50/20 p-3.5 sm:p-4 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between items-center text-center min-h-[120px] sm:min-h-[135px]">
+            <div class="card-hover-effect relative overflow-hidden rounded-xl border border-sky-200/90 bg-gradient-to-b from-sky-50/70 via-white to-cyan-50/20 p-2.5 sm:p-4 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between items-center text-center min-h-[105px] sm:min-h-[135px]">
               <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-sky-500 to-cyan-600"></div>
-              <div class="flex items-center justify-center gap-2 w-full text-center">
-                <div class="w-7 h-7 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center shrink-0 shadow-2xs border border-sky-200">
-                  <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+              <div class="flex items-center justify-center gap-1.5 w-full text-center">
+                <div class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center shrink-0 shadow-2xs border border-sky-200">
+                  <i data-lucide="alert-triangle" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
                 </div>
-                <span class="text-[11px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider font-mono text-center">Nearmiss</span>
+                <span class="text-[10px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider font-mono text-center truncate">Nearmiss</span>
               </div>
-              <div class="pt-2 sm:pt-3 pb-1 flex flex-col justify-center items-center text-center">
-                <div id="kpi-val-nearmiss" class="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-black font-mono tracking-tight text-sky-800 leading-none text-center">
+              <div class="pt-1.5 sm:pt-3 pb-1 flex flex-col justify-center items-center text-center">
+                <div id="kpi-val-nearmiss" class="text-2xl sm:text-4xl lg:text-5xl xl:text-6xl font-black font-mono tracking-tight text-sky-800 leading-none text-center hseq-kpi-val">
                   24
                 </div>
               </div>
@@ -1006,44 +1167,28 @@
               </div>
             </div>
 
-            <!-- Filter 2: Open / Close Status Filter -->
-            <div class="flex-1 min-w-[280px] space-y-1.5">
-              <label class="text-xs font-extrabold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+            <!-- Filter 2: Open / Close Status Dropdown Filter -->
+            <div class="flex-1 min-w-[240px] space-y-1.5">
+              <label for="overview-status-select" class="text-xs font-extrabold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
                 <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-amber-600"></i>
-                <span>Filter by Action Status (Open / Close)</span>
+                <span>Open Close</span>
               </label>
 
-              <!-- Tactile Segmented Toggle for Status -->
-              <div class="flex items-center gap-1 p-1 bg-slate-100/90 rounded-xl border border-slate-200">
-                <button
-                  type="button"
-                  id="overview-btn-status-all"
-                  onclick="portalApp.handleOverviewOpenCloseFilter('all')"
-                  class="flex-1 py-2 px-2.5 rounded-lg text-xs font-black transition-all text-center bg-white text-slate-900 shadow-2xs cursor-pointer"
-                  title="View both open and closed actions"
+              <!-- Dropdown for Open / Close Status -->
+              <div class="relative">
+                <select
+                  id="overview-status-select"
+                  onchange="portalApp.handleOverviewOpenCloseFilter(this.value)"
+                  class="w-full appearance-none bg-slate-50 border border-slate-300 hover:border-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-slate-900 text-xs sm:text-sm font-bold rounded-xl px-3.5 py-2.5 pr-9 transition-all cursor-pointer shadow-2xs"
+                  title="Filter cross-dashboard actions by Open or Closed status"
                 >
-                  All Statuses
-                </button>
-                <button
-                  type="button"
-                  id="overview-btn-status-open"
-                  onclick="portalApp.handleOverviewOpenCloseFilter('open')"
-                  class="flex-1 py-2 px-2.5 rounded-lg text-xs font-extrabold transition-all text-center text-amber-800 hover:text-amber-950 hover:bg-amber-100/70 cursor-pointer flex items-center justify-center gap-1.5"
-                  title="View only open action items across all dashboards"
-                >
-                  <span class="w-2 h-2 rounded-full bg-amber-500"></span>
-                  <span>Open Actions</span>
-                </button>
-                <button
-                  type="button"
-                  id="overview-btn-status-close"
-                  onclick="portalApp.handleOverviewOpenCloseFilter('close')"
-                  class="flex-1 py-2 px-2.5 rounded-lg text-xs font-extrabold transition-all text-center text-emerald-800 hover:text-emerald-950 hover:bg-emerald-100/70 cursor-pointer flex items-center justify-center gap-1.5"
-                  title="View only closed action items across all dashboards"
-                >
-                  <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                  <span>Closed Actions</span>
-                </button>
+                  <option value="all">All Statuses (Open &amp; Closed)</option>
+                  <option value="open">Open Actions</option>
+                  <option value="close">Closed Actions</option>
+                </select>
+                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+                  <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                </div>
               </div>
             </div>
 
@@ -3128,11 +3273,14 @@
           const dept = (this.state && this.state.overviewDeptFilter) || 'all';
           const status = (this.state && this.state.overviewOpenCloseFilter) || 'all';
 
-          // Sync select element
+          // Sync select elements
           const sel = document.getElementById('overview-department-select');
           if (sel) sel.value = dept;
 
-          // Sync status segmented buttons
+          const statusSel = document.getElementById('overview-status-select');
+          if (statusSel) statusSel.value = status;
+
+          // Sync status segmented buttons (if present)
           const btnAll = document.getElementById('overview-btn-status-all');
           const btnOpen = document.getElementById('overview-btn-status-open');
           const btnClose = document.getElementById('overview-btn-status-close');
@@ -3473,14 +3621,14 @@
         fitSafeManhoursText() {
           const el = document.getElementById('kpi-val-safe-manhours');
           if (!el || !el.parentElement) return;
-          el.style.fontSize = '';
+          el.style.removeProperty('font-size');
           const container = el.parentElement;
           const maxW = container.clientWidth;
           if (maxW > 0 && el.scrollWidth > maxW) {
             const currentSize = parseFloat(window.getComputedStyle(el).fontSize);
             if (currentSize > 0) {
-              const scaledSize = Math.floor((maxW / el.scrollWidth) * currentSize * 0.96);
-              el.style.fontSize = Math.max(12, scaledSize) + 'px';
+              const scaledSize = Math.floor((maxW / el.scrollWidth) * currentSize * 0.94);
+              el.style.setProperty('font-size', Math.max(11, scaledSize) + 'px', 'important');
             }
           }
         },
@@ -3810,26 +3958,26 @@
               <div
                 id="card-${item.id}"
                 onclick="portalApp.showDetailView('${item.id}')"
-                class="card-hover-effect group bg-gradient-to-b from-white via-white to-slate-50/90 border border-slate-200/90 hover:border-slate-300 rounded-2xl p-5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 shadow-xs hover:shadow-xl hover:-translate-y-1"
+                class="card-hover-effect group bg-gradient-to-b from-white via-white to-slate-50/90 border border-slate-200/90 hover:border-slate-300 rounded-2xl p-3 sm:p-5 flex flex-col justify-between cursor-pointer relative overflow-hidden transition-all duration-300 shadow-xs hover:shadow-xl hover:-translate-y-1"
               >
                 <!-- Top Accent Gradient Stripe -->
                 <div class="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r ${item.gradient}"></div>
 
-                <div class="space-y-4 pt-1">
+                <div class="space-y-3 sm:space-y-4 pt-1">
                   <!-- Card Header: Category Tag, Icon & Status Badge -->
                   <div class="flex items-start justify-between gap-2.5">
-                    <div class="flex items-start gap-3 min-w-0 flex-1">
+                    <div class="flex items-start gap-2.5 sm:gap-3 min-w-0 flex-1">
                       <!-- Gradient Icon Box -->
                       <div
                         id="icon-${item.id}"
-                        class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 shadow-xs text-white bg-gradient-to-r ${item.gradient} group-hover:scale-105 transition-transform mt-0.5"
+                        class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center shrink-0 shadow-xs text-white bg-gradient-to-r ${item.gradient} group-hover:scale-105 transition-transform mt-0.5"
                       >
-                        <i data-lucide="${item.icon}" class="w-5 h-5"></i>
+                        <i data-lucide="${item.icon}" class="w-4 h-4 sm:w-5 sm:h-5"></i>
                       </div>
                       <div class="min-w-0 flex-1">
                         <span
                           id="title-${item.id}"
-                          class="inline-flex items-center px-3 py-1 rounded-lg text-sm sm:text-base font-extrabold tracking-tight border shadow-2xs leading-snug ${item.tagStyle}"
+                          class="inline-flex items-center px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-lg text-xs sm:text-base font-extrabold tracking-tight border shadow-2xs leading-snug ${item.tagStyle}"
                           title="${item.name}"
                         >
                           ${item.name}
@@ -3840,35 +3988,35 @@
                     <!-- Status Light Indicator (Green light for Active, Orange light for Awaiting) -->
                     <div
                       id="badge-${item.id}"
-                      class="shrink-0 flex items-center justify-center p-1.5 rounded-full bg-slate-50 border border-slate-200/90 shadow-2xs mt-1"
+                      class="shrink-0 flex items-center justify-center p-1 sm:p-1.5 rounded-full bg-slate-50 border border-slate-200/90 shadow-2xs mt-1"
                       title="${item.status}"
                     >
-                      <span class="w-3 h-3 rounded-full ${isActive ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.85)] ring-2 ring-emerald-200' : 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.85)] ring-2 ring-amber-200'}"></span>
+                      <span class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full ${isActive ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.85)] ring-2 ring-emerald-200' : 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.85)] ring-2 ring-amber-200'}"></span>
                     </div>
                   </div>
 
                   <!-- Department Subtitle -->
                   <div class="text-xs text-slate-500 font-medium break-words flex items-center gap-1.5" title="${item.department}">
                     <i data-lucide="building" class="w-3.5 h-3.5 shrink-0 text-slate-400"></i>
-                    <span>${item.department}</span>
+                    <span class="truncate">${item.department}</span>
                   </div>
 
                   ${isDeptOrStatusActive ? `
                   <div class="px-2 py-1 rounded-lg bg-blue-50/90 border border-blue-200/80 text-[11px] font-bold text-blue-900 flex items-center justify-between">
                     <span class="flex items-center gap-1">
                       <i data-lucide="filter" class="w-3 h-3 text-blue-600"></i>
-                      <span>${deptFilter !== 'all' ? deptFilter : 'All Depts'} • ${openCloseFilter === 'open' ? 'Open Only' : (openCloseFilter === 'close' ? 'Closed Only' : 'All Status')}</span>
+                      <span class="truncate">${deptFilter !== 'all' ? deptFilter : 'All Depts'} • ${openCloseFilter === 'open' ? 'Open Only' : (openCloseFilter === 'close' ? 'Closed Only' : 'All Status')}</span>
                     </span>
-                    <span class="font-mono font-black text-blue-950">
+                    <span class="font-mono font-black text-blue-950 shrink-0">
                       ${openCloseFilter === 'open' ? inProg + ' Open' : (openCloseFilter === 'close' ? closed + ' Closed' : (k.deptTotal !== undefined ? k.deptTotal : displayTotal) + ' Dept Total')}
                     </span>
                   </div>
                   ` : ''}
 
                   <!-- DEPARTMENT DONUT CHART PANEL (White with Subtle Border) -->
-                  <div class="bg-slate-50/80 rounded-xl p-3 sm:p-4 border border-slate-200/90 shadow-2xs flex items-end justify-between gap-2.5 sm:gap-3.5 min-h-[175px]">
+                  <div class="bg-slate-50/80 rounded-xl p-2 sm:p-4 border border-slate-200/90 shadow-2xs flex items-center justify-between gap-1.5 sm:gap-3.5 min-h-[130px] sm:min-h-[175px]">
                     <!-- SVG Donut Chart with Centered Value & Label -->
-                    <div class="relative flex items-center justify-center shrink-0 w-36 h-36 sm:w-44 sm:h-44 lg:w-48 lg:h-48">
+                    <div class="relative flex items-center justify-center shrink-0 w-24 h-24 min-[360px]:w-28 min-[360px]:h-28 min-[420px]:w-36 min-[420px]:h-36 sm:w-44 sm:h-44 lg:w-48 lg:h-48">
                       <svg class="w-full h-full transform -rotate-90" viewBox="0 0 96 96">
                         <defs>
                           <linearGradient id="donut-grad-${item.id}" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -3906,58 +4054,58 @@
 
                       <!-- Donut Center Label: Dynamically displays closure rate or open/close count -->
                       <div class="absolute inset-0 flex flex-col items-center justify-center text-center select-none pointer-events-none px-1">
-                        <span class="text-2xl sm:text-3xl lg:text-[32px] font-black font-mono tracking-tight leading-none text-[#1E293B] donut-center-val">${donutCenterVal}</span>
-                        <span class="text-xs sm:text-[13px] font-black text-slate-500 uppercase tracking-wider mt-1.5 leading-none">${donutCenterSubtext}</span>
+                        <span class="text-xl min-[360px]:text-2xl sm:text-3xl lg:text-[32px] font-black font-mono tracking-tight leading-none text-[#1E293B] donut-center-val">${donutCenterVal}</span>
+                        <span class="text-[10px] sm:text-[13px] font-black text-slate-500 uppercase tracking-wider mt-1 sm:mt-1.5 leading-none">${donutCenterSubtext}</span>
                       </div>
                     </div>
 
                     <!-- Breakdown Legend List (Right and Bottom aligned to maximize space for donut chart) -->
-                    <div class="flex-1 flex flex-col justify-end items-end self-end text-right space-y-1.5 text-xs sm:text-sm pl-2">
-                      <div class="flex items-center justify-end gap-2 sm:gap-2.5 w-full text-right">
-                        <span class="text-slate-600 font-semibold flex items-center justify-end gap-1.5 text-right">
-                          <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: ${item.gradientStop1};"></span>
+                    <div class="flex-1 flex flex-col justify-center sm:justify-end items-end self-center sm:self-end text-right space-y-1 sm:space-y-1.5 text-xs sm:text-sm pl-1.5 sm:pl-2">
+                      <div class="flex items-center justify-end gap-1.5 sm:gap-2.5 w-full text-right">
+                        <span class="text-slate-600 font-semibold flex items-center justify-end gap-1 sm:gap-1.5 text-right text-[11px] sm:text-xs">
+                          <span class="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full shrink-0" style="background-color: ${item.gradientStop1};"></span>
                           <span>${item.id === 'psm-validation' ? 'Passed:' : 'Closed:'}</span>
                         </span>
-                        <span class="font-mono font-black text-[#1E293B] text-base sm:text-lg text-right min-w-[32px]">${closed}</span>
+                        <span class="font-mono font-black text-[#1E293B] text-sm sm:text-lg text-right min-w-[28px] sm:min-w-[32px]">${closed}</span>
                       </div>
-                      <div class="flex items-center justify-end gap-2 sm:gap-2.5 w-full text-right">
-                        <span class="text-slate-600 font-semibold flex items-center justify-end gap-1.5 text-right">
-                          <span class="w-2.5 h-2.5 rounded-full bg-[#8B5CF6] shrink-0"></span>
+                      <div class="flex items-center justify-end gap-1.5 sm:gap-2.5 w-full text-right">
+                        <span class="text-slate-600 font-semibold flex items-center justify-end gap-1 sm:gap-1.5 text-right text-[11px] sm:text-xs">
+                          <span class="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-[#8B5CF6] shrink-0"></span>
                           <span>${item.id === 'psm-validation' ? 'Pending:' : 'Open:'}</span>
                         </span>
-                        <span class="font-mono font-black text-[#1E293B] text-base sm:text-lg text-right min-w-[32px]">${inProg}</span>
+                        <span class="font-mono font-black text-[#1E293B] text-sm sm:text-lg text-right min-w-[28px] sm:min-w-[32px]">${inProg}</span>
                       </div>
-                      <div class="flex items-center justify-end gap-2 sm:gap-2.5 w-full text-right">
-                        <span class="font-semibold flex items-center justify-end gap-1.5 text-right ${overdue > 0 ? 'text-rose-700 font-bold' : 'text-slate-600'}">
-                          <span class="w-2.5 h-2.5 rounded-full bg-[#EF4444] shrink-0"></span>
+                      <div class="flex items-center justify-end gap-1.5 sm:gap-2.5 w-full text-right">
+                        <span class="font-semibold flex items-center justify-end gap-1 sm:gap-1.5 text-right text-[11px] sm:text-xs ${overdue > 0 ? 'text-rose-700 font-bold' : 'text-slate-600'}">
+                          <span class="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-[#EF4444] shrink-0"></span>
                           <span>Overdue:</span>
                         </span>
-                        <span class="font-mono font-black text-base sm:text-lg text-right min-w-[32px] ${overdue > 0 ? 'text-rose-600 px-1.5 py-0.5 bg-rose-50 rounded border border-rose-200' : 'text-slate-700'}">${overdue}</span>
+                        <span class="font-mono font-black text-sm sm:text-lg text-right min-w-[28px] sm:min-w-[32px] ${overdue > 0 ? 'text-rose-600 px-1 py-0.5 bg-rose-50 rounded border border-rose-200' : 'text-slate-700'}">${overdue}</span>
                       </div>
-                      <div class="pt-1.5 mt-0.5 border-t border-slate-200/90 flex items-center justify-end gap-2 sm:gap-2.5 w-full text-right">
-                        <span class="text-slate-700 font-bold text-right">${item.id === 'psm-validation' ? 'Personnel:' : 'Total:'}</span>
-                        <span class="font-mono font-black text-[#1E293B] text-base sm:text-xl text-right min-w-[32px]">${displayTotal}</span>
+                      <div class="pt-1 sm:pt-1.5 mt-0.5 border-t border-slate-200/90 flex items-center justify-end gap-1.5 sm:gap-2.5 w-full text-right">
+                        <span class="text-slate-700 font-bold text-right text-[11px] sm:text-xs">${item.id === 'psm-validation' ? 'Personnel:' : 'Total:'}</span>
+                        <span class="font-mono font-black text-[#1E293B] text-sm sm:text-xl text-right min-w-[28px] sm:min-w-[32px]">${displayTotal}</span>
                       </div>
                     </div>
                   </div>
 
                   <!-- 4 ACTION METRICS PILLS (Closure % | Closed | Open | Overdue) shifted a little to bottom -->
-                  <div class="grid grid-cols-4 gap-1.5 sm:gap-2 text-center mt-3.5 sm:mt-4 pt-1">
-                    <div class="bg-white rounded-lg py-2 px-1 border border-slate-200 shadow-2xs">
-                      <div class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase">${item.id === 'psm-validation' ? 'Qualified' : 'Closure'}</div>
-                      <div class="text-base sm:text-lg lg:text-xl font-black font-mono text-emerald-600 card-stat-pill-val">${k.deptRate || compRate}</div>
+                  <div class="grid grid-cols-4 gap-1 sm:gap-2 text-center mt-2.5 sm:mt-4 pt-0.5 sm:pt-1">
+                    <div class="bg-white rounded-lg py-1.5 sm:py-2 px-0.5 sm:px-1 border border-slate-200 shadow-2xs">
+                      <div class="text-[9px] min-[360px]:text-[10px] sm:text-xs font-bold text-slate-500 uppercase truncate">${item.id === 'psm-validation' ? 'Qualified' : 'Closure'}</div>
+                      <div class="text-sm min-[360px]:text-base sm:text-lg lg:text-xl font-black font-mono text-emerald-600 card-stat-pill-val">${k.deptRate || compRate}</div>
                     </div>
-                    <div class="bg-white rounded-lg py-2 px-1 border border-slate-200 shadow-2xs">
-                      <div class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase">${item.id === 'psm-validation' ? 'Passed' : 'Closed'}</div>
-                      <div class="text-base sm:text-lg lg:text-xl font-black font-mono text-blue-600 card-stat-pill-val">${closed}</div>
+                    <div class="bg-white rounded-lg py-1.5 sm:py-2 px-0.5 sm:px-1 border border-slate-200 shadow-2xs">
+                      <div class="text-[9px] min-[360px]:text-[10px] sm:text-xs font-bold text-slate-500 uppercase truncate">${item.id === 'psm-validation' ? 'Passed' : 'Closed'}</div>
+                      <div class="text-sm min-[360px]:text-base sm:text-lg lg:text-xl font-black font-mono text-blue-600 card-stat-pill-val">${closed}</div>
                     </div>
-                    <div class="bg-white rounded-lg py-2 px-1 border border-slate-200 shadow-2xs ${openCloseFilter === 'open' && inProg > 0 ? 'bg-amber-50/80 border-amber-300 ring-1 ring-amber-200' : ''}">
-                      <div class="text-[10px] sm:text-xs font-bold ${openCloseFilter === 'open' && inProg > 0 ? 'text-amber-800' : 'text-slate-500'} uppercase">${item.id === 'psm-validation' ? 'Pending' : 'Open'}</div>
-                      <div class="text-base sm:text-lg lg:text-xl font-black font-mono ${openCloseFilter === 'open' && inProg > 0 ? 'text-amber-700' : 'text-purple-600'} card-stat-pill-val">${inProg}</div>
+                    <div class="bg-white rounded-lg py-1.5 sm:py-2 px-0.5 sm:px-1 border border-slate-200 shadow-2xs ${openCloseFilter === 'open' && inProg > 0 ? 'bg-amber-50/80 border-amber-300 ring-1 ring-amber-200' : ''}">
+                      <div class="text-[9px] min-[360px]:text-[10px] sm:text-xs font-bold ${openCloseFilter === 'open' && inProg > 0 ? 'text-amber-800' : 'text-slate-500'} uppercase truncate">${item.id === 'psm-validation' ? 'Pending' : 'Open'}</div>
+                      <div class="text-sm min-[360px]:text-base sm:text-lg lg:text-xl font-black font-mono ${openCloseFilter === 'open' && inProg > 0 ? 'text-amber-700' : 'text-purple-600'} card-stat-pill-val">${inProg}</div>
                     </div>
-                    <div class="rounded-lg py-2 px-1 border shadow-2xs ${overdue > 0 ? 'bg-rose-50 border-rose-300' : 'bg-white border-slate-200'}">
-                      <div class="text-[10px] sm:text-xs font-bold ${overdue > 0 ? 'text-rose-700' : 'text-slate-500'} uppercase">Overdue</div>
-                      <div class="text-base sm:text-lg lg:text-xl font-black font-mono ${overdue > 0 ? 'text-rose-600' : 'text-slate-600'} card-stat-pill-val">${overdue}</div>
+                    <div class="rounded-lg py-1.5 sm:py-2 px-0.5 sm:px-1 border shadow-2xs ${overdue > 0 ? 'bg-rose-50 border-rose-300' : 'bg-white border-slate-200'}">
+                      <div class="text-[9px] min-[360px]:text-[10px] sm:text-xs font-bold ${overdue > 0 ? 'text-rose-700' : 'text-slate-500'} uppercase truncate">Overdue</div>
+                      <div class="text-sm min-[360px]:text-base sm:text-lg lg:text-xl font-black font-mono ${overdue > 0 ? 'text-rose-600' : 'text-slate-600'} card-stat-pill-val">${overdue}</div>
                     </div>
                   </div>
                 </div>

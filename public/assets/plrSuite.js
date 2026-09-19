@@ -1836,64 +1836,6 @@
         </div>
 
         <!-- ========================================================================= -->
-        <!-- 4. PLANT RECORDS & OUTAGE LOG (Light Master Table)                         -->
-        <!-- ========================================================================= -->
-        <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-4">
-          <!-- Header with Dual Tabs -->
-          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-200">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 text-[#2E6DA4] flex items-center justify-center shrink-0">
-                <i data-lucide="database" class="w-5 h-5"></i>
-              </div>
-              <div>
-                <h3 class="text-base font-black text-slate-900 uppercase tracking-wider">Plant Records &amp; Outage Log</h3>
-              </div>
-            </div>
-
-            <!-- Dual Tab Switcher -->
-            <div class="inline-flex p-1 bg-slate-100 rounded-xl border border-slate-200 self-start md:self-auto">
-              <button
-                onclick="portalApp.setPlrTab('incidents')"
-                class="px-4 py-2 rounded-lg text-xs font-black transition-all flex items-center gap-2 cursor-pointer ${
-                  s.activeTab === 'incidents'
-                    ? 'bg-[#2E6DA4] text-white shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }"
-              >
-                <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
-                <span>PLR Incidents (${totalPLRs})</span>
-              </button>
-              <button
-                onclick="portalApp.setPlrTab('recommendations')"
-                class="px-4 py-2 rounded-lg text-xs font-black transition-all flex items-center gap-2 cursor-pointer ${
-                  s.activeTab === 'recommendations'
-                    ? 'bg-[#2E6DA4] text-white shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }"
-              >
-                <i data-lucide="layers" class="w-3.5 h-3.5"></i>
-                <span>Recommendations (${totalRecs})</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- Filter Toolbar for Active Tab -->
-          <div id="plr-table-toolbar-container">
-            <!-- Rendered dynamically -->
-          </div>
-
-          <!-- Active Tab Table Body -->
-          <div id="plr-table-body-container" class="overflow-x-auto rounded-xl border border-slate-200 bg-white">
-            <!-- Rendered dynamically -->
-          </div>
-
-          <!-- Pagination Bar -->
-          <div id="plr-pagination-container" class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 text-xs text-slate-500">
-            <!-- Rendered dynamically -->
-          </div>
-        </div>
-
-        <!-- ========================================================================= -->
         <!-- 6. DUAL-TRACKING PLR INSPECTION MODAL (Cross-sheet inspection)             -->
         <!-- ========================================================================= -->
         <div id="plr-inspection-modal-container">
@@ -2195,10 +2137,10 @@
     const activeMachine = machines.find(m => m.name === s.selectedMachine) || machines[0] || { name: 'STG # 4', count: 154, pct: 66, color: '#1e40af' };
     const escapedActiveMachine = activeMachine.name.replace(/'/g, "\\'");
 
-    // Center interactive circle is sized to diameter 196px (radius 98px) inside the 216px inner hole.
+    // Center interactive circle is sized to fit inside the inner hole.
     // This strictly prevents the center overlay from covering or intercepting clicks on the donut slices!
     container.innerHTML = `
-      <div class="relative w-[300px] h-[300px] sm:w-[320px] sm:h-[320px] max-w-full aspect-square flex items-center justify-center">
+      <div class="relative w-64 h-64 min-[400px]:w-[300px] min-[400px]:h-[300px] sm:w-[320px] sm:h-[320px] max-w-full aspect-square flex items-center justify-center mx-auto">
         <svg viewBox="0 0 320 320" class="w-full h-full select-none">
           <!-- Soft Background Track Ring -->
           <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#f1f5f9" stroke-width="${strokeWidth}" />
@@ -2210,7 +2152,7 @@
           onmouseenter="portalApp.showTooltip(event, { title: '${escapedActiveMachine}', badge: 'Active Asset View', color: '${activeMachine.color || '#1e40af'}', subtitle: 'Incident Outages Explorer', metrics: [{ label: 'Selected Outages', value: '${activeMachine.count}' }, { label: 'Share', value: '${activeMachine.pct}%' }], hint: 'Click to open matching investigation records' })"
           onmousemove="portalApp.moveTooltip(event)"
           onmouseleave="portalApp.hideTooltip()"
-          class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[196px] h-[196px] rounded-full flex flex-col items-center justify-center cursor-pointer text-center px-2.5 py-2 font-sans bg-white/95 hover:bg-slate-50 transition-all duration-150 group z-10 select-none shadow-[inset_0_1px_3px_rgba(0,0,0,0.03)]"
+          class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[160px] h-[160px] min-[400px]:w-[196px] min-[400px]:h-[196px] rounded-full flex flex-col items-center justify-center cursor-pointer text-center px-2 py-1.5 font-sans bg-white/95 hover:bg-slate-50 transition-all duration-150 group z-10 select-none shadow-[inset_0_1px_3px_rgba(0,0,0,0.03)]"
           title="Click to view outage records for ${activeMachine.name}"
         >
           <!-- Machine Name Badge (fitted cleanly into upper circular chord) -->
@@ -2749,7 +2691,7 @@
     const labelNoun = isIncidents ? 'Outages' : 'Recs';
 
     container.innerHTML = `
-      <div class="relative w-[300px] h-[300px] sm:w-[320px] sm:h-[320px] max-w-full aspect-square flex items-center justify-center">
+      <div class="relative w-64 h-64 min-[400px]:w-[300px] min-[400px]:h-[300px] sm:w-[320px] sm:h-[320px] max-w-full aspect-square flex items-center justify-center mx-auto">
         <svg viewBox="0 0 320 320" class="w-full h-full select-none filter drop-shadow-sm">
           <defs>
             <filter id="plrTextShadow" x="-20%" y="-20%" width="140%" height="140%">

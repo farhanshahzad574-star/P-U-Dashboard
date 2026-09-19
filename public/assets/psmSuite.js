@@ -1929,8 +1929,8 @@
           <!-- ========================================================================= -->
           <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
             
-            <!-- Left Chart (7 cols): Open vs Closed by Action Department -->
-            <div class="lg:col-span-7 bg-white border border-slate-200 rounded-2xl p-5 shadow-xs flex flex-col justify-between space-y-4">
+            <!-- Left Chart (6 cols): Open vs Closed by Action Department -->
+            <div class="lg:col-span-6 bg-white border border-slate-200 rounded-2xl p-5 shadow-xs flex flex-col justify-between space-y-4">
               <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
                 <div>
                   <h3 class="text-sm sm:text-base font-black tracking-wider text-slate-900 flex items-center gap-2 uppercase">
@@ -1971,8 +1971,8 @@
               </div>
             </div>
 
-            <!-- Right Chart (5 cols): Audit Breakdown Donut -->
-            <div class="lg:col-span-5 bg-white border border-slate-200 rounded-2xl p-5 shadow-xs flex flex-col justify-between space-y-4">
+            <!-- Right Chart (6 cols): Audit Breakdown Donut -->
+            <div class="lg:col-span-6 bg-white border border-slate-200 rounded-2xl p-5 shadow-xs flex flex-col justify-between space-y-4">
               <div class="flex items-center justify-between border-b border-slate-100 pb-3">
                 <h3 class="text-sm sm:text-base font-black tracking-wider text-slate-900 flex items-center gap-2 uppercase">
                   <i data-lucide="pie-chart" class="w-4 h-4 text-indigo-600"></i>
@@ -2033,356 +2033,6 @@
               </div>
 
             </div>
-
-          </div>
-
-          <!-- ========================================================================= -->
-          <!-- 6. TABLES ROW: TABLE 1 (DEPARTMENT) & TABLE 2 (ACTION UNIT)              -->
-          <!-- ========================================================================= -->
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
-            
-            <!-- Table 1: Findings Status by Action Department -->
-            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-3">
-              <div class="flex items-center justify-between pb-2 border-b border-slate-100">
-                <div class="flex items-center gap-2">
-                  <div class="w-2 h-2 rounded-full bg-teal-500"></div>
-                  <h4 class="text-sm sm:text-base font-black tracking-wider text-slate-900 uppercase">TABLE 1: FINDINGS STATUS BY ACTION DEPARTMENT</h4>
-                </div>
-              </div>
-
-              <div class="overflow-x-auto">
-                <table class="w-full text-left text-xs sm:text-sm border-collapse">
-                  <thead>
-                    <tr class="border-b border-slate-200 text-slate-600 font-black uppercase tracking-wider text-xs bg-slate-50">
-                      <th class="py-2.5 px-3 cursor-pointer hover:text-teal-600" onclick="FPCL_PSM_SUITE.sortDeptTable('name')">
-                        DEPARTMENT ${s.deptTableSort.col === 'name' ? (s.deptTableSort.dir === 'asc' ? '↑' : '↓') : '↕'}
-                      </th>
-                      <th class="py-2.5 px-3 text-center cursor-pointer hover:text-teal-600" onclick="FPCL_PSM_SUITE.sortDeptTable('total')">
-                        TOTAL ${s.deptTableSort.col === 'total' ? (s.deptTableSort.dir === 'asc' ? '↑' : '↓') : '↕'}
-                      </th>
-                      <th class="py-2.5 px-3 text-center cursor-pointer hover:text-rose-600" onclick="FPCL_PSM_SUITE.sortDeptTable('open')">
-                        OPEN ${s.deptTableSort.col === 'open' ? (s.deptTableSort.dir === 'asc' ? '↑' : '↓') : '↕'}
-                      </th>
-                      <th class="py-2.5 px-3 text-center cursor-pointer hover:text-emerald-600" onclick="FPCL_PSM_SUITE.sortDeptTable('close')">
-                        CLOSE ${s.deptTableSort.col === 'close' ? (s.deptTableSort.dir === 'asc' ? '↑' : '↓') : '↕'}
-                      </th>
-                      <th class="py-2.5 px-3 text-center cursor-pointer hover:text-teal-600 min-w-[120px]" onclick="FPCL_PSM_SUITE.sortDeptTable('closureRate')">
-                        % CLOSURE ${s.deptTableSort.col === 'closureRate' ? (s.deptTableSort.dir === 'asc' ? '↑' : '↓') : '↕'}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody class="divide-y divide-slate-100 text-slate-800">
-                    ${deptList.map(d => {
-                      const isSelected = s.deptFilter === d.name;
-                      return `
-                        <tr
-                          onclick="FPCL_PSM_SUITE.openDataModal({ title: 'Department: ${d.name.replace(/'/g, "\\'")}', badge: 'Action Dept', subtitle: '${d.total} Findings (${d.open} Open, ${d.close} Closed)', filterDept: '${d.name.replace(/'/g, "\\'")}' })"
-                          onmouseenter="FPCL_PSM_SUITE.showTooltip(event, { title: '${d.name.replace(/'/g, "\\'")}', badge: 'Table 1', color: '#0D9488', subtitle: 'Action Department Row', metrics: [{ label: 'Total', value: '${d.total}' }, { label: 'Open', value: '${d.open}', color: '#F43F5E' }, { label: 'Closed', value: '${d.close}', color: '#10B981' }, { label: 'Closure Rate', value: '${d.closureRate}%' }], hint: 'Click to open findings for ${d.name.replace(/'/g, "\\'")}' })"
-                          onmousemove="FPCL_PSM_SUITE.moveTooltip(event)"
-                          onmouseleave="FPCL_PSM_SUITE.hideTooltip()"
-                          class="hover:bg-teal-50/40 transition-colors cursor-pointer group ${isSelected ? 'bg-teal-50/70 font-bold' : ''}"
-                        >
-                          <td class="py-2.5 px-3 font-semibold text-slate-900 group-hover:text-teal-700">
-                            <span class="group-hover:underline">${d.name}</span>
-                          </td>
-                          <td class="py-2.5 px-3 text-center font-mono font-bold text-slate-900">${d.total}</td>
-                          <td
-                            class="py-2.5 px-3 text-center font-mono font-bold ${d.open > 0 ? 'text-rose-600 hover:bg-rose-100 rounded-md transition-colors' : 'text-slate-400'}"
-                            onclick="event.stopPropagation(); FPCL_PSM_SUITE.openDataModal({ title: '${d.name.replace(/'/g, "\\'")} — Open Findings', badge: 'Active Open', subtitle: '${d.open} Open Findings', filterDept: '${d.name.replace(/'/g, "\\'")}', filterStatus: 'Open' })"
-                            title="Click to view Open findings for ${d.name}"
-                          >
-                            ${d.open}
-                          </td>
-                          <td
-                            class="py-2.5 px-3 text-center font-mono font-bold ${d.close > 0 ? 'text-emerald-600 hover:bg-emerald-100 rounded-md transition-colors' : 'text-slate-400'}"
-                            onclick="event.stopPropagation(); FPCL_PSM_SUITE.openDataModal({ title: '${d.name.replace(/'/g, "\\'")} — Closed Findings', badge: 'Resolved', subtitle: '${d.close} Closed Findings', filterDept: '${d.name.replace(/'/g, "\\'")}', filterStatus: 'Close' })"
-                            title="Click to view Closed findings for ${d.name}"
-                          >
-                            ${d.close}
-                          </td>
-                          <td class="py-2.5 px-3 text-center">
-                            ${this.renderProgressPill(d.closureRate)}
-                          </td>
-                        </tr>
-                      `;
-                    }).join('')}
-                  </tbody>
-                  <!-- Total Summary Row -->
-                  <tfoot>
-                    <tr
-                      class="bg-slate-100 font-black text-slate-900 border-t-2 border-slate-300 cursor-pointer hover:bg-slate-200 transition-colors"
-                      onclick="FPCL_PSM_SUITE.openDataModal({ title: 'All Departments Summary', badge: 'Summary', subtitle: '${sumDeptTotal} Total Findings (${sumDeptOpen} Open, ${sumDeptClose} Closed)' })"
-                      onmouseenter="FPCL_PSM_SUITE.showTooltip(event, { title: 'All Departments Total', badge: 'Summary Row', color: '#0F172A', subtitle: 'Overall Department Scope', metrics: [{ label: 'Total', value: '${sumDeptTotal}' }, { label: 'Open', value: '${sumDeptOpen}', color: '#F43F5E' }, { label: 'Closed', value: '${sumDeptClose}', color: '#10B981' }, { label: 'Rate', value: '${sumDeptClosure}%' }], hint: 'Click to open all department records' })"
-                      onmousemove="FPCL_PSM_SUITE.moveTooltip(event)"
-                      onmouseleave="FPCL_PSM_SUITE.hideTooltip()"
-                    >
-                      <td class="py-3 px-3 uppercase tracking-wider">TOTAL / SUMMARY</td>
-                      <td class="py-3 px-3 text-center font-mono">${sumDeptTotal}</td>
-                      <td class="py-3 px-3 text-center font-mono text-rose-600">${sumDeptOpen}</td>
-                      <td class="py-3 px-3 text-center font-mono text-emerald-600">${sumDeptClose}</td>
-                      <td class="py-3 px-3 text-center">
-                        ${this.renderProgressPill(sumDeptClosure)}
-                      </td>
-                    </tr>
-                  </tfoot>
-                </table>
-              </div>
-            </div>
-
-            <!-- Table 2: Findings Status by Action Unit -->
-            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-3">
-              <div class="flex items-center justify-between pb-2 border-b border-slate-100">
-                <div class="flex items-center gap-2">
-                  <div class="w-2 h-2 rounded-full bg-indigo-500"></div>
-                  <h4 class="text-sm sm:text-base font-black tracking-wider text-slate-900 uppercase">TABLE 2: FINDINGS STATUS BY ACTION UNIT</h4>
-                </div>
-              </div>
-
-              <div class="overflow-x-auto max-h-[500px]">
-                <table class="w-full text-left text-xs sm:text-sm border-collapse">
-                  <thead class="sticky top-0 bg-slate-50 z-10">
-                    <tr class="border-b border-slate-200 text-slate-600 font-black uppercase tracking-wider text-xs bg-slate-50">
-                      <th class="py-2.5 px-3 cursor-pointer hover:text-indigo-600" onclick="FPCL_PSM_SUITE.sortUnitTable('name')">
-                        ACTION UNIT ${s.unitTableSort.col === 'name' ? (s.unitTableSort.dir === 'asc' ? '↑' : '↓') : '↕'}
-                      </th>
-                      <th class="py-2.5 px-3 text-center cursor-pointer hover:text-indigo-600" onclick="FPCL_PSM_SUITE.sortUnitTable('total')">
-                        TOTAL ${s.unitTableSort.col === 'total' ? (s.unitTableSort.dir === 'asc' ? '↑' : '↓') : '↕'}
-                      </th>
-                      <th class="py-2.5 px-3 text-center cursor-pointer hover:text-rose-600" onclick="FPCL_PSM_SUITE.sortUnitTable('open')">
-                        OPEN ${s.unitTableSort.col === 'open' ? (s.unitTableSort.dir === 'asc' ? '↑' : '↓') : '↕'}
-                      </th>
-                      <th class="py-2.5 px-3 text-center cursor-pointer hover:text-emerald-600" onclick="FPCL_PSM_SUITE.sortUnitTable('close')">
-                        CLOSE ${s.unitTableSort.col === 'close' ? (s.unitTableSort.dir === 'asc' ? '↑' : '↓') : '↕'}
-                      </th>
-                      <th class="py-2.5 px-3 text-center cursor-pointer hover:text-indigo-600 min-w-[120px]" onclick="FPCL_PSM_SUITE.sortUnitTable('closureRate')">
-                        % CLOSURE ${s.unitTableSort.col === 'closureRate' ? (s.unitTableSort.dir === 'asc' ? '↑' : '↓') : '↕'}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody class="divide-y divide-slate-100 text-slate-800">
-                    ${unitList.map(u => {
-                      const isSelected = s.unitFilter === u.name;
-                      return `
-                        <tr
-                          onclick="FPCL_PSM_SUITE.openDataModal({ title: 'Action Unit: ${u.name.replace(/'/g, "\\'")}', badge: 'Action Unit', subtitle: '${u.total} Findings (${u.open} Open, ${u.close} Closed)', filterUnit: '${u.name.replace(/'/g, "\\'")}' })"
-                          onmouseenter="FPCL_PSM_SUITE.showTooltip(event, { title: '${u.name.replace(/'/g, "\\'")}', badge: 'Table 2', color: '#6366F1', subtitle: 'Action Unit Row', metrics: [{ label: 'Total', value: '${u.total}' }, { label: 'Open', value: '${u.open}', color: '#F43F5E' }, { label: 'Closed', value: '${u.close}', color: '#10B981' }, { label: 'Closure Rate', value: '${u.closureRate}%' }], hint: 'Click to open findings for ${u.name.replace(/'/g, "\\'")}' })"
-                          onmousemove="FPCL_PSM_SUITE.moveTooltip(event)"
-                          onmouseleave="FPCL_PSM_SUITE.hideTooltip()"
-                          class="hover:bg-indigo-50/40 transition-colors cursor-pointer group ${isSelected ? 'bg-indigo-50/70 font-bold' : ''}"
-                        >
-                          <td class="py-2.5 px-3 font-semibold text-slate-900 group-hover:text-indigo-700">
-                            <span class="group-hover:underline">${u.name}</span>
-                          </td>
-                          <td class="py-2.5 px-3 text-center font-mono font-bold text-slate-900">${u.total}</td>
-                          <td
-                            class="py-2.5 px-3 text-center font-mono font-bold ${u.open > 0 ? 'text-rose-600 hover:bg-rose-100 rounded-md transition-colors' : 'text-slate-400'}"
-                            onclick="event.stopPropagation(); FPCL_PSM_SUITE.openDataModal({ title: '${u.name.replace(/'/g, "\\'")} — Open Findings', badge: 'Active Open', subtitle: '${u.open} Open Findings', filterUnit: '${u.name.replace(/'/g, "\\'")}', filterStatus: 'Open' })"
-                            title="Click to view Open findings for ${u.name}"
-                          >
-                            ${u.open}
-                          </td>
-                          <td
-                            class="py-2.5 px-3 text-center font-mono font-bold ${u.close > 0 ? 'text-emerald-600 hover:bg-emerald-100 rounded-md transition-colors' : 'text-slate-400'}"
-                            onclick="event.stopPropagation(); FPCL_PSM_SUITE.openDataModal({ title: '${u.name.replace(/'/g, "\\'")} — Closed Findings', badge: 'Resolved', subtitle: '${u.close} Closed Findings', filterUnit: '${u.name.replace(/'/g, "\\'")}', filterStatus: 'Close' })"
-                            title="Click to view Closed findings for ${u.name}"
-                          >
-                            ${u.close}
-                          </td>
-                          <td class="py-2.5 px-3 text-center">
-                            ${this.renderProgressPill(u.closureRate)}
-                          </td>
-                        </tr>
-                      `;
-                    }).join('')}
-                  </tbody>
-                  <!-- Total Summary Row -->
-                  <tfoot class="sticky bottom-0 bg-slate-100">
-                    <tr
-                      class="font-black text-slate-900 border-t-2 border-slate-300 cursor-pointer hover:bg-slate-200 transition-colors"
-                      onclick="FPCL_PSM_SUITE.openDataModal({ title: 'All Action Units Summary', badge: 'Summary', subtitle: '${sumUnitTotal} Total Findings (${sumUnitOpen} Open, ${sumUnitClose} Closed)' })"
-                      onmouseenter="FPCL_PSM_SUITE.showTooltip(event, { title: 'All Units Total', badge: 'Summary Row', color: '#0F172A', subtitle: 'Overall Unit Scope', metrics: [{ label: 'Total', value: '${sumUnitTotal}' }, { label: 'Open', value: '${sumUnitOpen}', color: '#F43F5E' }, { label: 'Closed', value: '${sumUnitClose}', color: '#10B981' }, { label: 'Rate', value: '${sumUnitClosure}%' }], hint: 'Click to open all action unit records' })"
-                      onmousemove="FPCL_PSM_SUITE.moveTooltip(event)"
-                      onmouseleave="FPCL_PSM_SUITE.hideTooltip()"
-                    >
-                      <td class="py-3 px-3 uppercase tracking-wider">TOTAL / SUMMARY</td>
-                      <td class="py-3 px-3 text-center font-mono">${sumUnitTotal}</td>
-                      <td class="py-3 px-3 text-center font-mono text-rose-600">${sumUnitOpen}</td>
-                      <td class="py-3 px-3 text-center font-mono text-emerald-600">${sumUnitClose}</td>
-                      <td class="py-3 px-3 text-center">
-                        ${this.renderProgressPill(sumUnitClosure)}
-                      </td>
-                    </tr>
-                  </tfoot>
-                </table>
-              </div>
-            </div>
-
-          </div>
-
-          <!-- ========================================================================= -->
-          <!-- 7. DETAILED PSM AUDIT OBSERVATION RECORDS TABLE                           -->
-          <!-- ========================================================================= -->
-          <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-4">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
-              <div class="flex items-center gap-2.5">
-                <div class="p-2 rounded-xl bg-slate-100 text-slate-700 border border-slate-200">
-                  <i data-lucide="table" class="w-5 h-5"></i>
-                </div>
-                <div>
-                  <h3 class="text-sm sm:text-base font-black text-slate-900 uppercase tracking-wider">
-                    PSM AUDIT OBSERVATION RECORDS
-                  </h3>
-                </div>
-              </div>
-
-              <div class="flex items-center gap-2 self-start sm:self-auto">
-                <label for="psm-page-size" class="text-xs sm:text-sm font-bold text-slate-500">Rows:</label>
-                <select
-                  id="psm-page-size"
-                  onchange="FPCL_PSM_SUITE.setPageSize(this.value)"
-                  class="px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs sm:text-sm font-bold text-slate-800 focus:outline-none focus:ring-1 focus:ring-teal-500 cursor-pointer"
-                >
-                  <option value="10" ${s.pageSize === '10' ? 'selected' : ''}>10</option>
-                  <option value="15" ${s.pageSize === '15' ? 'selected' : ''}>15</option>
-                  <option value="25" ${s.pageSize === '25' ? 'selected' : ''}>25</option>
-                  <option value="50" ${s.pageSize === '50' ? 'selected' : ''}>50</option>
-                  <option value="all" ${s.pageSize === 'all' ? 'selected' : ''}>All (${filtered.length})</option>
-                </select>
-              </div>
-            </div>
-
-            <!-- Findings Table -->
-            <div class="overflow-x-auto">
-              <table class="w-full text-left text-xs sm:text-sm border-collapse">
-                <thead>
-                  <tr class="border-b border-slate-200 bg-slate-50 text-slate-600 font-black uppercase tracking-wider text-xs">
-                    <th class="py-3 px-3">OBS #</th>
-                    <th class="py-3 px-3">PSM ELEMENT</th>
-                    <th class="py-3 px-3">ACTION DEPT</th>
-                    <th class="py-3 px-3">ACTION UNIT</th>
-                    <th class="py-3 px-4 min-w-[280px]">OBSERVATION / FINDINGS</th>
-                    <th class="py-3 px-3 text-center">STATUS</th>
-                    <th class="py-3 px-3">HSEQ REMARKS</th>
-                    <th class="py-3 px-3 text-center">INSPECT</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100 text-slate-800">
-                  ${pageItems.length === 0 ? `
-                    <tr>
-                      <td colspan="8" class="text-center py-10 text-slate-400">
-                        <i data-lucide="inbox" class="w-8 h-8 mx-auto mb-2 text-slate-300"></i>
-                        No audit findings match your selected filter criteria.
-                      </td>
-                    </tr>
-                  ` : pageItems.map(item => {
-                    const isClosed = item.status === 'Close';
-                    return `
-                      <tr 
-                        onclick="FPCL_PSM_SUITE.inspectFinding('${item.observationNo}')"
-                        class="hover:bg-slate-50/80 transition-colors cursor-pointer group"
-                      >
-                        <!-- OBS # -->
-                        <td class="py-3 px-3 font-mono font-bold text-slate-900 whitespace-nowrap">
-                          <div>${item.observationNo}</div>
-                          <div class="text-[10px] text-slate-400 font-sans font-normal">${item.auditNo}</div>
-                        </td>
-
-                        <!-- PSM Element -->
-                        <td class="py-3 px-3 whitespace-nowrap">
-                          <span class="inline-block px-2.5 py-1 rounded-md text-[11px] font-bold font-mono border ${this.getElementBadgeStyle(item.psmElement)}">
-                            ${item.psmElement}
-                          </span>
-                        </td>
-
-                        <!-- Action Dept -->
-                        <td class="py-3 px-3 font-medium text-slate-900 whitespace-nowrap">
-                          ${item.actionDepartment}
-                        </td>
-
-                        <!-- Action Unit -->
-                        <td class="py-3 px-3 text-slate-600 whitespace-nowrap font-mono">
-                          ${item.actionUnit}
-                        </td>
-
-                        <!-- Observation / Findings -->
-                        <td class="py-3 px-4 text-slate-700 leading-relaxed font-medium">
-                          <div class="line-clamp-2" title="${item.finding.replace(/"/g, '&quot;')}">
-                            ${item.finding}
-                          </div>
-                        </td>
-
-                        <!-- Status Badge -->
-                        <td class="py-3 px-3 text-center whitespace-nowrap">
-                          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold ${
-                            isClosed 
-                              ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' 
-                              : 'bg-rose-50 text-rose-800 border border-rose-200'
-                          }">
-                            <i data-lucide="${isClosed ? 'check' : 'alert-circle'}" class="w-3 h-3"></i>
-                            <span>${item.status}</span>
-                          </span>
-                        </td>
-
-                        <!-- HSEQ Remarks -->
-                        <td class="py-3 px-3 text-slate-500 text-[11px] max-w-[200px] truncate" title="${(item.hseqRemarks || '').replace(/"/g, '&quot;')}">
-                          ${item.hseqRemarks || '—'}
-                        </td>
-
-                        <!-- Inspect Button -->
-                        <td class="py-3 px-3 text-center whitespace-nowrap">
-                          <button
-                            onclick="event.stopPropagation(); FPCL_PSM_SUITE.inspectFinding('${item.observationNo}')"
-                            class="p-1.5 rounded-lg text-slate-500 hover:text-teal-600 hover:bg-slate-100 transition-colors"
-                            title="Inspect complete details"
-                          >
-                            <i data-lucide="eye" class="w-4 h-4"></i>
-                          </button>
-                        </td>
-                      </tr>
-                    `;
-                  }).join('')}
-                </tbody>
-              </table>
-            </div>
-
-            <!-- Pagination Bar -->
-            ${totalPages > 1 ? `
-              <div class="pt-3 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-                <span class="text-slate-500 font-medium">
-                  Page <strong class="text-slate-800">${currentPage}</strong> of <strong class="text-slate-800">${totalPages}</strong>
-                </span>
-                <div class="flex items-center gap-1">
-                  <button
-                    onclick="FPCL_PSM_SUITE.setPage(${currentPage - 1})"
-                    ${currentPage <= 1 ? 'disabled class="px-2.5 py-1.5 rounded-lg bg-slate-100 text-slate-400 cursor-not-allowed"' : 'class="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 cursor-pointer"'}
-                  >
-                    Previous
-                  </button>
-                  ${Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                    let p = i + 1;
-                    if (totalPages > 5 && currentPage > 3) {
-                      p = currentPage - 2 + i;
-                      if (p > totalPages) p = totalPages - (4 - i);
-                    }
-                    const isActive = p === currentPage;
-                    return `
-                      <button
-                        onclick="FPCL_PSM_SUITE.setPage(${p})"
-                        class="px-3 py-1.5 rounded-lg font-bold ${isActive ? 'bg-teal-600 text-white shadow-2xs' : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 cursor-pointer'}"
-                      >
-                        ${p}
-                      </button>
-                    `;
-                  }).join('')}
-                  <button
-                    onclick="FPCL_PSM_SUITE.setPage(${currentPage + 1})"
-                    ${currentPage >= totalPages ? 'disabled class="px-2.5 py-1.5 rounded-lg bg-slate-100 text-slate-400 cursor-not-allowed"' : 'class="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 cursor-pointer"'}
-                  >
-                    Next
-                  </button>
-                </div>
-              </div>
-            ` : ''}
 
           </div>
         `;
@@ -3662,7 +3312,7 @@
         <div class="flex flex-col items-center justify-center w-full gap-5">
           <!-- Enlarged Donut SVG -->
           <div
-            class="relative w-60 h-60 sm:w-68 sm:h-68 shrink-0 cursor-pointer select-none"
+            class="relative w-48 h-48 min-[400px]:w-60 min-[400px]:h-60 sm:w-68 sm:h-68 shrink-0 cursor-pointer select-none"
             onclick="FPCL_PSM_SUITE.onDonutGeneralClick()"
             title="Click any part of donut to open data window"
           >
@@ -3750,7 +3400,7 @@
       }).join('');
 
       return `
-        <div class="relative w-64 h-64 sm:w-72 sm:h-72 lg:w-80 lg:h-80 shrink-0 cursor-pointer select-none mx-auto">
+        <div class="relative w-52 h-52 min-[400px]:w-64 min-[400px]:h-64 sm:w-72 sm:h-72 lg:w-80 lg:h-80 shrink-0 cursor-pointer select-none mx-auto">
           <svg viewBox="0 0 280 280" class="w-full h-full transform -rotate-90">
             <!-- Background Track Ring -->
             <circle
