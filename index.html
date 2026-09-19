@@ -88,7 +88,7 @@
     <!-- Sub HSE - PSM (Process Safety Management) Dataset & Specialized Visualization Suite -->
     <script src="/assets/psmData.js?v=20260916b"></script>
     <script src="/assets/psmValidationData.js?v=20260919a"></script>
-    <script src="/assets/psmSuite.js?v=20260916b"></script>
+    <script src="/assets/psmSuite.js?v=20260919b"></script>
 
     <style>
       /* Base font legibility calibrated for 8-foot control room & wall display viewing */
@@ -217,8 +217,8 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        border-radius: 12px;
-        padding: 2.5px;
+        border-radius: 9px;
+        padding: 1.8px;
         overflow: hidden;
         animation: circulatingPulseGlow 2.8s ease-in-out infinite;
         z-index: 10;
@@ -247,7 +247,7 @@
       .circulating-glow-inner {
         position: relative;
         z-index: 2;
-        border-radius: 9.5px;
+        border-radius: 7px;
       }
 
       /* ========================================================================= */
@@ -289,15 +289,42 @@
         will-change: transform;
       }
 
-      /* Subtle speed acceleration & glow on user hover */
+      /* Enhanced visibility and shadow for FPCL Rotating Emblem (visible from 10 feet) */
+      #fpcl-emblem-stage {
+        filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.08));
+      }
       #fpcl-emblem-stage:hover .fpcl-rotate-horizontal-loop {
         animation-duration: 4.5s;
       }
       #fpcl-emblem-stage:hover .fpcl-rotate-around-loop {
         animation-duration: 3.5s;
       }
+      #fpcl-emblem-stage .fpcl-glow-target {
+        filter: drop-shadow(0 0 6px rgba(249, 115, 22, 0.45)) drop-shadow(0 0 8px rgba(2, 132, 199, 0.4));
+      }
       #fpcl-emblem-stage:hover .fpcl-glow-target {
-        filter: drop-shadow(0 0 10px rgba(249, 115, 22, 0.55)) drop-shadow(0 0 14px rgba(2, 132, 199, 0.45));
+        filter: drop-shadow(0 0 14px rgba(249, 115, 22, 0.75)) drop-shadow(0 0 18px rgba(2, 132, 199, 0.65));
+      }
+
+      /* Prominent Executive Dashboard Title & Compact Company Name (aligned with top) */
+      #app-title {
+        font-size: 2.85rem !important;
+        font-weight: 900 !important;
+        letter-spacing: -0.03em !important;
+        line-height: 1.05 !important;
+        color: #0F172A !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      #company-name {
+        font-size: 0.76rem !important;
+        font-weight: 800 !important;
+        letter-spacing: 0.09em !important;
+        color: #64748B !important;
+        text-transform: uppercase !important;
+        margin: 0 !important;
+        margin-top: 0.25rem !important;
+        line-height: 1.2 !important;
       }
 
       /* ========================================================================= */
@@ -424,12 +451,15 @@
         padding: 0.55rem 0.85rem !important;
       }
 
-      /* Navigation Menus, Category & Department Filters */
+      /* Navigation Menus, Category & Department Filters - Compact Sleek Dashboard Buttons */
       .nav-menu-btn {
-        font-size: 1.12rem !important;
+        font-size: 0.74rem !important;
         font-weight: 700 !important;
-        padding: 0.65rem 1.2rem !important;
+        padding: 0.3rem 0.62rem !important;
         white-space: nowrap !important;
+        border-radius: 7px !important;
+        line-height: 1.25 !important;
+        letter-spacing: 0.01em !important;
       }
       .category-btn {
         font-size: 1.08rem !important;
@@ -473,15 +503,15 @@
     <!-- Application Top Navigation Bar -->
     <header id="app-header" class="relative z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs transition-colors duration-200">
       <div class="w-full px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12 py-2.5 sm:py-3">
-        <div class="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-3">
+        <div class="flex flex-col xl:flex-row xl:items-start xl:justify-between gap-3 sm:gap-4">
           
-          <!-- Brand Header: Rotating FPCL Logo & Executive Dashboard Title -->
-          <div class="flex items-center gap-3 sm:gap-3.5 shrink-0">
-            <!-- 3D FPCL Rotating Emblem Stage -->
+          <!-- Brand Header: Rotating FPCL Logo & Executive Dashboard Title (Aligned with Top) -->
+          <div class="flex items-start gap-3.5 sm:gap-4.5 shrink-0">
+            <!-- 3D FPCL Rotating Emblem Stage (Scaled up to be clearly visible from 10 feet) -->
             <div
               id="fpcl-emblem-stage"
               onclick="portalApp.handleDropdownSelect('overview')"
-              class="relative w-[68px] h-[68px] sm:w-[74px] sm:h-[74px] flex items-center justify-center shrink-0 cursor-pointer select-none group fpcl-3d-scene"
+              class="relative w-[112px] h-[112px] sm:w-[124px] sm:h-[124px] lg:w-[136px] lg:h-[136px] flex items-center justify-center shrink-0 cursor-pointer select-none group fpcl-3d-scene"
               title="FPCL • FFBL Power Company Limited (Click to Return to Overview)"
             >
               <!-- 1. ORBITING CIRCLE WITH ORANGE AND BLUE COLOR (ROTATES AROUND THE LOGO IN 360° INFINITE LOOP) -->
@@ -559,16 +589,16 @@
               <!-- 2. CENTRAL FPCL LOGO BADGE (ROTATES HORIZONTALLY 360° IN INFINITE LOOP) -->
               <div
                 id="fpcl-horizontal-logo-core"
-                class="w-[50px] h-[50px] sm:w-[56px] sm:h-[56px] relative flex items-center justify-center fpcl-rotate-horizontal-loop"
+                class="w-[82px] h-[82px] sm:w-[92px] sm:h-[92px] lg:w-[102px] lg:h-[102px] relative flex items-center justify-center fpcl-rotate-horizontal-loop"
               >
                 <!-- FRONT FACE OF BADGE (Facing viewer at 0°, upright & crystal clear) -->
                 <div
-                  class="absolute inset-0 rounded-full bg-white border-2 border-slate-200/95 shadow-md flex flex-col items-center justify-center p-1 overflow-hidden group-hover:border-blue-500 group-hover:shadow-blue-500/25 transition-all"
+                  class="absolute inset-0 rounded-full bg-white border-2 border-slate-200/95 shadow-md flex flex-col items-center justify-center p-1.5 overflow-hidden group-hover:border-blue-500 group-hover:shadow-blue-500/25 transition-all"
                   style="backface-visibility: hidden; transform: rotateY(0deg);"
                 >
                   <div class="absolute inset-0 bg-gradient-to-b from-white via-slate-50/90 to-blue-50/40 rounded-full pointer-events-none"></div>
                   <!-- Inline FPCL Brand Vector Graphic -->
-                  <svg viewBox="0 0 135 48" class="w-full h-auto px-0.5 relative z-10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <svg viewBox="0 0 135 48" class="w-full h-auto px-1 relative z-10" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <!-- Orange Lightning Bolt Box -->
                     <rect x="2" y="2" width="17" height="23" rx="2" fill="#F97316"/>
                     <polygon points="11,3 6,13 10,13 5,23 14,11 10,11" fill="#0F172A"/>
@@ -596,12 +626,12 @@
 
                 <!-- BACK FACE OF BADGE (Facing viewer at 180°, upright so text never reads backwards!) -->
                 <div
-                  class="absolute inset-0 rounded-full bg-white border-2 border-slate-200/95 shadow-md flex flex-col items-center justify-center p-1 overflow-hidden group-hover:border-orange-500 group-hover:shadow-orange-500/25 transition-all"
+                  class="absolute inset-0 rounded-full bg-white border-2 border-slate-200/95 shadow-md flex flex-col items-center justify-center p-1.5 overflow-hidden group-hover:border-orange-500 group-hover:shadow-orange-500/25 transition-all"
                   style="backface-visibility: hidden; transform: rotateY(180deg);"
                 >
                   <div class="absolute inset-0 bg-gradient-to-b from-white via-slate-50/90 to-orange-50/40 rounded-full pointer-events-none"></div>
                   <!-- Inline FPCL Brand Vector Graphic -->
-                  <svg viewBox="0 0 135 48" class="w-full h-auto px-0.5 relative z-10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <svg viewBox="0 0 135 48" class="w-full h-auto px-1 relative z-10" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <!-- Orange Lightning Bolt Box -->
                     <rect x="2" y="2" width="17" height="23" rx="2" fill="#F97316"/>
                     <polygon points="11,3 6,13 10,13 5,23 14,11 10,11" fill="#0F172A"/>
@@ -629,19 +659,19 @@
               </div>
             </div>
 
-            <!-- Title & Company Subtitle -->
-            <div class="cursor-pointer select-none" onclick="portalApp.handleDropdownSelect('overview')" title="FFBL Power Company Limited • Executive Dashboard (Click to Return to Overview)">
-              <p id="company-name" class="text-[11px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider leading-none mb-1">
-                FFBL Power Company Limited
-              </p>
-              <h1 id="app-title" class="text-xl sm:text-2xl lg:text-[28px] font-black tracking-tight text-[#1E293B] leading-tight">
+            <!-- Title & Company Subtitle (Executive Dashboard above FFBL Power Company Limited, aligned with top) -->
+            <div class="cursor-pointer select-none flex flex-col justify-start pt-1" onclick="portalApp.handleDropdownSelect('overview')" title="Executive Dashboard • FFBL Power Company Limited (Click to Return to Overview)">
+              <h1 id="app-title" class="text-2xl sm:text-3xl lg:text-[38px] xl:text-[44px] font-black tracking-tight text-[#0F172A] leading-tight sm:leading-none m-0 p-0">
                 Executive Dashboard
               </h1>
+              <p id="company-name" class="text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-widest leading-none mt-1 sm:mt-1.5">
+                FFBL Power Company Limited
+              </p>
             </div>
           </div>
 
           <!-- Clickable Navigation Menus (Moved to Top), Search & Sync Utilities -->
-          <div class="flex flex-wrap items-center gap-2 flex-1 xl:justify-end">
+          <div class="flex flex-wrap items-center gap-2 flex-1 xl:justify-end pt-1">
             <!-- All Clickable Dashboard Buttons -->
             <div id="nav-menu-links-container" class="flex flex-wrap items-center gap-1.5">
               <!-- Dynamically populated via portalApp.renderNavMenu() -->
@@ -2652,9 +2682,9 @@
                 <button
                   id="nav-menu-overview"
                   onclick="portalApp.handleDropdownSelect('overview')"
-                  class="circulating-glow-inner nav-menu-btn px-3.5 py-1.5 rounded-[9.5px] text-xs font-black transition-all whitespace-nowrap flex items-center gap-2 cursor-pointer bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-sm"
+                  class="circulating-glow-inner nav-menu-btn px-2.5 py-1 rounded-[7px] text-[11px] font-black transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-2xs"
                 >
-                  <i data-lucide="layout-grid" class="w-3.5 h-3.5 text-white"></i>
+                  <i data-lucide="layout-grid" class="w-3 h-3 text-white"></i>
                   <span>Overview</span>
                   <span class="w-1.5 h-1.5 rounded-full bg-white shadow-2xs"></span>
                 </button>
@@ -2663,10 +2693,10 @@
               <button
                 id="nav-menu-overview"
                 onclick="portalApp.handleDropdownSelect('overview')"
-                class="nav-menu-btn px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer border hover:shadow-xs shrink-0"
+                class="nav-menu-btn px-2.5 py-1 rounded-[7px] text-[11px] font-bold transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer border hover:shadow-2xs shrink-0"
                 style="background-color: #EEF2FF; border-color: #C7D2FE; color: #1D4ED8;"
               >
-                <i data-lucide="layout-grid" class="w-3.5 h-3.5 text-[#1D4ED8]"></i>
+                <i data-lucide="layout-grid" class="w-3 h-3 text-[#1D4ED8]"></i>
                 <span>Overview</span>
                 <span class="w-1.5 h-1.5 rounded-full bg-[#2563EB]"></span>
               </button>
@@ -2690,10 +2720,10 @@
                   <button
                     id="nav-menu-${item.id}"
                     onclick="portalApp.handleDropdownSelect('${item.id}')"
-                    class="circulating-glow-inner nav-menu-btn px-3.5 py-1.5 rounded-[9.5px] text-xs font-black transition-all whitespace-nowrap flex items-center gap-2 cursor-pointer text-white shadow-sm bg-gradient-to-r ${item.gradient}"
+                    class="circulating-glow-inner nav-menu-btn px-2.5 py-1 rounded-[7px] text-[11px] font-black transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer text-white shadow-2xs bg-gradient-to-r ${item.gradient}"
                     title="${item.name}"
                   >
-                    <i data-lucide="${item.icon}" class="w-3.5 h-3.5 text-white"></i>
+                    <i data-lucide="${item.icon}" class="w-3 h-3 text-white"></i>
                     <span>${item.name}</span>
                     <span class="w-1.5 h-1.5 rounded-full bg-white shadow-2xs"></span>
                   </button>
@@ -2704,11 +2734,11 @@
                 <button
                   id="nav-menu-${item.id}"
                   onclick="portalApp.handleDropdownSelect('${item.id}')"
-                  class="nav-menu-btn px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer border hover:shadow-xs shrink-0"
+                  class="nav-menu-btn px-2.5 py-1 rounded-[7px] text-[11px] font-bold transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer border hover:shadow-2xs shrink-0"
                   style="background-color: ${item.color.bg}; border-color: ${item.color.secondary}; color: ${item.color.primary};"
                   title="${item.name}"
                 >
-                  <i data-lucide="${item.icon}" class="w-3.5 h-3.5" style="color: ${item.color.primary};"></i>
+                  <i data-lucide="${item.icon}" class="w-3 h-3" style="color: ${item.color.primary};"></i>
                   <span>${item.name}</span>
                   <span class="w-1.5 h-1.5 rounded-full shrink-0" style="background-color: ${item.color.primary};"></span>
                 </button>

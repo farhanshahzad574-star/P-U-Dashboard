@@ -1029,6 +1029,28 @@
         }))
         .sort((a, b) => b.total - a.total);
 
+      // Cadre Qualification Aggregations for visual matrix in analytical section
+      const cadreMap = {};
+      filtered.forEach(item => {
+        const c = (item.cadre && item.cadre.trim()) || 'Other';
+        if (!cadreMap[c]) {
+          cadreMap[c] = { total: 0, passed: 0, trained: 0 };
+        }
+        cadreMap[c].total++;
+        if ((item.status || '').toLowerCase() === 'pass') cadreMap[c].passed++;
+        if ((item.training || '').toLowerCase() === 'yes') cadreMap[c].trained++;
+      });
+      const cadreBreakdown = Object.entries(cadreMap)
+        .map(([name, stats]) => ({
+          name,
+          total: stats.total,
+          passed: stats.passed,
+          trained: stats.trained,
+          passRate: stats.total > 0 ? Math.round((stats.passed / stats.total) * 100) : 0,
+          trainedRate: stats.total > 0 ? Math.round((stats.trained / stats.total) * 100) : 0
+        }))
+        .sort((a, b) => b.total - a.total);
+
       // Pagination slice for records table
       const pageSize = vs.pageSize === 'all' ? filtered.length : parseInt(vs.pageSize || 15, 10);
       const totalPages = Math.max(1, Math.ceil(filtered.length / (pageSize || 1)));
@@ -1050,54 +1072,47 @@
         <!-- PSM VALIDATION SUB-DASHBOARD CONTAINER -->
         <div class="space-y-6 font-sans">
 
-          <!-- 1. Executive Validation Banner -->
-          <div class="bg-gradient-to-r from-teal-900 via-slate-900 to-indigo-950 text-white rounded-2xl p-5 sm:p-6 shadow-md border border-teal-500/30 relative overflow-hidden">
+          <!-- 1. Executive Action & Live Status Bar (Streamlined) -->
+          <div class="bg-gradient-to-r from-teal-900 via-slate-900 to-indigo-950 text-white rounded-2xl px-5 py-3.5 shadow-sm border border-teal-500/30 relative overflow-hidden flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div class="absolute -right-10 -bottom-10 w-72 h-72 bg-teal-500/10 rounded-full blur-3xl pointer-events-none"></div>
-            <div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-              <div class="space-y-1.5">
-                <div class="flex items-center flex-wrap gap-2">
-                  <span class="text-xs text-slate-300 font-mono">
-                    Last Synced: ${vs.lastSynced || 'Active'}
-                  </span>
-                </div>
-                <h3 class="text-xl sm:text-2xl lg:text-3xl font-black tracking-tight text-white flex items-center gap-2.5">
-                  <i data-lucide="check-check" class="w-6 h-6 text-teal-400"></i>
-                  <span>PSM Validation & Qualification Matrix</span>
-                </h3>
-              </div>
+            <div class="relative z-10 flex items-center gap-2">
+              <span class="inline-flex items-center gap-2 text-xs text-slate-300 font-mono">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span>Last Synced: ${vs.lastSynced || 'Active'}</span>
+              </span>
+            </div>
 
-              <!-- Top Quick Actions -->
-              <div class="shrink-0 flex items-center flex-wrap gap-2.5">
-                <button
-                  type="button"
-                  onclick="FPCL_PSM_SUITE.syncValidationLiveFeed()"
-                  class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-white border border-white/20 transition-all cursor-pointer shadow-xs active:scale-95"
-                  title="Force re-fetch from Google Sheets"
-                >
-                  <i data-lucide="refresh-cw" class="w-3.5 h-3.5 ${vs.isSyncing ? 'animate-spin' : ''}"></i>
-                  <span>${vs.isSyncing ? 'Syncing...' : 'Sync Live Sheet'}</span>
-                </button>
+            <!-- Top Quick Actions -->
+            <div class="relative z-10 shrink-0 flex items-center flex-wrap gap-2.5">
+              <button
+                type="button"
+                onclick="FPCL_PSM_SUITE.syncValidationLiveFeed()"
+                class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-white border border-white/20 transition-all cursor-pointer shadow-xs active:scale-95"
+                title="Force re-fetch from Google Sheets"
+              >
+                <i data-lucide="refresh-cw" class="w-3.5 h-3.5 ${vs.isSyncing ? 'animate-spin' : ''}"></i>
+                <span>${vs.isSyncing ? 'Syncing...' : 'Sync Live Sheet'}</span>
+              </button>
 
-                <button
-                  type="button"
-                  onclick="FPCL_PSM_SUITE.exportValidationCSV()"
-                  class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-md shadow-emerald-900/30 transition-all cursor-pointer active:scale-95"
-                  title="Download CSV of current filtered personnel"
-                >
-                  <i data-lucide="download" class="w-4 h-4"></i>
-                  <span>Export Filtered CSV (${totalFiltered})</span>
-                </button>
+              <button
+                type="button"
+                onclick="FPCL_PSM_SUITE.exportValidationCSV()"
+                class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-black bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-md shadow-emerald-900/30 transition-all cursor-pointer active:scale-95"
+                title="Download CSV of current filtered personnel"
+              >
+                <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                <span>Export Filtered CSV (${totalFiltered})</span>
+              </button>
 
-                <button
-                  type="button"
-                  onclick="FPCL_PSM_SUITE.setSubDashboard('audits')"
-                  class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-white border border-white/20 transition-all cursor-pointer shadow-xs active:scale-95"
-                  title="Return to PSM Audits sub-dashboard"
-                >
-                  <i data-lucide="shield-check" class="w-3.5 h-3.5 text-teal-300"></i>
-                  <span>View Audits</span>
-                </button>
-              </div>
+              <button
+                type="button"
+                onclick="FPCL_PSM_SUITE.setSubDashboard('audits')"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-white border border-white/20 transition-all cursor-pointer shadow-xs active:scale-95"
+                title="Return to PSM Audits sub-dashboard"
+              >
+                <i data-lucide="shield-check" class="w-3.5 h-3.5 text-teal-300"></i>
+                <span>View Audits</span>
+              </button>
             </div>
           </div>
 
@@ -1386,41 +1401,11 @@
                     <span>Department Training Compliance Matrix</span>
                   </h4>
                 </div>
-                <span class="text-xs font-mono font-bold text-slate-500">
-                  ${deptBreakdown.length} Departments
-                </span>
               </div>
 
               <!-- Horizontal SVG Bar Chart (Full Department Training Compliance Matrix) -->
               <div id="psm-val-dept-bar-chart" class="w-full overflow-x-auto">
                 ${this.renderValidationDeptBarChart(deptBreakdown)}
-              </div>
-
-              <!-- Legends of Department Compliance Trend Placed at Bottom -->
-              <div class="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs font-mono">
-                <div class="flex items-center gap-3">
-                  <button
-                    type="button"
-                    onclick="FPCL_PSM_SUITE.setValidationFilter('trainingFilter', '${vs.trainingFilter === 'Yes' ? 'all' : 'Yes'}')"
-                    class="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg ${vs.trainingFilter === 'Yes' ? 'bg-emerald-600 text-white ring-2 ring-emerald-400 shadow-sm' : 'bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100'} font-bold cursor-pointer transition-colors shadow-2xs"
-                    title="Click to filter trained personnel"
-                  >
-                    <span class="w-2.5 h-2.5 rounded-sm ${vs.trainingFilter === 'Yes' ? 'bg-white' : 'bg-emerald-500'}"></span>
-                    <span>Trained Personnel (${trainedYesCount})</span>
-                  </button>
-                  <button
-                    type="button"
-                    onclick="FPCL_PSM_SUITE.setValidationFilter('trainingFilter', '${vs.trainingFilter === 'No' ? 'all' : 'No'}')"
-                    class="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg ${vs.trainingFilter === 'No' ? 'bg-amber-600 text-white ring-2 ring-amber-400 shadow-sm' : 'bg-amber-50 border border-amber-200 text-amber-800 hover:bg-amber-100'} font-bold cursor-pointer transition-colors shadow-2xs"
-                    title="Click to filter personnel requiring training"
-                  >
-                    <span class="w-2.5 h-2.5 rounded-sm ${vs.trainingFilter === 'No' ? 'bg-white' : 'bg-amber-500'}"></span>
-                    <span>Require Training (${trainedNoCount})</span>
-                  </button>
-                </div>
-                <div class="text-[11px] font-sans text-slate-400 font-medium">
-                  Click any bar to filter department data
-                </div>
               </div>
             </div>
 
@@ -1433,41 +1418,11 @@
                     <span>Module Validation Compliance Matrix</span>
                   </h4>
                 </div>
-                <span class="text-xs font-mono font-bold text-slate-500">
-                  ${moduleBreakdown.length} ${moduleBreakdown.length === 1 ? 'Module' : 'Modules'}
-                </span>
               </div>
 
               <!-- Horizontal SVG Bar Chart (Module Validation Compliance Matrix) -->
               <div id="psm-val-module-bar-chart" class="w-full overflow-x-auto">
                 ${this.renderValidationModuleBarChart(moduleBreakdown)}
-              </div>
-
-              <!-- Legends of Module Validation Compliance Placed at Bottom -->
-              <div class="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs font-mono">
-                <div class="flex items-center gap-3">
-                  <button
-                    type="button"
-                    onclick="FPCL_PSM_SUITE.setValidationFilter('statusFilter', '${vs.statusFilter === 'Pass' ? 'all' : 'Pass'}')"
-                    class="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg ${vs.statusFilter === 'Pass' ? 'bg-emerald-600 text-white ring-2 ring-emerald-400 shadow-sm' : 'bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100'} font-bold cursor-pointer transition-colors shadow-2xs"
-                    title="Click to filter passed personnel"
-                  >
-                    <span class="w-2.5 h-2.5 rounded-sm ${vs.statusFilter === 'Pass' ? 'bg-white' : 'bg-emerald-500'}"></span>
-                    <span>Passed (${passedCount})</span>
-                  </button>
-                  <button
-                    type="button"
-                    onclick="FPCL_PSM_SUITE.setValidationFilter('statusFilter', '${vs.statusFilter === 'Fail' ? 'all' : 'Fail'}')"
-                    class="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg ${vs.statusFilter === 'Fail' ? 'bg-rose-600 text-white ring-2 ring-rose-400 shadow-sm' : 'bg-rose-50 border border-rose-200 text-rose-800 hover:bg-rose-100'} font-bold cursor-pointer transition-colors shadow-2xs"
-                    title="Click to filter failed personnel"
-                  >
-                    <span class="w-2.5 h-2.5 rounded-sm ${vs.statusFilter === 'Fail' ? 'bg-white' : 'bg-rose-500'}"></span>
-                    <span>Failed (${failedCount})</span>
-                  </button>
-                </div>
-                <div class="text-[11px] font-sans text-slate-400 font-medium">
-                  Click any bar to filter module data
-                </div>
               </div>
             </div>
 
@@ -3126,26 +3081,31 @@
       if (!moduleBreakdown || moduleBreakdown.length === 0) {
         return `
           <div class="py-12 text-center text-slate-400 font-medium text-xs">
-            No module data available for current filter selection
+            No module qualification records available
           </div>
         `;
       }
 
       const vs = this.state.validationState || {};
       const maxTotal = Math.max(...moduleBreakdown.map(m => m.total), 1);
-      const tickMax = Math.ceil(maxTotal / 5) * 5 || 5;
-      const ticks = [0, Math.round(tickMax * 0.25), Math.round(tickMax * 0.5), Math.round(tickMax * 0.75), tickMax];
+      let step = 5;
+      if (maxTotal > 150) step = 25;
+      else if (maxTotal > 80) step = 10;
+      else step = 5;
+      const tickMax = Math.ceil(maxTotal / step) * step || step;
+      const ticks = [];
+      for (let t = 0; t <= tickMax; t += step) {
+        ticks.push(t);
+      }
 
-      const svgWidth = 600;
-      const labelWidth = 140;
-      const rightPadding = 120;
-      const plotWidth = svgWidth - labelWidth - rightPadding;
       const rowHeight = 42;
-      const barHeight = 24;
-      const chartHeight = moduleBreakdown.length * rowHeight + 40;
+      const chartHeight = moduleBreakdown.length * rowHeight + 50;
+      const svgWidth = 960;
+      const labelWidth = 190;
+      const plotWidth = svgWidth - labelWidth - 110;
 
       const barsSvg = moduleBreakdown.map((m, index) => {
-        const y = index * rowHeight + 10;
+        const y = index * rowHeight + 12;
         const totalW = (m.total / tickMax) * plotWidth;
         const passedW = (m.passed / tickMax) * plotWidth;
         const failedW = (m.failed / tickMax) * plotWidth;
@@ -3157,26 +3117,27 @@
              onclick="FPCL_PSM_SUITE.setValidationFilter('moduleFilter', vs.moduleFilter === '${m.name.replace(/'/g, "\\'")}' ? 'all' : '${m.name.replace(/'/g, "\\'")}')"
              onmouseenter="FPCL_PSM_SUITE.showTooltip(event, { title: 'Module: ${m.name.replace(/'/g, "\\'")}', badge: '${m.passRate}% Pass Rate', color: '#2563EB', subtitle: 'Module Validation Compliance', metrics: [{ label: 'Total In Scope', value: '${m.total}' }, { label: 'Passed Validations', value: '${m.passed}' }, { label: 'Failed Validations', value: '${m.failed}' }, { label: 'Pass Rate', value: '${m.passRate}%' }], hint: 'Click to filter records by module ${m.name.replace(/'/g, "\\'")}' })"
              onmousemove="FPCL_PSM_SUITE.moveTooltip(event)"
-             onmouseleave="FPCL_PSM_SUITE.hideTooltip()">
+             onmouseleave="FPCL_PSM_SUITE.hideTooltip()"
+             title="Click to filter by ${m.name} (${m.passed} Passed, ${m.failed} Failed)">
             
-            <!-- Hover / Selected highlight background -->
-            <rect x="0" y="${y - 4}" width="${svgWidth}" height="${rowHeight - 2}" fill="${isSelected ? '#EFF6FF' : '#F8FAFC'}" rx="6" class="transition-colors group-hover:fill-slate-100/90"/>
+            <!-- Row hover background -->
+            <rect x="0" y="${y - 4}" width="${svgWidth}" height="${rowHeight}" fill="${isSelected ? '#EFF6FF' : 'transparent'}" class="group-hover:fill-blue-50/60 transition-colors rounded-lg"/>
 
-            <!-- Module Label -->
-            <text x="8" y="${y + 17}" fill="${isSelected ? '#1D4ED8' : '#1E293B'}" font-size="12" font-weight="${isSelected ? '900' : '700'}" font-family="'Plus Jakarta Sans', sans-serif">
-              ${m.name.length > 18 ? m.name.substring(0, 17) + '…' : m.name}
+            <!-- Module Label (13px bold, matching department matrix) -->
+            <text x="${labelWidth - 14}" y="${y + 16}" fill="${isSelected ? '#1D4ED8' : '#1E293B'}" font-size="13" font-weight="${isSelected ? '900' : '800'}" font-family="'Plus Jakarta Sans', system-ui, sans-serif" text-anchor="end" class="transition-colors group-hover:fill-blue-700">
+              ${m.name.length > 22 ? m.name.substring(0, 21) + '…' : m.name}
             </text>
 
             <!-- Background track bar -->
-            <rect x="${labelWidth}" y="${y}" width="${plotWidth}" height="${barHeight}" rx="5" fill="#E2E8F0" opacity="0.3"/>
+            <rect x="${labelWidth}" y="${y + 2}" width="${plotWidth}" height="22" rx="5" fill="#F1F5F9"/>
 
             <!-- Passed Segment (Emerald) -->
             ${m.passed > 0 ? `
               <rect
                 x="${labelWidth}"
-                y="${y}"
+                y="${y + 2}"
                 width="${passedW}"
-                height="${barHeight}"
+                height="22"
                 rx="${m.failed > 0 || m.pending > 0 ? '5 0 0 5' : '5'}"
                 fill="#10B981"
                 class="transition-all opacity-95 group-hover:opacity-100"
@@ -3190,9 +3151,9 @@
             ${m.failed > 0 ? `
               <rect
                 x="${labelWidth + passedW}"
-                y="${y}"
+                y="${y + 2}"
                 width="${failedW}"
-                height="${barHeight}"
+                height="22"
                 rx="${m.passed > 0 ? (m.pending > 0 ? '0' : '0 5 5 0') : (m.pending > 0 ? '5 0 0 5' : '5')}"
                 fill="#EF4444"
                 class="transition-all opacity-95 group-hover:opacity-100"
@@ -3206,9 +3167,9 @@
             ${m.pending > 0 ? `
               <rect
                 x="${labelWidth + passedW + failedW}"
-                y="${y}"
+                y="${y + 2}"
                 width="${pendingW}"
-                height="${barHeight}"
+                height="22"
                 rx="${m.passed > 0 || m.failed > 0 ? '0 5 5 0' : '5'}"
                 fill="#94A3B8"
                 class="transition-all opacity-95 group-hover:opacity-100"
