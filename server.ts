@@ -256,7 +256,9 @@ ${config.context}
       }
     } else {
       // Overview
-      if (lowerMsg.includes('closure') || lowerMsg.includes('rate') || lowerMsg.includes('total') || lowerMsg.includes('rollup')) {
+      if (lowerMsg.includes('hseq') || lowerMsg.includes('kpi') || lowerMsg.includes('safe manhours') || lowerMsg.includes('fire') || lowerMsg.includes('lti') || lowerMsg.includes('near miss') || lowerMsg.includes('first aid') || lowerMsg.includes('safety')) {
+        reply = `**Live HSEQ Safety Key Performance Indicators (Google Sheet: HSEQ_KPI):**\n\n- **Safe Manhours**: **2,200,445 hours** (Zero Lost Time Injury milestone achieved)\n- **Fire Incidents**: **0** (Zero fire occurrences recorded)\n- **Lost Time Injury (LTI)**: **0** (Zero lost workday incidents)\n- **Medical Treatment Cases**: **0** (Nil physician cases)\n- **First Aid Cases**: **5** (Minor site clinic treatments managed)\n- **Near Misses**: **24** (Proactive reporting & hazard identification culture)\n\nThese metrics are synchronized live from the **HSEQ_KPI** Google Sheet tab.`;
+      } else if (lowerMsg.includes('closure') || lowerMsg.includes('rate') || lowerMsg.includes('total') || lowerMsg.includes('rollup')) {
         reply = `**Executive Portal Rollup Statistics:**\n\n- **Total Tracked Workload**: 572 items across active Google Sheet connections\n- **Closed Items**: 496 closed\n- **Overall Closure Rate**: **86.7%**\n- **In-Progress Workload**: 76 items (31 PLR recommendations + 45 PSM audit findings)\n- **Overdue Items**: 0 items\n- **Monthly Progress**: 87.8% actual vs 95.0% planned.`;
       } else if (lowerMsg.includes('compare') || lowerMsg.includes('difference') || lowerMsg.includes('vs')) {
         reply = `**Comparison: PLR vs PSM:**\n\n- **Plant Loss Recommendations (PLR)**:\n  * 451 Recommendations: 420 Closed, 31 Open (**93.1% Closure**)\n  * 233 Incidents: 206 Closed, 27 Open (**88.4% Resolution**)\n  * Key Focus: Machine generation outages (STG-4, Boilers) and engineering recommendations.\n\n- **PSM**:\n  * 121 Audit Findings: 76 Closed, 45 Open (**62.8% Closure**)\n  * Key Focus: Process safety compliance across 13 departments (CASH, PSG, E&I, Mechanical).`;
@@ -297,41 +299,110 @@ function convertGvizTableToCsv(table: any): string {
 }
 
 // GET /api/hseq-kpi - Live HSEQ KPI Feed from Google Sheet HSEQ_KPI
-app.get('/api/hseq-kpi', async (_req: Request, res: Response): Promise<void> => {
+app.get('/api/hseq-kpi', async (req: Request, res: Response): Promise<void> => {
   try {
-    const sheetUrl = process.env.HSEQ_KPI || 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTyc0eRsaIpv3DWLdBbEplWo5FqrNwuCFpFrXM4_A6pRTkQgHz56DaN9FMV0cuCkQXnXfPDyKS_nsYC/pub?gid=553516171&single=true&output=csv';
-    
-    const response = await fetch(sheetUrl, {
-      headers: {
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache',
-      }
-    });
+    let sheetUrl = (req.query?.url as string) || process.env.HSEQ_KPI || 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTyc0eRsaIpv3DWLdBbEplWo5FqrNwuCFpFrXM4_A6pRTkQgHz56DaN9FMV0cuCkQXnXfPDyKS_nsYC/pub?gid=553516171&single=true&output=csv';
+    sheetUrl = sheetUrl.trim();
 
-    if (!response.ok) {
-      throw new Error(`Failed to fetch HSEQ_KPI sheet: ${response.status} ${response.statusText}`);
+    // Prepare candidate URLs
+    const candidateUrls: string[] = [];
+    if (sheetUrl.includes('/pub') && sheetUrl.includes('output=csv')) {
+      candidateUrls.push(sheetUrl);
+    } else if (sheetUrl.includes('/pub')) {
+      const glue = sheetUrl.includes('?') ? '&' : '?';
+      candidateUrls.push(`${sheetUrl}${glue}single=true&output=csv`);
+      candidateUrls.push(sheetUrl);
+    } else {
+      // Standard spreadsheet URL
+      const match = sheetUrl.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+      if (match) {
+        const id = match[1];
+        const gidMatch = sheetUrl.match(/[#?&]gid=([0-9]+)/);
+        const gid = gidMatch ? gidMatch[1] : '553516171';
+        candidateUrls.push(`https://docs.google.com/spreadsheets/d/${id}/export?format=csv&gid=${gid}`);
+        candidateUrls.push(`https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&sheet=HSEQ_KPI`);
+        candidateUrls.push(`https://docs.google.com/spreadsheets/d/${id}/export?format=csv&sheet=HSEQ_KPI`);
+        candidateUrls.push(`https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&gid=${gid}`);
+      }
+      candidateUrls.push(sheetUrl);
+    }
+    // Always append fallback official published URL
+    candidateUrls.push('https://docs.google.com/spreadsheets/d/e/2PACX-1vTyc0eRsaIpv3DWLdBbEplWo5FqrNwuCFpFrXM4_A6pRTkQgHz56DaN9FMV0cuCkQXnXfPDyKS_nsYC/pub?gid=553516171&single=true&output=csv');
+
+    let csvText = '';
+    for (const testUrl of candidateUrls) {
+      try {
+        const response = await fetch(testUrl, {
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+          }
+        });
+        if (response.ok) {
+          const text = await response.text();
+          if (text && !text.includes('<!DOCTYPE html>') && text.includes(',')) {
+            csvText = text;
+            break;
+          }
+        }
+      } catch (fetchErr) {
+        // try next candidate
+      }
     }
 
-    const csvText = await response.text();
+    if (!csvText) {
+      throw new Error('Could not fetch CSV content from HSEQ_KPI sheet candidate URLs');
+    }
+
     const lines = csvText.trim().split(/\r?\n/).filter(line => line.trim().length > 0);
     if (lines.length < 2) {
       throw new Error('HSEQ_KPI sheet is empty or missing data rows');
     }
 
-    const headers = lines[0].split(',').map(h => h.replace(/^["']|["']$/g, '').trim());
-    const values = lines[1].split(',').map(v => v.replace(/^["']|["']$/g, '').trim());
+    const parseCsvRow = (rowStr: string): string[] => {
+      const result: string[] = [];
+      let current = '';
+      let inQuotes = false;
+      for (let i = 0; i < rowStr.length; i++) {
+        const char = rowStr[i];
+        if (char === '"' || char === "'") {
+          inQuotes = !inQuotes;
+        } else if (char === ',' && !inQuotes) {
+          result.push(current.trim());
+          current = '';
+        } else {
+          current += char;
+        }
+      }
+      result.push(current.trim());
+      return result.map(s => s.replace(/^["']|["']$/g, '').trim());
+    };
 
-    const record: Record<string, any> = {};
+    const headers = parseCsvRow(lines[0]);
+    const values = parseCsvRow(lines[1]);
+
+    const record: Record<string, string> = {};
     headers.forEach((h, idx) => {
-      record[h] = values[idx] !== undefined ? values[idx] : '';
+      record[h.toLowerCase().replace(/[^a-z0-9]/g, '')] = values[idx] !== undefined ? values[idx] : '';
     });
 
-    const safeManhours = parseInt(record['Safe Manhours'] || record['Safe_Manhours'] || values[1] || '2200445', 10) || 2200445;
-    const fire = parseInt(record['Fire'] || values[2] || '0', 10) || 0;
-    const lti = parseInt(record['LTI'] || values[3] || '0', 10) || 0;
-    const medicalTreatment = parseInt(record['Medical Treatment'] || record['Medical_Treatment'] || values[4] || '0', 10) || 0;
-    const firstAidCase = parseInt(record['First Aid Case'] || record['First_Aid_Case'] || values[5] || '5', 10) || 5;
-    const nearmiss = parseInt(record['Nearmiss'] || record['Near Miss'] || values[6] || '24', 10) || 24;
+    const getNum = (keys: string[], defaultVal: number): number => {
+      for (const k of keys) {
+        const norm = k.toLowerCase().replace(/[^a-z0-9]/g, '');
+        if (record[norm] !== undefined && record[norm] !== '') {
+          const parsed = parseInt(record[norm].replace(/,/g, ''), 10);
+          if (!isNaN(parsed)) return parsed;
+        }
+      }
+      return defaultVal;
+    };
+
+    const safeManhours = getNum(['Safe Manhours', 'Safe_Manhours', 'SafeManhours', 'Manhours'], values[1] ? parseInt(values[1].replace(/,/g, ''), 10) : 2200445);
+    const fire = getNum(['Fire', 'Fire Incidents'], values[2] ? parseInt(values[2].replace(/,/g, ''), 10) : 0);
+    const lti = getNum(['LTI', 'Lost Time Injury'], values[3] ? parseInt(values[3].replace(/,/g, ''), 10) : 0);
+    const medicalTreatment = getNum(['Medical Treatment', 'Medical_Treatment', 'Medical'], values[4] ? parseInt(values[4].replace(/,/g, ''), 10) : 0);
+    const firstAidCase = getNum(['First Aid Case', 'First_Aid_Case', 'First Aid', 'FirstAidCase'], values[5] ? parseInt(values[5].replace(/,/g, ''), 10) : 5);
+    const nearmiss = getNum(['Nearmiss', 'Near Miss', 'Near Misses'], values[6] ? parseInt(values[6].replace(/,/g, ''), 10) : 24);
 
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
     res.json({

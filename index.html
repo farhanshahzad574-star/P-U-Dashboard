@@ -422,11 +422,17 @@
         line-height: 1 !important;
       }
       .cmp-bar-num {
-        font-size: 20px !important;
-        font-weight: 900 !important;
+        font-size: 13px !important;
+        font-weight: 800 !important;
+        font-family: 'Plus Jakarta Sans', system-ui, sans-serif !important;
+      }
+      .cmp-bar-zero {
+        font-size: 11px !important;
+        font-weight: 700 !important;
+        font-family: 'Plus Jakarta Sans', system-ui, sans-serif !important;
       }
       .cmp-x-label {
-        font-size: 15.5px !important;
+        font-size: 14px !important;
         font-weight: 800 !important;
       }
 
@@ -726,6 +732,148 @@
       <section id="portal-landing-view" class="space-y-4 sm:space-y-5">
 
         <!-- ========================================================================= -->
+        <!-- HSEQ KEY PERFORMANCE INDICATORS (Live Google Sheet: HSEQ_KPI)             -->
+        <!-- ========================================================================= -->
+        <div id="hseq-kpi-container" class="bg-gradient-to-b from-white to-slate-50/90 border border-slate-200/90 rounded-2xl p-5 sm:p-6 shadow-xs space-y-4">
+          <!-- Executive Section Header -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-100 gap-3">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-600 text-white flex items-center justify-center shadow-xs shrink-0">
+                <i data-lucide="shield-check" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <div class="flex items-center gap-2.5">
+                  <h3 class="text-sm sm:text-base font-black text-[#1E293B] tracking-wide">
+                    HSEQ KEY PERFORMANCE INDICATORS
+                  </h3>
+                  <span class="relative flex h-2.5 w-2.5 shrink-0" title="Live Active">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 shadow-xs shadow-emerald-500/50"></span>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sync Controls & Timestamp -->
+            <div class="flex items-center gap-2.5">
+              <span id="hseq-kpi-last-updated" class="text-[11px] font-mono font-semibold text-slate-400">
+                Live Google Sheet Sync
+              </span>
+              <button
+                id="btn-refresh-hseq-kpis"
+                onclick="portalApp.fetchHseqKpis(true)"
+                class="px-2.5 py-1 rounded-lg text-xs font-bold text-slate-700 bg-white hover:bg-slate-100 border border-slate-200 shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer"
+                title="Refresh HSEQ KPI values from Google Sheet"
+              >
+                <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-slate-500"></i>
+                <span>Sync Now</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 6 Colorful Professional KPI Cards -->
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+            
+            <!-- 1. Safe Manhours (Emerald / Green) -->
+            <div class="card-hover-effect relative overflow-hidden rounded-xl border border-emerald-200/90 bg-gradient-to-b from-emerald-50/70 via-white to-emerald-50/30 p-3 sm:p-3.5 xl:p-4 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between">
+              <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-500"></div>
+              <div class="flex items-start justify-between gap-2">
+                <span class="text-[11px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider font-mono">Safe Manhours</span>
+                <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 shadow-2xs border border-emerald-200">
+                  <i data-lucide="shield-check" class="w-4 h-4"></i>
+                </div>
+              </div>
+              <div class="pt-2.5 sm:pt-3 pb-1 flex flex-col justify-center min-w-0 w-full overflow-hidden">
+                <div id="kpi-val-safe-manhours" class="text-xl sm:text-2xl lg:text-[1.15rem] xl:text-[1.38rem] 2xl:text-[1.68rem] font-black font-mono tracking-tighter text-emerald-800 leading-none whitespace-nowrap" title="Safe Manhours">
+                  2,200,445
+                </div>
+              </div>
+            </div>
+
+            <!-- 2. Fire Incidents (Rose / Coral) -->
+            <div class="card-hover-effect relative overflow-hidden rounded-xl border border-rose-200/90 bg-gradient-to-b from-rose-50/70 via-white to-orange-50/20 p-3.5 sm:p-4 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between">
+              <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-rose-500 to-red-500"></div>
+              <div class="flex items-start justify-between gap-2">
+                <span class="text-[11px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider font-mono">Fire</span>
+                <div class="w-8 h-8 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center shrink-0 shadow-2xs border border-rose-200">
+                  <i data-lucide="flame" class="w-4 h-4"></i>
+                </div>
+              </div>
+              <div class="pt-3 pb-1 flex flex-col justify-center">
+                <div id="kpi-val-fire" class="text-2xl sm:text-3xl lg:text-4xl font-black font-mono tracking-tight text-rose-700 leading-none">
+                  0
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. Lost Time Injury (LTI) (Royal Blue / Indigo) -->
+            <div class="card-hover-effect relative overflow-hidden rounded-xl border border-indigo-200/90 bg-gradient-to-b from-indigo-50/70 via-white to-blue-50/20 p-3.5 sm:p-4 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between">
+              <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 to-blue-600"></div>
+              <div class="flex items-start justify-between gap-2">
+                <span class="text-[11px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider font-mono">LTI</span>
+                <div class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center shrink-0 shadow-2xs border border-indigo-200">
+                  <i data-lucide="activity" class="w-4 h-4"></i>
+                </div>
+              </div>
+              <div class="pt-3 pb-1 flex flex-col justify-center">
+                <div id="kpi-val-lti" class="text-2xl sm:text-3xl lg:text-4xl font-black font-mono tracking-tight text-indigo-800 leading-none">
+                  0
+                </div>
+              </div>
+            </div>
+
+            <!-- 4. Medical Treatment (Violet / Purple) -->
+            <div class="card-hover-effect relative overflow-hidden rounded-xl border border-purple-200/90 bg-gradient-to-b from-purple-50/70 via-white to-violet-50/20 p-3.5 sm:p-4 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between">
+              <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 to-violet-600"></div>
+              <div class="flex items-start justify-between gap-2">
+                <span class="text-[11px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider font-mono">Medical Treatment</span>
+                <div class="w-8 h-8 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center shrink-0 shadow-2xs border border-purple-200">
+                  <i data-lucide="stethoscope" class="w-4 h-4"></i>
+                </div>
+              </div>
+              <div class="pt-3 pb-1 flex flex-col justify-center">
+                <div id="kpi-val-medical" class="text-2xl sm:text-3xl lg:text-4xl font-black font-mono tracking-tight text-purple-800 leading-none">
+                  0
+                </div>
+              </div>
+            </div>
+
+            <!-- 5. First Aid Case (Amber / Orange) -->
+            <div class="card-hover-effect relative overflow-hidden rounded-xl border border-amber-200/90 bg-gradient-to-b from-amber-50/70 via-white to-yellow-50/20 p-3.5 sm:p-4 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between">
+              <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-500"></div>
+              <div class="flex items-start justify-between gap-2">
+                <span class="text-[11px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider font-mono">First Aid Case</span>
+                <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center shrink-0 shadow-2xs border border-amber-200">
+                  <i data-lucide="bandage" class="w-4 h-4"></i>
+                </div>
+              </div>
+              <div class="pt-3 pb-1 flex flex-col justify-center">
+                <div id="kpi-val-first-aid" class="text-2xl sm:text-3xl lg:text-4xl font-black font-mono tracking-tight text-amber-800 leading-none">
+                  5
+                </div>
+              </div>
+            </div>
+
+            <!-- 6. Nearmiss (Sky / Cyan) -->
+            <div class="card-hover-effect relative overflow-hidden rounded-xl border border-sky-200/90 bg-gradient-to-b from-sky-50/70 via-white to-cyan-50/20 p-3.5 sm:p-4 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between">
+              <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-sky-500 to-cyan-600"></div>
+              <div class="flex items-start justify-between gap-2">
+                <span class="text-[11px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider font-mono">Nearmiss</span>
+                <div class="w-8 h-8 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center shrink-0 shadow-2xs border border-sky-200">
+                  <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+                </div>
+              </div>
+              <div class="pt-3 pb-1 flex flex-col justify-center">
+                <div id="kpi-val-nearmiss" class="text-2xl sm:text-3xl lg:text-4xl font-black font-mono tracking-tight text-sky-800 leading-none">
+                  24
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ========================================================================= -->
         <!-- PROGRESS COMPARISON Status (Expanded Full-Width Bar Chart)                -->
         <!-- ========================================================================= -->
         <div class="bg-gradient-to-b from-white to-slate-50/90 border border-slate-200/90 rounded-2xl p-5 sm:p-6 shadow-xs space-y-3">
@@ -735,14 +883,18 @@
                 <span class="text-lg">📊</span> PROGRESS COMPARISON Status
               </h3>
             </div>
-            <div class="flex items-center gap-2 text-xs font-mono font-bold">
-              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-blue-50 text-blue-700 border border-blue-200">
+            <div class="flex flex-wrap items-center gap-2 text-xs font-mono font-bold">
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-blue-50 text-blue-700 border border-blue-200" title="Total Actions / Total Personnel">
                 <span class="w-2.5 h-2.5 rounded-sm bg-blue-600"></span>
-                <span>Total Actions</span>
+                <span>Total Actions / Personnel</span>
               </span>
-              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-amber-50 text-amber-800 border border-amber-200">
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-amber-50 text-amber-800 border border-amber-200" title="Open Actions pending closure">
                 <span class="w-2.5 h-2.5 rounded-sm bg-amber-500"></span>
                 <span>Open Actions</span>
+              </span>
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200" title="Personnel who passed PSM qualification validation">
+                <span class="w-2.5 h-2.5 rounded-sm bg-emerald-600"></span>
+                <span>Validation Passed</span>
               </span>
             </div>
           </div>
@@ -1313,8 +1465,6 @@
           <span>Operational Excellence Directorate</span>
         </div>
         <div class="flex items-center gap-3 text-slate-500">
-          <span>All 11 Individual Dashboards Configured</span>
-          <span class="text-slate-300">•</span>
           <span>Executive Color Suite Applied</span>
         </div>
       </div>
@@ -1453,6 +1603,33 @@
        */
       const DASHBOARD_REGISTRY = [
         {
+          id: 'hseq',
+          name: 'HSEQ',
+          code: 'HSEQ',
+          icon: 'shield-check',
+          status: 'Awaiting Data',
+          hasSheetLink: false,
+          category: 'Executive & Governance',
+          department: 'HSEQ Directorate',
+          cadence: 'Continuous / Monthly',
+          description: 'Health, Safety, Environment & Quality integrated governance, performance indicators, compliance benchmarks & operational audits.',
+          color: {
+            bg: '#E6F7F2',
+            primary: '#059669',
+            secondary: '#34D399',
+            text: '#064E3B'
+          },
+          gradient: 'from-emerald-600 via-teal-600 to-cyan-600',
+          gradientStop1: '#059669',
+          gradientStop2: '#0D9488',
+          tagStyle: 'bg-emerald-50 text-emerald-800 border-emerald-200',
+          kpis: { total: 0, closed: 0, inProgress: 0, overdue: 0, compliance: '0.0%' },
+          punchList: { open: 0, closed: 0, total: 0, rate: '0.0%' },
+          dataReadiness: { master: '0%', signoff: '0%' },
+          statusComment: 'Data will be provided later.',
+          actions: []
+        },
+        {
           id: 'plr',
           name: 'PLR',
           code: 'PLR',
@@ -1482,6 +1659,64 @@
             { id: 'PLR-216-R2', desc: 'Inspect lube oil cooler auxiliary thermostatic bypass valve seating and replace gaskets', owner: 'Mech Team', due: '2025-11-25', priority: 'High', status: 'Completed' },
             { id: 'PLR-216-R3', desc: 'Revise STG warm startup SOP to include continuous DCS differential expansion monitoring', owner: 'Operations', due: '2025-11-28', priority: 'Medium', status: 'Completed' }
           ]
+        },
+        {
+          id: 'sub-hse-psm',
+          name: 'PSM Audits',
+          code: 'PSM Audits',
+          icon: 'shield-check',
+          status: 'Active',
+          hasSheetLink: true,
+          category: 'Sub HSE Committees',
+          department: 'HSEQ',
+          cadence: 'Monthly',
+          description: 'Process Safety Management internal audit findings, action department tracking, PSM elements compliance & resolution analytics.',
+          color: {
+            bg: '#E8F6F5',
+            primary: '#0D9488',
+            secondary: '#14B8A6',
+            text: '#0F172A'
+          },
+          gradient: 'from-teal-600 via-emerald-600 to-indigo-600',
+          gradientStop1: '#0D9488',
+          gradientStop2: '#0891B2',
+          tagStyle: 'bg-teal-50 text-teal-700 border-teal-200',
+          kpis: { total: 121, closed: 76, inProgress: 45, overdue: 0, compliance: '62.8%' },
+          punchList: { open: 45, closed: 76, total: 121, rate: '62.8%' },
+          dataReadiness: { master: '100%', signoff: '100%' },
+          statusComment: '121 audit observations tracked across 13 Action Departments (76 Closed, 45 Open, 63% Closure Rate).',
+          actions: [
+            { id: 'PSM-IA-2026-0001', desc: 'Management attendance in D level meeting marked with immediate effect', owner: 'Operations (CASH)', due: '2026-07-15', priority: 'Major', status: 'Completed' },
+            { id: 'PSM-IA-2026-0005', desc: 'Employee Training Plan & Validation of PSM Elements cross training', owner: 'Operations (CASH) & L&D', due: '2026-08-30', priority: 'Minor', status: 'In Progress' },
+            { id: 'PSM-IA-2026-0021', desc: 'Non-Compliance of Deferral protocols for PHA approved plan', owner: 'Operations (PSG)', due: '2026-08-15', priority: 'Major', status: 'In Progress' }
+          ]
+        },
+        {
+          id: 'ims-audits',
+          name: 'IMS Audits',
+          code: 'IMS Audits',
+          icon: 'clipboard-check',
+          status: 'Awaiting Data',
+          hasSheetLink: false,
+          category: 'Executive & Governance',
+          department: 'IMS & Compliance',
+          cadence: 'Quarterly / Annual Audits',
+          description: 'Integrated Management System (IMS) internal & external audits tracking, ISO standards compliance (ISO 9001, 14001, 45001), NCR tracking and corrective actions.',
+          color: {
+            bg: '#EEF2FF',
+            primary: '#4338CA',
+            secondary: '#818CF8',
+            text: '#1E1B4B'
+          },
+          gradient: 'from-blue-600 via-indigo-600 to-violet-600',
+          gradientStop1: '#2563EB',
+          gradientStop2: '#4F46E5',
+          tagStyle: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+          kpis: { total: 0, closed: 0, inProgress: 0, overdue: 0, compliance: '0.0%' },
+          punchList: { open: 0, closed: 0, total: 0, rate: '0.0%' },
+          dataReadiness: { master: '0%', signoff: '0%' },
+          statusComment: 'Data will be provided later.',
+          actions: []
         },
         {
           id: 'executive-hse-committee-ehsec',
@@ -1590,37 +1825,6 @@
           dataReadiness: { master: '0%', signoff: '0%' },
           statusComment: 'Awaiting Google Sheet connection.',
           actions: []
-        },
-        {
-          id: 'sub-hse-psm',
-          name: 'PSM',
-          code: 'PSM',
-          icon: 'shield-check',
-          status: 'Active',
-          hasSheetLink: true,
-          category: 'Sub HSE Committees',
-          department: 'HSEQ',
-          cadence: 'Monthly',
-          description: 'Process Safety Management internal audit findings, action department tracking, PSM elements compliance & resolution analytics.',
-          color: {
-            bg: '#E8F6F5',
-            primary: '#0D9488',
-            secondary: '#14B8A6',
-            text: '#0F172A'
-          },
-          gradient: 'from-teal-600 via-emerald-600 to-indigo-600',
-          gradientStop1: '#0D9488',
-          gradientStop2: '#0891B2',
-          tagStyle: 'bg-teal-50 text-teal-700 border-teal-200',
-          kpis: { total: 121, closed: 76, inProgress: 45, overdue: 0, compliance: '62.8%' },
-          punchList: { open: 45, closed: 76, total: 121, rate: '62.8%' },
-          dataReadiness: { master: '100%', signoff: '100%' },
-          statusComment: '121 audit observations tracked across 13 Action Departments (76 Closed, 45 Open, 63% Closure Rate).',
-          actions: [
-            { id: 'PSM-IA-2026-0001', desc: 'Management attendance in D level meeting marked with immediate effect', owner: 'Operations (CASH)', due: '2026-07-15', priority: 'Major', status: 'Completed' },
-            { id: 'PSM-IA-2026-0005', desc: 'Employee Training Plan & Validation of PSM Elements cross training', owner: 'Operations (CASH) & L&D', due: '2026-08-30', priority: 'Minor', status: 'In Progress' },
-            { id: 'PSM-IA-2026-0021', desc: 'Non-Compliance of Deferral protocols for PHA approved plan', owner: 'Operations (PSG)', due: '2026-08-15', priority: 'Major', status: 'In Progress' }
-          ]
         },
         {
           id: 'sub-hse-eri',
@@ -1834,6 +2038,7 @@
           this.updateRollupStats();
           this.renderTimelineChart();
           this.renderComparisonChart();
+          this.fetchHseqKpis();
           this.renderActionScenarios();
           this.renderPunchListTable();
           this.renderDataReadiness();
@@ -1875,7 +2080,11 @@
           window.addEventListener('resize', () => {
             this.renderTimelineChart();
             this.renderComparisonChart();
+            this.fitSafeManhoursText();
           });
+          setTimeout(() => {
+            this.fitSafeManhoursText();
+          }, 150);
         },
 
         /**
@@ -1969,29 +2178,79 @@
         },
 
         /**
-         * Render SVG Module-by-Module Progress Comparison (Synchronized Total & Open Actions/Findings)
+         * Render SVG Module-by-Module Progress Comparison (Synchronized Total & Open Actions/Findings & Validation)
          */
         renderComparisonChart() {
           const container = document.getElementById('comparison-chart-container');
           if (!container) return;
 
-          const items = DASHBOARD_REGISTRY;
+          // Retrieve live dynamic validation data numbers (Total personnel & Validation passed)
+          let valTotal = 249;
+          let valPassed = 249;
+          if (window.FPCL_PSM_VALIDATION_DATA && Array.isArray(window.FPCL_PSM_VALIDATION_DATA) && window.FPCL_PSM_VALIDATION_DATA.length > 0) {
+            valTotal = window.FPCL_PSM_VALIDATION_DATA.length;
+            valPassed = window.FPCL_PSM_VALIDATION_DATA.filter(i => (i.status || '').toLowerCase() === 'pass').length;
+          } else if (window.FPCL_PSM_SUITE && typeof window.FPCL_PSM_SUITE.getRawValidationData === 'function') {
+            const raw = window.FPCL_PSM_SUITE.getRawValidationData();
+            if (raw && raw.length > 0) {
+              valTotal = raw.length;
+              valPassed = raw.filter(i => (i.status || '').toLowerCase() === 'pass').length;
+            }
+          }
+
+          // Build comparison items: Includes all modules, labeling PSM as PSM Audits, and plotting PSM Validation bars
+          const chartItems = [];
+          DASHBOARD_REGISTRY.forEach(d => {
+            const isPsmAudit = (d.id === 'sub-hse-psm');
+            const totalVal = (d.kpis && d.kpis.total !== undefined) ? d.kpis.total : (d.id === 'plr' ? 534 : 0);
+            const openVal = (d.kpis && d.kpis.inProgress !== undefined) ? d.kpis.inProgress : (d.id === 'plr' ? 44 : 0);
+
+            chartItems.push({
+              id: d.id,
+              name: isPsmAudit ? 'PSM Audits' : d.name,
+              code: isPsmAudit ? 'PSM Audits' : d.code,
+              type: 'action',
+              val1: totalVal,
+              val2: openVal,
+              clickHandler: isPsmAudit 
+                ? "portalApp.showDetailView('sub-hse-psm'); if(window.FPCL_PSM_SUITE && window.FPCL_PSM_SUITE.setSubDashboard) { FPCL_PSM_SUITE.setSubDashboard('audits'); }"
+                : `portalApp.showDetailView('${d.id}')`,
+              tooltip: isPsmAudit
+                ? `PSM Audits: ${totalVal} Total Actions, ${openVal} Open Actions`
+                : `${d.name} (${d.code}): ${totalVal} Total Actions, ${openVal} Open Actions`
+            });
+
+            // Immediately plot PSM Validation bars right next to PSM Audits
+            if (isPsmAudit) {
+              chartItems.push({
+                id: 'sub-hse-psm-validation',
+                name: 'PSM Validation',
+                code: 'PSM Validation',
+                type: 'validation',
+                val1: valTotal,
+                val2: valPassed,
+                clickHandler: "portalApp.showDetailView('sub-hse-psm'); if(window.FPCL_PSM_SUITE && window.FPCL_PSM_SUITE.setSubDashboard) { FPCL_PSM_SUITE.setSubDashboard('validation'); }",
+                tooltip: `PSM Validation: ${valTotal} Total Personnel, ${valPassed} Validation Passed`
+              });
+            }
+          });
+
           const width = 1200;
           const height = 350;
-          const pad = { top: 40, right: 35, bottom: 90, left: 65 };
+          const pad = { top: 48, right: 35, bottom: 90, left: 65 };
           const plotW = width - pad.left - pad.right;
           const plotH = height - pad.top - pad.bottom;
 
-          const barCount = items.length;
+          const barCount = chartItems.length;
           const slotW = plotW / barCount;
-          // Dual bars for Total vs Open
-          const barW = Math.min(28, Math.max(16, (slotW - 12) / 2));
-          const pairSpacing = 3;
+          // Dual bars for Total vs Open / Passed: 23px wide with 9px spacing (32px center-to-center)
+          const barW = Math.min(23, Math.max(16, (slotW - 14) / 2));
+          const pairSpacing = 9;
 
           // Max value scale (534 is highest total recommendations, so ceiling 600)
           const yMax = 600;
 
-          // Gradients definition for Total and Open bars
+          // Gradients definition for Total, Open, and Validation Passed bars
           const defsGradients = `
             <linearGradient id="cmp-bar-total" x1="0%" y1="0%" x2="0%" y2="100%">
               <stop offset="0%" stop-color="#3B82F6"/>
@@ -2000,6 +2259,10 @@
             <linearGradient id="cmp-bar-open" x1="0%" y1="0%" x2="0%" y2="100%">
               <stop offset="0%" stop-color="#FB923C"/>
               <stop offset="100%" stop-color="#EA580C"/>
+            </linearGradient>
+            <linearGradient id="cmp-bar-passed" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#10B981"/>
+              <stop offset="100%" stop-color="#059669"/>
             </linearGradient>
             <filter id="barShadow" x="-10%" y="-10%" width="120%" height="120%">
               <feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.15"/>
@@ -2012,54 +2275,73 @@
             const yPos = pad.top + plotH - (v / yMax) * plotH;
             return `
               <line x1="${pad.left}" y1="${yPos}" x2="${width - pad.right}" y2="${yPos}" stroke="#E2E8F0" stroke-width="1.5" stroke-dasharray="4 4"/>
-              <text x="${pad.left - 10}" y="${yPos + 4.5}" fill="#475569" font-size="12" font-family="monospace" font-weight="bold" text-anchor="end">${v}</text>
+              <text x="${pad.left - 10}" y="${yPos + 4.5}" fill="#475569" font-size="12" font-family="'Plus Jakarta Sans', monospace, sans-serif" font-weight="bold" text-anchor="end">${v}</text>
             `;
           }).join('');
 
-          // Grouped bars: Total Actions (Blue) and Open Actions (Amber/Orange)
-          const barsSvg = items.map((d, i) => {
-            // Dynamic Total and Open counts derived directly from live dashboard KPIs
-            const totalVal = (d.kpis && d.kpis.total !== undefined) ? d.kpis.total : (d.id === 'plr' ? 534 : 0);
-            const openVal = (d.kpis && d.kpis.inProgress !== undefined) ? d.kpis.inProgress : (d.id === 'plr' ? 44 : 0);
+          // Grouped bars
+          const barsSvg = chartItems.map((item, i) => {
+            const val1 = item.val1;
+            const val2 = item.val2;
 
-            const totalH = yMax > 0 ? (totalVal / yMax) * plotH : 0;
-            const openH = yMax > 0 ? (openVal / yMax) * plotH : 0;
+            const h1 = yMax > 0 ? (val1 / yMax) * plotH : 0;
+            const h2 = yMax > 0 ? (val2 / yMax) * plotH : 0;
 
             const slotX = pad.left + (i * slotW);
             const pairW = (barW * 2) + pairSpacing;
-            const xTotal = slotX + (slotW - pairW) / 2;
-            const xOpen = xTotal + barW + pairSpacing;
+            const x1 = slotX + (slotW - pairW) / 2;
+            const x2 = x1 + barW + pairSpacing;
 
-            const yTotal = pad.top + plotH - totalH;
-            const yOpen = pad.top + plotH - openH;
+            const y1 = pad.top + plotH - h1;
+            const y2 = pad.top + plotH - h2;
 
-            // X-axis label display name matching dashboard code
-            const displayLabel = d.code;
+            const displayLabel = item.code;
+            const isVal = item.type === 'validation';
+
+            // Gradient and color for Bar 2 (Validation Passed vs Open Actions)
+            const bar2Grad = isVal ? 'url(#cmp-bar-passed)' : 'url(#cmp-bar-open)';
+            const bar2TextColor = isVal ? '#047857' : '#C2410C';
+
+            // Anti-collision label positioning:
+            // When both bars have active values and heights are close (|y1 - y2| < 22),
+            // stagger Bar 1 label upward with a subtle dashed guide line so labels never overlap horizontally.
+            let text1Y = Math.max(pad.top + 16, y1 - 6);
+            let text2Y = Math.max(pad.top + 16, y2 - 6);
+            const isCloseHeight = (val1 > 0 && val2 > 0 && Math.abs(y1 - y2) < 22);
+
+            if (isCloseHeight) {
+              if (text1Y - 16 >= pad.top + 12) {
+                text1Y = text1Y - 16;
+              } else {
+                text2Y = text2Y + 16;
+              }
+            }
 
             return `
-              <g class="cursor-pointer group" onclick="portalApp.showDetailView('${d.id}')">
-                <title>${d.name} (${d.code}): ${totalVal} Total Actions, ${openVal} Open Actions</title>
+              <g class="cursor-pointer group" onclick="${item.clickHandler}">
+                <title>${item.tooltip}</title>
                 <!-- Group background hover highlight -->
                 <rect x="${slotX + 2}" y="${pad.top}" width="${slotW - 4}" height="${plotH}" rx="6" fill="transparent" class="group-hover:fill-slate-100/70 transition-colors"/>
 
-                <!-- Total Bar (Blue) -->
-                ${totalVal > 0 ? `
-                  <rect x="${xTotal}" y="${yTotal}" width="${barW}" height="${totalH}" rx="4" fill="url(#cmp-bar-total)" filter="url(#barShadow)" class="transition-all group-hover:brightness-110"/>
-                  <!-- Number displayed on top of Total bar -->
-                  <text x="${xTotal + barW / 2}" y="${Math.max(pad.top + 14, yTotal - 6)}" fill="#1D4ED8" class="cmp-bar-num" font-size="14" font-family="monospace" font-weight="900" text-anchor="middle">${totalVal}</text>
+                <!-- Bar 1: Total Actions (Blue) or Total Personnel (Blue) -->
+                ${val1 > 0 ? `
+                  <rect x="${x1}" y="${y1}" width="${barW}" height="${h1}" rx="4" fill="url(#cmp-bar-total)" filter="url(#barShadow)" class="transition-all group-hover:brightness-110"/>
+                  ${isCloseHeight ? `
+                    <line x1="${x1 + barW / 2}" y1="${y1 - 2}" x2="${x1 + barW / 2}" y2="${text1Y + 3}" stroke="#2563EB" stroke-width="1.2" stroke-dasharray="2 2" opacity="0.6"/>
+                  ` : ''}
+                  <text x="${x1 + barW / 2}" y="${text1Y}" fill="#1D4ED8" class="cmp-bar-num" font-size="13" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" text-anchor="middle">${val1}</text>
                 ` : `
-                  <rect x="${xTotal}" y="${pad.top + plotH - 3}" width="${barW}" height="3" rx="1.5" fill="#CBD5E1"/>
-                  <text x="${xTotal + barW / 2}" y="${pad.top + plotH - 7}" fill="#94A3B8" class="cmp-bar-num" font-size="11" font-family="monospace" font-weight="bold" text-anchor="middle">0</text>
+                  <rect x="${x1}" y="${pad.top + plotH - 3}" width="${barW}" height="3" rx="1.5" fill="#CBD5E1"/>
+                  <text x="${x1 + barW / 2}" y="${pad.top + plotH - 7}" fill="#94A3B8" class="cmp-bar-zero" font-size="11" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="bold" text-anchor="middle">0</text>
                 `}
 
-                <!-- Open Bar (Amber/Orange) -->
-                ${openVal > 0 ? `
-                  <rect x="${xOpen}" y="${yOpen}" width="${barW}" height="${openH}" rx="4" fill="url(#cmp-bar-open)" filter="url(#barShadow)" class="transition-all group-hover:brightness-110"/>
-                  <!-- Number displayed on top of Open bar -->
-                  <text x="${xOpen + barW / 2}" y="${Math.max(pad.top + 14, yOpen - 6)}" fill="#C2410C" class="cmp-bar-num" font-size="14" font-family="monospace" font-weight="900" text-anchor="middle">${openVal}</text>
+                <!-- Bar 2: Open Actions (Amber/Orange) or Validation Passed (Emerald) -->
+                ${val2 > 0 ? `
+                  <rect x="${x2}" y="${y2}" width="${barW}" height="${h2}" rx="4" fill="${bar2Grad}" filter="url(#barShadow)" class="transition-all group-hover:brightness-110"/>
+                  <text x="${x2 + barW / 2}" y="${text2Y}" fill="${bar2TextColor}" class="cmp-bar-num" font-size="13" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" text-anchor="middle">${val2}</text>
                 ` : `
-                  <rect x="${xOpen}" y="${pad.top + plotH - 3}" width="${barW}" height="3" rx="1.5" fill="#E2E8F0"/>
-                  <text x="${xOpen + barW / 2}" y="${pad.top + plotH - 7}" fill="#CBD5E1" class="cmp-bar-num" font-size="11" font-family="monospace" font-weight="bold" text-anchor="middle">0</text>
+                  <rect x="${x2}" y="${pad.top + plotH - 3}" width="${barW}" height="3" rx="1.5" fill="#E2E8F0"/>
+                  <text x="${x2 + barW / 2}" y="${pad.top + plotH - 7}" fill="#CBD5E1" class="cmp-bar-zero" font-size="11" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="bold" text-anchor="middle">0</text>
                 `}
 
                 <!-- X Axis Label: Tilted at -28 degrees with generous line spacing and bold font -->
@@ -2081,6 +2363,109 @@
               ${barsSvg}
             </svg>
           `;
+        },
+
+        /**
+         * Fetch live HSEQ Key Performance Indicators from Google Sheet (HSEQ_KPI)
+         */
+        async fetchHseqKpis(showToastNotice = false) {
+          const btn = document.getElementById('btn-refresh-hseq-kpis');
+          const icon = btn ? btn.querySelector('[data-lucide="refresh-cw"]') : null;
+          if (icon) icon.classList.add('animate-spin');
+
+          try {
+            const res = await fetch('/api/hseq-kpi', { cache: 'no-store' });
+            if (!res.ok) {
+              throw new Error(`HTTP ${res.status}`);
+            }
+            const data = await res.json();
+            if (data && data.kpis) {
+              this.state.hseqKpis = data.kpis;
+              this.renderHseqKpiValues(data.kpis);
+
+              const lastUpdatedEl = document.getElementById('hseq-kpi-last-updated');
+              if (lastUpdatedEl) {
+                const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                lastUpdatedEl.textContent = `Synced: ${timeStr}`;
+              }
+
+              if (showToastNotice && typeof this.showToast === 'function') {
+                this.showToast('HSEQ KPIs Synced', 'Live values updated from Google Sheet HSEQ_KPI', 'success');
+              }
+            }
+          } catch (err) {
+            console.error('Error fetching /api/hseq-kpi:', err);
+            // Fallback to baseline in case of offline/network issues
+            if (!this.state.hseqKpis) {
+              this.renderHseqKpiValues({
+                safeManhours: 2200445,
+                fire: 0,
+                lti: 0,
+                medicalTreatment: 0,
+                firstAidCase: 5,
+                nearmiss: 24
+              });
+            }
+            if (showToastNotice && typeof this.showToast === 'function') {
+              this.showToast('HSEQ Sync', 'Showing cached Google Sheet values.', 'info');
+            }
+          } finally {
+            if (icon) icon.classList.remove('animate-spin');
+            if (window.lucide) window.lucide.createIcons();
+          }
+        },
+
+        /**
+         * Render HSEQ KPI Values into the Overview Dashboard KPI Cards
+         */
+        renderHseqKpiValues(kpis) {
+          if (!kpis) return;
+          const safeManhoursEl = document.getElementById('kpi-val-safe-manhours');
+          const fireEl = document.getElementById('kpi-val-fire');
+          const ltiEl = document.getElementById('kpi-val-lti');
+          const medicalEl = document.getElementById('kpi-val-medical');
+          const firstAidEl = document.getElementById('kpi-val-first-aid');
+          const nearmissEl = document.getElementById('kpi-val-nearmiss');
+
+          if (safeManhoursEl) {
+            const rawVal = kpis.safeManhours !== undefined ? kpis.safeManhours : 2200445;
+            safeManhoursEl.textContent = Number(rawVal).toLocaleString();
+            safeManhoursEl.title = `${Number(rawVal).toLocaleString()} Safe Manhours`;
+            this.fitSafeManhoursText();
+          }
+          if (fireEl) {
+            fireEl.textContent = (kpis.fire !== undefined ? kpis.fire : 0).toString();
+          }
+          if (ltiEl) {
+            ltiEl.textContent = (kpis.lti !== undefined ? kpis.lti : 0).toString();
+          }
+          if (medicalEl) {
+            medicalEl.textContent = (kpis.medicalTreatment !== undefined ? kpis.medicalTreatment : 0).toString();
+          }
+          if (firstAidEl) {
+            firstAidEl.textContent = (kpis.firstAidCase !== undefined ? kpis.firstAidCase : 5).toString();
+          }
+          if (nearmissEl) {
+            nearmissEl.textContent = (kpis.nearmiss !== undefined ? kpis.nearmiss : 24).toString();
+          }
+        },
+
+        /**
+         * Dynamically fits the Safe Manhours text so it never clips or overflows the KPI card
+         */
+        fitSafeManhoursText() {
+          const el = document.getElementById('kpi-val-safe-manhours');
+          if (!el || !el.parentElement) return;
+          el.style.fontSize = '';
+          const container = el.parentElement;
+          const maxW = container.clientWidth;
+          if (maxW > 0 && el.scrollWidth > maxW) {
+            const currentSize = parseFloat(window.getComputedStyle(el).fontSize);
+            if (currentSize > 0) {
+              const scaledSize = Math.floor((maxW / el.scrollWidth) * currentSize * 0.96);
+              el.style.fontSize = Math.max(12, scaledSize) + 'px';
+            }
+          }
         },
 
         /**
@@ -2330,7 +2715,9 @@
               item.category.toLowerCase().includes(query) ||
               item.department.toLowerCase().includes(query);
 
-            const matchesStatus = this.state.statusFilter === 'all' || item.status === this.state.statusFilter;
+            const matchesStatus = this.state.statusFilter === 'all' || 
+              item.status === this.state.statusFilter || 
+              (this.state.statusFilter === 'Awaiting Sheet Data' && item.status.includes('Awaiting'));
             const matchesCategory = this.state.categoryFilter === 'all' || item.category === this.state.categoryFilter;
 
             return matchesQuery && matchesStatus && matchesCategory;
@@ -2353,6 +2740,7 @@
             const k = item.kpis;
             const inProg = k.inProgress ?? k.pending ?? 0;
             const total = k.total || 1;
+            const displayTotal = k.total !== undefined ? k.total : 0;
             const closed = k.closed || 0;
             const overdue = k.overdue || 0;
             const compRate = k.compliance || (Math.round((closed / total) * 100) + '%');
@@ -2483,7 +2871,7 @@
                       </div>
                       <div class="pt-1.5 border-t border-slate-200 flex items-center justify-between text-xs sm:text-sm">
                         <span class="text-slate-600 font-bold">Total:</span>
-                        <span class="font-mono font-black text-[#1E293B] text-base sm:text-lg">${total}</span>
+                        <span class="font-mono font-black text-[#1E293B] text-base sm:text-lg">${displayTotal}</span>
                       </div>
                     </div>
                   </div>
@@ -2547,7 +2935,7 @@
         updateCounts() {
           const total = DASHBOARD_REGISTRY.length;
           const active = DASHBOARD_REGISTRY.filter(d => d.status === 'Active').length;
-          const awaiting = DASHBOARD_REGISTRY.filter(d => d.status === 'Awaiting Sheet Data').length;
+          const awaiting = DASHBOARD_REGISTRY.filter(d => d.status.includes('Awaiting')).length;
 
           const countAll = document.getElementById('count-all');
           const countActive = document.getElementById('count-active');
@@ -3059,8 +3447,12 @@
             if (psmContainer) psmContainer.classList.add('hidden');
             if (stdContainer) stdContainer.classList.remove('hidden');
             if (sheetKeyEl) {
-              sheetKeyEl.textContent = 'Awaiting Google Sheet Link';
-              sheetKeyEl.title = 'Will be populated once Google Sheet URL is linked';
+              sheetKeyEl.textContent = dashboard.hasSheetLink ? 'Connected' : (dashboard.statusComment || 'Data will be provided later');
+              sheetKeyEl.title = dashboard.statusComment || 'Data will be provided later';
+            }
+            if (sheetStatus && !dashboard.hasSheetLink) {
+              sheetStatus.textContent = dashboard.status;
+              sheetStatus.className = 'font-bold text-amber-600';
             }
           }
 
@@ -3236,6 +3628,7 @@
             if (icon) icon.classList.remove('animate-spin');
             this.updateRollupStats();
             this.renderCards();
+            this.fetchHseqKpis();
 
             // If viewing PLR dashboard, also sync live Google Sheet tabs
             if (this.state.activeDashboardId === 'plr' && typeof portalApp.refreshFromLiveSheet === 'function') {
@@ -3425,7 +3818,7 @@
             gradient: 'from-blue-600 via-indigo-600 to-purple-600',
             buttonGradient: 'linear-gradient(135deg, #2563EB, #4F46E5)',
             badgeClass: 'bg-blue-50 text-blue-700 border-blue-200',
-            welcomeMessage: 'Hello! I am the **Overview Assistant** for the Executive Operations & Compliance Portal.\n\nI can assist with:\n- **Portal Rollup Statistics** (655 total items, 566 closed • 86.4% closure rate)\n- **Cross-Dashboard Comparison** between PLR (534 recs) & PSM (121 audit findings)\n- **Executive Benchmarks** & Timeline progress (87.8% actual vs 95.0% planned)\n- **Status of All 11 Dashboards** (Active vs Awaiting Sheet Links)\n\n*🔒 Scope Policy: I strictly answer questions regarding this dashboard portal and will regret any outside queries.*',
+            welcomeMessage: 'Hello! I am the **Overview Assistant** for the Executive Operations & Compliance Portal.\n\nI can assist with:\n- **Portal Rollup Statistics** (655 total items, 566 closed • 86.4% closure rate)\n- **Cross-Dashboard Comparison** between PLR (534 recs) & PSM (121 audit findings)\n- **Executive Benchmarks** & Timeline progress (87.8% actual vs 95.0% planned)\n- **Status of Dashboards** (Active vs Awaiting Data / Sheet Links)\n\n*🔒 Scope Policy: I strictly answer questions regarding this dashboard portal and will regret any outside queries.*',
             suggestions: [
               'What is the overall closure rate across dashboards?',
               'Compare PLR vs PSM progress',

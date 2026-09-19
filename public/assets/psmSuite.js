@@ -127,6 +127,8 @@
       if (window.DASHBOARD_REGISTRY) {
         const psmEntry = window.DASHBOARD_REGISTRY.find(d => d.id === 'sub-hse-psm');
         if (psmEntry) {
+          psmEntry.name = 'PSM Audits';
+          psmEntry.code = 'PSM Audits';
           psmEntry.kpis = { total, closed, inProgress: open, overdue: 0, compliance: rate };
           psmEntry.punchList = { open, closed, total, rate };
           psmEntry.statusComment = `${total} audit observations tracked across ${depts.size} Action Departments (${closed} Closed, ${open} Open, ${rate} Closure Rate).`;
@@ -787,6 +789,9 @@
             } catch (e) {}
 
             vs.lastSynced = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            if (window.portalApp && typeof window.portalApp.renderComparisonChart === 'function') {
+              window.portalApp.renderComparisonChart();
+            }
             if (!silent && window.portalApp && window.portalApp.showToast) {
               window.portalApp.showToast(
                 'Live Sheet Synced',
@@ -3344,7 +3349,7 @@
 
       if (vs.trendViewType === 'side-by-side' || !vs.trendViewType) {
         const groupW = isCadre ? Math.min(65, Math.max(38, step * 0.55)) : Math.min(42, Math.max(24, step * 0.7));
-        const gap = 3;
+        const gap = 5;
         const subW = (groupW - gap) / 2;
 
         contentSvg = items.map((d, i) => {
@@ -3369,8 +3374,11 @@
           const compPct = d.total > 0 ? ((d.trained / d.total) * 100).toFixed(0) : 0;
           const labelY = baseY + 14;
 
-          const yTrainedVal = d.trained > 0 ? yTrained - 6 : baseY - 6;
-          const yUntrainedVal = d.untrained > 0 ? yUntrained - 6 : baseY - 6;
+          let yTrainedVal = d.trained > 0 ? yTrained - 6 : baseY - 6;
+          let yUntrainedVal = d.untrained > 0 ? yUntrained - 6 : baseY - 6;
+          if (d.trained > 0 && d.untrained > 0 && Math.abs(yTrained - yUntrained) < 16) {
+            yTrainedVal = yTrainedVal - 14;
+          }
           const highestValY = Math.min(yTrainedVal, yUntrainedVal);
 
           return `
