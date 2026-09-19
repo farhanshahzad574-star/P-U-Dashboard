@@ -413,6 +413,7 @@
     setSubDashboard(tab) {
       this.state.activeSubDashboard = tab === 'validation' ? 'validation' : 'audits';
 
+      const headerCard = document.getElementById('detail-header-card');
       const breadcrumbEl = document.getElementById('breadcrumb-active-name');
       const titleEl = document.getElementById('detail-title');
       const psmActions = document.getElementById('detail-psm-actions');
@@ -420,6 +421,7 @@
       const headerSearchInput = document.getElementById('psm-header-search-input');
 
       if (this.state.activeSubDashboard === 'audits') {
+        if (headerCard) headerCard.classList.remove('hidden');
         if (breadcrumbEl) breadcrumbEl.textContent = 'PSM / PSM Audits';
         if (titleEl) {
           titleEl.textContent = 'PSM';
@@ -440,6 +442,8 @@
           sheetKeyEl.title = 'Live Google Sheets: PSM Audit Phase 1 June 2026';
         }
       } else {
+        // Remove the top PSM banner bar on PSM Validation dashboard
+        if (headerCard) headerCard.classList.add('hidden');
         if (breadcrumbEl) breadcrumbEl.textContent = 'PSM / PSM Validation';
         if (titleEl) {
           titleEl.textContent = 'PSM';
@@ -521,9 +525,10 @@
           if (item.cadre !== vs.cadreFilter) return false;
         }
 
-        // Module filter (T&D)
+        // Module filter (e.g. T&D)
         if (vs.moduleFilter && vs.moduleFilter !== 'all') {
-          if (item.module !== vs.moduleFilter) return false;
+          const m = (item.module && item.module.trim()) || 'T&D';
+          if (m.toLowerCase() !== vs.moduleFilter.trim().toLowerCase()) return false;
         }
 
         return true;
@@ -961,10 +966,19 @@
       const jmcCount = filtered.filter(i => (i.cadre || '').toLowerCase() === 'jmc').length;
       const staffCount = filtered.filter(i => (i.cadre || '').toLowerCase() === 'staff').length;
 
+      // Cadre items with colorful palette for Donut Chart
+      const cadreItems = [
+        { key: 'JMC', label: 'Junior Management Cadre (JMC)', short: 'JMC', count: jmcCount, color: '#0284C7', desc: 'Shift supervisors, plant engineers & field technicians' },
+        { key: 'Mngt', label: 'Management Cadre (Mngt)', short: 'Mngt', count: mngtCount, color: '#8B5CF6', desc: 'Senior operations, engineering & departmental leads' },
+        { key: 'Staff', label: 'Staff Cadre', short: 'Staff', count: staffCount, color: '#10B981', desc: 'Operating crews, maintenance support & plant technicians' }
+      ];
+
       // Dropdown Unique Values from RAW
       const allDepts = Array.from(new Set(raw.map(i => i.department).filter(Boolean))).sort();
       const allCadres = Array.from(new Set(raw.map(i => i.cadre).filter(Boolean))).sort();
       const allUnits = Array.from(new Set(raw.map(i => i.unit).filter(Boolean))).sort();
+      const allModules = Array.from(new Set(raw.map(i => (i.module || '').trim()).filter(Boolean))).sort();
+      if (allModules.length === 0) allModules.push('T&D');
 
       // Department Aggregations for Interactive Breakdown
       const deptMap = {};
@@ -984,6 +998,34 @@
           trained: stats.trained,
           untrained: stats.total - stats.trained,
           compliance: stats.total > 0 ? Math.round((stats.trained / stats.total) * 100) : 0
+        }))
+        .sort((a, b) => b.total - a.total);
+
+      // Module Validation Aggregations for Interactive Breakdown (Pass / Fail Bar Chart)
+      const moduleMap = {};
+      filtered.forEach(item => {
+        const m = (item.module && item.module.trim()) || 'T&D';
+        if (!moduleMap[m]) {
+          moduleMap[m] = { total: 0, passed: 0, failed: 0, pending: 0 };
+        }
+        moduleMap[m].total++;
+        const st = (item.status || '').trim().toLowerCase();
+        if (st === 'pass') {
+          moduleMap[m].passed++;
+        } else if (st === 'fail') {
+          moduleMap[m].failed++;
+        } else {
+          moduleMap[m].pending++;
+        }
+      });
+      const moduleBreakdown = Object.entries(moduleMap)
+        .map(([name, stats]) => ({
+          name,
+          total: stats.total,
+          passed: stats.passed,
+          failed: stats.failed,
+          pending: stats.pending,
+          passRate: stats.total > 0 ? Math.round((stats.passed / stats.total) * 100) : 0
         }))
         .sort((a, b) => b.total - a.total);
 
@@ -1014,24 +1056,14 @@
             <div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
               <div class="space-y-1.5">
                 <div class="flex items-center flex-wrap gap-2">
-                  <span class="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold uppercase tracking-wider bg-teal-400/20 text-teal-300 border border-teal-400/30">
-                    Sub-Dashboard 2
-                  </span>
-                  <span class="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold uppercase tracking-wider bg-emerald-400/20 text-emerald-300 border border-emerald-400/30 flex items-center gap-1.5">
-                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                    Live Google Sheet Connected
-                  </span>
                   <span class="text-xs text-slate-300 font-mono">
-                    • Last Synced: ${vs.lastSynced || 'Active'}
+                    Last Synced: ${vs.lastSynced || 'Active'}
                   </span>
                 </div>
                 <h3 class="text-xl sm:text-2xl lg:text-3xl font-black tracking-tight text-white flex items-center gap-2.5">
                   <i data-lucide="check-check" class="w-6 h-6 text-teal-400"></i>
                   <span>PSM Validation & Qualification Matrix</span>
                 </h3>
-                <p class="text-xs sm:text-sm text-slate-300 max-w-3xl leading-relaxed">
-                  Systematic Process Safety qualification protocol, department training compliance, cadre verification, and field readiness certification.
-                </p>
               </div>
 
               <!-- Top Quick Actions -->
@@ -1141,29 +1173,28 @@
               </div>
             </div>
 
-            <!-- Card 4: Cadre Distribution -->
+            <!-- Card 4: Module Validation Compliance -->
             <div
-              class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs relative overflow-hidden"
-              title="Cadre allocation across Management, JMC, and Staff"
+              onclick="FPCL_PSM_SUITE.setValidationFilter('moduleFilter', 'all')"
+              class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs relative overflow-hidden cursor-pointer hover:border-blue-300 hover:shadow-sm transition-all group"
+              title="Click to view all validation modules"
             >
-              <div class="absolute top-0 left-0 right-0 h-1.5 bg-indigo-600"></div>
-              <div class="flex items-center justify-between text-indigo-900 text-xs sm:text-sm font-bold tracking-wider uppercase">
-                <span>4. CADRE PROFILES</span>
-                <span class="p-1.5 rounded-lg bg-indigo-50 text-indigo-600">
-                  <i data-lucide="briefcase" class="w-4 h-4"></i>
+              <div class="absolute top-0 left-0 right-0 h-1.5 bg-blue-600 group-hover:bg-blue-700 transition-colors"></div>
+              <div class="flex items-center justify-between text-blue-900 text-xs sm:text-sm font-bold tracking-wider uppercase">
+                <span>4. MODULE VALIDATION</span>
+                <span class="p-1.5 rounded-lg bg-blue-50 text-blue-600">
+                  <i data-lucide="shield-check" class="w-4 h-4"></i>
                 </span>
               </div>
               <div class="mt-3 flex items-baseline gap-2 flex-wrap">
-                <span class="text-xl sm:text-2xl font-black font-mono tracking-tight text-indigo-950">
-                  ${mngtCount} <span class="text-xs font-sans text-slate-400 font-normal">Mngt</span> • 
-                  ${jmcCount} <span class="text-xs font-sans text-slate-400 font-normal">JMC</span> • 
-                  ${staffCount} <span class="text-xs font-sans text-slate-400 font-normal">Staff</span>
+                <span class="text-2xl sm:text-3xl font-black font-mono tracking-tight text-blue-950">
+                  ${moduleBreakdown.length} <span class="text-xs font-sans text-slate-500 font-bold">${moduleBreakdown.length === 1 ? 'Active Module' : 'Active Modules'}</span>
                 </span>
               </div>
               <div class="mt-2.5 flex items-center justify-between text-xs text-slate-500">
-                <span>Training Compliance</span>
-                <span class="font-bold ${trainedNoCount === 0 ? 'text-emerald-700 font-extrabold' : 'text-amber-700'}">
-                  ${trainedNoCount === 0 ? '100% Fully Trained' : `${trainedNoCount} Require Training`}
+                <span>Validation Result</span>
+                <span class="font-bold ${failedCount === 0 ? 'text-emerald-700 font-extrabold' : 'text-rose-600'}">
+                  ${failedCount === 0 ? `${passedCount} Pass (100%)` : `${passedCount} Pass • ${failedCount} Fail`}
                 </span>
               </div>
             </div>
@@ -1176,12 +1207,7 @@
                 <span class="p-1.5 rounded-lg bg-teal-50 text-teal-700">
                   <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
                 </span>
-                <h4 class="text-sm font-black text-slate-900 uppercase tracking-wider">
-                  Validation Multi-Dimensional Filters
-                </h4>
-                <span class="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-slate-100 text-slate-700">
-                  Showing ${totalFiltered} of ${totalRaw}
-                </span>
+                <span class="text-xs font-black text-slate-900 uppercase tracking-wider">Filters</span>
               </div>
 
               ${isAnyFilterActive ? `
@@ -1265,7 +1291,10 @@
                   class="w-full bg-slate-50 hover:bg-slate-100 focus:bg-white border border-slate-200 rounded-xl px-2.5 py-2 font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer text-xs"
                 >
                   <option value="all" ${vs.moduleFilter === 'all' ? 'selected' : ''}>All Modules (${raw.length})</option>
-                  <option value="T&D" ${vs.moduleFilter === 'T&D' ? 'selected' : ''}>T&D (Training & Dev)</option>
+                  ${allModules.map(m => {
+                    const cnt = raw.filter(r => (r.module || '').trim() === m).length;
+                    return `<option value="${m}" ${vs.moduleFilter === m ? 'selected' : ''}>${m} (${cnt})</option>`;
+                  }).join('')}
                 </select>
               </div>
 
@@ -1328,6 +1357,13 @@
                   </span>
                 ` : ''}
 
+                ${vs.moduleFilter && vs.moduleFilter !== 'all' ? `
+                  <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-purple-50 text-purple-800 border border-purple-200 font-bold">
+                    Module: ${vs.moduleFilter}
+                    <button onclick="FPCL_PSM_SUITE.setValidationFilter('moduleFilter', 'all')" class="hover:text-rose-600 cursor-pointer"><i data-lucide="x" class="w-3 h-3"></i></button>
+                  </span>
+                ` : ''}
+
                 ${vs.searchQuery ? `
                   <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800 border border-slate-300 font-bold">
                     Search: "${vs.searchQuery}"
@@ -1338,143 +1374,101 @@
             ` : ''}
           </div>
 
-          <!-- 4. Analytical Breakdown Section (Department Matrix & Cadre Overview) -->
+          <!-- 4. Analytical Breakdown Section (Department Training Matrix & Module Validation Matrix) -->
           <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
             
-            <!-- Left 7 Cols: Department Training & Validation Distribution -->
-            <div class="lg:col-span-7 bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-4">
+            <!-- Left 6 Cols: Department Training Compliance Matrix -->
+            <div class="lg:col-span-6 bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-4">
               <div class="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div class="space-y-0.5">
                   <h4 class="text-sm font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
                     <i data-lucide="bar-chart-3" class="w-4 h-4 text-teal-600"></i>
                     <span>Department Training Compliance Matrix</span>
                   </h4>
-                  <p class="text-xs text-slate-500">Personnel qualification status across active plant departments</p>
                 </div>
                 <span class="text-xs font-mono font-bold text-slate-500">
                   ${deptBreakdown.length} Departments
                 </span>
               </div>
 
-              <!-- Department List with Visual Progress Bars -->
-              <div class="space-y-3 max-h-[380px] overflow-y-auto pr-1">
-                ${deptBreakdown.map(d => {
-                  const isSelected = vs.deptFilter === d.name;
-                  return `
-                    <div
-                      onclick="FPCL_PSM_SUITE.setValidationFilter('deptFilter', '${isSelected ? 'all' : d.name}')"
-                      class="p-3 rounded-xl border transition-all cursor-pointer ${isSelected ? 'bg-teal-50 border-teal-300 ring-2 ring-teal-500/20 shadow-xs' : 'bg-slate-50/70 border-slate-100 hover:bg-slate-100/80 hover:border-slate-300'}"
-                      title="Click to filter by ${d.name}"
-                    >
-                      <div class="flex items-center justify-between text-xs mb-1.5">
-                        <span class="font-bold text-slate-800 flex items-center gap-2">
-                          <span class="w-2 h-2 rounded-full ${isSelected ? 'bg-teal-600' : 'bg-slate-400'}"></span>
-                          ${d.name}
-                        </span>
-                        <div class="flex items-center gap-2 font-mono">
-                          <span class="font-black text-slate-800">${d.trained} / ${d.total}</span>
-                          <span class="text-[10px] font-extrabold px-1.5 py-0.5 rounded ${d.compliance === 100 ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
-                            ${d.compliance}%
-                          </span>
-                        </div>
-                      </div>
+              <!-- Horizontal SVG Bar Chart (Full Department Training Compliance Matrix) -->
+              <div id="psm-val-dept-bar-chart" class="w-full overflow-x-auto">
+                ${this.renderValidationDeptBarChart(deptBreakdown)}
+              </div>
 
-                      <!-- Stacked Progress Bar -->
-                      <div class="w-full bg-slate-200 rounded-full h-2 overflow-hidden flex">
-                        <div class="bg-emerald-500 h-2 transition-all duration-500" style="width: ${d.compliance}%"></div>
-                        <div class="bg-amber-400 h-2 transition-all duration-500" style="width: ${100 - d.compliance}%"></div>
-                      </div>
-                    </div>
-                  `;
-                }).join('')}
+              <!-- Legends of Department Compliance Trend Placed at Bottom -->
+              <div class="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs font-mono">
+                <div class="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onclick="FPCL_PSM_SUITE.setValidationFilter('trainingFilter', '${vs.trainingFilter === 'Yes' ? 'all' : 'Yes'}')"
+                    class="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg ${vs.trainingFilter === 'Yes' ? 'bg-emerald-600 text-white ring-2 ring-emerald-400 shadow-sm' : 'bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100'} font-bold cursor-pointer transition-colors shadow-2xs"
+                    title="Click to filter trained personnel"
+                  >
+                    <span class="w-2.5 h-2.5 rounded-sm ${vs.trainingFilter === 'Yes' ? 'bg-white' : 'bg-emerald-500'}"></span>
+                    <span>Trained Personnel (${trainedYesCount})</span>
+                  </button>
+                  <button
+                    type="button"
+                    onclick="FPCL_PSM_SUITE.setValidationFilter('trainingFilter', '${vs.trainingFilter === 'No' ? 'all' : 'No'}')"
+                    class="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg ${vs.trainingFilter === 'No' ? 'bg-amber-600 text-white ring-2 ring-amber-400 shadow-sm' : 'bg-amber-50 border border-amber-200 text-amber-800 hover:bg-amber-100'} font-bold cursor-pointer transition-colors shadow-2xs"
+                    title="Click to filter personnel requiring training"
+                  >
+                    <span class="w-2.5 h-2.5 rounded-sm ${vs.trainingFilter === 'No' ? 'bg-white' : 'bg-amber-500'}"></span>
+                    <span>Require Training (${trainedNoCount})</span>
+                  </button>
+                </div>
+                <div class="text-[11px] font-sans text-slate-400 font-medium">
+                  Click any bar to filter department data
+                </div>
               </div>
             </div>
 
-            <!-- Right 5 Cols: Cadre Qualification Matrix & PSM Module Status -->
-            <div class="lg:col-span-5 space-y-4">
-              
-              <!-- Cadre Breakdown Card -->
-              <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-3">
-                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <!-- Right 6 Cols: Module Validation Compliance Matrix (Pass / Fail Bar Chart) -->
+            <div class="lg:col-span-6 bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div class="space-y-0.5">
                   <h4 class="text-sm font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
-                    <i data-lucide="layers" class="w-4 h-4 text-indigo-600"></i>
-                    <span>Cadre Qualification Matrix</span>
+                    <i data-lucide="shield-check" class="w-4 h-4 text-blue-600"></i>
+                    <span>Module Validation Compliance Matrix</span>
                   </h4>
-                  <span class="text-xs font-mono font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-200">
-                    3 Cadres
-                  </span>
                 </div>
-
-                <div class="space-y-2.5 text-xs">
-                  <!-- Mngt -->
-                  <div
-                    onclick="FPCL_PSM_SUITE.setValidationFilter('cadreFilter', vs.cadreFilter === 'Mngt' ? 'all' : 'Mngt')"
-                    class="p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${vs.cadreFilter === 'Mngt' ? 'bg-purple-50 border-purple-300 ring-2 ring-purple-400/20' : 'bg-slate-50 border-slate-100 hover:border-slate-200'}"
-                  >
-                    <div>
-                      <span class="font-black text-slate-800 block text-xs">Management Cadre (Mngt)</span>
-                      <span class="text-[11px] text-slate-500 font-medium">Senior operations, engineering & departmental leads</span>
-                    </div>
-                    <div class="text-right font-mono">
-                      <span class="text-base font-black text-purple-700 block">${mngtCount}</span>
-                      <span class="text-[10px] text-slate-400 font-bold uppercase">Personnel</span>
-                    </div>
-                  </div>
-
-                  <!-- JMC -->
-                  <div
-                    onclick="FPCL_PSM_SUITE.setValidationFilter('cadreFilter', vs.cadreFilter === 'JMC' ? 'all' : 'JMC')"
-                    class="p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${vs.cadreFilter === 'JMC' ? 'bg-blue-50 border-blue-300 ring-2 ring-blue-400/20' : 'bg-slate-50 border-slate-100 hover:border-slate-200'}"
-                  >
-                    <div>
-                      <span class="font-black text-slate-800 block text-xs">Junior Management Cadre (JMC)</span>
-                      <span class="text-[11px] text-slate-500 font-medium">Shift supervisors, plant engineers & field technicians</span>
-                    </div>
-                    <div class="text-right font-mono">
-                      <span class="text-base font-black text-blue-700 block">${jmcCount}</span>
-                      <span class="text-[10px] text-slate-400 font-bold uppercase">Personnel</span>
-                    </div>
-                  </div>
-
-                  <!-- Staff -->
-                  <div
-                    onclick="FPCL_PSM_SUITE.setValidationFilter('cadreFilter', vs.cadreFilter === 'Staff' ? 'all' : 'Staff')"
-                    class="p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${vs.cadreFilter === 'Staff' ? 'bg-emerald-50 border-emerald-300 ring-2 ring-emerald-400/20' : 'bg-slate-50 border-slate-100 hover:border-slate-200'}"
-                  >
-                    <div>
-                      <span class="font-black text-slate-800 block text-xs">Staff Cadre</span>
-                      <span class="text-[11px] text-slate-500 font-medium">Operating crews, maintenance support & plant technicians</span>
-                    </div>
-                    <div class="text-right font-mono">
-                      <span class="text-base font-black text-emerald-700 block">${staffCount}</span>
-                      <span class="text-[10px] text-slate-400 font-bold uppercase">Personnel</span>
-                    </div>
-                  </div>
-                </div>
+                <span class="text-xs font-mono font-bold text-slate-500">
+                  ${moduleBreakdown.length} ${moduleBreakdown.length === 1 ? 'Module' : 'Modules'}
+                </span>
               </div>
 
-              <!-- Module Status Focus Card -->
-              <div class="bg-gradient-to-br from-teal-50 via-slate-50 to-indigo-50/40 border border-teal-200/80 rounded-2xl p-5 shadow-xs space-y-2">
-                <div class="flex items-center justify-between">
-                  <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-black uppercase tracking-wider bg-teal-600 text-white">
-                    Primary PSM Module
-                  </span>
-                  <span class="text-xs font-mono font-bold text-teal-800">
-                    Module T&D
-                  </span>
-                </div>
-                <h5 class="text-sm font-black text-slate-900">
-                  Process Safety Training & Development (T&D)
-                </h5>
-                <p class="text-xs text-slate-600 leading-relaxed">
-                  Verification ensures full competency compliance across all operating units and safety-critical roles according to FPCL PSM guidelines.
-                </p>
-                <div class="pt-2 flex items-center justify-between text-xs border-t border-teal-100">
-                  <span class="text-slate-500">Live Sheet Source:</span>
-                  <span class="font-mono text-teal-700 font-bold">PSM_Validation_sheet_URL</span>
-                </div>
+              <!-- Horizontal SVG Bar Chart (Module Validation Compliance Matrix) -->
+              <div id="psm-val-module-bar-chart" class="w-full overflow-x-auto">
+                ${this.renderValidationModuleBarChart(moduleBreakdown)}
               </div>
 
+              <!-- Legends of Module Validation Compliance Placed at Bottom -->
+              <div class="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs font-mono">
+                <div class="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onclick="FPCL_PSM_SUITE.setValidationFilter('statusFilter', '${vs.statusFilter === 'Pass' ? 'all' : 'Pass'}')"
+                    class="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg ${vs.statusFilter === 'Pass' ? 'bg-emerald-600 text-white ring-2 ring-emerald-400 shadow-sm' : 'bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100'} font-bold cursor-pointer transition-colors shadow-2xs"
+                    title="Click to filter passed personnel"
+                  >
+                    <span class="w-2.5 h-2.5 rounded-sm ${vs.statusFilter === 'Pass' ? 'bg-white' : 'bg-emerald-500'}"></span>
+                    <span>Passed (${passedCount})</span>
+                  </button>
+                  <button
+                    type="button"
+                    onclick="FPCL_PSM_SUITE.setValidationFilter('statusFilter', '${vs.statusFilter === 'Fail' ? 'all' : 'Fail'}')"
+                    class="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg ${vs.statusFilter === 'Fail' ? 'bg-rose-600 text-white ring-2 ring-rose-400 shadow-sm' : 'bg-rose-50 border border-rose-200 text-rose-800 hover:bg-rose-100'} font-bold cursor-pointer transition-colors shadow-2xs"
+                    title="Click to filter failed personnel"
+                  >
+                    <span class="w-2.5 h-2.5 rounded-sm ${vs.statusFilter === 'Fail' ? 'bg-white' : 'bg-rose-500'}"></span>
+                    <span>Failed (${failedCount})</span>
+                  </button>
+                </div>
+                <div class="text-[11px] font-sans text-slate-400 font-medium">
+                  Click any bar to filter module data
+                </div>
+              </div>
             </div>
 
           </div>
@@ -1489,9 +1483,6 @@
                   <i data-lucide="table" class="w-4 h-4 text-teal-600"></i>
                   <span>PSM Personnel Qualification & Validation Records</span>
                 </h4>
-                <p class="text-xs text-slate-500">
-                  Showing <strong>${totalFiltered}</strong> matching records (Click any personnel row to view profile)
-                </p>
               </div>
 
               <div class="flex items-center flex-wrap gap-2.5">
@@ -1770,9 +1761,12 @@
       `;
 
       let activeSubContent = '';
+      const headerCard = document.getElementById('detail-header-card');
       if (s.activeSubDashboard === 'validation') {
+        if (headerCard) headerCard.classList.add('hidden');
         activeSubContent = this.renderValidationSubDashboard();
       } else {
+        if (headerCard) headerCard.classList.remove('hidden');
         activeSubContent = `
           <!-- ========================================================================= -->
           <!-- TOP 4 EXECUTIVE KPI SUMMARY CARDS (DYNAMICALLY COMPUTED)                  -->
@@ -3055,6 +3049,9 @@
           <g
             class="cursor-pointer group"
             onclick="FPCL_PSM_SUITE.setValidationFilter('deptFilter', '${isSelected ? 'all' : d.name}')"
+            onmouseenter="FPCL_PSM_SUITE.showTooltip(event, { title: '${d.name.replace(/'/g, "\\'")}', badge: 'Department Matrix', color: '#0D9488', subtitle: 'Training Compliance Matrix', metrics: [{ label: 'Total Personnel', value: '${d.total}' }, { label: 'Trained Personnel', value: '${d.trained}', color: '#10B981' }, { label: 'Require Training', value: '${d.untrained}', color: '#F59E0B' }, { label: 'Compliance Rate', value: '${d.compliance}%' }], hint: 'Click to filter records for ${d.name.replace(/'/g, "\\'")}' })"
+            onmousemove="FPCL_PSM_SUITE.moveTooltip(event)"
+            onmouseleave="FPCL_PSM_SUITE.hideTooltip()"
             title="Click to filter by ${d.name} (${d.trained} Trained, ${d.untrained} Require Training)"
           >
             <!-- Row hover background -->
@@ -3113,6 +3110,127 @@
         return `
           <line x1="${x}" y1="5" x2="${x}" y2="${deptBreakdown.length * rowHeight + 14}" stroke="#E2E8F0" stroke-width="1.5" stroke-dasharray="3 3"/>
           <text x="${x}" y="${deptBreakdown.length * rowHeight + 32}" fill="#64748B" font-size="11" font-weight="700" font-family="monospace" text-anchor="middle">${t}</text>
+        `;
+      }).join('');
+
+      return `
+        <svg viewBox="0 0 ${svgWidth} ${chartHeight}" class="w-full h-auto select-none overflow-visible">
+          ${gridSvg}
+          ${barsSvg}
+        </svg>
+      `;
+    },
+
+    // Interactive Module Validation Compliance Matrix (Pass / Fail Bar Chart)
+    renderValidationModuleBarChart(moduleBreakdown) {
+      if (!moduleBreakdown || moduleBreakdown.length === 0) {
+        return `
+          <div class="py-12 text-center text-slate-400 font-medium text-xs">
+            No module data available for current filter selection
+          </div>
+        `;
+      }
+
+      const vs = this.state.validationState || {};
+      const maxTotal = Math.max(...moduleBreakdown.map(m => m.total), 1);
+      const tickMax = Math.ceil(maxTotal / 5) * 5 || 5;
+      const ticks = [0, Math.round(tickMax * 0.25), Math.round(tickMax * 0.5), Math.round(tickMax * 0.75), tickMax];
+
+      const svgWidth = 600;
+      const labelWidth = 140;
+      const rightPadding = 120;
+      const plotWidth = svgWidth - labelWidth - rightPadding;
+      const rowHeight = 42;
+      const barHeight = 24;
+      const chartHeight = moduleBreakdown.length * rowHeight + 40;
+
+      const barsSvg = moduleBreakdown.map((m, index) => {
+        const y = index * rowHeight + 10;
+        const totalW = (m.total / tickMax) * plotWidth;
+        const passedW = (m.passed / tickMax) * plotWidth;
+        const failedW = (m.failed / tickMax) * plotWidth;
+        const pendingW = (m.pending / tickMax) * plotWidth;
+        const isSelected = vs.moduleFilter === m.name;
+
+        return `
+          <g class="cursor-pointer group select-none"
+             onclick="FPCL_PSM_SUITE.setValidationFilter('moduleFilter', vs.moduleFilter === '${m.name.replace(/'/g, "\\'")}' ? 'all' : '${m.name.replace(/'/g, "\\'")}')"
+             onmouseenter="FPCL_PSM_SUITE.showTooltip(event, { title: 'Module: ${m.name.replace(/'/g, "\\'")}', badge: '${m.passRate}% Pass Rate', color: '#2563EB', subtitle: 'Module Validation Compliance', metrics: [{ label: 'Total In Scope', value: '${m.total}' }, { label: 'Passed Validations', value: '${m.passed}' }, { label: 'Failed Validations', value: '${m.failed}' }, { label: 'Pass Rate', value: '${m.passRate}%' }], hint: 'Click to filter records by module ${m.name.replace(/'/g, "\\'")}' })"
+             onmousemove="FPCL_PSM_SUITE.moveTooltip(event)"
+             onmouseleave="FPCL_PSM_SUITE.hideTooltip()">
+            
+            <!-- Hover / Selected highlight background -->
+            <rect x="0" y="${y - 4}" width="${svgWidth}" height="${rowHeight - 2}" fill="${isSelected ? '#EFF6FF' : '#F8FAFC'}" rx="6" class="transition-colors group-hover:fill-slate-100/90"/>
+
+            <!-- Module Label -->
+            <text x="8" y="${y + 17}" fill="${isSelected ? '#1D4ED8' : '#1E293B'}" font-size="12" font-weight="${isSelected ? '900' : '700'}" font-family="'Plus Jakarta Sans', sans-serif">
+              ${m.name.length > 18 ? m.name.substring(0, 17) + '…' : m.name}
+            </text>
+
+            <!-- Background track bar -->
+            <rect x="${labelWidth}" y="${y}" width="${plotWidth}" height="${barHeight}" rx="5" fill="#E2E8F0" opacity="0.3"/>
+
+            <!-- Passed Segment (Emerald) -->
+            ${m.passed > 0 ? `
+              <rect
+                x="${labelWidth}"
+                y="${y}"
+                width="${passedW}"
+                height="${barHeight}"
+                rx="${m.failed > 0 || m.pending > 0 ? '5 0 0 5' : '5'}"
+                fill="#10B981"
+                class="transition-all opacity-95 group-hover:opacity-100"
+              />
+              ${passedW > 18 ? `
+                <text x="${labelWidth + passedW / 2}" y="${y + 17}" fill="#ffffff" font-size="12" font-weight="900" font-family="monospace" text-anchor="middle" pointer-events="none">${m.passed}</text>
+              ` : ''}
+            ` : ''}
+
+            <!-- Failed Segment (Rose) -->
+            ${m.failed > 0 ? `
+              <rect
+                x="${labelWidth + passedW}"
+                y="${y}"
+                width="${failedW}"
+                height="${barHeight}"
+                rx="${m.passed > 0 ? (m.pending > 0 ? '0' : '0 5 5 0') : (m.pending > 0 ? '5 0 0 5' : '5')}"
+                fill="#EF4444"
+                class="transition-all opacity-95 group-hover:opacity-100"
+              />
+              ${failedW > 18 ? `
+                <text x="${labelWidth + passedW + failedW / 2}" y="${y + 17}" fill="#ffffff" font-size="12" font-weight="900" font-family="monospace" text-anchor="middle" pointer-events="none">${m.failed}</text>
+              ` : ''}
+            ` : ''}
+
+            <!-- Pending Segment (Slate) -->
+            ${m.pending > 0 ? `
+              <rect
+                x="${labelWidth + passedW + failedW}"
+                y="${y}"
+                width="${pendingW}"
+                height="${barHeight}"
+                rx="${m.passed > 0 || m.failed > 0 ? '0 5 5 0' : '5'}"
+                fill="#94A3B8"
+                class="transition-all opacity-95 group-hover:opacity-100"
+              />
+              ${pendingW > 18 ? `
+                <text x="${labelWidth + passedW + failedW + pendingW / 2}" y="${y + 17}" fill="#ffffff" font-size="12" font-weight="900" font-family="monospace" text-anchor="middle" pointer-events="none">${m.pending}</text>
+              ` : ''}
+            ` : ''}
+
+            <!-- Total count & Pass Rate % label -->
+            <text x="${labelWidth + totalW + 12}" y="${y + 17}" fill="#0F172A" font-size="12" font-weight="900" font-family="'Plus Jakarta Sans', monospace">
+              ${m.total} <tspan fill="${m.passRate === 100 ? '#10B981' : m.failed > 0 ? '#EF4444' : '#F59E0B'}" font-size="11" font-weight="700">(${m.passRate}% Pass)</tspan>
+            </text>
+          </g>
+        `;
+      }).join('');
+
+      const gridSvg = ticks.map(t => {
+        const x = labelWidth + (t / tickMax) * plotWidth;
+        return `
+          <line x1="${x}" y1="5" x2="${x}" y2="${moduleBreakdown.length * rowHeight + 14}" stroke="#E2E8F0" stroke-width="1.5" stroke-dasharray="3 3"/>
+          <text x="${x}" y="${moduleBreakdown.length * rowHeight + 32}" fill="#64748B" font-size="11" font-weight="700" font-family="monospace" text-anchor="middle">${t}</text>
         `;
       }).join('');
 
@@ -3591,6 +3709,91 @@
           <!-- Breakdown Legends Placed at Bottom -->
           <div class="w-full pt-4 border-t border-slate-100 flex flex-wrap items-center justify-center gap-2">
             ${legendHtml}
+          </div>
+        </div>
+      `;
+    },
+
+    // Interactive Colorful Donut Chart for Cadre Qualification Matrix
+    renderCadreDonut(cadreItems, totalFiltered, vs) {
+      if (!cadreItems || cadreItems.length === 0 || totalFiltered === 0) {
+        return `
+          <div class="text-center py-10 text-xs text-slate-400 font-medium">
+            No personnel records match the current filters
+          </div>
+        `;
+      }
+
+      const total = totalFiltered || cadreItems.reduce((acc, c) => acc + c.count, 0) || 1;
+      const radius = 96;
+      const circumference = 2 * Math.PI * radius;
+
+      let currentOffset = 0;
+      const slicesSvg = cadreItems.map((c) => {
+        if (c.count <= 0) return '';
+        const pct = c.count / total;
+        const sliceLength = pct * circumference;
+        const offset = currentOffset;
+        currentOffset -= sliceLength;
+
+        const isFiltered = vs.cadreFilter === c.key;
+        const strokeW = isFiltered ? '26' : '22';
+
+        return `
+          <circle
+            cx="140" cy="140" r="${radius}"
+            fill="transparent"
+            stroke="${c.color}"
+            stroke-width="${strokeW}"
+            stroke-dasharray="${sliceLength} ${circumference - sliceLength}"
+            stroke-dashoffset="${offset}"
+            class="transition-all duration-300 hover:opacity-90 cursor-pointer"
+            style="cursor: pointer; pointer-events: stroke;"
+            onclick="FPCL_PSM_SUITE.setValidationFilter('cadreFilter', vs.cadreFilter === '${c.key}' ? 'all' : '${c.key}')"
+            onmouseenter="FPCL_PSM_SUITE.showTooltip(event, { title: '${c.label.replace(/'/g, "\\'")}', badge: '${c.short}', color: '${c.color}', subtitle: 'Cadre Qualification', metrics: [{ label: 'Personnel', value: '${c.count}' }, { label: 'Cohort Share', value: '${Math.round(pct * 100)}%' }, { label: 'Total In Scope', value: '${total}' }], hint: 'Click to filter personnel by ${c.short}' })"
+            onmousemove="FPCL_PSM_SUITE.moveTooltip(event)"
+            onmouseleave="FPCL_PSM_SUITE.hideTooltip()"
+          >
+            <title>${c.label}: ${c.count} (${Math.round(pct * 100)}%)</title>
+          </circle>
+        `;
+      }).join('');
+
+      return `
+        <div class="relative w-64 h-64 sm:w-72 sm:h-72 lg:w-80 lg:h-80 shrink-0 cursor-pointer select-none mx-auto">
+          <svg viewBox="0 0 280 280" class="w-full h-full transform -rotate-90">
+            <!-- Background Track Ring -->
+            <circle
+              cx="140" cy="140" r="${radius}"
+              fill="transparent"
+              stroke="#F1F5F9"
+              stroke-width="22"
+              class="cursor-pointer hover:stroke-slate-200 transition-colors"
+              onclick="FPCL_PSM_SUITE.setValidationFilter('cadreFilter', 'all')"
+            />
+            ${slicesSvg}
+          </svg>
+
+          <!-- Center Hub -->
+          <div class="absolute inset-0 flex items-center justify-center pointer-events-none text-center">
+            <div
+              onclick="FPCL_PSM_SUITE.setValidationFilter('cadreFilter', 'all')"
+              class="w-32 h-32 sm:w-36 sm:h-36 rounded-full flex flex-col items-center justify-center pointer-events-auto cursor-pointer bg-white hover:bg-slate-50 transition-all border border-slate-100 shadow-xs group px-2"
+              title="Click to reset Cadre filter"
+              onmouseenter="FPCL_PSM_SUITE.showTooltip(event, { title: 'All Cadres', badge: 'Total Cohort', color: '#6366F1', subtitle: 'Cadre Scope', metrics: [{ label: 'Total Personnel', value: '${total}' }], hint: 'Click to reset cadre filter' })"
+              onmousemove="FPCL_PSM_SUITE.moveTooltip(event)"
+              onmouseleave="FPCL_PSM_SUITE.hideTooltip()"
+            >
+              <span class="text-3xl sm:text-4xl font-black font-mono text-slate-900 group-hover:text-indigo-600 transition-colors leading-none tracking-tight">${total}</span>
+              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1 group-hover:text-indigo-500 whitespace-nowrap">PERSONNEL</span>
+              ${vs.cadreFilter && vs.cadreFilter !== 'all' ? `
+                <span class="text-[10px] font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-200 mt-1 whitespace-nowrap max-w-[110px] truncate">
+                  ${vs.cadreFilter}
+                </span>
+              ` : `
+                <span class="text-[9px] font-semibold text-slate-400 mt-0.5 whitespace-nowrap">3 Cadres</span>
+              `}
+            </div>
           </div>
         </div>
       `;
