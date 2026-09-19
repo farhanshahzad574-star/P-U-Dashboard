@@ -820,9 +820,9 @@
               </div>
             </div>
 
-            <!-- Sub HSE PSM Header Actions (SEARCH FINDING & Control Buttons) -->
+            <!-- PSM Header Actions (SEARCH FINDING & Control Buttons) -->
             <div id="detail-psm-actions" class="hidden shrink-0 flex items-center flex-wrap gap-2.5">
-              <!-- SEARCH FINDING in Sub HSE-PSM Header -->
+              <!-- SEARCH FINDING in PSM Header -->
               <div class="relative w-48 sm:w-56 md:w-64">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-white/80">
                   <i data-lucide="search" class="w-3.5 h-3.5"></i>
@@ -1561,8 +1561,8 @@
         },
         {
           id: 'sub-hse-psm',
-          name: 'Sub HSE-PSM',
-          code: 'Sub HSE-PSM',
+          name: 'PSM',
+          code: 'PSM',
           icon: 'shield-check',
           status: 'Active',
           hasSheetLink: true,
@@ -2453,7 +2453,7 @@
                     </div>
                   </div>
 
-                  <!-- Synchronized Focus Tag for Sub HSE - PSM -->
+                  <!-- Synchronized Focus Tag for PSM -->
                   ${item.id === 'sub-hse-psm' ? `
                     <div class="px-2.5 py-1.5 rounded-lg bg-teal-50 border border-teal-200 text-teal-900 text-xs font-bold flex items-center justify-between">
                       <span>${total} Audit Observations</span>
@@ -2782,9 +2782,9 @@
             if (glow1) glow1.classList.remove('hidden');
             if (glow2) glow2.classList.remove('hidden');
 
-            document.getElementById('breadcrumb-active-name').textContent = 'Sub HSE-PSM';
+            document.getElementById('breadcrumb-active-name').textContent = 'PSM';
             if (titleEl) {
-              titleEl.textContent = 'Sub HSE-PSM';
+              titleEl.textContent = 'PSM';
               titleEl.className = 'text-xl sm:text-2xl font-black tracking-tight text-white flex items-center gap-2';
               titleEl.style.color = '#FFFFFF';
             }
@@ -3366,10 +3366,10 @@
             gradient: 'from-blue-600 via-indigo-600 to-purple-600',
             buttonGradient: 'linear-gradient(135deg, #2563EB, #4F46E5)',
             badgeClass: 'bg-blue-50 text-blue-700 border-blue-200',
-            welcomeMessage: 'Hello! I am the **Overview Assistant** for the Executive Operations & Compliance Portal.\n\nI can assist with:\n- **Portal Rollup Statistics** (655 total items, 566 closed • 86.4% closure rate)\n- **Cross-Dashboard Comparison** between PLR (534 recs) & Sub HSE - PSM (121 audit findings)\n- **Executive Benchmarks** & Timeline progress (87.8% actual vs 95.0% planned)\n- **Status of All 11 Dashboards** (Active vs Awaiting Sheet Links)\n\n*🔒 Scope Policy: I strictly answer questions regarding this dashboard portal and will regret any outside queries.*',
+            welcomeMessage: 'Hello! I am the **Overview Assistant** for the Executive Operations & Compliance Portal.\n\nI can assist with:\n- **Portal Rollup Statistics** (655 total items, 566 closed • 86.4% closure rate)\n- **Cross-Dashboard Comparison** between PLR (534 recs) & PSM (121 audit findings)\n- **Executive Benchmarks** & Timeline progress (87.8% actual vs 95.0% planned)\n- **Status of All 11 Dashboards** (Active vs Awaiting Sheet Links)\n\n*🔒 Scope Policy: I strictly answer questions regarding this dashboard portal and will regret any outside queries.*',
             suggestions: [
               'What is the overall closure rate across dashboards?',
-              'Compare PLR vs Sub HSE - PSM progress',
+              'Compare PLR vs PSM progress',
               'Which dashboards are awaiting Google Sheet link?',
               'What is our current timeline progress?'
             ]
@@ -3394,8 +3394,8 @@
             ]
           },
           'sub-hse-psm': {
-            name: 'Sub HSE-PSM Assistant',
-            shortName: 'Sub HSE-PSM',
+            name: 'PSM Assistant',
+            shortName: 'PSM',
             subtitle: 'PSM Internal Audit Phase 1 Findings • HSEQ',
             icon: 'shield-check',
             colorBg: '#E8F6F5',
@@ -3404,7 +3404,7 @@
             gradient: 'from-teal-600 via-emerald-600 to-indigo-600',
             buttonGradient: 'linear-gradient(135deg, #0D9488, #0891B2)',
             badgeClass: 'bg-teal-50 text-teal-700 border-teal-200',
-            welcomeMessage: 'Hello! I am the **Sub HSE-PSM Assistant** (Responsible Unit: HSEQ).\n\nI can assist with:\n- **121 Audit Observations**: 76 Closed, 45 Open (**62.8% Closure Rate**)\n- **13 Action Departments**: Operations CASH (34 findings), Operations PSG (32), E&I (16), Mechanical (14), HSE (10), etc.\n- **Key PSM Elements**: Operating Procedures (SOPs), PHA, MOC, Mechanical Integrity, Training & Competency, PSSR\n- **Audit Status Tracking** and compliance roadmaps\n\n*🔒 Scope Policy: I strictly answer questions regarding the Sub HSE-PSM dashboard and will regret any outside queries.*',
+            welcomeMessage: 'Hello! I am the **PSM Assistant** (Responsible Unit: HSEQ).\n\nI can assist with:\n- **121 Audit Observations**: 76 Closed, 45 Open (**62.8% Closure Rate**)\n- **13 Action Departments**: Operations CASH (34 findings), Operations PSG (32), E&I (16), Mechanical (14), HSE (10), etc.\n- **Key PSM Elements**: Operating Procedures (SOPs), PHA, MOC, Mechanical Integrity, Training & Competency, PSSR\n- **Audit Status Tracking** and compliance roadmaps\n\n*🔒 Scope Policy: I strictly answer questions regarding the PSM dashboard and will regret any outside queries.*',
             suggestions: [
               'Which department has the most open audit findings?',
               'Show resolution rate for Operations CASH vs PSG',

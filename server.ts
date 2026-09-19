@@ -47,7 +47,7 @@ Portal Summary:
 - 11 Individual Dashboards registered under 4 categories (Plant Integrity, Executive & Governance, Sub HSE Committees, Process Safety).
 - Currently 2 Dashboards are Active and linked to Google Sheets:
   1. PLR: 451 Total Recommendations (420 Closed, 31 Open, 93.1% Closure Rate). 233 Generation Loss Incidents (206 Closed, 27 Open, 88.4% Resolution).
-  2. Sub HSE - PSM: 121 Internal Audit Findings (76 Closed, 45 Open, 62.8% Closure Rate) across 13 Action Departments.
+  2. PSM: 121 Internal Audit Findings (76 Closed, 45 Open, 62.8% Closure Rate) across 13 Action Departments.
 - 9 Dashboards are awaiting Google Sheet link integration (EHSE, Sub HSE-P, Sub HSE-E&I, Sub HSE-Mech, Technical Audit, QA/QC, Environmental, Security, Operational Readiness).
 - Total Linked Workload: 572 Total Items (451 Recs + 121 PSM Findings), 496 Closed (86.7% Overall Rate), 76 In-Progress / Open, 0 Overdue.
 - Timeline Progress: Actual 87.8% vs Planned 95.0% (Aug benchmark).
@@ -94,11 +94,11 @@ PLR Data Summary (linked to Google Sheet tabs PLRstatus & Recommendations):
 `
   },
   'sub-hse-psm': {
-    name: 'Sub HSE-PSM',
+    name: 'PSM',
     description: 'Process Safety Management (PSM) Internal Audit Findings Executive Dashboard (Responsible Unit: HSEQ)',
     scopeKeywords: ['psm', 'sub hse', 'audit', 'findings', 'process safety', 'observation', 'cash', 'psg', 'operations', 'e&i', 'mechanical', 'hse', 'hseq', 'l&d', 'pha', 'moc', 'pssr', 'sop', 'mechanical integrity', 'training', 'contractor', 'emergency', 'closure', 'compliance'],
     context: `
-You are the Sub HSE-PSM Assistant for the Process Safety Management internal audit dashboard under the HSEQ department.
+You are the PSM Assistant for the Process Safety Management internal audit dashboard under the HSEQ department.
 PSM Audit Data Summary (Phase 1 Internal Audit Findings June 2026):
 - Total Observations/Findings: 121 items.
 - Status: 76 Closed, 45 Open (62.8% Resolution Rate).
@@ -129,7 +129,7 @@ PSM Audit Data Summary (Phase 1 Internal Audit Findings June 2026):
   }
 };
 
-// POST /api/chat - Strictly scoped chatbot endpoint for Overview, PLR, and Sub HSE - PSM
+// POST /api/chat - Strictly scoped chatbot endpoint for Overview, PLR, and PSM
 app.post('/api/chat', async (req: Request, res: Response): Promise<void> => {
   try {
     const { message, dashboardId, history = [] } = req.body;
@@ -241,20 +241,20 @@ ${config.context}
       }
     } else if (key === 'sub-hse-psm') {
       if (lowerMsg.includes('department') || lowerMsg.includes('cash') || lowerMsg.includes('psg') || lowerMsg.includes('who has') || lowerMsg.includes('most open')) {
-        reply = `**Sub HSE - PSM Findings by Action Department (121 Total Findings):**\n\n- **Operations CASH**: 34 findings (23 closed, 11 open • 67.6%)\n- **Operations PSG**: 32 findings (20 closed, 12 open • 62.5%)\n- **E&I**: 16 findings (10 closed, 6 open • 62.5%)\n- **Mechanical**: 14 findings (9 closed, 5 open • 64.3%)\n- **HSE**: 10 findings (6 closed, 4 open • 60.0%)\n- **Learning & Development**: 4 findings (3 closed, 1 open)\n- **HR / Admin**: 3 findings (2 closed, 1 open)\n- **Procurement**: 2 findings (1 closed, 1 open)\n- **IT**: 2 findings (1 closed, 1 open)\n- **Civil**: 2 findings (1 closed, 1 open)\n- **Warehouse**: 2 findings (0 closed, 2 open)\n- **Security**: 1 finding (0 closed, 1 open)\n- **Laboratory**: 1 finding (0 closed, 1 open)\n\n*Overall PSM Status: 76 Closed, 45 Open (62.8% Closure Rate).*`;
+        reply = `**PSM Findings by Action Department (121 Total Findings):**\n\n- **Operations CASH**: 34 findings (23 closed, 11 open • 67.6%)\n- **Operations PSG**: 32 findings (20 closed, 12 open • 62.5%)\n- **E&I**: 16 findings (10 closed, 6 open • 62.5%)\n- **Mechanical**: 14 findings (9 closed, 5 open • 64.3%)\n- **HSE**: 10 findings (6 closed, 4 open • 60.0%)\n- **Learning & Development**: 4 findings (3 closed, 1 open)\n- **HR / Admin**: 3 findings (2 closed, 1 open)\n- **Procurement**: 2 findings (1 closed, 1 open)\n- **IT**: 2 findings (1 closed, 1 open)\n- **Civil**: 2 findings (1 closed, 1 open)\n- **Warehouse**: 2 findings (0 closed, 2 open)\n- **Security**: 1 finding (0 closed, 1 open)\n- **Laboratory**: 1 finding (0 closed, 1 open)\n\n*Overall PSM Status: 76 Closed, 45 Open (62.8% Closure Rate).*`;
       } else if (lowerMsg.includes('element') || lowerMsg.includes('pha') || lowerMsg.includes('moc') || lowerMsg.includes('sop') || lowerMsg.includes('integrity')) {
         reply = `**PSM Elements Tracked in Phase 1 Audit:**\n\n1. **Operating Procedures (SOPs)**: Standard operating envelope and interlocks\n2. **Training & Competency**: Operator qualifications and shift handovers\n3. **Mechanical Integrity (MI)**: Rotating equipment, flange torqueing, vibration alarms\n4. **Management of Change (MOC)**: Temporary vs permanent facility modifications\n5. **Pre-Startup Safety Review (PSSR)**: Safeguard verification prior to startup\n6. **Process Hazard Analysis (PHA)**: Hazard containment and toxic gas mitigation\n7. **Contractor Safety & Emergency Response**: Field permits and drill audits.`;
       } else {
-        reply = `The **Sub HSE - PSM** dashboard tracks internal audit findings across FPCL:\n\n- **Total Audit Findings**: 121 observations\n- **Resolution Status**: 76 Closed, 45 Open (**62.8% Resolution Rate**)\n- **Largest Action Workloads**: Operations CASH (34 findings) and Operations PSG (32 findings)\n- **Elements Covered**: SOPs, Training, Mechanical Integrity, MOC, PSSR, and PHA.`;
+        reply = `The **PSM** dashboard tracks internal audit findings across FPCL:\n\n- **Total Audit Findings**: 121 observations\n- **Resolution Status**: 76 Closed, 45 Open (**62.8% Resolution Rate**)\n- **Largest Action Workloads**: Operations CASH (34 findings) and Operations PSG (32 findings)\n- **Elements Covered**: SOPs, Training, Mechanical Integrity, MOC, PSSR, and PHA.`;
       }
     } else {
       // Overview
       if (lowerMsg.includes('closure') || lowerMsg.includes('rate') || lowerMsg.includes('total') || lowerMsg.includes('rollup')) {
         reply = `**Executive Portal Rollup Statistics:**\n\n- **Total Tracked Workload**: 572 items across active Google Sheet connections\n- **Closed Items**: 496 closed\n- **Overall Closure Rate**: **86.7%**\n- **In-Progress Workload**: 76 items (31 PLR recommendations + 45 PSM audit findings)\n- **Overdue Items**: 0 items\n- **Monthly Progress**: 87.8% actual vs 95.0% planned.`;
       } else if (lowerMsg.includes('compare') || lowerMsg.includes('difference') || lowerMsg.includes('vs')) {
-        reply = `**Comparison: PLR vs Sub HSE - PSM:**\n\n- **Plant Loss Recommendations (PLR)**:\n  * 451 Recommendations: 420 Closed, 31 Open (**93.1% Closure**)\n  * 233 Incidents: 206 Closed, 27 Open (**88.4% Resolution**)\n  * Key Focus: Machine generation outages (STG-4, Boilers) and engineering recommendations.\n\n- **Sub HSE - PSM**:\n  * 121 Audit Findings: 76 Closed, 45 Open (**62.8% Closure**)\n  * Key Focus: Process safety compliance across 13 departments (CASH, PSG, E&I, Mechanical).`;
+        reply = `**Comparison: PLR vs PSM:**\n\n- **Plant Loss Recommendations (PLR)**:\n  * 451 Recommendations: 420 Closed, 31 Open (**93.1% Closure**)\n  * 233 Incidents: 206 Closed, 27 Open (**88.4% Resolution**)\n  * Key Focus: Machine generation outages (STG-4, Boilers) and engineering recommendations.\n\n- **PSM**:\n  * 121 Audit Findings: 76 Closed, 45 Open (**62.8% Closure**)\n  * Key Focus: Process safety compliance across 13 departments (CASH, PSG, E&I, Mechanical).`;
       } else {
-        reply = `Welcome to the **Executive Operations & Compliance Portal Overview Assistant**.\n\n- **Active Dashboards**: Plant Loss Recommendations (PLR) & Sub HSE - PSM\n- **Upcoming Dashboards**: 9 additional committee dashboards awaiting Google Sheet links\n- **Overall Compliance**: 86.7% across 572 active records\n\nAsk me any question regarding overall portal rollups, progress benchmarks, or module comparisons!`;
+        reply = `Welcome to the **Executive Operations & Compliance Portal Overview Assistant**.\n\n- **Active Dashboards**: Plant Loss Recommendations (PLR) & PSM\n- **Upcoming Dashboards**: 9 additional committee dashboards awaiting Google Sheet links\n- **Overall Compliance**: 86.7% across 572 active records\n\nAsk me any question regarding overall portal rollups, progress benchmarks, or module comparisons!`;
       }
     }
 

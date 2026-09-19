@@ -22,15 +22,15 @@ function getAIClient(): GoogleGenAI | null {
 const DASHBOARD_CONTEXTS: Record<string, { name: string; context: string }> = {
   'overview': {
     name: 'Executive Overview',
-    context: `FPCL Executive Operations & Compliance Portal Overview. Tracks 11 specialized dashboards with 2 active data feeds: PLR and Sub HSE - PSM.`
+    context: `FPCL Executive Operations & Compliance Portal Overview. Tracks 11 specialized dashboards with 2 active data feeds: PLR and PSM.`
   },
   'plr': {
     name: 'Plant Loss Recommendations (PLR)',
     context: `Plant Loss Recommendations (PLR) dashboard tracking outages and engineering recommendations across FPCL.`
   },
   'sub-hse-psm': {
-    name: 'Sub HSE - PSM (Process Safety Management)',
-    context: `Sub HSE - PSM dashboard tracking Phase 1 internal audit findings and compliance actions across FPCL.`
+    name: 'PSM (Process Safety Management)',
+    context: `PSM dashboard tracking Phase 1 internal audit findings and compliance actions across FPCL.`
   }
 };
 
