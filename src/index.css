@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+html {
+  zoom: 75%;
+}
+
 body {
   background: linear-gradient(135deg, #EEF2F6 0%, #E3E8EF 50%, #D8DFE8 100%);
   background-attachment: fixed;

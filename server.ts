@@ -299,7 +299,9 @@ app.all('/api/sheets/fetch', async (req: Request, res: Response): Promise<void> 
     // Resolve URL from environment variables if not provided
     if (!url || typeof url !== 'string') {
       const sLower = (sheetTab || '').toLowerCase();
-      if ((sLower.includes('plr') || sLower.includes('status')) && process.env.PLR_STATUS_SHEET_URL) {
+      if (sLower.includes('validation') || sLower.includes('valid')) {
+        url = process.env.PSM_Validation_sheet_URL || process.env.PSM_VALIDATION_SHEET_URL || process.env.PSM_Validation_sheet || 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTyc0eRsaIpv3DWLdBbEplWo5FqrNwuCFpFrXM4_A6pRTkQgHz56DaN9FMV0cuCkQXnXfPDyKS_nsYC/pub?gid=1928323828&single=true&output=csv';
+      } else if ((sLower.includes('plr') || sLower.includes('status')) && process.env.PLR_STATUS_SHEET_URL) {
         url = process.env.PLR_STATUS_SHEET_URL;
       } else if (sLower.includes('psm') && process.env.PSM_SHEET_URL) {
         url = process.env.PSM_SHEET_URL;
@@ -351,6 +353,11 @@ app.all('/api/sheets/fetch', async (req: Request, res: Response): Promise<void> 
       extraRecTabs.forEach(t => {
         if (!candidateTabs.includes(t)) candidateTabs.push(t);
       });
+    } else if (sLower.includes('validation') || sLower.includes('valid')) {
+      const extraValTabs = ['Validation', 'PSM Validation', 'PSM_Validation', 'Sheet1', 'Data'];
+      extraValTabs.forEach(t => {
+        if (!candidateTabs.includes(t)) candidateTabs.push(t);
+      });
     }
 
     const candidateUrls: string[] = [];
@@ -359,7 +366,13 @@ app.all('/api/sheets/fetch', async (req: Request, res: Response): Promise<void> 
     if (trimmedUrl.includes('output=csv') || trimmedUrl.includes('format=csv') || trimmedUrl.includes('/pub?')) {
       candidateUrls.push(trimmedUrl);
     } else if (trimmedUrl.includes('/pubhtml')) {
-      candidateUrls.push(trimmedUrl.replace('/pubhtml', '/pub?output=csv'));
+      let pubCsv = trimmedUrl.replace('/pubhtml', '/pub');
+      if (pubCsv.includes('?')) {
+        pubCsv += (pubCsv.includes('output=csv') ? '' : '&output=csv');
+      } else {
+        pubCsv += '?output=csv';
+      }
+      candidateUrls.push(pubCsv);
     }
 
     if (isPublished) {

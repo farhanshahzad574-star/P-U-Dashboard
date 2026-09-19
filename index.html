@@ -87,12 +87,14 @@
     <script src="/assets/plrSuite.js?v=20260916d"></script>
     <!-- Sub HSE - PSM (Process Safety Management) Dataset & Specialized Visualization Suite -->
     <script src="/assets/psmData.js?v=20260916b"></script>
+    <script src="/assets/psmValidationData.js?v=20260919a"></script>
     <script src="/assets/psmSuite.js?v=20260916b"></script>
 
     <style>
       /* Base font legibility calibrated for 8-foot control room & wall display viewing */
       html {
         font-size: 17.5px;
+        zoom: 75%;
       }
       body {
         color: #1E293B;
@@ -1793,6 +1795,9 @@
       window.FPCL_PLR_SUITE = portalApp;
       Object.assign(portalApp, {
         init() {
+          try {
+            document.documentElement.style.zoom = '75%';
+          } catch (e) {}
           if (typeof this.syncPlrStatsToOverview === 'function') {
             this.syncPlrStatsToOverview();
           }
@@ -2668,7 +2673,13 @@
             `}
           `;
 
-          html += DASHBOARD_REGISTRY.map(item => {
+          // On Overview dashboard: show all dashboard buttons.
+          // When a single dashboard is opened: show only that dashboard button; remaining dashboard names at top are not seen.
+          const itemsToRender = isOverviewSelected
+            ? DASHBOARD_REGISTRY
+            : DASHBOARD_REGISTRY.filter(item => item.id === activeId);
+
+          html += itemsToRender.map(item => {
             const isSelected = activeId === item.id;
             const glowColor = item.gradientStop1 || item.color.primary || '#3B82F6';
 
@@ -2782,9 +2793,10 @@
             if (glow1) glow1.classList.remove('hidden');
             if (glow2) glow2.classList.remove('hidden');
 
-            document.getElementById('breadcrumb-active-name').textContent = 'PSM';
+            const activeSub = (window.FPCL_PSM_SUITE && window.FPCL_PSM_SUITE.state && window.FPCL_PSM_SUITE.state.activeSubDashboard) || 'audits';
+            document.getElementById('breadcrumb-active-name').textContent = activeSub === 'validation' ? 'PSM / PSM Validation' : 'PSM / PSM Audits';
             if (titleEl) {
-              titleEl.textContent = 'PSM';
+              titleEl.textContent = activeSub === 'validation' ? 'PSM Validation' : 'PSM Audits';
               titleEl.className = 'text-xl sm:text-2xl font-black tracking-tight text-white flex items-center gap-2';
               titleEl.style.color = '#FFFFFF';
             }
@@ -2984,6 +2996,10 @@
             if (psmContainer) {
               psmContainer.classList.remove('hidden');
               if (window.FPCL_PSM_SUITE) {
+                // By default, open to PSM Audits tab when PSM dashboard is opened
+                if (window.FPCL_PSM_SUITE.state) {
+                  window.FPCL_PSM_SUITE.state.activeSubDashboard = 'audits';
+                }
                 if (typeof window.FPCL_PSM_SUITE.syncLiveFeed === 'function') {
                   window.FPCL_PSM_SUITE.syncLiveFeed({ silent: true });
                 }
@@ -3151,6 +3167,9 @@
           if (plrContainer) plrContainer.classList.add('hidden');
           const psmContainer = document.getElementById('psm-specialized-container');
           if (psmContainer) psmContainer.classList.add('hidden');
+          if (window.FPCL_PSM_SUITE && window.FPCL_PSM_SUITE.state) {
+            window.FPCL_PSM_SUITE.state.activeSubDashboard = 'audits';
+          }
           const stdContainer = document.getElementById('standard-detail-container');
           if (stdContainer) stdContainer.classList.remove('hidden');
           document.getElementById('portal-landing-view').classList.remove('hidden');

@@ -19,6 +19,7 @@
 
   const psmSuite = {
     state: {
+      activeSubDashboard: 'audits', // 'audits' | 'validation'
       searchQuery: '',
       statusFilter: 'all',     // 'all' | 'Open' | 'Close'
       deptFilter: 'all',       // Action Department
@@ -31,9 +32,31 @@
       pageSize: 15,
       deptTableSort: { col: 'total', dir: 'desc' },
       unitTableSort: { col: 'total', dir: 'desc' },
+      deptBarViewMode: 'chart', // 'chart' | 'table' | 'split'
+      auditTrendMode: 'dept', // 'dept' | 'audit'
+      auditTrendViewType: 'side-by-side', // 'side-by-side' | 'trend' | 'stacked'
       isSyncing: false,
       lastSynced: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      selectedFinding: null
+      selectedFinding: null,
+
+      // Dedicated state for PSM Validation Sub-Dashboard
+      validationState: {
+        searchQuery: '',
+        trainingFilter: 'all',    // 'all' | 'Yes' | 'No'
+        statusFilter: 'all',      // 'all' | 'Pass' | 'Fail' | 'Pending'
+        deptFilter: 'all',        // Department
+        cadreFilter: 'all',       // 'all' | 'Mngt' | 'JMC' | 'Staff'
+        moduleFilter: 'all',      // 'all' | 'T&D'
+        unitFilter: 'all',        // Unit
+        deptBarViewMode: 'chart', // 'chart' | 'table' | 'split'
+        trendMode: 'dept',        // 'dept' | 'cadre'
+        trendViewType: 'side-by-side', // 'side-by-side' | 'trend' | 'stacked'
+        page: 1,
+        pageSize: 15,
+        isSyncing: false,
+        lastSynced: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        selectedItem: null
+      }
     },
 
     init() {
@@ -45,13 +68,24 @@
         localStorage.setItem('FPCL_PSM_SHEET_URL', HARDCODED_PSM_SHEET_URL);
       } catch (e) {}
 
-      // Fast-paint from localStorage cache if present
+      // Fast-paint from localStorage cache if present (PSM Audits)
       try {
         const cached = localStorage.getItem('FPCL_PSM_DATA_CACHE');
         if (cached) {
           const parsedCached = JSON.parse(cached);
           if (Array.isArray(parsedCached) && parsedCached.length > 0) {
             window.FPCL_PSM_DATA = parsedCached;
+          }
+        }
+      } catch (e) {}
+
+      // Fast-paint from localStorage cache if present (PSM Validation)
+      try {
+        const cachedVal = localStorage.getItem('FPCL_PSM_VALIDATION_CACHE');
+        if (cachedVal) {
+          const parsedVal = JSON.parse(cachedVal);
+          if (Array.isArray(parsedVal) && parsedVal.length > 0) {
+            window.FPCL_PSM_VALIDATION_DATA = parsedVal;
           }
         }
       } catch (e) {}
@@ -67,12 +101,14 @@
       // Trigger automatic live Google Sheets sync on launch
       setTimeout(() => {
         this.syncLiveFeed({ silent: true });
+        this.syncValidationLiveFeed({ silent: true });
       }, 700);
 
       // Periodic auto-sync every 60 seconds so sheet additions/deletions reflect live
       if (!this._autoSyncTimer) {
         this._autoSyncTimer = setInterval(() => {
           this.syncLiveFeed({ silent: true });
+          this.syncValidationLiveFeed({ silent: true });
         }, 60000);
       }
     },
@@ -373,6 +409,1267 @@
       });
     },
 
+    // Switch between PSM Audits and PSM Validation sub-dashboards
+    setSubDashboard(tab) {
+      this.state.activeSubDashboard = tab === 'validation' ? 'validation' : 'audits';
+
+      const breadcrumbEl = document.getElementById('breadcrumb-active-name');
+      const titleEl = document.getElementById('detail-title');
+      const psmActions = document.getElementById('detail-psm-actions');
+      const sheetKeyEl = document.getElementById('detail-sheet-key');
+      const headerSearchInput = document.getElementById('psm-header-search-input');
+
+      if (this.state.activeSubDashboard === 'audits') {
+        if (breadcrumbEl) breadcrumbEl.textContent = 'PSM / PSM Audits';
+        if (titleEl) {
+          titleEl.textContent = 'PSM';
+          titleEl.className = 'text-xl sm:text-2xl font-black tracking-tight text-white flex items-center gap-2';
+        }
+        if (psmActions) {
+          psmActions.classList.remove('hidden');
+          if (headerSearchInput) {
+            headerSearchInput.placeholder = 'SEARCH FINDINGS...';
+            headerSearchInput.value = this.state.searchQuery || '';
+          }
+        }
+        if (sheetKeyEl) {
+          const raw = this.getRawData();
+          const closed = raw.filter(p => p.status === 'Close').length;
+          const open = raw.length - closed;
+          sheetKeyEl.textContent = `PSM Audit Phase 1 • ${raw.length} Observations (${closed} Closed, ${open} Open)`;
+          sheetKeyEl.title = 'Live Google Sheets: PSM Audit Phase 1 June 2026';
+        }
+      } else {
+        if (breadcrumbEl) breadcrumbEl.textContent = 'PSM / PSM Validation';
+        if (titleEl) {
+          titleEl.textContent = 'PSM';
+          titleEl.className = 'text-xl sm:text-2xl font-black tracking-tight text-white flex items-center gap-2';
+        }
+        if (psmActions) {
+          psmActions.classList.remove('hidden');
+          if (headerSearchInput) {
+            headerSearchInput.placeholder = 'SEARCH PERSONNEL...';
+            headerSearchInput.value = (this.state.validationState && this.state.validationState.searchQuery) || '';
+          }
+        }
+        if (sheetKeyEl) {
+          const vRaw = this.getRawValidationData();
+          const vTrained = vRaw.filter(i => (i.training || '').toLowerCase() === 'yes').length;
+          const vPassed = vRaw.filter(i => (i.status || '').toLowerCase() === 'pass').length;
+          sheetKeyEl.textContent = `PSM Validation • ${vRaw.length} Personnel (${vTrained} Trained, ${vPassed} Passed)`;
+          sheetKeyEl.title = 'Live Google Sheets: PSM_Validation_sheet_URL';
+        }
+      }
+
+      this.render();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    },
+
+    // -----------------------------------------------------------------------
+    // PSM VALIDATION SUB-DASHBOARD DATA & CONTROLS
+    // -----------------------------------------------------------------------
+    getRawValidationData() {
+      if (Array.isArray(window.FPCL_PSM_VALIDATION_DATA) && window.FPCL_PSM_VALIDATION_DATA.length > 0) {
+        return window.FPCL_PSM_VALIDATION_DATA;
+      }
+      return [];
+    },
+
+    getFilteredValidationData() {
+      const raw = this.getRawValidationData();
+      const vs = this.state.validationState || {};
+      const q = (vs.searchQuery || '').trim().toLowerCase();
+
+      return raw.filter(item => {
+        // Search query across all employee attributes
+        if (q) {
+          const match =
+            (item.name && item.name.toLowerCase().includes(q)) ||
+            (item.pNo && item.pNo.toLowerCase().includes(q)) ||
+            (item.position && item.position.toLowerCase().includes(q)) ||
+            (item.unit && item.unit.toLowerCase().includes(q)) ||
+            (item.department && item.department.toLowerCase().includes(q)) ||
+            (item.cadre && item.cadre.toLowerCase().includes(q)) ||
+            (item.module && item.module.toLowerCase().includes(q)) ||
+            (item.endUserRemarks && item.endUserRemarks.toLowerCase().includes(q)) ||
+            (item.safetyRemarks && item.safetyRemarks.toLowerCase().includes(q));
+          if (!match) return false;
+        }
+
+        // Training filter (Yes / No)
+        if (vs.trainingFilter && vs.trainingFilter !== 'all') {
+          if ((item.training || '').toLowerCase() !== vs.trainingFilter.toLowerCase()) return false;
+        }
+
+        // Validation Result / Status filter (Pass / Fail / Pending)
+        if (vs.statusFilter && vs.statusFilter !== 'all') {
+          if ((item.status || '').toLowerCase() !== vs.statusFilter.toLowerCase()) return false;
+        }
+
+        // Department filter
+        if (vs.deptFilter && vs.deptFilter !== 'all') {
+          if (item.department !== vs.deptFilter) return false;
+        }
+
+        // Unit filter
+        if (vs.unitFilter && vs.unitFilter !== 'all') {
+          if (item.unit !== vs.unitFilter) return false;
+        }
+
+        // Cadre filter (Mngt / JMC / Staff)
+        if (vs.cadreFilter && vs.cadreFilter !== 'all') {
+          if (item.cadre !== vs.cadreFilter) return false;
+        }
+
+        // Module filter (T&D)
+        if (vs.moduleFilter && vs.moduleFilter !== 'all') {
+          if (item.module !== vs.moduleFilter) return false;
+        }
+
+        return true;
+      });
+    },
+
+    setValidationFilter(key, val) {
+      if (!this.state.validationState) {
+        this.state.validationState = {};
+      }
+      this.state.validationState[key] = val;
+      this.state.validationState.page = 1;
+      this.render();
+    },
+
+    clearValidationFilters() {
+      if (!this.state.validationState) {
+        this.state.validationState = {};
+      }
+      this.state.validationState.searchQuery = '';
+      this.state.validationState.trainingFilter = 'all';
+      this.state.validationState.statusFilter = 'all';
+      this.state.validationState.deptFilter = 'all';
+      this.state.validationState.cadreFilter = 'all';
+      this.state.validationState.moduleFilter = 'all';
+      this.state.validationState.unitFilter = 'all';
+      this.state.validationState.page = 1;
+
+      const headerSearch = document.getElementById('psm-header-search-input');
+      if (headerSearch && this.state.activeSubDashboard === 'validation') {
+        headerSearch.value = '';
+      }
+
+      this.render();
+      if (window.portalApp && window.portalApp.showToast) {
+        window.portalApp.showToast('Filters Cleared', 'Reset all PSM Validation filters to show all personnel.', 'info');
+      }
+    },
+
+    setValidationPage(p) {
+      if (!this.state.validationState) return;
+      this.state.validationState.page = p;
+      this.render();
+      const table = document.getElementById('psm-val-records-table-container');
+      if (table) table.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    },
+
+    setValidationPageSize(sz) {
+      if (!this.state.validationState) return;
+      this.state.validationState.pageSize = sz;
+      this.state.validationState.page = 1;
+      this.render();
+    },
+
+    setDeptBarViewMode(mode) {
+      this.state.deptBarViewMode = mode;
+      this.render();
+    },
+
+    setAuditTrendMode(mode) {
+      this.state.auditTrendMode = mode;
+      this.render();
+    },
+
+    setAuditTrendViewType(viewType) {
+      this.state.auditTrendViewType = viewType;
+      this.render();
+    },
+
+    setValidationDeptBarViewMode(mode) {
+      if (!this.state.validationState) this.state.validationState = {};
+      this.state.validationState.deptBarViewMode = mode;
+      this.render();
+    },
+
+    setValidationTrendMode(mode) {
+      if (!this.state.validationState) this.state.validationState = {};
+      this.state.validationState.trendMode = mode;
+      this.render();
+    },
+
+    setValidationTrendViewType(viewType) {
+      if (!this.state.validationState) this.state.validationState = {};
+      this.state.validationState.trendViewType = viewType;
+      this.render();
+    },
+
+    // Filter-Aware CSV Export for PSM Validation
+    exportValidationCSV() {
+      const data = this.getFilteredValidationData();
+      if (!data || data.length === 0) {
+        if (window.portalApp && window.portalApp.showToast) {
+          window.portalApp.showToast('No Data', 'No validation records match your current filter criteria.', 'warning');
+        }
+        return;
+      }
+
+      const headers = [
+        'Sr #',
+        'P. No.',
+        'Name',
+        'Position',
+        'Unit',
+        'Department',
+        'Cadre',
+        'Training',
+        'Validation Status',
+        'PSM Module',
+        'End User Remarks',
+        'Safety Remarks'
+      ];
+
+      const rows = data.map((d, i) => [
+        d.sr || (i + 1),
+        `"${String(d.pNo || '').replace(/"/g, '""')}"`,
+        `"${String(d.name || '').replace(/"/g, '""')}"`,
+        `"${String(d.position || '').replace(/"/g, '""')}"`,
+        `"${String(d.unit || '').replace(/"/g, '""')}"`,
+        `"${String(d.department || '').replace(/"/g, '""')}"`,
+        `"${String(d.cadre || '').replace(/"/g, '""')}"`,
+        `"${String(d.training || '').replace(/"/g, '""')}"`,
+        `"${String(d.status || '').replace(/"/g, '""')}"`,
+        `"${String(d.module || '').replace(/"/g, '""')}"`,
+        `"${String(d.endUserRemarks || '').replace(/"/g, '""')}"`,
+        `"${String(d.safetyRemarks || '').replace(/"/g, '""')}"`
+      ]);
+
+      const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\r\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      const dateStr = new Date().toISOString().slice(0, 10);
+      link.setAttribute('download', `FPCL_PSM_Validation_Filtered_${dateStr}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      if (window.portalApp && window.portalApp.showToast) {
+        window.portalApp.showToast(
+          'CSV Export Ready',
+          `Successfully exported ${data.length} filtered validation records to CSV.`,
+          'success'
+        );
+      }
+    },
+
+    // Filter-Aware CSV Export for PSM Audits
+    exportAuditsCSV() {
+      const data = this.getFilteredData();
+      if (!data || data.length === 0) {
+        if (window.portalApp && window.portalApp.showToast) {
+          window.portalApp.showToast('No Data', 'No audit findings match your current filter criteria.', 'warning');
+        }
+        return;
+      }
+
+      const headers = [
+        'Sr.',
+        'Observation No.',
+        'PSM Element',
+        'Audit No.',
+        'Auditee Department',
+        'Auditee Unit',
+        'Observation / Findings',
+        'Action Department',
+        'Action Unit',
+        'Nature of Findings',
+        'Action Department Remarks',
+        'Status',
+        'HSEQ Remarks',
+        'Closure Date',
+        'Audit Team',
+        'Target Date'
+      ];
+
+      const rows = data.map((d, i) => [
+        i + 1,
+        `"${String(d.observationNo || '').replace(/"/g, '""')}"`,
+        `"${String(d.psmElement || '').replace(/"/g, '""')}"`,
+        `"${String(d.auditNo || '').replace(/"/g, '""')}"`,
+        `"${String(d.auditeeDepartment || '').replace(/"/g, '""')}"`,
+        `"${String(d.auditeeUnit || '').replace(/"/g, '""')}"`,
+        `"${String(d.finding || '').replace(/"/g, '""')}"`,
+        `"${String(d.actionDepartment || '').replace(/"/g, '""')}"`,
+        `"${String(d.actionUnit || '').replace(/"/g, '""')}"`,
+        `"${String(d.nature || '').replace(/"/g, '""')}"`,
+        `"${String(d.actionRemarks || '').replace(/"/g, '""')}"`,
+        `"${String(d.status || '').replace(/"/g, '""')}"`,
+        `"${String(d.hseqRemarks || '').replace(/"/g, '""')}"`,
+        `"${String(d.closureDate || '').replace(/"/g, '""')}"`,
+        `"${String(d.auditTeam || '').replace(/"/g, '""')}"`,
+        `"${String(d.targetDate || '').replace(/"/g, '""')}"`
+      ]);
+
+      const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\r\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      const dateStr = new Date().toISOString().slice(0, 10);
+      link.setAttribute('download', `FPCL_PSM_Audits_Filtered_${dateStr}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      if (window.portalApp && window.portalApp.showToast) {
+        window.portalApp.showToast(
+          'CSV Export Ready',
+          `Successfully exported ${data.length} filtered audit findings to CSV.`,
+          'success'
+        );
+      }
+    },
+
+    // Header Export CSV Button Handler
+    exportFilteredCSV() {
+      if (this.state.activeSubDashboard === 'validation') {
+        this.exportValidationCSV();
+      } else {
+        this.exportAuditsCSV();
+      }
+    },
+
+    // Header Reset Button Handler
+    resetAllFilters() {
+      if (this.state.activeSubDashboard === 'validation') {
+        this.clearValidationFilters();
+      } else {
+        this.resetFilters();
+      }
+    },
+
+    // Live Google Sheets synchronization for PSM Validation
+    async syncValidationLiveFeed(opts = {}) {
+      const silent = !!opts.silent;
+      const vs = this.state.validationState || {};
+      vs.isSyncing = true;
+
+      const syncIcon = document.getElementById('psm-header-sync-icon');
+      if (syncIcon) syncIcon.classList.add('animate-spin');
+
+      try {
+        const res = await fetch('/api/sheets/fetch?sheetTab=validation', { cache: 'no-store' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+
+        if (data && data.csvText && typeof window.parseValidationCSV === 'function') {
+          const parsed = window.parseValidationCSV(data.csvText);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            window.FPCL_PSM_VALIDATION_DATA = parsed;
+            try {
+              localStorage.setItem('FPCL_PSM_VALIDATION_CACHE', JSON.stringify(parsed));
+            } catch (e) {}
+
+            vs.lastSynced = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            if (!silent && window.portalApp && window.portalApp.showToast) {
+              window.portalApp.showToast(
+                'Live Sheet Synced',
+                `Synchronized ${parsed.length} PSM Validation records from Google Sheets.`,
+                'success'
+              );
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('Validation live sync warning (using baseline):', err);
+      } finally {
+        vs.isSyncing = false;
+        if (syncIcon) syncIcon.classList.remove('animate-spin');
+        if (this.state.activeSubDashboard === 'validation') {
+          this.render();
+        }
+      }
+    },
+
+    // Modal Inspection for Personnel Validation Item
+    inspectValidationItem(sr) {
+      const raw = this.getRawValidationData();
+      const item = raw.find(i => String(i.sr) === String(sr));
+      if (!item) return;
+
+      this.state.validationState.selectedItem = item;
+      const modalContainer = document.getElementById('psm-validation-inspection-modal');
+      if (modalContainer) {
+        modalContainer.innerHTML = this.renderValidationInspectionModalContent(item);
+        modalContainer.classList.remove('hidden');
+        if (window.lucide) window.lucide.createIcons();
+      }
+    },
+
+    closeValidationInspectionModal() {
+      if (this.state.validationState) {
+        this.state.validationState.selectedItem = null;
+      }
+      const modalContainer = document.getElementById('psm-validation-inspection-modal');
+      if (modalContainer) {
+        modalContainer.classList.add('hidden');
+        modalContainer.innerHTML = '';
+      }
+    },
+
+    renderValidationInspectionModalContent(item) {
+      const isPass = (item.status || '').toLowerCase() === 'pass';
+      const isTrained = (item.training || '').toLowerCase() === 'yes';
+
+      return `
+        <div class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <!-- Modal Header -->
+            <div class="bg-gradient-to-r from-teal-800 to-slate-900 text-white p-5 flex items-start justify-between">
+              <div class="space-y-1">
+                <div class="flex items-center gap-2">
+                  <span class="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-teal-400/20 text-teal-200 border border-teal-400/30">
+                    P. No. ${item.pNo || 'N/A'}
+                  </span>
+                  <span class="px-2.5 py-0.5 rounded-full text-xs font-bold ${isPass ? 'bg-emerald-500/20 text-emerald-200 border border-emerald-400/30' : 'bg-rose-500/20 text-rose-200 border border-rose-400/30'}">
+                    ${item.status || 'Pending'}
+                  </span>
+                </div>
+                <h3 class="text-xl font-black tracking-tight text-white">${item.name || 'Personnel Profile'}</h3>
+                <p class="text-xs text-teal-100 font-medium">${item.position || 'N/A'} • ${item.department || 'N/A'}</p>
+              </div>
+              <button
+                type="button"
+                onclick="FPCL_PSM_SUITE.closeValidationInspectionModal()"
+                class="p-2 rounded-xl text-white/70 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
+                title="Close modal"
+              >
+                <i data-lucide="x" class="w-5 h-5"></i>
+              </button>
+            </div>
+
+            <!-- Modal Body Details -->
+            <div class="p-6 space-y-5 text-slate-800 text-xs">
+              <!-- Grid Matrix -->
+              <div class="grid grid-cols-2 sm:grid-cols-3 gap-3.5">
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                  <span class="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Cadre</span>
+                  <span class="font-black text-sm text-slate-800 mt-0.5 block">${item.cadre || 'N/A'}</span>
+                </div>
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                  <span class="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Unit</span>
+                  <span class="font-bold text-sm text-slate-800 mt-0.5 block font-mono">${item.unit || 'General'}</span>
+                </div>
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                  <span class="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">PSM Module</span>
+                  <span class="font-bold text-sm text-teal-700 mt-0.5 block">${item.module || 'T&D'}</span>
+                </div>
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                  <span class="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Training Completed</span>
+                  <span class="font-bold text-sm mt-0.5 flex items-center gap-1.5 ${isTrained ? 'text-emerald-700' : 'text-amber-700'}">
+                    <span class="w-2 h-2 rounded-full ${isTrained ? 'bg-emerald-500' : 'bg-amber-500'}"></span>
+                    ${item.training || 'No'}
+                  </span>
+                </div>
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                  <span class="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Qualification Status</span>
+                  <span class="font-bold text-sm mt-0.5 flex items-center gap-1.5 ${isPass ? 'text-emerald-700' : 'text-rose-700'}">
+                    <span class="w-2 h-2 rounded-full ${isPass ? 'bg-emerald-500' : 'bg-rose-500'}"></span>
+                    ${item.status || 'Pending'}
+                  </span>
+                </div>
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                  <span class="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Record Serial</span>
+                  <span class="font-mono font-bold text-sm text-slate-600 mt-0.5 block">#${item.sr || '1'}</span>
+                </div>
+              </div>
+
+              <!-- Remarks Panels -->
+              <div class="space-y-3 pt-1">
+                <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
+                  <span class="text-[10px] uppercase font-bold text-slate-500 block mb-1 tracking-wider">End User Remarks</span>
+                  <p class="text-xs text-slate-700 leading-relaxed font-medium">
+                    ${item.endUserRemarks ? item.endUserRemarks : '<span class="text-slate-400 italic">No specific remarks logged by end user.</span>'}
+                  </p>
+                </div>
+
+                <div class="p-3.5 rounded-xl bg-teal-50/50 border border-teal-100">
+                  <span class="text-[10px] uppercase font-bold text-teal-700 block mb-1 tracking-wider">Safety & HSEQ Remarks</span>
+                  <p class="text-xs text-slate-700 leading-relaxed font-medium">
+                    ${item.safetyRemarks ? item.safetyRemarks : '<span class="text-slate-400 italic">Compliant with current Process Safety Training & Development standard.</span>'}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="bg-slate-50 p-4 border-t border-slate-100 flex items-center justify-between">
+              <button
+                type="button"
+                onclick="FPCL_PSM_SUITE.setValidationFilter('deptFilter', '${item.department}'); FPCL_PSM_SUITE.closeValidationInspectionModal();"
+                class="px-3.5 py-2 rounded-xl text-xs font-bold text-teal-700 bg-teal-50 hover:bg-teal-100 border border-teal-200 transition-all cursor-pointer"
+              >
+                Filter for ${item.department}
+              </button>
+              <button
+                type="button"
+                onclick="FPCL_PSM_SUITE.closeValidationInspectionModal()"
+                class="px-5 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-900 text-white transition-all cursor-pointer shadow-xs"
+              >
+                Close Profile
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    },
+
+    // =======================================================================
+    // FULL PRODUCTION PSM VALIDATION SUB-DASHBOARD
+    // =======================================================================
+    renderValidationSubDashboard() {
+      const raw = this.getRawValidationData();
+      const filtered = this.getFilteredValidationData();
+      const vs = this.state.validationState || {};
+
+      const totalRaw = raw.length;
+      const totalFiltered = filtered.length;
+
+      // Metrics computation
+      const trainedYesCount = filtered.filter(i => (i.training || '').toLowerCase() === 'yes').length;
+      const trainedNoCount = totalFiltered - trainedYesCount;
+      const trainingPct = totalFiltered > 0 ? Math.round((trainedYesCount / totalFiltered) * 100) : 0;
+
+      const passedCount = filtered.filter(i => (i.status || '').toLowerCase() === 'pass').length;
+      const failedCount = filtered.filter(i => (i.status || '').toLowerCase() === 'fail').length;
+      const pendingCount = totalFiltered - passedCount - failedCount;
+      const passPct = totalFiltered > 0 ? Math.round((passedCount / totalFiltered) * 100) : 0;
+
+      // Cadre metrics
+      const mngtCount = filtered.filter(i => (i.cadre || '').toLowerCase() === 'mngt').length;
+      const jmcCount = filtered.filter(i => (i.cadre || '').toLowerCase() === 'jmc').length;
+      const staffCount = filtered.filter(i => (i.cadre || '').toLowerCase() === 'staff').length;
+
+      // Dropdown Unique Values from RAW
+      const allDepts = Array.from(new Set(raw.map(i => i.department).filter(Boolean))).sort();
+      const allCadres = Array.from(new Set(raw.map(i => i.cadre).filter(Boolean))).sort();
+      const allUnits = Array.from(new Set(raw.map(i => i.unit).filter(Boolean))).sort();
+
+      // Department Aggregations for Interactive Breakdown
+      const deptMap = {};
+      filtered.forEach(item => {
+        const d = item.department || 'Unassigned';
+        if (!deptMap[d]) {
+          deptMap[d] = { total: 0, trained: 0, passed: 0 };
+        }
+        deptMap[d].total++;
+        if ((item.training || '').toLowerCase() === 'yes') deptMap[d].trained++;
+        if ((item.status || '').toLowerCase() === 'pass') deptMap[d].passed++;
+      });
+      const deptBreakdown = Object.entries(deptMap)
+        .map(([name, stats]) => ({
+          name,
+          total: stats.total,
+          trained: stats.trained,
+          untrained: stats.total - stats.trained,
+          compliance: stats.total > 0 ? Math.round((stats.trained / stats.total) * 100) : 0
+        }))
+        .sort((a, b) => b.total - a.total);
+
+      // Pagination slice for records table
+      const pageSize = vs.pageSize === 'all' ? filtered.length : parseInt(vs.pageSize || 15, 10);
+      const totalPages = Math.max(1, Math.ceil(filtered.length / (pageSize || 1)));
+      const currentPage = Math.min(vs.page || 1, totalPages);
+      const startIndex = (currentPage - 1) * pageSize;
+      const pageItems = filtered.slice(startIndex, startIndex + pageSize);
+
+      // Active filters checking
+      const isAnyFilterActive =
+        (vs.searchQuery && vs.searchQuery.trim() !== '') ||
+        (vs.deptFilter && vs.deptFilter !== 'all') ||
+        (vs.cadreFilter && vs.cadreFilter !== 'all') ||
+        (vs.trainingFilter && vs.trainingFilter !== 'all') ||
+        (vs.statusFilter && vs.statusFilter !== 'all') ||
+        (vs.unitFilter && vs.unitFilter !== 'all') ||
+        (vs.moduleFilter && vs.moduleFilter !== 'all');
+
+      return `
+        <!-- PSM VALIDATION SUB-DASHBOARD CONTAINER -->
+        <div class="space-y-6 font-sans">
+
+          <!-- 1. Executive Validation Banner -->
+          <div class="bg-gradient-to-r from-teal-900 via-slate-900 to-indigo-950 text-white rounded-2xl p-5 sm:p-6 shadow-md border border-teal-500/30 relative overflow-hidden">
+            <div class="absolute -right-10 -bottom-10 w-72 h-72 bg-teal-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+              <div class="space-y-1.5">
+                <div class="flex items-center flex-wrap gap-2">
+                  <span class="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold uppercase tracking-wider bg-teal-400/20 text-teal-300 border border-teal-400/30">
+                    Sub-Dashboard 2
+                  </span>
+                  <span class="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold uppercase tracking-wider bg-emerald-400/20 text-emerald-300 border border-emerald-400/30 flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    Live Google Sheet Connected
+                  </span>
+                  <span class="text-xs text-slate-300 font-mono">
+                    • Last Synced: ${vs.lastSynced || 'Active'}
+                  </span>
+                </div>
+                <h3 class="text-xl sm:text-2xl lg:text-3xl font-black tracking-tight text-white flex items-center gap-2.5">
+                  <i data-lucide="check-check" class="w-6 h-6 text-teal-400"></i>
+                  <span>PSM Validation & Qualification Matrix</span>
+                </h3>
+                <p class="text-xs sm:text-sm text-slate-300 max-w-3xl leading-relaxed">
+                  Systematic Process Safety qualification protocol, department training compliance, cadre verification, and field readiness certification.
+                </p>
+              </div>
+
+              <!-- Top Quick Actions -->
+              <div class="shrink-0 flex items-center flex-wrap gap-2.5">
+                <button
+                  type="button"
+                  onclick="FPCL_PSM_SUITE.syncValidationLiveFeed()"
+                  class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-white border border-white/20 transition-all cursor-pointer shadow-xs active:scale-95"
+                  title="Force re-fetch from Google Sheets"
+                >
+                  <i data-lucide="refresh-cw" class="w-3.5 h-3.5 ${vs.isSyncing ? 'animate-spin' : ''}"></i>
+                  <span>${vs.isSyncing ? 'Syncing...' : 'Sync Live Sheet'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onclick="FPCL_PSM_SUITE.exportValidationCSV()"
+                  class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-md shadow-emerald-900/30 transition-all cursor-pointer active:scale-95"
+                  title="Download CSV of current filtered personnel"
+                >
+                  <i data-lucide="download" class="w-4 h-4"></i>
+                  <span>Export Filtered CSV (${totalFiltered})</span>
+                </button>
+
+                <button
+                  type="button"
+                  onclick="FPCL_PSM_SUITE.setSubDashboard('audits')"
+                  class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-white border border-white/20 transition-all cursor-pointer shadow-xs active:scale-95"
+                  title="Return to PSM Audits sub-dashboard"
+                >
+                  <i data-lucide="shield-check" class="w-3.5 h-3.5 text-teal-300"></i>
+                  <span>View Audits</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. Top 4 Executive KPI Metric Cards -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            
+            <!-- Card 1: Total Personnel Tracked -->
+            <div
+              onclick="FPCL_PSM_SUITE.clearValidationFilters()"
+              class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs relative overflow-hidden cursor-pointer hover:border-slate-400 hover:shadow-sm transition-all group"
+              title="Click to reset filters and view all personnel"
+            >
+              <div class="absolute top-0 left-0 right-0 h-1.5 bg-slate-700 group-hover:bg-slate-900 transition-colors"></div>
+              <div class="flex items-center justify-between text-slate-500 text-xs sm:text-sm font-bold tracking-wider uppercase">
+                <span>1. TOTAL PERSONNEL</span>
+                <span class="p-1.5 rounded-lg bg-slate-100 text-slate-700">
+                  <i data-lucide="users" class="w-4 h-4"></i>
+                </span>
+              </div>
+              <div class="mt-3 flex items-baseline gap-2">
+                <span class="text-4xl sm:text-5xl font-black font-mono tracking-tight text-slate-900">${totalFiltered}</span>
+                <span class="text-xs font-mono font-bold text-slate-500">/ ${totalRaw} Total</span>
+              </div>
+              <div class="mt-2.5 flex items-center justify-between text-xs text-slate-500">
+                <span>Scope Coverage</span>
+                <span class="font-bold text-slate-800">100% Cohort</span>
+              </div>
+            </div>
+
+            <!-- Card 2: Training Completed -->
+            <div
+              onclick="FPCL_PSM_SUITE.setValidationFilter('trainingFilter', 'Yes')"
+              class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs relative overflow-hidden cursor-pointer hover:border-emerald-300 hover:shadow-sm transition-all group"
+              title="Click to filter by Training: Yes"
+            >
+              <div class="absolute top-0 left-0 right-0 h-1.5 bg-emerald-500 group-hover:bg-emerald-600 transition-colors"></div>
+              <div class="flex items-center justify-between text-emerald-800 text-xs sm:text-sm font-bold tracking-wider uppercase">
+                <span>2. TRAINING COMPLETED</span>
+                <span class="p-1.5 rounded-lg bg-emerald-50 text-emerald-600">
+                  <i data-lucide="award" class="w-4 h-4"></i>
+                </span>
+              </div>
+              <div class="mt-3 flex items-baseline gap-2">
+                <span class="text-4xl sm:text-5xl font-black font-mono tracking-tight text-emerald-600">${trainedYesCount}</span>
+                <span class="text-xs font-mono font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">${trainingPct}%</span>
+              </div>
+              <div class="mt-2.5 flex items-center justify-between text-xs text-slate-500">
+                <span>Pending / Gaps</span>
+                <span class="font-bold text-amber-600">${trainedNoCount} Personnel</span>
+              </div>
+            </div>
+
+            <!-- Card 3: Validation Passed -->
+            <div
+              onclick="FPCL_PSM_SUITE.setValidationFilter('statusFilter', 'Pass')"
+              class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs relative overflow-hidden cursor-pointer hover:border-teal-300 hover:shadow-sm transition-all group"
+              title="Click to filter by Status: Pass"
+            >
+              <div class="absolute top-0 left-0 right-0 h-1.5 bg-teal-600 group-hover:bg-teal-700 transition-colors"></div>
+              <div class="flex items-center justify-between text-teal-800 text-xs sm:text-sm font-bold tracking-wider uppercase">
+                <span>3. VALIDATION PASSED</span>
+                <span class="p-1.5 rounded-lg bg-teal-50 text-teal-700">
+                  <i data-lucide="shield-check" class="w-4 h-4"></i>
+                </span>
+              </div>
+              <div class="mt-3 flex items-baseline gap-2">
+                <span class="text-4xl sm:text-5xl font-black font-mono tracking-tight text-teal-700">${passedCount}</span>
+                <span class="text-xs font-mono font-extrabold text-teal-800 bg-teal-50 px-2 py-0.5 rounded-full border border-teal-200">${passPct}%</span>
+              </div>
+              <div class="mt-2.5 flex items-center justify-between text-xs text-slate-500">
+                <span>Failed / Pending</span>
+                <span class="font-bold text-slate-700">${failedCount} Fail • ${pendingCount} Pending</span>
+              </div>
+            </div>
+
+            <!-- Card 4: Cadre Distribution -->
+            <div
+              class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs relative overflow-hidden"
+              title="Cadre allocation across Management, JMC, and Staff"
+            >
+              <div class="absolute top-0 left-0 right-0 h-1.5 bg-indigo-600"></div>
+              <div class="flex items-center justify-between text-indigo-900 text-xs sm:text-sm font-bold tracking-wider uppercase">
+                <span>4. CADRE PROFILES</span>
+                <span class="p-1.5 rounded-lg bg-indigo-50 text-indigo-600">
+                  <i data-lucide="briefcase" class="w-4 h-4"></i>
+                </span>
+              </div>
+              <div class="mt-3 flex items-baseline gap-2 flex-wrap">
+                <span class="text-xl sm:text-2xl font-black font-mono tracking-tight text-indigo-950">
+                  ${mngtCount} <span class="text-xs font-sans text-slate-400 font-normal">Mngt</span> • 
+                  ${jmcCount} <span class="text-xs font-sans text-slate-400 font-normal">JMC</span> • 
+                  ${staffCount} <span class="text-xs font-sans text-slate-400 font-normal">Staff</span>
+                </span>
+              </div>
+              <div class="mt-2.5 flex items-center justify-between text-xs text-slate-500">
+                <span>Training Compliance</span>
+                <span class="font-bold ${trainedNoCount === 0 ? 'text-emerald-700 font-extrabold' : 'text-amber-700'}">
+                  ${trainedNoCount === 0 ? '100% Fully Trained' : `${trainedNoCount} Require Training`}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. Filter Controls Grid Card -->
+          <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3 flex-wrap gap-2">
+              <div class="flex items-center gap-2">
+                <span class="p-1.5 rounded-lg bg-teal-50 text-teal-700">
+                  <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+                </span>
+                <h4 class="text-sm font-black text-slate-900 uppercase tracking-wider">
+                  Validation Multi-Dimensional Filters
+                </h4>
+                <span class="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-slate-100 text-slate-700">
+                  Showing ${totalFiltered} of ${totalRaw}
+                </span>
+              </div>
+
+              ${isAnyFilterActive ? `
+                <button
+                  type="button"
+                  onclick="FPCL_PSM_SUITE.clearValidationFilters()"
+                  class="inline-flex items-center gap-1.5 text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-xl border border-rose-200 transition-all cursor-pointer active:scale-95"
+                >
+                  <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                  <span>Clear All Filters</span>
+                </button>
+              ` : `
+                <span class="text-xs text-slate-400 font-medium">No filters active</span>
+              `}
+            </div>
+
+            <!-- Dropdown Filters Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 text-xs">
+              
+              <!-- 1. Department -->
+              <div class="space-y-1">
+                <label class="font-bold text-slate-600 uppercase text-[10px] tracking-wider block">Department</label>
+                <select
+                  onchange="FPCL_PSM_SUITE.setValidationFilter('deptFilter', this.value)"
+                  class="w-full bg-slate-50 hover:bg-slate-100 focus:bg-white border border-slate-200 rounded-xl px-2.5 py-2 font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer text-xs"
+                >
+                  <option value="all" ${vs.deptFilter === 'all' ? 'selected' : ''}>All Departments (${raw.length})</option>
+                  ${allDepts.map(d => {
+                    const c = raw.filter(r => r.department === d).length;
+                    return `<option value="${d}" ${vs.deptFilter === d ? 'selected' : ''}>${d} (${c})</option>`;
+                  }).join('')}
+                </select>
+              </div>
+
+              <!-- 2. Cadre -->
+              <div class="space-y-1">
+                <label class="font-bold text-slate-600 uppercase text-[10px] tracking-wider block">Cadre</label>
+                <select
+                  onchange="FPCL_PSM_SUITE.setValidationFilter('cadreFilter', this.value)"
+                  class="w-full bg-slate-50 hover:bg-slate-100 focus:bg-white border border-slate-200 rounded-xl px-2.5 py-2 font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer text-xs"
+                >
+                  <option value="all" ${vs.cadreFilter === 'all' ? 'selected' : ''}>All Cadres (${raw.length})</option>
+                  ${allCadres.map(c => {
+                    const cnt = raw.filter(r => r.cadre === c).length;
+                    return `<option value="${c}" ${vs.cadreFilter === c ? 'selected' : ''}>${c} (${cnt})</option>`;
+                  }).join('')}
+                </select>
+              </div>
+
+              <!-- 3. Training Status -->
+              <div class="space-y-1">
+                <label class="font-bold text-slate-600 uppercase text-[10px] tracking-wider block">Training Status</label>
+                <select
+                  onchange="FPCL_PSM_SUITE.setValidationFilter('trainingFilter', this.value)"
+                  class="w-full bg-slate-50 hover:bg-slate-100 focus:bg-white border border-slate-200 rounded-xl px-2.5 py-2 font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer text-xs"
+                >
+                  <option value="all" ${vs.trainingFilter === 'all' ? 'selected' : ''}>All Training (${raw.length})</option>
+                  <option value="Yes" ${vs.trainingFilter === 'Yes' ? 'selected' : ''}>Training: Yes (${raw.filter(i => (i.training||'').toLowerCase() === 'yes').length})</option>
+                  <option value="No" ${vs.trainingFilter === 'No' ? 'selected' : ''}>Training: No (${raw.filter(i => (i.training||'').toLowerCase() === 'no').length})</option>
+                </select>
+              </div>
+
+              <!-- 4. Validation Result -->
+              <div class="space-y-1">
+                <label class="font-bold text-slate-600 uppercase text-[10px] tracking-wider block">Validation Result</label>
+                <select
+                  onchange="FPCL_PSM_SUITE.setValidationFilter('statusFilter', this.value)"
+                  class="w-full bg-slate-50 hover:bg-slate-100 focus:bg-white border border-slate-200 rounded-xl px-2.5 py-2 font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer text-xs"
+                >
+                  <option value="all" ${vs.statusFilter === 'all' ? 'selected' : ''}>All Results (${raw.length})</option>
+                  <option value="Pass" ${vs.statusFilter === 'Pass' ? 'selected' : ''}>Pass (${raw.filter(i => (i.status||'').toLowerCase() === 'pass').length})</option>
+                  <option value="Fail" ${vs.statusFilter === 'Fail' ? 'selected' : ''}>Fail (${raw.filter(i => (i.status||'').toLowerCase() === 'fail').length})</option>
+                </select>
+              </div>
+
+              <!-- 5. PSM Module -->
+              <div class="space-y-1">
+                <label class="font-bold text-slate-600 uppercase text-[10px] tracking-wider block">PSM Module</label>
+                <select
+                  onchange="FPCL_PSM_SUITE.setValidationFilter('moduleFilter', this.value)"
+                  class="w-full bg-slate-50 hover:bg-slate-100 focus:bg-white border border-slate-200 rounded-xl px-2.5 py-2 font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer text-xs"
+                >
+                  <option value="all" ${vs.moduleFilter === 'all' ? 'selected' : ''}>All Modules (${raw.length})</option>
+                  <option value="T&D" ${vs.moduleFilter === 'T&D' ? 'selected' : ''}>T&D (Training & Dev)</option>
+                </select>
+              </div>
+
+              <!-- 6. Search Personnel -->
+              <div class="space-y-1">
+                <label class="font-bold text-slate-600 uppercase text-[10px] tracking-wider block">Search Personnel</label>
+                <div class="relative">
+                  <input
+                    type="text"
+                    value="${vs.searchQuery || ''}"
+                    oninput="FPCL_PSM_SUITE.setValidationFilter('searchQuery', this.value)"
+                    placeholder="Name, P.No, Unit..."
+                    class="w-full pl-7 pr-7 py-2 bg-slate-50 hover:bg-slate-100 focus:bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  />
+                  <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5 pointer-events-none"></i>
+                  ${vs.searchQuery ? `
+                    <button
+                      type="button"
+                      onclick="FPCL_PSM_SUITE.setValidationFilter('searchQuery', '')"
+                      class="absolute right-2 top-2 text-slate-400 hover:text-slate-700 cursor-pointer"
+                    >
+                      <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                    </button>
+                  ` : ''}
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Active Filter Badges -->
+            ${isAnyFilterActive ? `
+              <div class="pt-2 border-t border-slate-100 flex items-center flex-wrap gap-2 text-xs">
+                <span class="text-slate-400 font-bold uppercase text-[10px] tracking-wider">Active Filters:</span>
+                
+                ${vs.deptFilter && vs.deptFilter !== 'all' ? `
+                  <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-teal-50 text-teal-800 border border-teal-200 font-bold">
+                    Dept: ${vs.deptFilter}
+                    <button onclick="FPCL_PSM_SUITE.setValidationFilter('deptFilter', 'all')" class="hover:text-rose-600 cursor-pointer"><i data-lucide="x" class="w-3 h-3"></i></button>
+                  </span>
+                ` : ''}
+
+                ${vs.cadreFilter && vs.cadreFilter !== 'all' ? `
+                  <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-800 border border-indigo-200 font-bold">
+                    Cadre: ${vs.cadreFilter}
+                    <button onclick="FPCL_PSM_SUITE.setValidationFilter('cadreFilter', 'all')" class="hover:text-rose-600 cursor-pointer"><i data-lucide="x" class="w-3 h-3"></i></button>
+                  </span>
+                ` : ''}
+
+                ${vs.trainingFilter && vs.trainingFilter !== 'all' ? `
+                  <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold">
+                    Training: ${vs.trainingFilter}
+                    <button onclick="FPCL_PSM_SUITE.setValidationFilter('trainingFilter', 'all')" class="hover:text-rose-600 cursor-pointer"><i data-lucide="x" class="w-3 h-3"></i></button>
+                  </span>
+                ` : ''}
+
+                ${vs.statusFilter && vs.statusFilter !== 'all' ? `
+                  <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-50 text-blue-800 border border-blue-200 font-bold">
+                    Status: ${vs.statusFilter}
+                    <button onclick="FPCL_PSM_SUITE.setValidationFilter('statusFilter', 'all')" class="hover:text-rose-600 cursor-pointer"><i data-lucide="x" class="w-3 h-3"></i></button>
+                  </span>
+                ` : ''}
+
+                ${vs.searchQuery ? `
+                  <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800 border border-slate-300 font-bold">
+                    Search: "${vs.searchQuery}"
+                    <button onclick="FPCL_PSM_SUITE.setValidationFilter('searchQuery', '')" class="hover:text-rose-600 cursor-pointer"><i data-lucide="x" class="w-3 h-3"></i></button>
+                  </span>
+                ` : ''}
+              </div>
+            ` : ''}
+          </div>
+
+          <!-- 4. Analytical Breakdown Section (Department Matrix & Cadre Overview) -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <!-- Left 7 Cols: Department Training & Validation Distribution -->
+            <div class="lg:col-span-7 bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div class="space-y-0.5">
+                  <h4 class="text-sm font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                    <i data-lucide="bar-chart-3" class="w-4 h-4 text-teal-600"></i>
+                    <span>Department Training Compliance Matrix</span>
+                  </h4>
+                  <p class="text-xs text-slate-500">Personnel qualification status across active plant departments</p>
+                </div>
+                <span class="text-xs font-mono font-bold text-slate-500">
+                  ${deptBreakdown.length} Departments
+                </span>
+              </div>
+
+              <!-- Department List with Visual Progress Bars -->
+              <div class="space-y-3 max-h-[380px] overflow-y-auto pr-1">
+                ${deptBreakdown.map(d => {
+                  const isSelected = vs.deptFilter === d.name;
+                  return `
+                    <div
+                      onclick="FPCL_PSM_SUITE.setValidationFilter('deptFilter', '${isSelected ? 'all' : d.name}')"
+                      class="p-3 rounded-xl border transition-all cursor-pointer ${isSelected ? 'bg-teal-50 border-teal-300 ring-2 ring-teal-500/20 shadow-xs' : 'bg-slate-50/70 border-slate-100 hover:bg-slate-100/80 hover:border-slate-300'}"
+                      title="Click to filter by ${d.name}"
+                    >
+                      <div class="flex items-center justify-between text-xs mb-1.5">
+                        <span class="font-bold text-slate-800 flex items-center gap-2">
+                          <span class="w-2 h-2 rounded-full ${isSelected ? 'bg-teal-600' : 'bg-slate-400'}"></span>
+                          ${d.name}
+                        </span>
+                        <div class="flex items-center gap-2 font-mono">
+                          <span class="font-black text-slate-800">${d.trained} / ${d.total}</span>
+                          <span class="text-[10px] font-extrabold px-1.5 py-0.5 rounded ${d.compliance === 100 ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
+                            ${d.compliance}%
+                          </span>
+                        </div>
+                      </div>
+
+                      <!-- Stacked Progress Bar -->
+                      <div class="w-full bg-slate-200 rounded-full h-2 overflow-hidden flex">
+                        <div class="bg-emerald-500 h-2 transition-all duration-500" style="width: ${d.compliance}%"></div>
+                        <div class="bg-amber-400 h-2 transition-all duration-500" style="width: ${100 - d.compliance}%"></div>
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+
+            <!-- Right 5 Cols: Cadre Qualification Matrix & PSM Module Status -->
+            <div class="lg:col-span-5 space-y-4">
+              
+              <!-- Cadre Breakdown Card -->
+              <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-3">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                  <h4 class="text-sm font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                    <i data-lucide="layers" class="w-4 h-4 text-indigo-600"></i>
+                    <span>Cadre Qualification Matrix</span>
+                  </h4>
+                  <span class="text-xs font-mono font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-200">
+                    3 Cadres
+                  </span>
+                </div>
+
+                <div class="space-y-2.5 text-xs">
+                  <!-- Mngt -->
+                  <div
+                    onclick="FPCL_PSM_SUITE.setValidationFilter('cadreFilter', vs.cadreFilter === 'Mngt' ? 'all' : 'Mngt')"
+                    class="p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${vs.cadreFilter === 'Mngt' ? 'bg-purple-50 border-purple-300 ring-2 ring-purple-400/20' : 'bg-slate-50 border-slate-100 hover:border-slate-200'}"
+                  >
+                    <div>
+                      <span class="font-black text-slate-800 block text-xs">Management Cadre (Mngt)</span>
+                      <span class="text-[11px] text-slate-500 font-medium">Senior operations, engineering & departmental leads</span>
+                    </div>
+                    <div class="text-right font-mono">
+                      <span class="text-base font-black text-purple-700 block">${mngtCount}</span>
+                      <span class="text-[10px] text-slate-400 font-bold uppercase">Personnel</span>
+                    </div>
+                  </div>
+
+                  <!-- JMC -->
+                  <div
+                    onclick="FPCL_PSM_SUITE.setValidationFilter('cadreFilter', vs.cadreFilter === 'JMC' ? 'all' : 'JMC')"
+                    class="p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${vs.cadreFilter === 'JMC' ? 'bg-blue-50 border-blue-300 ring-2 ring-blue-400/20' : 'bg-slate-50 border-slate-100 hover:border-slate-200'}"
+                  >
+                    <div>
+                      <span class="font-black text-slate-800 block text-xs">Junior Management Cadre (JMC)</span>
+                      <span class="text-[11px] text-slate-500 font-medium">Shift supervisors, plant engineers & field technicians</span>
+                    </div>
+                    <div class="text-right font-mono">
+                      <span class="text-base font-black text-blue-700 block">${jmcCount}</span>
+                      <span class="text-[10px] text-slate-400 font-bold uppercase">Personnel</span>
+                    </div>
+                  </div>
+
+                  <!-- Staff -->
+                  <div
+                    onclick="FPCL_PSM_SUITE.setValidationFilter('cadreFilter', vs.cadreFilter === 'Staff' ? 'all' : 'Staff')"
+                    class="p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${vs.cadreFilter === 'Staff' ? 'bg-emerald-50 border-emerald-300 ring-2 ring-emerald-400/20' : 'bg-slate-50 border-slate-100 hover:border-slate-200'}"
+                  >
+                    <div>
+                      <span class="font-black text-slate-800 block text-xs">Staff Cadre</span>
+                      <span class="text-[11px] text-slate-500 font-medium">Operating crews, maintenance support & plant technicians</span>
+                    </div>
+                    <div class="text-right font-mono">
+                      <span class="text-base font-black text-emerald-700 block">${staffCount}</span>
+                      <span class="text-[10px] text-slate-400 font-bold uppercase">Personnel</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Module Status Focus Card -->
+              <div class="bg-gradient-to-br from-teal-50 via-slate-50 to-indigo-50/40 border border-teal-200/80 rounded-2xl p-5 shadow-xs space-y-2">
+                <div class="flex items-center justify-between">
+                  <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-black uppercase tracking-wider bg-teal-600 text-white">
+                    Primary PSM Module
+                  </span>
+                  <span class="text-xs font-mono font-bold text-teal-800">
+                    Module T&D
+                  </span>
+                </div>
+                <h5 class="text-sm font-black text-slate-900">
+                  Process Safety Training & Development (T&D)
+                </h5>
+                <p class="text-xs text-slate-600 leading-relaxed">
+                  Verification ensures full competency compliance across all operating units and safety-critical roles according to FPCL PSM guidelines.
+                </p>
+                <div class="pt-2 flex items-center justify-between text-xs border-t border-teal-100">
+                  <span class="text-slate-500">Live Sheet Source:</span>
+                  <span class="font-mono text-teal-700 font-bold">PSM_Validation_sheet_URL</span>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- 5. Master Validation Protocol & Records Table Card -->
+          <div id="psm-val-records-table-container" class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-xs space-y-4">
+            
+            <!-- Table Header Controls -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+              <div class="space-y-0.5">
+                <h4 class="text-sm font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                  <i data-lucide="table" class="w-4 h-4 text-teal-600"></i>
+                  <span>PSM Personnel Qualification & Validation Records</span>
+                </h4>
+                <p class="text-xs text-slate-500">
+                  Showing <strong>${totalFiltered}</strong> matching records (Click any personnel row to view profile)
+                </p>
+              </div>
+
+              <div class="flex items-center flex-wrap gap-2.5">
+                <!-- Page Size Selector -->
+                <div class="flex items-center gap-1.5 text-xs text-slate-500">
+                  <span>Rows:</span>
+                  <select
+                    onchange="FPCL_PSM_SUITE.setValidationPageSize(this.value)"
+                    class="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 font-semibold text-slate-700 focus:outline-none focus:ring-1 focus:ring-teal-500 cursor-pointer text-xs"
+                  >
+                    <option value="10" ${vs.pageSize == 10 ? 'selected' : ''}>10</option>
+                    <option value="15" ${vs.pageSize == 15 || !vs.pageSize ? 'selected' : ''}>15</option>
+                    <option value="25" ${vs.pageSize == 25 ? 'selected' : ''}>25</option>
+                    <option value="50" ${vs.pageSize == 50 ? 'selected' : ''}>50</option>
+                    <option value="all" ${vs.pageSize === 'all' ? 'selected' : ''}>All (${totalFiltered})</option>
+                  </select>
+                </div>
+
+                <!-- Export Filtered CSV Button -->
+                <button
+                  type="button"
+                  onclick="FPCL_PSM_SUITE.exportValidationCSV()"
+                  class="inline-flex items-center gap-2 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black shadow-xs hover:shadow-md transition-all cursor-pointer active:scale-95"
+                  title="Download CSV based on active filters"
+                >
+                  <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                  <span>Export Filtered CSV</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Responsive Table -->
+            <div class="overflow-x-auto rounded-xl border border-slate-200">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-600 uppercase tracking-wider select-none">
+                    <th class="py-3 px-3 w-12 text-center">Sr.</th>
+                    <th class="py-3 px-3 w-20">P. No.</th>
+                    <th class="py-3 px-3">Employee Name</th>
+                    <th class="py-3 px-3">Position & Unit</th>
+                    <th class="py-3 px-3">Department</th>
+                    <th class="py-3 px-3">Cadre</th>
+                    <th class="py-3 px-3 text-center">Training</th>
+                    <th class="py-3 px-3 text-center">Status</th>
+                    <th class="py-3 px-3 text-center">Module</th>
+                    <th class="py-3 px-3">Remarks</th>
+                    <th class="py-3 px-3 text-center w-16">Profile</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
+                  ${pageItems.length === 0 ? `
+                    <tr>
+                      <td colspan="11" class="py-12 text-center text-slate-400">
+                        <i data-lucide="inbox" class="w-8 h-8 mx-auto mb-2 text-slate-300"></i>
+                        <p class="font-semibold text-sm text-slate-700">No personnel records found</p>
+                        <p class="text-xs mt-1">Try adjusting your filters or search query.</p>
+                        <button
+                          type="button"
+                          onclick="FPCL_PSM_SUITE.clearValidationFilters()"
+                          class="mt-3 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-teal-50 text-teal-700 border border-teal-200 font-bold hover:bg-teal-100 cursor-pointer"
+                        >
+                          Reset Filters
+                        </button>
+                      </td>
+                    </tr>
+                  ` : pageItems.map((item, idx) => {
+                    const rowNum = startIndex + idx + 1;
+                    const isPass = (item.status || '').toLowerCase() === 'pass';
+                    const isTrained = (item.training || '').toLowerCase() === 'yes';
+
+                    // Cadre badge styling
+                    let cadreBadge = 'bg-slate-100 text-slate-700 border-slate-200';
+                    if ((item.cadre || '').toLowerCase() === 'mngt') {
+                      cadreBadge = 'bg-purple-50 text-purple-700 border-purple-200';
+                    } else if ((item.cadre || '').toLowerCase() === 'jmc') {
+                      cadreBadge = 'bg-blue-50 text-blue-700 border-blue-200';
+                    } else if ((item.cadre || '').toLowerCase() === 'staff') {
+                      cadreBadge = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+                    }
+
+                    return `
+                      <tr
+                        onclick="FPCL_PSM_SUITE.inspectValidationItem(${item.sr})"
+                        class="hover:bg-teal-50/40 transition-colors cursor-pointer group"
+                      >
+                        <td class="py-3 px-3 text-center font-mono text-slate-400 font-bold text-[11px]">${rowNum}</td>
+                        <td class="py-3 px-3 font-mono font-bold text-slate-900">${item.pNo || '-'}</td>
+                        <td class="py-3 px-3">
+                          <span class="font-bold text-slate-900 block group-hover:text-teal-700 transition-colors">${item.name || '-'}</span>
+                        </td>
+                        <td class="py-3 px-3">
+                          <span class="font-semibold text-slate-800 block">${item.position || '-'}</span>
+                          <span class="text-[10px] font-mono text-slate-400">${item.unit || 'General'}</span>
+                        </td>
+                        <td class="py-3 px-3">
+                          <span class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+                            ${item.department || '-'}
+                          </span>
+                        </td>
+                        <td class="py-3 px-3">
+                          <span class="px-2 py-0.5 rounded-md text-[11px] font-bold border ${cadreBadge}">
+                            ${item.cadre || '-'}
+                          </span>
+                        </td>
+                        <td class="py-3 px-3 text-center">
+                          <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold ${isTrained ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'}">
+                            <span class="w-1.5 h-1.5 rounded-full ${isTrained ? 'bg-emerald-500' : 'bg-amber-500'}"></span>
+                            ${item.training || 'No'}
+                          </span>
+                        </td>
+                        <td class="py-3 px-3 text-center">
+                          <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold ${isPass ? 'bg-teal-50 text-teal-800 border border-teal-200' : 'bg-rose-50 text-rose-700 border border-rose-200'}">
+                            ${item.status || 'Pending'}
+                          </span>
+                        </td>
+                        <td class="py-3 px-3 text-center font-mono font-bold text-teal-700 text-[11px]">
+                          ${item.module || 'T&D'}
+                        </td>
+                        <td class="py-3 px-3 max-w-xs truncate text-[11px] text-slate-500" title="${item.endUserRemarks || item.safetyRemarks || 'No remarks'}">
+                          ${item.endUserRemarks || item.safetyRemarks || '-'}
+                        </td>
+                        <td class="py-3 px-3 text-center">
+                          <button
+                            type="button"
+                            onclick="event.stopPropagation(); FPCL_PSM_SUITE.inspectValidationItem(${item.sr});"
+                            class="p-1.5 rounded-lg text-slate-400 hover:text-teal-700 hover:bg-teal-100 transition-colors cursor-pointer"
+                            title="View Full Personnel Profile"
+                          >
+                            <i data-lucide="eye" class="w-4 h-4"></i>
+                          </button>
+                        </td>
+                      </tr>
+                    `;
+                  }).join('')}
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Pagination Footer -->
+            <div class="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-slate-500">
+              <div class="font-medium">
+                Showing <strong>${pageItems.length > 0 ? startIndex + 1 : 0}</strong> to <strong>${Math.min(startIndex + pageSize, totalFiltered)}</strong> of <strong>${totalFiltered}</strong> personnel records
+              </div>
+
+              ${totalPages > 1 ? `
+                <div class="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    ${currentPage <= 1 ? 'disabled' : ''}
+                    onclick="FPCL_PSM_SUITE.setValidationPage(${currentPage - 1})"
+                    class="px-2.5 py-1.5 rounded-lg border border-slate-200 font-bold hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                  >
+                    Prev
+                  </button>
+                  
+                  <span class="px-2 font-mono font-bold text-slate-700">Page ${currentPage} of ${totalPages}</span>
+
+                  <button
+                    type="button"
+                    ${currentPage >= totalPages ? 'disabled' : ''}
+                    onclick="FPCL_PSM_SUITE.setValidationPage(${currentPage + 1})"
+                    class="px-2.5 py-1.5 rounded-lg border border-slate-200 font-bold hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                  >
+                    Next
+                  </button>
+                </div>
+              ` : ''}
+            </div>
+
+          </div>
+
+          <!-- Personnel Inspection Modal Anchor -->
+          <div id="psm-validation-inspection-modal" class="hidden"></div>
+
+        </div>
+      `;
+    },
+
     // Main render method mounted on #psm-specialized-container
     render() {
       const container = document.getElementById('psm-specialized-container');
@@ -426,9 +1723,57 @@
       const startIndex = (currentPage - 1) * pageSize;
       const pageItems = filtered.slice(startIndex, startIndex + pageSize);
 
-      container.innerHTML = `
-        <div class="space-y-6 font-sans antialiased text-slate-800">
+      const subDashboardNav = `
+        <!-- ========================================================================= -->
+        <!-- DUAL SUB-DASHBOARD TABS (1- PSM Audits | 2- PSM Validation)               -->
+        <!-- ========================================================================= -->
+        <div class="bg-white/95 backdrop-blur-md border border-slate-200/90 rounded-2xl p-2.5 sm:p-3 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div class="flex items-center flex-wrap gap-2">
+            <!-- Sub Dashboard 1: PSM Audits -->
+            <button
+              id="psm-subtab-audits"
+              type="button"
+              onclick="FPCL_PSM_SUITE.setSubDashboard('audits')"
+              class="flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-black transition-all cursor-pointer ${s.activeSubDashboard === 'audits' ? 'bg-gradient-to-r from-teal-600 via-emerald-600 to-indigo-600 text-white shadow-md shadow-teal-600/25 ring-2 ring-teal-500/50' : 'bg-slate-100 hover:bg-slate-200/70 text-slate-700 border border-slate-200/80 hover:text-slate-900'}"
+              title="PSM Internal Audit Findings, Action Tracking & Analytics"
+            >
+              <i data-lucide="shield-check" class="w-4 h-4"></i>
+              <span>1. PSM Audits</span>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-extrabold ${s.activeSubDashboard === 'audits' ? 'bg-white/20 text-white' : 'bg-teal-100 text-teal-800'}">
+                ${totalRaw} Findings
+              </span>
+            </button>
 
+            <!-- Sub Dashboard 2: PSM Validation -->
+            <button
+              id="psm-subtab-validation"
+              type="button"
+              onclick="FPCL_PSM_SUITE.setSubDashboard('validation')"
+              class="flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-black transition-all cursor-pointer ${s.activeSubDashboard === 'validation' ? 'bg-gradient-to-r from-teal-600 via-emerald-600 to-indigo-600 text-white shadow-md shadow-teal-600/25 ring-2 ring-teal-500/50' : 'bg-slate-100 hover:bg-slate-200/70 text-slate-700 border border-slate-200/80 hover:text-slate-900'}"
+              title="Process Safety Management Validation Protocol & Operational Verification Tracker"
+            >
+              <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+              <span>2. PSM Validation</span>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-extrabold ${s.activeSubDashboard === 'validation' ? 'bg-white/20 text-white' : 'bg-emerald-100 text-emerald-800'}">
+                ${this.getRawValidationData().length} Personnel
+              </span>
+            </button>
+          </div>
+
+          <div class="flex items-center gap-2 text-xs text-slate-500">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200/80 font-medium">
+              <i data-lucide="layers" class="w-3.5 h-3.5 text-teal-600"></i>
+              <span>Active Sub-Dashboard: <strong class="text-slate-800 font-bold">${s.activeSubDashboard === 'audits' ? 'PSM Audits' : 'PSM Validation'}</strong></span>
+            </span>
+          </div>
+        </div>
+      `;
+
+      let activeSubContent = '';
+      if (s.activeSubDashboard === 'validation') {
+        activeSubContent = this.renderValidationSubDashboard();
+      } else {
+        activeSubContent = `
           <!-- ========================================================================= -->
           <!-- TOP 4 EXECUTIVE KPI SUMMARY CARDS (DYNAMICALLY COMPUTED)                  -->
           <!-- ========================================================================= -->
@@ -1065,7 +2410,13 @@
             ` : ''}
 
           </div>
+        `;
+      }
 
+      container.innerHTML = `
+        <div class="space-y-6 font-sans antialiased text-slate-800">
+          ${subDashboardNav}
+          ${activeSubContent}
         </div>
 
         <!-- ========================================================================= -->
@@ -1162,7 +2513,7 @@
       }
     },
 
-    // Horizontal grouped/stacked bar chart for departments
+    // Upgraded 960px Horizontal grouped/stacked bar chart for departments (PLR consistent styling & text sizing)
     renderDepartmentBarChart(deptList) {
       if (!deptList || deptList.length === 0) {
         return `<div class="text-center py-8 text-xs text-slate-400">No data available</div>`;
@@ -1170,21 +2521,21 @@
 
       // Find maximum total to scale bars
       const maxTotal = Math.max(...deptList.map(d => d.total), 1);
-      // Axis ticks up to max (e.g. 0, 5, 10, 15, 20, 25, 30)
-      const tickMax = Math.ceil(maxTotal / 5) * 5;
+      // Axis ticks up to max (e.g. 0, 5, 10, 15, 20, 25, 30...)
+      const tickMax = Math.ceil(maxTotal / 5) * 5 || 5;
       const ticks = [];
       for (let t = 0; t <= tickMax; t += 5) {
         ticks.push(t);
       }
 
-      const rowHeight = 36;
-      const chartHeight = deptList.length * rowHeight + 40;
-      const svgWidth = 650;
-      const labelWidth = 130;
-      const plotWidth = svgWidth - labelWidth - 30;
+      const rowHeight = 42;
+      const chartHeight = deptList.length * rowHeight + 50;
+      const svgWidth = 960;
+      const labelWidth = 190;
+      const plotWidth = svgWidth - labelWidth - 110;
 
       const barsSvg = deptList.map((d, i) => {
-        const y = i * rowHeight + 10;
+        const y = i * rowHeight + 12;
         const totalW = (d.total / tickMax) * plotWidth;
         const openW = (d.open / tickMax) * plotWidth;
         const closeW = (d.close / tickMax) * plotWidth;
@@ -1201,24 +2552,24 @@
             <title>${d.name}: ${d.total} Total (${d.open} Open, ${d.close} Closed • ${d.closureRate}% Resolved) - Click to open data</title>
 
             <!-- Row hover highlight -->
-            <rect x="0" y="${y - 4}" width="${svgWidth}" height="${rowHeight}" fill="${isSelected ? '#F0FDFA' : 'transparent'}" class="group-hover:fill-teal-50/50 transition-colors rounded-md"/>
+            <rect x="0" y="${y - 4}" width="${svgWidth}" height="${rowHeight}" fill="${isSelected ? '#F0FDFA' : 'transparent'}" class="group-hover:fill-teal-50/60 transition-colors rounded-lg"/>
             
-            <!-- Department Label -->
-            <text x="${labelWidth - 10}" y="${y + 16}" fill="${isSelected ? '#0D9488' : '#334155'}" font-size="11" font-weight="${isSelected ? '900' : '700'}" text-anchor="end" class="transition-colors group-hover:fill-teal-700">
+            <!-- Department Label (Increased font size 13px bold) -->
+            <text x="${labelWidth - 14}" y="${y + 16}" fill="${isSelected ? '#0D9488' : '#1E293B'}" font-size="13" font-weight="${isSelected ? '900' : '800'}" font-family="'Plus Jakarta Sans', system-ui, sans-serif" text-anchor="end" class="transition-colors group-hover:fill-teal-700">
               ${d.name}
             </text>
 
             <!-- Background Track -->
-            <rect x="${labelWidth}" y="${y + 4}" width="${plotWidth}" height="18" rx="4" fill="#F1F5F9"/>
+            <rect x="${labelWidth}" y="${y + 2}" width="${plotWidth}" height="22" rx="5" fill="#F1F5F9"/>
 
             <!-- Open Findings Bar (Rose) -->
             ${d.open > 0 ? `
               <rect
                 x="${labelWidth}"
-                y="${y + 4}"
+                y="${y + 2}"
                 width="${openW}"
-                height="18"
-                rx="${d.close > 0 ? '4 0 0 4' : '4'}"
+                height="22"
+                rx="${d.close > 0 ? '5 0 0 5' : '5'}"
                 fill="#F43F5E"
                 class="transition-all opacity-95 group-hover:opacity-100 cursor-pointer"
                 onclick="event.stopPropagation(); FPCL_PSM_SUITE.openDataModal({ title: '${d.name.replace(/'/g, "\\'")} — Open Findings', badge: 'Active Open', subtitle: '${d.open} Open Findings Requiring Action', filterDept: '${d.name.replace(/'/g, "\\'")}', filterStatus: 'Open' })"
@@ -1228,19 +2579,19 @@
               >
                 <title>${d.name} Open: ${d.open} findings</title>
               </rect>
-              ${openW > 14 ? `
-                <text x="${labelWidth + openW / 2}" y="${y + 16}" fill="#ffffff" font-size="10" font-weight="900" font-family="monospace" text-anchor="middle" pointer-events="none">${d.open}</text>
+              ${openW > 18 ? `
+                <text x="${labelWidth + openW / 2}" y="${y + 17}" fill="#ffffff" font-size="12" font-weight="900" font-family="monospace" text-anchor="middle" pointer-events="none">${d.open}</text>
               ` : ''}
             ` : ''}
 
-            <!-- Closed Findings Bar (Teal) -->
+            <!-- Closed Findings Bar (Emerald) -->
             ${d.close > 0 ? `
               <rect
                 x="${labelWidth + openW}"
-                y="${y + 4}"
+                y="${y + 2}"
                 width="${closeW}"
-                height="18"
-                rx="${d.open > 0 ? '0 4 4 0' : '4'}"
+                height="22"
+                rx="${d.open > 0 ? '0 5 5 0' : '5'}"
                 fill="#10B981"
                 class="transition-all opacity-95 group-hover:opacity-100 cursor-pointer"
                 onclick="event.stopPropagation(); FPCL_PSM_SUITE.openDataModal({ title: '${d.name.replace(/'/g, "\\'")} — Closed Findings', badge: 'Resolved', subtitle: '${d.close} Closed & Verified Findings', filterDept: '${d.name.replace(/'/g, "\\'")}', filterStatus: 'Close' })"
@@ -1250,25 +2601,25 @@
               >
                 <title>${d.name} Closed: ${d.close} findings</title>
               </rect>
-              ${closeW > 14 ? `
-                <text x="${labelWidth + openW + closeW / 2}" y="${y + 16}" fill="#ffffff" font-size="10" font-weight="900" font-family="monospace" text-anchor="middle" pointer-events="none">${d.close}</text>
+              ${closeW > 18 ? `
+                <text x="${labelWidth + openW + closeW / 2}" y="${y + 17}" fill="#ffffff" font-size="12" font-weight="900" font-family="monospace" text-anchor="middle" pointer-events="none">${d.close}</text>
               ` : ''}
             ` : ''}
 
-            <!-- Total count label at end of bar -->
-            <text x="${labelWidth + totalW + 8}" y="${y + 16}" fill="#64748B" font-size="10" font-weight="bold" font-family="monospace">
-              ${d.total}
+            <!-- Total count & Resolution % at end of bar -->
+            <text x="${labelWidth + totalW + 12}" y="${y + 17}" fill="#0F172A" font-size="12" font-weight="900" font-family="'Plus Jakarta Sans', monospace">
+              ${d.total} <tspan fill="#0D9488" font-size="11" font-weight="700">(${d.closureRate}%)</tspan>
             </text>
           </g>
         `;
       }).join('');
 
-      // Grid line ticks
+      // Grid line ticks with enhanced 11px font
       const gridSvg = ticks.map(t => {
         const x = labelWidth + (t / tickMax) * plotWidth;
         return `
-          <line x1="${x}" y1="5" x2="${x}" y2="${deptList.length * rowHeight + 10}" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="2 2"/>
-          <text x="${x}" y="${deptList.length * rowHeight + 25}" fill="#94A3B8" font-size="10" font-family="monospace" text-anchor="middle">${t}</text>
+          <line x1="${x}" y1="5" x2="${x}" y2="${deptList.length * rowHeight + 14}" stroke="#E2E8F0" stroke-width="1.5" stroke-dasharray="3 3"/>
+          <text x="${x}" y="${deptList.length * rowHeight + 32}" fill="#64748B" font-size="11" font-weight="700" font-family="monospace" text-anchor="middle">${t}</text>
         `;
       }).join('');
 
@@ -1276,6 +2627,855 @@
         <svg viewBox="0 0 ${svgWidth} ${chartHeight}" class="w-full h-auto select-none overflow-visible">
           ${gridSvg}
           ${barsSvg}
+        </svg>
+      `;
+    },
+
+    // Dedicated Table 1 component for Action Department Findings
+    renderTable1(deptList) {
+      const s = this.state;
+      const sumDeptTotal = deptList.reduce((acc, d) => acc + d.total, 0);
+      const sumDeptOpen = deptList.reduce((acc, d) => acc + d.open, 0);
+      const sumDeptClose = deptList.reduce((acc, d) => acc + d.close, 0);
+      const sumDeptClosure = sumDeptTotal > 0 ? Math.round((sumDeptClose / sumDeptTotal) * 100) : 0;
+
+      return `
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <table class="w-full text-left text-xs sm:text-sm border-collapse">
+            <thead>
+              <tr class="border-b border-slate-200 text-slate-700 font-black uppercase tracking-wider text-xs bg-slate-100/80">
+                <th class="py-3 px-3.5 cursor-pointer hover:text-teal-600" onclick="FPCL_PSM_SUITE.sortDeptTable('name')">
+                  DEPARTMENT ${s.deptTableSort.col === 'name' ? (s.deptTableSort.dir === 'asc' ? '↑' : '↓') : '↕'}
+                </th>
+                <th class="py-3 px-3 text-center cursor-pointer hover:text-teal-600" onclick="FPCL_PSM_SUITE.sortDeptTable('total')">
+                  TOTAL ${s.deptTableSort.col === 'total' ? (s.deptTableSort.dir === 'asc' ? '↑' : '↓') : '↕'}
+                </th>
+                <th class="py-3 px-3 text-center cursor-pointer hover:text-rose-600" onclick="FPCL_PSM_SUITE.sortDeptTable('open')">
+                  OPEN ${s.deptTableSort.col === 'open' ? (s.deptTableSort.dir === 'asc' ? '↑' : '↓') : '↕'}
+                </th>
+                <th class="py-3 px-3 text-center cursor-pointer hover:text-emerald-600" onclick="FPCL_PSM_SUITE.sortDeptTable('close')">
+                  CLOSE ${s.deptTableSort.col === 'close' ? (s.deptTableSort.dir === 'asc' ? '↑' : '↓') : '↕'}
+                </th>
+                <th class="py-3 px-3.5 text-center cursor-pointer hover:text-teal-600 min-w-[130px]" onclick="FPCL_PSM_SUITE.sortDeptTable('closureRate')">
+                  % CLOSURE ${s.deptTableSort.col === 'closureRate' ? (s.deptTableSort.dir === 'asc' ? '↑' : '↓') : '↕'}
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 text-slate-800">
+              ${deptList.map(d => {
+                const isSelected = s.deptFilter === d.name;
+                return `
+                  <tr
+                    onclick="FPCL_PSM_SUITE.openDataModal({ title: 'Department: ${d.name.replace(/'/g, "\\'")}', badge: 'Action Dept', subtitle: '${d.total} Findings (${d.open} Open, ${d.close} Closed)', filterDept: '${d.name.replace(/'/g, "\\'")}' })"
+                    onmouseenter="FPCL_PSM_SUITE.showTooltip(event, { title: '${d.name.replace(/'/g, "\\'")}', badge: 'Table 1', color: '#0D9488', subtitle: 'Action Department Row', metrics: [{ label: 'Total', value: '${d.total}' }, { label: 'Open', value: '${d.open}', color: '#F43F5E' }, { label: 'Closed', value: '${d.close}', color: '#10B981' }, { label: 'Closure Rate', value: '${d.closureRate}%' }], hint: 'Click to open findings for ${d.name.replace(/'/g, "\\'")}' })"
+                    onmousemove="FPCL_PSM_SUITE.moveTooltip(event)"
+                    onmouseleave="FPCL_PSM_SUITE.hideTooltip()"
+                    class="hover:bg-teal-50/50 transition-colors cursor-pointer group ${isSelected ? 'bg-teal-50 font-bold' : ''}"
+                  >
+                    <td class="py-3 px-3.5 font-bold text-slate-900 group-hover:text-teal-700">
+                      <span class="group-hover:underline">${d.name}</span>
+                    </td>
+                    <td class="py-3 px-3 text-center font-mono font-black text-slate-900">${d.total}</td>
+                    <td
+                      class="py-3 px-3 text-center font-mono font-black ${d.open > 0 ? 'text-rose-600 hover:bg-rose-100 rounded-md transition-colors' : 'text-slate-400'}"
+                      onclick="event.stopPropagation(); FPCL_PSM_SUITE.openDataModal({ title: '${d.name.replace(/'/g, "\\'")} — Open Findings', badge: 'Active Open', subtitle: '${d.open} Open Findings', filterDept: '${d.name.replace(/'/g, "\\'")}', filterStatus: 'Open' })"
+                      title="Click to view Open findings for ${d.name}"
+                    >
+                      ${d.open}
+                    </td>
+                    <td
+                      class="py-3 px-3 text-center font-mono font-black ${d.close > 0 ? 'text-emerald-600 hover:bg-emerald-100 rounded-md transition-colors' : 'text-slate-400'}"
+                      onclick="event.stopPropagation(); FPCL_PSM_SUITE.openDataModal({ title: '${d.name.replace(/'/g, "\\'")} — Closed Findings', badge: 'Resolved', subtitle: '${d.close} Closed Findings', filterDept: '${d.name.replace(/'/g, "\\'")}', filterStatus: 'Close' })"
+                      title="Click to view Closed findings for ${d.name}"
+                    >
+                      ${d.close}
+                    </td>
+                    <td class="py-3 px-3.5 text-center">
+                      ${this.renderProgressPill(d.closureRate)}
+                    </td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+            <!-- Total Summary Row -->
+            <tfoot>
+              <tr
+                class="bg-slate-100 font-black text-slate-900 border-t-2 border-slate-300 cursor-pointer hover:bg-slate-200 transition-colors"
+                onclick="FPCL_PSM_SUITE.openDataModal({ title: 'All Departments Summary', badge: 'Summary', subtitle: '${sumDeptTotal} Total Findings (${sumDeptOpen} Open, ${sumDeptClose} Closed)' })"
+                onmouseenter="FPCL_PSM_SUITE.showTooltip(event, { title: 'All Departments Total', badge: 'Summary Row', color: '#0F172A', subtitle: 'Overall Department Scope', metrics: [{ label: 'Total', value: '${sumDeptTotal}' }, { label: 'Open', value: '${sumDeptOpen}', color: '#F43F5E' }, { label: 'Closed', value: '${sumDeptClose}', color: '#10B981' }, { label: 'Rate', value: '${sumDeptClosure}%' }], hint: 'Click to open all department records' })"
+                onmousemove="FPCL_PSM_SUITE.moveTooltip(event)"
+                onmouseleave="FPCL_PSM_SUITE.hideTooltip()"
+              >
+                <td class="py-3 px-3.5 uppercase tracking-wider">TOTAL / SUMMARY</td>
+                <td class="py-3 px-3 text-center font-mono text-base font-black">${sumDeptTotal}</td>
+                <td class="py-3 px-3 text-center font-mono text-base font-black text-rose-600">${sumDeptOpen}</td>
+                <td class="py-3 px-3 text-center font-mono text-base font-black text-emerald-600">${sumDeptClose}</td>
+                <td class="py-3 px-3.5 text-center">
+                  ${this.renderProgressPill(sumDeptClosure)}
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      `;
+    },
+
+    // Audit Findings Trends Chart (Open vs Closed Bars Trend - matching PLR's 960px SVG layout)
+    renderAuditFindingsTrendChart() {
+      const s = this.state;
+      const filtered = this.getFilteredData();
+      const isPeriod = s.auditTrendMode === 'audit';
+
+      let items = [];
+      if (isPeriod) {
+        // Group by auditNo
+        const auditMap = {};
+        filtered.forEach(d => {
+          const a = d.auditNo || 'Unspecified';
+          if (!auditMap[a]) {
+            auditMap[a] = { label: a, total: 0, open: 0, closed: 0, raw: a };
+          }
+          auditMap[a].total += 1;
+          if ((d.status || '').toLowerCase() === 'close') auditMap[a].closed += 1;
+          else auditMap[a].open += 1;
+        });
+        items = Object.values(auditMap).sort((a, b) => a.label.localeCompare(b.label));
+      } else {
+        // Group by actionDepartment
+        const deptList = this.getDepartmentAggregation(filtered);
+        items = deptList.map(d => ({
+          label: d.name,
+          total: d.total,
+          closed: d.close,
+          open: d.open,
+          raw: d.name
+        }));
+      }
+
+      if (!items.length) {
+        return `
+          <div class="h-44 flex flex-col items-center justify-center text-slate-400 text-xs">
+            <i data-lucide="inbox" class="w-8 h-8 mb-1.5 opacity-60"></i>
+            <span>No trend records available for current filter selection.</span>
+          </div>
+        `;
+      }
+
+      const w = 960;
+      const h = 340;
+      const pad = { top: 32, right: 30, bottom: 125, left: 52 };
+      const chartW = w - pad.left - pad.right;
+      const chartH = h - pad.top - pad.bottom;
+      const baseY = pad.top + chartH;
+
+      const peak = Math.max(...items.map(d => Math.max(d.total, d.closed, d.open)), 1);
+      const maxVal = Math.ceil(peak / 10) * 10 || 10;
+
+      // Y Axis Grid lines
+      const tickCount = 4;
+      const yTicks = [];
+      for (let i = 0; i <= tickCount; i++) {
+        yTicks.push(Math.round((maxVal / tickCount) * i));
+      }
+
+      const gridSvg = yTicks.map(val => {
+        const y = pad.top + chartH - (val / maxVal) * chartH;
+        return `
+          <line x1="${pad.left}" y1="${y}" x2="${w - pad.right}" y2="${y}" stroke="#E2E8F0" stroke-width="1.5" stroke-dasharray="3 3"/>
+          <text x="${pad.left - 10}" y="${y + 4}" fill="#64748B" font-size="11" font-weight="700" font-family="monospace" text-anchor="end">${val}</text>
+        `;
+      }).join('');
+
+      const baselineSvg = `
+        <line x1="${pad.left}" y1="${baseY}" x2="${w - pad.right}" y2="${baseY}" stroke="#94A3B8" stroke-width="2"/>
+      `;
+
+      const step = chartW / items.length;
+      let contentSvg = '';
+
+      if (s.auditTrendViewType === 'side-by-side') {
+        const groupW = isPeriod ? Math.min(60, Math.max(32, step * 0.65)) : Math.min(42, Math.max(24, step * 0.7));
+        const gap = 3;
+        const subW = (groupW - gap) / 2;
+
+        contentSvg = items.map((d, i) => {
+          const xCenter = pad.left + i * step + step / 2;
+          const xStart = xCenter - groupW / 2;
+          const xClosed = xStart;
+          const xOpen = xStart + subW + gap;
+
+          const openH = (d.open / maxVal) * chartH;
+          const closedH = (d.closed / maxVal) * chartH;
+          const yClosed = baseY - closedH;
+          const yOpen = baseY - openH;
+
+          const labelText = d.label;
+          const isSelected = isPeriod ? (s.auditFilter === d.raw) : (s.deptFilter === d.raw);
+          const escapedRaw = (d.raw || '').replace(/'/g, "\\'");
+          
+          const groupClickHandler = isPeriod
+            ? `FPCL_PSM_SUITE.setAuditFilter('${escapedRaw}'); FPCL_PSM_SUITE.openDataModal({ title: 'Audit Period: ' + '${labelText}', badge: 'Audit No', subtitle: '${d.total} Findings (${d.closed} Closed • ${d.open} Open)', filterAudit: '${escapedRaw}' })`
+            : `FPCL_PSM_SUITE.setDeptFilter('${escapedRaw}'); FPCL_PSM_SUITE.openDataModal({ title: 'Department: ' + '${labelText}', badge: 'Action Dept', subtitle: '${d.total} Findings (${d.closed} Closed • ${d.open} Open)', filterDept: '${escapedRaw}' })`;
+
+          const closedBarClickHandler = `event.stopPropagation(); FPCL_PSM_SUITE.openDataModal({ title: '${labelText} (Closed)', badge: 'Closed', subtitle: '${d.closed} Closed findings', ${isPeriod ? `filterAudit: '${escapedRaw}'` : `filterDept: '${escapedRaw}'`}, filterStatus: 'Close' })`;
+          const openBarClickHandler = `event.stopPropagation(); FPCL_PSM_SUITE.openDataModal({ title: '${labelText} (Open)', badge: 'Active Open', subtitle: '${d.open} Open pending findings', ${isPeriod ? `filterAudit: '${escapedRaw}'` : `filterDept: '${escapedRaw}'`}, filterStatus: 'Open' })`;
+
+          const resPct = d.total > 0 ? ((d.closed / d.total) * 100).toFixed(0) : 0;
+          const labelY = baseY + 14;
+
+          const yClosedVal = d.closed > 0 ? yClosed - 6 : baseY - 6;
+          const yOpenVal = d.open > 0 ? yOpen - 6 : baseY - 6;
+          const highestValY = Math.min(yClosedVal, yOpenVal);
+
+          return `
+            <g class="cursor-pointer group" onclick="${groupClickHandler}">
+              <title>${labelText}&#10;Total: ${d.total} Findings&#10;Closed: ${d.closed} (${resPct}%)&#10;Open: ${d.open}</title>
+              
+              <!-- Hover column highlight -->
+              <rect x="${xStart - 5}" y="${pad.top}" width="${groupW + 10}" height="${chartH}" fill="#F8FAFC" rx="6" class="opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"/>
+
+              <!-- Closed Bar (Emerald) -->
+              ${d.closed > 0 ? `
+                <rect
+                  x="${xClosed}"
+                  y="${yClosed}"
+                  width="${subW}"
+                  height="${Math.max(closedH, 3)}"
+                  fill="#10B981"
+                  rx="3"
+                  class="transition-all group-hover:fill-[#059669] cursor-pointer"
+                  onclick="${closedBarClickHandler}"
+                />
+              ` : `
+                <rect x="${xClosed}" y="${baseY - 2}" width="${subW}" height="2" fill="#CBD5E1" rx="1"/>
+              `}
+
+              <!-- Open Bar (Rose) -->
+              ${d.open > 0 ? `
+                <rect
+                  x="${xOpen}"
+                  y="${yOpen}"
+                  width="${subW}"
+                  height="${Math.max(openH, 3)}"
+                  fill="#F43F5E"
+                  rx="3"
+                  class="transition-all group-hover:fill-[#E11D48] cursor-pointer"
+                  onclick="${openBarClickHandler}"
+                />
+              ` : `
+                <rect x="${xOpen}" y="${baseY - 2}" width="${subW}" height="2" fill="#E2E8F0" rx="1"/>
+              `}
+
+              <!-- Value for Closed Bar (Emerald - increased font size 11px) -->
+              <text
+                x="${xClosed + subW / 2}"
+                y="${yClosedVal}"
+                fill="${d.closed > 0 ? '#047857' : '#94A3B8'}"
+                font-size="11"
+                font-weight="900"
+                font-family="monospace"
+                text-anchor="middle"
+              >${d.closed}</text>
+
+              <!-- Value for Open Bar (Rose - increased font size 11px) -->
+              <text
+                x="${xOpen + subW / 2}"
+                y="${yOpenVal}"
+                fill="${d.open > 0 ? '#B91C1C' : '#94A3B8'}"
+                font-size="11"
+                font-weight="900"
+                font-family="monospace"
+                text-anchor="middle"
+              >${d.open}</text>
+
+              <!-- Total indicator above pair (increased font size 12px) -->
+              <text
+                x="${xCenter}"
+                y="${highestValY - 10}"
+                fill="#0F172A"
+                font-size="12"
+                font-weight="900"
+                font-family="monospace"
+                text-anchor="middle"
+              >${d.total}</text>
+
+              <!-- Baseline tick mark -->
+              <line x1="${xCenter}" y1="${baseY}" x2="${xCenter}" y2="${baseY + 6}" stroke="#94A3B8" stroke-width="1.5"/>
+
+              <!-- X Axis Label (Rotated 45 degrees, font size 11.5px bold) -->
+              <text
+                x="${xCenter}"
+                y="${labelY}"
+                fill="${isSelected ? '#0D9488' : '#334155'}"
+                font-size="11.5"
+                font-weight="${isSelected ? '900' : '700'}"
+                font-family="'Plus Jakarta Sans', system-ui, sans-serif"
+                text-anchor="end"
+                transform="rotate(-45, ${xCenter}, ${labelY})"
+                class="group-hover:fill-teal-700 transition-colors"
+              >${labelText}<title>${labelText} (${d.total} Findings)</title></text>
+            </g>
+          `;
+        }).join('');
+      } else if (s.auditTrendViewType === 'trend') {
+        // Executive Trend lines mode with data point pills
+        const pointsClosed = [];
+        const pointsOpen = [];
+        const pointsTotal = [];
+
+        items.forEach((d, i) => {
+          const cx = pad.left + i * step + step / 2;
+          const cyClosed = pad.top + chartH - (d.closed / maxVal) * chartH;
+          const cyOpen = pad.top + chartH - (d.open / maxVal) * chartH;
+          const cyTotal = pad.top + chartH - (d.total / maxVal) * chartH;
+          pointsClosed.push({ x: cx, y: cyClosed, val: d.closed, d });
+          pointsOpen.push({ x: cx, y: cyOpen, val: d.open, d });
+          pointsTotal.push({ x: cx, y: cyTotal, val: d.total, d });
+        });
+
+        const lineClosedPath = pointsClosed.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+        const lineOpenPath = pointsOpen.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+        const lineTotalPath = pointsTotal.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+
+        contentSvg = `
+          <!-- Total Path -->
+          <path d="${lineTotalPath}" fill="none" stroke="#64748B" stroke-width="2.5" stroke-dasharray="4 4" opacity="0.8"/>
+          <!-- Closed Path (Emerald) -->
+          <path d="${lineClosedPath}" fill="none" stroke="#10B981" stroke-width="3.5" class="transition-all"/>
+          <!-- Open Path (Rose) -->
+          <path d="${lineOpenPath}" fill="none" stroke="#F43F5E" stroke-width="3.5" class="transition-all"/>
+
+          <!-- Circles and values -->
+          ${pointsClosed.map(p => `
+            <circle cx="${p.x}" cy="${p.y}" r="5" fill="#10B981" stroke="#FFFFFF" stroke-width="2"/>
+            <text x="${p.x}" y="${p.y - 10}" fill="#047857" font-size="11" font-weight="900" font-family="monospace" text-anchor="middle">${p.val}</text>
+          `).join('')}
+
+          ${pointsOpen.map(p => `
+            <circle cx="${p.x}" cy="${p.y}" r="5" fill="#F43F5E" stroke="#FFFFFF" stroke-width="2"/>
+            <text x="${p.x}" y="${p.y - 10}" fill="#B91C1C" font-size="11" font-weight="900" font-family="monospace" text-anchor="middle">${p.val}</text>
+          `).join('')}
+
+          <!-- X axis labels -->
+          ${items.map((d, i) => {
+            const xCenter = pad.left + i * step + step / 2;
+            const labelY = baseY + 14;
+            return `
+              <line x1="${xCenter}" y1="${baseY}" x2="${xCenter}" y2="${baseY + 6}" stroke="#94A3B8" stroke-width="1.5"/>
+              <text
+                x="${xCenter}"
+                y="${labelY}"
+                fill="#334155"
+                font-size="11.5"
+                font-weight="700"
+                font-family="'Plus Jakarta Sans', system-ui, sans-serif"
+                text-anchor="end"
+                transform="rotate(-45, ${xCenter}, ${labelY})"
+              >${d.label}</text>
+            `;
+          }).join('')}
+        `;
+      } else {
+        // Stacked Bars mode
+        const groupW = Math.min(48, Math.max(26, step * 0.65));
+
+        contentSvg = items.map((d, i) => {
+          const xCenter = pad.left + i * step + step / 2;
+          const xStart = xCenter - groupW / 2;
+          const totalH = (d.total / maxVal) * chartH;
+          const closedH = (d.closed / maxVal) * chartH;
+          const openH = (d.open / maxVal) * chartH;
+
+          const yClosed = baseY - closedH;
+          const yOpen = yClosed - openH;
+          const labelY = baseY + 14;
+
+          return `
+            <g class="cursor-pointer group" onclick="FPCL_PSM_SUITE.openDataModal({ title: '${d.label}', badge: 'Stacked Breakdown', subtitle: '${d.total} Total (${d.closed} Closed, ${d.open} Open)' })">
+              <!-- Closed Stack (Emerald) -->
+              <rect x="${xStart}" y="${yClosed}" width="${groupW}" height="${closedH}" fill="#10B981" rx="${openH > 0 ? '0 0 4 4' : '4'}"/>
+              <!-- Open Stack (Rose) -->
+              <rect x="${xStart}" y="${yOpen}" width="${groupW}" height="${openH}" fill="#F43F5E" rx="${closedH > 0 ? '4 4 0 0' : '4'}"/>
+              
+              <!-- Total number on top -->
+              <text x="${xCenter}" y="${yOpen - 8}" fill="#0F172A" font-size="12" font-weight="900" font-family="monospace" text-anchor="middle">${d.total}</text>
+              
+              <line x1="${xCenter}" y1="${baseY}" x2="${xCenter}" y2="${baseY + 6}" stroke="#94A3B8" stroke-width="1.5"/>
+              <text
+                x="${xCenter}"
+                y="${labelY}"
+                fill="#334155"
+                font-size="11.5"
+                font-weight="700"
+                font-family="'Plus Jakarta Sans', system-ui, sans-serif"
+                text-anchor="end"
+                transform="rotate(-45, ${xCenter}, ${labelY})"
+              >${d.label}</text>
+            </g>
+          `;
+        }).join('');
+      }
+
+      return `
+        <svg viewBox="0 0 ${w} ${h}" class="w-full h-auto select-none overflow-visible">
+          ${gridSvg}
+          ${baselineSvg}
+          ${contentSvg}
+        </svg>
+      `;
+    },
+
+    // Horizontal grouped/stacked bar chart for PSM Validation Departments (960px SVG layout)
+    renderValidationDeptBarChart(deptBreakdown) {
+      if (!deptBreakdown || deptBreakdown.length === 0) {
+        return `<div class="text-center py-8 text-xs text-slate-400 font-medium">No department qualification records available</div>`;
+      }
+
+      const maxTotal = Math.max(...deptBreakdown.map(d => d.total), 1);
+      const tickMax = Math.ceil(maxTotal / 5) * 5 || 5;
+      const ticks = [];
+      for (let t = 0; t <= tickMax; t += 5) {
+        ticks.push(t);
+      }
+
+      const rowHeight = 42;
+      const chartHeight = deptBreakdown.length * rowHeight + 50;
+      const svgWidth = 960;
+      const labelWidth = 190;
+      const plotWidth = svgWidth - labelWidth - 110;
+
+      const barsSvg = deptBreakdown.map((d, i) => {
+        const y = i * rowHeight + 12;
+        const totalW = (d.total / tickMax) * plotWidth;
+        const trainedW = (d.trained / tickMax) * plotWidth;
+        const untrainedW = (d.untrained / tickMax) * plotWidth;
+        const isSelected = this.state.validationState && this.state.validationState.deptFilter === d.name;
+
+        return `
+          <g
+            class="cursor-pointer group"
+            onclick="FPCL_PSM_SUITE.setValidationFilter('deptFilter', '${isSelected ? 'all' : d.name}')"
+            title="Click to filter by ${d.name} (${d.trained} Trained, ${d.untrained} Require Training)"
+          >
+            <!-- Row hover background -->
+            <rect x="0" y="${y - 4}" width="${svgWidth}" height="${rowHeight}" fill="${isSelected ? '#F0FDFA' : 'transparent'}" class="group-hover:fill-teal-50/60 transition-colors rounded-lg"/>
+            
+            <!-- Department Label (13px bold) -->
+            <text x="${labelWidth - 14}" y="${y + 16}" fill="${isSelected ? '#0D9488' : '#1E293B'}" font-size="13" font-weight="${isSelected ? '900' : '800'}" font-family="'Plus Jakarta Sans', system-ui, sans-serif" text-anchor="end" class="transition-colors group-hover:fill-teal-700">
+              ${d.name}
+            </text>
+
+            <!-- Background Track -->
+            <rect x="${labelWidth}" y="${y + 2}" width="${plotWidth}" height="22" rx="5" fill="#F1F5F9"/>
+
+            <!-- Trained Personnel Bar (Emerald) -->
+            ${d.trained > 0 ? `
+              <rect
+                x="${labelWidth}"
+                y="${y + 2}"
+                width="${trainedW}"
+                height="22"
+                rx="${d.untrained > 0 ? '5 0 0 5' : '5'}"
+                fill="#10B981"
+                class="transition-all opacity-95 group-hover:opacity-100"
+              />
+              ${trainedW > 18 ? `
+                <text x="${labelWidth + trainedW / 2}" y="${y + 17}" fill="#ffffff" font-size="12" font-weight="900" font-family="monospace" text-anchor="middle" pointer-events="none">${d.trained}</text>
+              ` : ''}
+            ` : ''}
+
+            <!-- Require Training / Untrained Bar (Amber) -->
+            ${d.untrained > 0 ? `
+              <rect
+                x="${labelWidth + trainedW}"
+                y="${y + 2}"
+                width="${untrainedW}"
+                height="22"
+                rx="${d.trained > 0 ? '0 5 5 0' : '5'}"
+                fill="#F59E0B"
+                class="transition-all opacity-95 group-hover:opacity-100"
+              />
+              ${untrainedW > 18 ? `
+                <text x="${labelWidth + trainedW + untrainedW / 2}" y="${y + 17}" fill="#ffffff" font-size="12" font-weight="900" font-family="monospace" text-anchor="middle" pointer-events="none">${d.untrained}</text>
+              ` : ''}
+            ` : ''}
+
+            <!-- Total count & Compliance % label -->
+            <text x="${labelWidth + totalW + 12}" y="${y + 17}" fill="#0F172A" font-size="12" font-weight="900" font-family="'Plus Jakarta Sans', monospace">
+              ${d.total} <tspan fill="${d.compliance === 100 ? '#10B981' : '#F59E0B'}" font-size="11" font-weight="700">(${d.compliance}% Compliant)</tspan>
+            </text>
+          </g>
+        `;
+      }).join('');
+
+      const gridSvg = ticks.map(t => {
+        const x = labelWidth + (t / tickMax) * plotWidth;
+        return `
+          <line x1="${x}" y1="5" x2="${x}" y2="${deptBreakdown.length * rowHeight + 14}" stroke="#E2E8F0" stroke-width="1.5" stroke-dasharray="3 3"/>
+          <text x="${x}" y="${deptBreakdown.length * rowHeight + 32}" fill="#64748B" font-size="11" font-weight="700" font-family="monospace" text-anchor="middle">${t}</text>
+        `;
+      }).join('');
+
+      return `
+        <svg viewBox="0 0 ${svgWidth} ${chartHeight}" class="w-full h-auto select-none overflow-visible">
+          ${gridSvg}
+          ${barsSvg}
+        </svg>
+      `;
+    },
+
+    // Interactive Department Training Matrix Table for PSM Validation
+    renderValidationDeptTable(deptBreakdown) {
+      const vs = this.state.validationState || {};
+      const sumTotal = deptBreakdown.reduce((acc, d) => acc + d.total, 0);
+      const sumTrained = deptBreakdown.reduce((acc, d) => acc + d.trained, 0);
+      const sumUntrained = deptBreakdown.reduce((acc, d) => acc + d.untrained, 0);
+      const sumCompliance = sumTotal > 0 ? Math.round((sumTrained / sumTotal) * 100) : 0;
+
+      return `
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <table class="w-full text-left text-xs sm:text-sm border-collapse">
+            <thead>
+              <tr class="border-b border-slate-200 text-slate-700 font-black uppercase tracking-wider text-xs bg-slate-100/80">
+                <th class="py-3 px-3.5">DEPARTMENT</th>
+                <th class="py-3 px-3 text-center">TOTAL PERSONNEL</th>
+                <th class="py-3 px-3 text-center">TRAINED (YES)</th>
+                <th class="py-3 px-3 text-center">REQUIRE TRAINING</th>
+                <th class="py-3 px-3.5 text-center min-w-[130px]">% COMPLIANCE</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 text-slate-800">
+              ${deptBreakdown.map(d => {
+                const isSelected = vs.deptFilter === d.name;
+                return `
+                  <tr
+                    onclick="FPCL_PSM_SUITE.setValidationFilter('deptFilter', '${isSelected ? 'all' : d.name}')"
+                    class="hover:bg-teal-50/50 transition-colors cursor-pointer group ${isSelected ? 'bg-teal-50 font-bold' : ''}"
+                    title="Click to filter by ${d.name}"
+                  >
+                    <td class="py-3 px-3.5 font-bold text-slate-900 group-hover:text-teal-700">
+                      <span class="group-hover:underline">${d.name}</span>
+                    </td>
+                    <td class="py-3 px-3 text-center font-mono font-black text-slate-900">${d.total}</td>
+                    <td class="py-3 px-3 text-center font-mono font-black text-emerald-600">${d.trained}</td>
+                    <td class="py-3 px-3 text-center font-mono font-black ${d.untrained > 0 ? 'text-amber-600' : 'text-slate-400'}">${d.untrained}</td>
+                    <td class="py-3 px-3.5 text-center">
+                      ${this.renderProgressPill(d.compliance)}
+                    </td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+            <tfoot>
+              <tr class="bg-slate-100 font-black text-slate-900 border-t-2 border-slate-300">
+                <td class="py-3 px-3.5 uppercase tracking-wider">TOTAL / SUMMARY</td>
+                <td class="py-3 px-3 text-center font-mono text-base font-black">${sumTotal}</td>
+                <td class="py-3 px-3 text-center font-mono text-base font-black text-emerald-600">${sumTrained}</td>
+                <td class="py-3 px-3 text-center font-mono text-base font-black text-amber-600">${sumUntrained}</td>
+                <td class="py-3 px-3.5 text-center">
+                  ${this.renderProgressPill(sumCompliance)}
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      `;
+    },
+
+    // Validation Compliance & Cadre Trends Chart (Trained vs Require Training Bars Trend - 960px SVG)
+    renderValidationTrendChart() {
+      const vs = this.state.validationState || {};
+      const filtered = this.getFilteredValidationData();
+      const isCadre = vs.trendMode === 'cadre';
+
+      let items = [];
+      if (isCadre) {
+        // Group by Cadre: Mngt, JMC, Staff
+        const cadres = ['Mngt', 'JMC', 'Staff'];
+        items = cadres.map(c => {
+          const recs = filtered.filter(r => (r.cadre || '').toLowerCase() === c.toLowerCase());
+          const total = recs.length;
+          const trained = recs.filter(r => (r.training || '').toLowerCase() === 'yes').length;
+          const untrained = total - trained;
+          return {
+            label: c === 'Mngt' ? 'Management (Mngt)' : c === 'JMC' ? 'Junior Management (JMC)' : 'Staff Cadre',
+            total,
+            trained,
+            untrained,
+            raw: c
+          };
+        });
+      } else {
+        // Group by Department
+        const allDepts = Array.from(new Set(filtered.map(d => d.department).filter(Boolean))).sort();
+        items = allDepts.map(d => {
+          const recs = filtered.filter(r => r.department === d);
+          const total = recs.length;
+          const trained = recs.filter(r => (r.training || '').toLowerCase() === 'yes').length;
+          const untrained = total - trained;
+          return {
+            label: d,
+            total,
+            trained,
+            untrained,
+            raw: d
+          };
+        });
+      }
+
+      if (!items.length) {
+        return `
+          <div class="h-44 flex flex-col items-center justify-center text-slate-400 text-xs font-medium">
+            <i data-lucide="inbox" class="w-8 h-8 mb-1.5 opacity-60"></i>
+            <span>No validation records found for the current filter criteria.</span>
+          </div>
+        `;
+      }
+
+      const w = 960;
+      const h = 340;
+      const pad = { top: 32, right: 30, bottom: 125, left: 52 };
+      const chartW = w - pad.left - pad.right;
+      const chartH = h - pad.top - pad.bottom;
+      const baseY = pad.top + chartH;
+
+      const peak = Math.max(...items.map(d => Math.max(d.total, d.trained, d.untrained)), 1);
+      const maxVal = Math.ceil(peak / 10) * 10 || 10;
+
+      const tickCount = 4;
+      const yTicks = [];
+      for (let i = 0; i <= tickCount; i++) {
+        yTicks.push(Math.round((maxVal / tickCount) * i));
+      }
+
+      const gridSvg = yTicks.map(val => {
+        const y = pad.top + chartH - (val / maxVal) * chartH;
+        return `
+          <line x1="${pad.left}" y1="${y}" x2="${w - pad.right}" y2="${y}" stroke="#E2E8F0" stroke-width="1.5" stroke-dasharray="3 3"/>
+          <text x="${pad.left - 10}" y="${y + 4}" fill="#64748B" font-size="11" font-weight="700" font-family="monospace" text-anchor="end">${val}</text>
+        `;
+      }).join('');
+
+      const baselineSvg = `
+        <line x1="${pad.left}" y1="${baseY}" x2="${w - pad.right}" y2="${baseY}" stroke="#94A3B8" stroke-width="2"/>
+      `;
+
+      const step = chartW / items.length;
+      let contentSvg = '';
+
+      if (vs.trendViewType === 'side-by-side' || !vs.trendViewType) {
+        const groupW = isCadre ? Math.min(65, Math.max(38, step * 0.55)) : Math.min(42, Math.max(24, step * 0.7));
+        const gap = 3;
+        const subW = (groupW - gap) / 2;
+
+        contentSvg = items.map((d, i) => {
+          const xCenter = pad.left + i * step + step / 2;
+          const xStart = xCenter - groupW / 2;
+          const xTrained = xStart;
+          const xUntrained = xStart + subW + gap;
+
+          const trainedH = (d.trained / maxVal) * chartH;
+          const untrainedH = (d.untrained / maxVal) * chartH;
+          const yTrained = baseY - trainedH;
+          const yUntrained = baseY - untrainedH;
+
+          const labelText = d.label;
+          const isSelected = isCadre ? (vs.cadreFilter === d.raw) : (vs.deptFilter === d.raw);
+          const escapedRaw = (d.raw || '').replace(/'/g, "\\'");
+
+          const groupClickHandler = isCadre
+            ? `FPCL_PSM_SUITE.setValidationFilter('cadreFilter', '${escapedRaw}')`
+            : `FPCL_PSM_SUITE.setValidationFilter('deptFilter', '${escapedRaw}')`;
+
+          const compPct = d.total > 0 ? ((d.trained / d.total) * 100).toFixed(0) : 0;
+          const labelY = baseY + 14;
+
+          const yTrainedVal = d.trained > 0 ? yTrained - 6 : baseY - 6;
+          const yUntrainedVal = d.untrained > 0 ? yUntrained - 6 : baseY - 6;
+          const highestValY = Math.min(yTrainedVal, yUntrainedVal);
+
+          return `
+            <g class="cursor-pointer group" onclick="${groupClickHandler}">
+              <title>${labelText}&#10;Total: ${d.total} Personnel&#10;Trained: ${d.trained} (${compPct}%)&#10;Require Training: ${d.untrained}</title>
+              
+              <!-- Hover column highlight -->
+              <rect x="${xStart - 5}" y="${pad.top}" width="${groupW + 10}" height="${chartH}" fill="#F8FAFC" rx="6" class="opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"/>
+
+              <!-- Trained Bar (Emerald) -->
+              ${d.trained > 0 ? `
+                <rect
+                  x="${xTrained}"
+                  y="${yTrained}"
+                  width="${subW}"
+                  height="${Math.max(trainedH, 3)}"
+                  fill="#10B981"
+                  rx="3"
+                  class="transition-all group-hover:fill-[#059669]"
+                />
+              ` : `
+                <rect x="${xTrained}" y="${baseY - 2}" width="${subW}" height="2" fill="#CBD5E1" rx="1"/>
+              `}
+
+              <!-- Require Training Bar (Amber) -->
+              ${d.untrained > 0 ? `
+                <rect
+                  x="${xUntrained}"
+                  y="${yUntrained}"
+                  width="${subW}"
+                  height="${Math.max(untrainedH, 3)}"
+                  fill="#F59E0B"
+                  rx="3"
+                  class="transition-all group-hover:fill-[#D97706]"
+                />
+              ` : `
+                <rect x="${xUntrained}" y="${baseY - 2}" width="${subW}" height="2" fill="#E2E8F0" rx="1"/>
+              `}
+
+              <!-- Value for Trained Bar (Emerald) -->
+              <text
+                x="${xTrained + subW / 2}"
+                y="${yTrainedVal}"
+                fill="${d.trained > 0 ? '#047857' : '#94A3B8'}"
+                font-size="11"
+                font-weight="900"
+                font-family="monospace"
+                text-anchor="middle"
+              >${d.trained}</text>
+
+              <!-- Value for Untrained Bar (Amber) -->
+              <text
+                x="${xUntrained + subW / 2}"
+                y="${yUntrainedVal}"
+                fill="${d.untrained > 0 ? '#B45309' : '#94A3B8'}"
+                font-size="11"
+                font-weight="900"
+                font-family="monospace"
+                text-anchor="middle"
+              >${d.untrained}</text>
+
+              <!-- Total indicator above pair -->
+              <text
+                x="${xCenter}"
+                y="${highestValY - 10}"
+                fill="#0F172A"
+                font-size="12"
+                font-weight="900"
+                font-family="monospace"
+                text-anchor="middle"
+              >${d.total}</text>
+
+              <line x1="${xCenter}" y1="${baseY}" x2="${xCenter}" y2="${baseY + 6}" stroke="#94A3B8" stroke-width="1.5"/>
+
+              <!-- X Axis Label -->
+              <text
+                x="${xCenter}"
+                y="${labelY}"
+                fill="${isSelected ? '#0D9488' : '#334155'}"
+                font-size="11.5"
+                font-weight="${isSelected ? '900' : '700'}"
+                font-family="'Plus Jakarta Sans', system-ui, sans-serif"
+                text-anchor="end"
+                transform="rotate(-45, ${xCenter}, ${labelY})"
+                class="group-hover:fill-teal-700 transition-colors"
+              >${labelText}<title>${labelText} (${d.total} Personnel)</title></text>
+            </g>
+          `;
+        }).join('');
+      } else if (vs.trendViewType === 'trend') {
+        const pointsTrained = [];
+        const pointsUntrained = [];
+        const pointsTotal = [];
+
+        items.forEach((d, i) => {
+          const cx = pad.left + i * step + step / 2;
+          const cyTrained = pad.top + chartH - (d.trained / maxVal) * chartH;
+          const cyUntrained = pad.top + chartH - (d.untrained / maxVal) * chartH;
+          const cyTotal = pad.top + chartH - (d.total / maxVal) * chartH;
+          pointsTrained.push({ x: cx, y: cyTrained, val: d.trained, d });
+          pointsUntrained.push({ x: cx, y: cyUntrained, val: d.untrained, d });
+          pointsTotal.push({ x: cx, y: cyTotal, val: d.total, d });
+        });
+
+        const lineTrainedPath = pointsTrained.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+        const lineUntrainedPath = pointsUntrained.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+        const lineTotalPath = pointsTotal.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+
+        contentSvg = `
+          <path d="${lineTotalPath}" fill="none" stroke="#64748B" stroke-width="2.5" stroke-dasharray="4 4" opacity="0.8"/>
+          <path d="${lineTrainedPath}" fill="none" stroke="#10B981" stroke-width="3.5"/>
+          <path d="${lineUntrainedPath}" fill="none" stroke="#F59E0B" stroke-width="3.5"/>
+
+          ${pointsTrained.map(p => `
+            <circle cx="${p.x}" cy="${p.y}" r="5" fill="#10B981" stroke="#FFFFFF" stroke-width="2"/>
+            <text x="${p.x}" y="${p.y - 10}" fill="#047857" font-size="11" font-weight="900" font-family="monospace" text-anchor="middle">${p.val}</text>
+          `).join('')}
+
+          ${pointsUntrained.map(p => `
+            <circle cx="${p.x}" cy="${p.y}" r="5" fill="#F59E0B" stroke="#FFFFFF" stroke-width="2"/>
+            <text x="${p.x}" y="${p.y - 10}" fill="#B45309" font-size="11" font-weight="900" font-family="monospace" text-anchor="middle">${p.val}</text>
+          `).join('')}
+
+          ${items.map((d, i) => {
+            const xCenter = pad.left + i * step + step / 2;
+            const labelY = baseY + 14;
+            return `
+              <line x1="${xCenter}" y1="${baseY}" x2="${xCenter}" y2="${baseY + 6}" stroke="#94A3B8" stroke-width="1.5"/>
+              <text
+                x="${xCenter}"
+                y="${labelY}"
+                fill="#334155"
+                font-size="11.5"
+                font-weight="700"
+                font-family="'Plus Jakarta Sans', system-ui, sans-serif"
+                text-anchor="end"
+                transform="rotate(-45, ${xCenter}, ${labelY})"
+              >${d.label}</text>
+            `;
+          }).join('')}
+        `;
+      } else {
+        // Stacked Bars mode
+        const groupW = Math.min(48, Math.max(26, step * 0.65));
+
+        contentSvg = items.map((d, i) => {
+          const xCenter = pad.left + i * step + step / 2;
+          const xStart = xCenter - groupW / 2;
+          const totalH = (d.total / maxVal) * chartH;
+          const trainedH = (d.trained / maxVal) * chartH;
+          const untrainedH = (d.untrained / maxVal) * chartH;
+
+          const yTrained = baseY - trainedH;
+          const yUntrained = yTrained - untrainedH;
+          const labelY = baseY + 14;
+
+          return `
+            <g class="cursor-pointer group">
+              <rect x="${xStart}" y="${yTrained}" width="${groupW}" height="${trainedH}" fill="#10B981" rx="${untrainedH > 0 ? '0 0 4 4' : '4'}"/>
+              <rect x="${xStart}" y="${yUntrained}" width="${groupW}" height="${untrainedH}" fill="#F59E0B" rx="${trainedH > 0 ? '4 4 0 0' : '4'}"/>
+              
+              <text x="${xCenter}" y="${yUntrained - 8}" fill="#0F172A" font-size="12" font-weight="900" font-family="monospace" text-anchor="middle">${d.total}</text>
+              
+              <line x1="${xCenter}" y1="${baseY}" x2="${xCenter}" y2="${baseY + 6}" stroke="#94A3B8" stroke-width="1.5"/>
+              <text
+                x="${xCenter}"
+                y="${labelY}"
+                fill="#334155"
+                font-size="11.5"
+                font-weight="700"
+                font-family="'Plus Jakarta Sans', system-ui, sans-serif"
+                text-anchor="end"
+                transform="rotate(-45, ${xCenter}, ${labelY})"
+              >${d.label}</text>
+            </g>
+          `;
+        }).join('');
+      }
+
+      return `
+        <svg viewBox="0 0 ${w} ${h}" class="w-full h-auto select-none overflow-visible">
+          ${gridSvg}
+          ${baselineSvg}
+          ${contentSvg}
         </svg>
       `;
     },
@@ -1925,8 +4125,13 @@
       return this._syncPromise;
     },
 
-    // Export current filtered findings to CSV file
+    // Export current filtered findings to CSV file (delegates to validation export when in validation tab)
     exportFilteredCSV() {
+      if (this.state.activeSubDashboard === 'validation') {
+        this.exportValidationCSV();
+        return;
+      }
+
       const data = this.getFilteredData();
       if (!data || data.length === 0) return;
 

@@ -74,7 +74,9 @@ export default async function handler(req: any, res: any) {
     // Resolve URL from environment variables if not provided in payload
     if (!url || typeof url !== 'string') {
       const sLower = (sheetTab || '').toLowerCase();
-      if ((sLower.includes('plr') || sLower.includes('status')) && process.env.PLR_STATUS_SHEET_URL) {
+      if (sLower.includes('validation') || sLower.includes('valid')) {
+        url = process.env.PSM_Validation_sheet_URL || process.env.PSM_VALIDATION_SHEET_URL || process.env.PSM_Validation_sheet || 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTyc0eRsaIpv3DWLdBbEplWo5FqrNwuCFpFrXM4_A6pRTkQgHz56DaN9FMV0cuCkQXnXfPDyKS_nsYC/pub?gid=1928323828&single=true&output=csv';
+      } else if ((sLower.includes('plr') || sLower.includes('status')) && process.env.PLR_STATUS_SHEET_URL) {
         url = process.env.PLR_STATUS_SHEET_URL;
       } else if (sLower.includes('psm') && process.env.PSM_SHEET_URL) {
         url = process.env.PSM_SHEET_URL;
