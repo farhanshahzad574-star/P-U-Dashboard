@@ -31,6 +31,10 @@ const DASHBOARD_CONTEXTS: Record<string, { name: string; context: string }> = {
   'sub-hse-psm': {
     name: 'PSM (Process Safety Management)',
     context: `PSM dashboard tracking Phase 1 internal audit findings and compliance actions across FPCL.`
+  },
+  'strategic': {
+    name: 'Strategic Dashboard',
+    context: `Strategic Dashboard tracking departmental performance frameworks & 2026 milestone roadmaps across 20 specialized units: Strategic Master, Admin & Security, Asset Integrity & IMS, Business Development, Civil, E&I, Finance, HSEQ, HCM, IMS, Information Technology, Inspection & Workshop Services, L&D, Machinery, Mechanical, Operations, Reliability, SCM, Technical, and Technical & HSE.`
   }
 };
 

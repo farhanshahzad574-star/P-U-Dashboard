@@ -97,6 +97,7 @@
       recSelectedEntity: 'all',
       recSelectedStatus: 'all',
       recSearchQuery: '',
+      recGroupingMode: 'grouped', // 'grouped' (unique PLR incident with all recommendations) or 'flat'
       recPage: 1,
       recPageSize: 15,
       // Visual & Interactive Data Modal State
@@ -1023,7 +1024,10 @@
           String(item.plrNo || '').toLowerCase().includes(q) ||
           String(item.recommendation || '').toLowerCase().includes(q) ||
           String(item.actionBy || '').toLowerCase().includes(q) ||
-          String(item.status || '').toLowerCase().includes(q);
+          String(item.status || '').toLowerCase().includes(q) ||
+          (parentPlr && String(parentPlr.incident || '').toLowerCase().includes(q)) ||
+          (parentPlr && String(parentPlr.machine || '').toLowerCase().includes(q)) ||
+          (parentPlr && String(parentPlr.dept || '').toLowerCase().includes(q));
         if (!match) return false;
       }
 
@@ -1668,13 +1672,6 @@
               <div id="plr-machine-donut-container" class="relative flex items-center justify-center py-2">
                 <!-- Rendered dynamically -->
               </div>
-
-              <!-- Quick Select Buttons (Non-scrollable, fully visible covering page area) -->
-              <div class="pt-3 border-t border-slate-100">
-                <div class="flex flex-wrap items-center gap-2" id="plr-machine-quick-select">
-                  <!-- Rendered dynamically -->
-                </div>
-              </div>
             </div>
 
             <!-- Right Card: OVERALL RECOMMENDATIONS RESOLUTION -->
@@ -1712,46 +1709,7 @@
               <div id="plr-resolution-pie-container" class="relative flex items-center justify-center py-2">
                 <!-- Rendered dynamically -->
               </div>
-
-              <!-- Resolution Metrics & Quick Actions (Non-scrollable, fully visible covering page area) -->
-              <div class="pt-3 border-t border-slate-100 space-y-3">
-                <!-- Closure Progress Bar with Darker Corporate Tones (Interactive) -->
-                <div class="w-full h-3.5 rounded-full bg-slate-100 overflow-hidden flex cursor-pointer shadow-inner" title="${resClosureRate}% Closed (${resClosedCount}), ${100 - resClosureRate}% Open (${resOpenCount}) - Click green for Closed records, red for Open records">
-                  <div data-plr-action="resolution-modal" data-status="Closed" class="h-full bg-[#047857] hover:brightness-110 transition-all" style="width: ${resClosureRate}%;" onclick="(window.portalApp || portalApp).openResolutionDataModal('Closed')"></div>
-                  <div data-plr-action="resolution-modal" data-status="Open" class="h-full bg-[#B91C1C] hover:brightness-110 transition-all" style="width: ${100 - resClosureRate}%;" onclick="(window.portalApp || portalApp).openResolutionDataModal('Open')"></div>
-                </div>
-                <!-- Action Buttons Filter & Inspect -->
-                <div class="flex flex-wrap items-center justify-between gap-2 pt-0.5">
-                  <div class="flex items-center gap-2">
-                    <button
-                      data-plr-action="resolution-modal"
-                      data-status="all"
-                      onclick="(window.portalApp || portalApp).openResolutionDataModal('all')"
-                      class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer border bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200 hover:border-slate-300"
-                    >
-                      All ${isIncidents ? 'Incidents' : 'Recommendations'} (${resTotalCount})
-                    </button>
-                    <button
-                      data-plr-action="resolution-modal"
-                      data-status="Closed"
-                      onclick="(window.portalApp || portalApp).openResolutionDataModal('Closed')"
-                      class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer border bg-emerald-50 hover:bg-emerald-100 text-[#047857] border-emerald-200"
-                    >
-                      Closed (${resClosedCount})
-                    </button>
-                  </div>
-                  <button
-                    data-plr-action="resolution-modal"
-                    data-status="Open"
-                    onclick="(window.portalApp || portalApp).openResolutionDataModal('Open')"
-                    class="px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 border shadow-xs bg-[#B91C1C] hover:bg-[#991B1B] text-white border-[#B91C1C]"
-                  >
-                    <i data-lucide="alert-circle" class="w-3.5 h-3.5"></i>
-                    <span>Inspect ${resOpenCount} Open ${isIncidents ? 'PLRs' : 'Recs'}</span>
-                    <i data-lucide="chevron-right" class="w-3 h-3"></i>
-                  </button>
-                </div>
-              </div>
+            </div>
 
             </div>
 
@@ -1823,16 +1781,57 @@
             <div id="plr-dept-bar-chart-container" class="w-full min-h-[285px]">
               <!-- Rendered dynamically -->
             </div>
+          </div>
 
-            <!-- Quick Filter & Explore Pills -->
-            <div class="pt-3 border-t border-slate-100">
-              <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">QUICK FILTER &amp; EXPLORE BY DEPT:</div>
-              <div class="flex flex-wrap items-center gap-2 text-xs" id="plr-dept-quick-filters">
-                <!-- Rendered dynamically -->
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- 5. PLANT RECORDS & OUTAGE LOG TABLE                                       -->
+        <!-- ========================================================================= -->
+        <div id="plr-table-section" class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-4">
+          <!-- Header with Navigation Tabs & Scope Summary -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+            <div class="flex items-center gap-3">
+              <div class="p-2 rounded-xl bg-blue-50 text-[#2E6DA4] border border-blue-100">
+                <i data-lucide="database" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h3 class="font-bold text-slate-900 text-sm sm:text-base">Plant Records &amp; Outage Log</h3>
+                <p class="text-xs text-slate-500">Master database of plant incidents and correlated corrective recommendations</p>
+              </div>
+            </div>
+
+            <!-- Tab Switchers -->
+            <div class="flex items-center gap-2">
+              <div class="inline-flex p-0.5 bg-slate-100 rounded-xl border border-slate-200 text-xs font-bold">
+                <button
+                  type="button"
+                  onclick="portalApp.setPlrTab('incidents')"
+                  class="px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${s.activeTab === 'incidents' ? 'bg-white text-[#2E6DA4] shadow-xs' : 'text-slate-600 hover:text-slate-900'}"
+                >
+                  <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
+                  <span>Incidents (${data.length})</span>
+                </button>
+                <button
+                  type="button"
+                  onclick="portalApp.setPlrTab('recommendations')"
+                  class="px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${s.activeTab === 'recommendations' ? 'bg-white text-emerald-700 shadow-xs' : 'text-slate-600 hover:text-slate-900'}"
+                >
+                  <i data-lucide="list-checks" class="w-3.5 h-3.5"></i>
+                  <span>Recommendations (${recs.length})</span>
+                </button>
               </div>
             </div>
           </div>
 
+          <!-- Dynamic Toolbar Container -->
+          <div id="plr-table-toolbar-container"></div>
+
+          <!-- Dynamic Table Body Container -->
+          <div id="plr-table-body-container" class="overflow-x-auto"></div>
+
+          <!-- Dynamic Pagination Container -->
+          <div id="plr-pagination-container" class="pt-3 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500"></div>
         </div>
 
         <!-- ========================================================================= -->
@@ -3308,7 +3307,7 @@
     `;
 
     // Table Content matching exact columns:
-    // S_NO | PLR # | YEAR | DATE | INCIDENT DESCRIPTION | MACHINE (COL G) | PRIORITY (COL H) | ACTION ENTITY (COL F) | STATUS (COL F) | VIEW
+    // S_NO | PLR # | YEAR | DATE | UNIQUE PLR INCIDENT DESCRIPTION & ALL RECOMMENDATIONS | MACHINE | PRIORITY | ACTION ENTITY | STATUS | VIEW
     tableBody.innerHTML = `
       <table class="w-full text-left text-xs sm:text-sm">
         <thead>
@@ -3317,11 +3316,11 @@
             <th class="py-3 px-3 w-24">PLR #</th>
             <th class="py-3 px-3 w-20">YEAR</th>
             <th class="py-3 px-3 w-28">DATE</th>
-            <th class="py-3 px-4 min-w-[320px]">INCIDENT DESCRIPTION</th>
-            <th class="py-3 px-3 w-32">MACHINE (COL G)</th>
-            <th class="py-3 px-3 w-24">PRIORITY (COL H)</th>
-            <th class="py-3 px-3 w-32">ACTION ENTITY (COL F)</th>
-            <th class="py-3 px-3 w-28">STATUS (COL F)</th>
+            <th class="py-3 px-4 min-w-[360px]">UNIQUE PLR INCIDENT DESCRIPTION &amp; ALL RECOMMENDATIONS</th>
+            <th class="py-3 px-3 w-28">MACHINE</th>
+            <th class="py-3 px-3 w-24">PRIORITY</th>
+            <th class="py-3 px-3 w-28">ACTION ENTITY</th>
+            <th class="py-3 px-3 w-28">STATUS</th>
             <th class="py-3 px-3 w-16 text-center">VIEW</th>
           </tr>
         </thead>
@@ -3338,28 +3337,102 @@
             const isHigh = (item.priority || '').toLowerCase() === 'high';
 
             return `
-              <tr class="hover:bg-slate-50/80 transition-colors">
-                <td class="py-3 px-3 font-mono text-center text-slate-500">${item.sNo}</td>
-                <td class="py-3 px-3 font-mono font-bold">
+              <tr class="hover:bg-slate-50/80 transition-colors align-top">
+                <td class="py-3.5 px-3 font-mono text-center text-slate-500">${item.sNo}</td>
+                <td class="py-3.5 px-3 font-mono font-bold">
                   <button
                     onclick="portalApp.openPlrInspectionModal(${item.plrNo})"
                     class="font-mono font-bold text-[#2E6DA4] hover:underline cursor-pointer flex items-center gap-1"
                     title="Inspect incident and ${recList.length} linked recommendations"
                   >
                     #${item.plrNo}
-                    ${recList.length > 0 ? `<span class="text-[10px] text-slate-500 font-normal">(${recList.length} recs)</span>` : ''}
                   </button>
+                  <span class="inline-block text-[10px] text-slate-500 font-normal">(${recList.length} recs)</span>
                 </td>
-                <td class="py-3 px-3 font-mono text-slate-600">${item.year}</td>
-                <td class="py-3 px-3 font-mono text-slate-600">${item.date}</td>
-                <td class="py-3 px-4 text-slate-800 text-xs leading-relaxed max-w-md">${item.incident}</td>
-                <td class="py-3 px-3">
+                <td class="py-3.5 px-3 font-mono text-slate-600">${item.year}</td>
+                <td class="py-3.5 px-3 font-mono text-slate-600">${item.date}</td>
+                <td class="py-3.5 px-4 text-slate-800 text-xs leading-relaxed max-w-xl">
+                  <!-- Unique PLR Incident Description -->
+                  <div class="font-semibold text-slate-900 text-xs sm:text-[13px] leading-relaxed mb-2">
+                    ${item.incident}
+                  </div>
+
+                  <!-- All Recommendations displayed directly with this unique incident description -->
+                  <div class="rounded-xl border border-slate-200/90 bg-slate-50/80 p-2.5 mt-2">
+                    <div class="flex items-center justify-between gap-2 pb-1.5 border-b border-slate-200/80">
+                      <div class="flex items-center gap-1.5">
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold ${
+                          recList.length > 0 ? 'bg-blue-100/90 text-[#2E6DA4] border border-blue-200' : 'bg-slate-200/70 text-slate-600'
+                        }">
+                          <i data-lucide="list-checks" class="w-3 h-3"></i>
+                          <span>All Recommendations (${recList.length})</span>
+                        </span>
+                        ${recList.length > 0 ? `
+                          <span class="text-[10px] font-mono font-semibold text-slate-500">
+                            <span class="text-rose-600 font-bold">${recList.filter(r => (r.status || '').toLowerCase() === 'open').length} Open</span> • 
+                            <span class="text-emerald-600 font-bold">${recList.filter(r => (r.status || '').toLowerCase() === 'closed').length} Closed</span>
+                          </span>
+                        ` : ''}
+                      </div>
+                      <button
+                        type="button"
+                        onclick="portalApp.openAddRecommendationModal(${item.plrNo})"
+                        class="text-[10px] font-bold text-[#2E6DA4] hover:text-blue-800 hover:underline flex items-center gap-1 cursor-pointer"
+                        title="Add recommendation to PLR #${item.plrNo}"
+                      >
+                        <i data-lucide="plus-circle" class="w-3 h-3"></i>
+                        <span>Add Rec</span>
+                      </button>
+                    </div>
+
+                    ${recList.length === 0 ? `
+                      <div class="pt-2 text-[11px] text-slate-400 italic">
+                        No corrective recommendations logged for this incident description.
+                      </div>
+                    ` : `
+                      <div class="space-y-1.5 pt-2">
+                        ${recList.map((rec, rIdx) => {
+                          const isRecOpen = (rec.status || '').toLowerCase() === 'open';
+                          return `
+                            <div class="p-2 rounded-lg bg-white border border-slate-200 shadow-2xs flex flex-col sm:flex-row sm:items-start justify-between gap-2 hover:border-slate-300 transition-colors">
+                              <div class="flex items-start gap-1.5 flex-1 min-w-0">
+                                <span class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-slate-100 text-slate-600 text-[10px] font-mono font-bold shrink-0 mt-0.5 border border-slate-200">
+                                  ${rIdx + 1}
+                                </span>
+                                <p class="text-slate-800 text-xs leading-relaxed break-words font-normal">${rec.recommendation}</p>
+                              </div>
+                              <div class="flex items-center gap-1.5 shrink-0 self-end sm:self-start pt-0.5">
+                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200" title="Action Entity">
+                                  ${rec.actionBy || 'General'}
+                                </span>
+                                <button
+                                  type="button"
+                                  onclick="portalApp.toggleRecommendationStatus(${rec.sNo})"
+                                  class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border transition-all cursor-pointer shadow-2xs hover:scale-105 ${
+                                    isRecOpen
+                                      ? 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100'
+                                      : 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+                                  }"
+                                  title="Click to toggle status: currently ${rec.status}"
+                                >
+                                  <span class="w-1.5 h-1.5 rounded-full ${isRecOpen ? 'bg-rose-500' : 'bg-emerald-500'}"></span>
+                                  <span>${rec.status || 'Open'}</span>
+                                </button>
+                              </div>
+                            </div>
+                          `;
+                        }).join('')}
+                      </div>
+                    `}
+                  </div>
+                </td>
+                <td class="py-3.5 px-3">
                   <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-800 border border-slate-200">
                     <i data-lucide="cpu" class="w-3 h-3 text-[#2E6DA4]"></i>
                     ${item.machine}
                   </span>
                 </td>
-                <td class="py-3 px-3">
+                <td class="py-3.5 px-3">
                   <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold ${
                     isHigh
                       ? 'bg-rose-50 text-rose-700 border border-rose-200'
@@ -3368,12 +3441,12 @@
                     ${item.priority || 'Low'}
                   </span>
                 </td>
-                <td class="py-3 px-3">
+                <td class="py-3.5 px-3">
                   <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
                     ${item.dept || 'KE'}
                   </span>
                 </td>
-                <td class="py-3 px-3">
+                <td class="py-3.5 px-3">
                   <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${
                     isOpen
                       ? 'bg-rose-50 text-rose-700 border-rose-200'
@@ -3383,7 +3456,7 @@
                     ${item.status}
                   </span>
                 </td>
-                <td class="py-3 px-3 text-center">
+                <td class="py-3.5 px-3 text-center">
                   <button
                     onclick="portalApp.openPlrInspectionModal(${item.plrNo})"
                     class="p-1.5 rounded-lg text-slate-500 hover:text-[#2E6DA4] hover:bg-blue-50 transition-colors cursor-pointer"
@@ -3441,6 +3514,7 @@
    */
   portalApp.renderRecommendationsTable = function (toolbar, tableBody, pagination) {
     const plrsMap = getPlrsMap();
+    const recsMap = getRecsMapByPlr();
     const s = getPlrState();
 
     const filtered = getFilteredPlrRecs();
@@ -3450,11 +3524,36 @@
     const rawOpenCount = rawAll.filter(r => (r.status || '').toLowerCase() === 'open').length;
     const rawClosedCount = totalRaw - rawOpenCount;
 
-    const totalFiltered = filtered.length;
+    // Build grouped mapping by unique PLR incident
+    const groupedMap = new Map();
+    filtered.forEach(rec => {
+      const key = String(rec.plrNo || '').trim().toUpperCase();
+      if (!groupedMap.has(key)) {
+        const parentPlr = plrsMap.get(key) || null;
+        groupedMap.set(key, {
+          plrNo: rec.plrNo,
+          parentPlr,
+          incident: parentPlr && parentPlr.incident ? parentPlr.incident : `PLR #${rec.plrNo} Incident Record`,
+          machine: parentPlr ? parentPlr.machine : '—',
+          dept: parentPlr ? parentPlr.dept : (rec.actionBy || '—'),
+          year: parentPlr ? parentPlr.year : (rec.year || '—'),
+          date: parentPlr ? parentPlr.date : (rec.date || '—'),
+          recs: []
+        });
+      }
+      groupedMap.get(key).recs.push(rec);
+    });
+
+    const groupedItems = Array.from(groupedMap.values());
+    const isGroupedView = (s.recGroupingMode !== 'flat');
+
+    const totalFiltered = isGroupedView ? groupedItems.length : filtered.length;
     const totalPages = Math.ceil(totalFiltered / s.recPageSize) || 1;
     if (s.recPage > totalPages) s.recPage = totalPages;
     const startIdx = (s.recPage - 1) * s.recPageSize;
-    const pageItems = filtered.slice(startIdx, startIdx + s.recPageSize);
+    const pageItems = isGroupedView
+      ? groupedItems.slice(startIdx, startIdx + s.recPageSize)
+      : filtered.slice(startIdx, startIdx + s.recPageSize);
 
     // Toolbar
     toolbar.innerHTML = `
@@ -3468,7 +3567,7 @@
             type="text"
             value="${s.recSearchQuery}"
             oninput="portalApp.searchRec(this.value)"
-            placeholder="Search recommendations, PLR #, entity, status.."
+            placeholder="Search incident descriptions, recommendations, PLR #.."
             class="w-full pl-9 pr-8 py-2 text-xs rounded-xl border border-slate-300 bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#2E6DA4] focus:ring-1 focus:ring-[#2E6DA4]"
           />
           ${s.recSearchQuery ? `
@@ -3478,23 +3577,49 @@
           ` : ''}
         </div>
 
-        <!-- Entity Filter & Status & Actions -->
-        <div class="flex flex-wrap items-center gap-2.5">
-          <div class="flex items-center gap-1.5 text-xs text-slate-700">
-            <span class="font-bold text-slate-500">ACTION ENTITY:</span>
+        <!-- View Switcher, Entity & Status Filters -->
+        <div class="flex flex-wrap items-center gap-2">
+          <!-- View Grouping Toggle -->
+          <div class="inline-flex p-0.5 bg-slate-100 rounded-lg border border-slate-200 text-xs font-bold">
+            <button
+              type="button"
+              onclick="portalApp.setRecGroupingMode('grouped')"
+              class="px-2.5 py-1 rounded transition-all cursor-pointer flex items-center gap-1 ${
+                isGroupedView ? 'bg-white text-[#2E6DA4] shadow-xs' : 'text-slate-600 hover:text-slate-900'
+              }"
+              title="Display each unique PLR incident with all its recommendations"
+            >
+              <i data-lucide="layers" class="w-3 h-3"></i>
+              <span>By Incident (${groupedItems.length})</span>
+            </button>
+            <button
+              type="button"
+              onclick="portalApp.setRecGroupingMode('flat')"
+              class="px-2.5 py-1 rounded transition-all cursor-pointer flex items-center gap-1 ${
+                !isGroupedView ? 'bg-white text-emerald-700 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+              }"
+              title="Individual itemized recommendations list"
+            >
+              <i data-lucide="list" class="w-3 h-3"></i>
+              <span>Itemized (${filtered.length})</span>
+            </button>
+          </div>
+
+          <div class="flex items-center gap-1 text-xs text-slate-700">
+            <span class="font-bold text-slate-500">ENTITY:</span>
             <select
               onchange="portalApp.filterRecByDeptDirect(this.value)"
-              class="text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#2E6DA4] cursor-pointer"
+              class="text-xs font-semibold px-2 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#2E6DA4] cursor-pointer"
             >
               ${renderActionEntitySelectOptions(s.recSelectedEntity)}
             </select>
           </div>
 
-          <div class="flex items-center gap-1.5 text-xs text-slate-700">
+          <div class="flex items-center gap-1 text-xs text-slate-700">
             <span class="font-bold text-slate-500">STATUS:</span>
             <select
               onchange="portalApp.filterRecByStatusDirect(this.value)"
-              class="text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#2E6DA4] cursor-pointer"
+              class="text-xs font-semibold px-2 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#2E6DA4] cursor-pointer"
             >
               <option value="all" ${s.recSelectedStatus === 'all' ? 'selected' : ''}>All (${totalRaw})</option>
               <option value="Closed" ${s.recSelectedStatus === 'Closed' ? 'selected' : ''}>Closed (${rawClosedCount})</option>
@@ -3509,129 +3634,300 @@
               title="Sync recommendations from Google Sheet Tab Recommendations"
             >
               <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-emerald-600"></i>
-              <span>Sync Sheet</span>
+              <span>Sync</span>
             </button>
           </div>
 
-          <span class="text-xs font-sans text-slate-500">Showing <strong class="text-slate-900">${totalFiltered}</strong> of ${totalRaw}</span>
+          <span class="text-xs font-sans text-slate-500">Showing <strong class="text-slate-900">${totalFiltered}</strong> ${isGroupedView ? 'incidents' : 'recs'}</span>
         </div>
       </div>
     `;
 
-    // Table Content with Reciprocal PLR Linking
-    tableBody.innerHTML = `
-      <table class="w-full text-left text-xs sm:text-sm">
-        <thead>
-          <tr class="border-b border-slate-200 bg-slate-50 text-xs font-black uppercase tracking-wider text-slate-600">
-            <th class="py-3 px-3 w-14 text-center">S_NO</th>
-            <th class="py-3 px-3 w-28">PLR # (COL B)</th>
-            <th class="py-3 px-3 w-20">YEAR</th>
-            <th class="py-3 px-3 w-28">DATE</th>
-            <th class="py-3 px-4 min-w-[340px]">
-              <div class="flex items-center gap-1.5">
-                <span>RECOMMENDATIONS (COL E)</span>
-                <span class="inline-block px-1.5 py-0.5 rounded text-[11px] font-mono font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">Tab: Recommendations</span>
-              </div>
-            </th>
-            <th class="py-3 px-3 w-36">ACTION ENTITY (COL F)</th>
-            <th class="py-3 px-3 w-32 text-center">STATUS (COL G)</th>
-            <th class="py-3 px-3 w-40">LINKED PLR INCIDENT</th>
-            <th class="py-3 px-3 w-24 text-center">ACTIONS</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-slate-100 font-medium">
-          ${pageItems.length === 0 ? `
-            <tr>
-              <td colspan="9" class="py-8 text-center text-slate-500">
-                No recommendations match the active filter criteria.
-              </td>
+    // Table Content
+    if (isGroupedView) {
+      // Grouped by unique PLR incident with all its recommendations
+      tableBody.innerHTML = `
+        <table class="w-full text-left text-xs sm:text-sm">
+          <thead>
+            <tr class="border-b border-slate-200 bg-slate-50 text-xs font-black uppercase tracking-wider text-slate-600">
+              <th class="py-3 px-3 w-20">PLR #</th>
+              <th class="py-3 px-3 w-16">YEAR</th>
+              <th class="py-3 px-3 w-24">DATE</th>
+              <th class="py-3 px-3 w-28">MACHINE</th>
+              <th class="py-3 px-4 min-w-[280px]">UNIQUE PLR INCIDENT DESCRIPTION</th>
+              <th class="py-3 px-4 min-w-[420px]">
+                <div class="flex items-center gap-1.5">
+                  <span>ALL RECOMMENDATIONS</span>
+                  <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">Tab: Recommendations</span>
+                </div>
+              </th>
+              <th class="py-3 px-3 w-28 text-center">SUMMARY</th>
+              <th class="py-3 px-3 w-20 text-center">ACTIONS</th>
             </tr>
-          ` : pageItems.map(item => {
-            const isOpen = (item.status || '').toLowerCase() === 'open';
-            const parentPlr = plrsMap.get(String(item.plrNo).toUpperCase());
-
-            return `
-              <tr class="hover:bg-slate-50/80 transition-colors">
-                <td class="py-3 px-3 font-mono text-center text-slate-500">${item.sNo}</td>
-                <td class="py-3 px-3 font-mono font-bold">
-                  <button
-                    onclick="portalApp.openPlrInspectionModal(${item.plrNo})"
-                    class="font-mono font-bold text-[#2E6DA4] hover:underline cursor-pointer flex items-center gap-1"
-                    title="Cross-reference PLR #${item.plrNo}"
-                  >
-                    #${item.plrNo}
-                  </button>
-                </td>
-                <td class="py-3 px-3 font-mono text-slate-600">${item.year || (parentPlr ? parentPlr.year : '—')}</td>
-                <td class="py-3 px-3 font-mono text-slate-600">${item.date || (parentPlr ? parentPlr.date : '—')}</td>
-                <td class="py-3 px-4 text-slate-800 text-xs leading-relaxed max-w-lg">${item.recommendation}</td>
-                <td class="py-3 px-3">
-                  <div class="flex flex-wrap gap-1">
-                    ${splitAndNormalizeActionEntities(item.actionBy).map(d => `
-                      <span
-                        onclick="portalApp.filterRecByDeptDirect('${d.replace(/'/g, "\\'")}', true)"
-                        class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-800 border border-slate-200 hover:bg-blue-50 hover:text-[#2E6DA4] hover:border-blue-300 transition-colors cursor-pointer"
-                        title="Filter by ${d}"
-                      >
-                        ${d}
-                      </span>
-                    `).join('')}
-                  </div>
-                </td>
-                <td class="py-3 px-3 text-center">
-                  <button
-                    onclick="portalApp.toggleRecommendationStatus(${item.sNo})"
-                    class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold border transition-all cursor-pointer shadow-2xs hover:scale-105 active:scale-95 ${
-                      isOpen
-                        ? 'bg-rose-50 text-rose-700 border-rose-300 hover:bg-rose-100'
-                        : 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100'
-                    }"
-                    title="Click to toggle status: currently ${item.status}. Click to change to ${isOpen ? 'Closed' : 'Open'}"
-                  >
-                    <i data-lucide="${isOpen ? 'alert-circle' : 'check-circle-2'}" class="w-3.5 h-3.5 ${isOpen ? 'text-rose-600' : 'text-emerald-600'}"></i>
-                    <span>${item.status}</span>
-                    <i data-lucide="refresh-cw" class="w-2.5 h-2.5 opacity-40 ml-0.5"></i>
-                  </button>
-                </td>
-                <td class="py-3 px-3 text-slate-600 text-xs truncate max-w-xs">
-                  ${parentPlr ? `
-                    <span class="inline-flex items-center gap-1 text-[11px] text-[#2E6DA4] hover:underline cursor-pointer" onclick="portalApp.openPlrInspectionModal(${item.plrNo})">
-                      <span class="font-bold font-mono">[${parentPlr.machine}]</span>
-                      <span class="truncate">${(parentPlr.incident || '').slice(0, 24)}...</span>
-                    </span>
-                  ` : '—'}
-                </td>
-                <td class="py-3 px-3 text-center">
-                  <div class="flex items-center justify-center gap-1">
-                    <button
-                      onclick="portalApp.openEditRecommendationModal(${item.sNo})"
-                      class="p-1.5 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
-                      title="Edit recommendation text, department, status"
-                    >
-                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
-                    </button>
-                    <button
-                      onclick="portalApp.deleteRecommendation(${item.sNo})"
-                      class="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
-                      title="Delete recommendation"
-                    >
-                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                    </button>
-                    <button
-                      onclick="portalApp.openPlrInspectionModal(${item.plrNo})"
-                      class="p-1.5 rounded-lg text-slate-500 hover:text-[#2E6DA4] hover:bg-blue-50 transition-colors cursor-pointer"
-                      title="View dual-sheet inspection modal"
-                    >
-                      <i data-lucide="eye" class="w-3.5 h-3.5"></i>
-                    </button>
-                  </div>
+          </thead>
+          <tbody class="divide-y divide-slate-100 font-medium">
+            ${pageItems.length === 0 ? `
+              <tr>
+                <td colspan="8" class="py-8 text-center text-slate-500">
+                  No incident records match the active criteria.
                 </td>
               </tr>
-            `;
-          }).join('')}
-        </tbody>
-      </table>
-    `;
+            ` : pageItems.map(group => {
+              const openCount = group.recs.filter(r => (r.status || '').toLowerCase() === 'open').length;
+              const closedCount = group.recs.length - openCount;
+
+              return `
+                <tr class="hover:bg-slate-50/80 transition-colors align-top">
+                  <td class="py-3.5 px-3 font-mono font-bold">
+                    <button
+                      onclick="portalApp.openPlrInspectionModal(${group.plrNo})"
+                      class="font-mono font-bold text-[#2E6DA4] hover:underline cursor-pointer flex items-center gap-1"
+                      title="Inspect PLR #${group.plrNo}"
+                    >
+                      #${group.plrNo}
+                    </button>
+                    <span class="text-[10px] text-slate-500 font-normal">(${group.recs.length} recs)</span>
+                  </td>
+                  <td class="py-3.5 px-3 font-mono text-slate-600">${group.year}</td>
+                  <td class="py-3.5 px-3 font-mono text-slate-600">${group.date}</td>
+                  <td class="py-3.5 px-3">
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-800 border border-slate-200">
+                      ${group.machine}
+                    </span>
+                  </td>
+                  <td class="py-3.5 px-4 text-slate-800 text-xs leading-relaxed max-w-sm">
+                    <div class="font-semibold text-slate-900 mb-1.5">
+                      ${group.incident}
+                    </div>
+                    <div class="text-[10px] text-slate-500 font-mono">
+                      Dept: <span class="font-semibold text-slate-700">${group.dept}</span>
+                    </div>
+                  </td>
+                  <td class="py-3.5 px-4">
+                    <div class="space-y-2 max-w-xl">
+                      ${group.recs.map((rec, rIdx) => {
+                        const isRecOpen = (rec.status || '').toLowerCase() === 'open';
+                        return `
+                          <div class="p-2.5 rounded-lg bg-white border border-slate-200 shadow-2xs hover:border-slate-300 transition-colors">
+                            <div class="flex items-start justify-between gap-2">
+                              <div class="flex items-start gap-1.5 flex-1 min-w-0">
+                                <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-blue-50 text-[#2E6DA4] text-[10px] font-mono font-bold shrink-0 mt-0.5 border border-blue-200">
+                                  #${rec.sNo || rIdx + 1}
+                                </span>
+                                <p class="text-slate-800 text-xs leading-relaxed break-words font-normal">${rec.recommendation}</p>
+                              </div>
+                            </div>
+                            <div class="flex items-center justify-between gap-2 mt-2 pt-1.5 border-t border-slate-100 text-[10px]">
+                              <div class="flex flex-wrap items-center gap-1">
+                                <span class="text-slate-400 font-semibold uppercase">Action:</span>
+                                ${splitAndNormalizeActionEntities(rec.actionBy).map(d => `
+                                  <span
+                                    onclick="portalApp.filterRecByDeptDirect('${d.replace(/'/g, "\\'")}', true)"
+                                    class="inline-flex items-center px-1.5 py-0.5 rounded font-bold bg-slate-100 text-slate-700 border border-slate-200 hover:bg-blue-50 hover:text-[#2E6DA4] cursor-pointer"
+                                    title="Filter by ${d}"
+                                  >
+                                    ${d}
+                                  </span>
+                                `).join('')}
+                              </div>
+                              <div class="flex items-center gap-1.5 shrink-0">
+                                <button
+                                  type="button"
+                                  onclick="portalApp.toggleRecommendationStatus(${rec.sNo})"
+                                  class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-bold border transition-all cursor-pointer shadow-2xs hover:scale-105 ${
+                                    isRecOpen
+                                      ? 'bg-rose-50 text-rose-700 border-rose-300 hover:bg-rose-100'
+                                      : 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100'
+                                  }"
+                                  title="Click to toggle status: currently ${rec.status}"
+                                >
+                                  <span class="w-1.5 h-1.5 rounded-full ${isRecOpen ? 'bg-rose-500' : 'bg-emerald-500'}"></span>
+                                  <span>${rec.status}</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onclick="portalApp.openEditRecommendationModal(${rec.sNo})"
+                                  class="p-1 rounded text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+                                  title="Edit recommendation"
+                                >
+                                  <i data-lucide="pencil" class="w-3 h-3"></i>
+                                </button>
+                                <button
+                                  type="button"
+                                  onclick="portalApp.deleteRecommendation(${rec.sNo})"
+                                  class="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                                  title="Delete recommendation"
+                                >
+                                  <i data-lucide="trash-2" class="w-3 h-3"></i>
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        `;
+                      }).join('')}
+                    </div>
+                  </td>
+                  <td class="py-3.5 px-3 text-center">
+                    <div class="inline-flex flex-col gap-1 items-center">
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold ${
+                        openCount > 0 ? 'bg-rose-50 text-rose-700 border border-rose-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                      }">
+                        ${openCount > 0 ? `${openCount} Open` : 'All Closed'}
+                      </span>
+                      <span class="text-[10px] font-mono text-slate-500">
+                        ${closedCount} Closed
+                      </span>
+                    </div>
+                  </td>
+                  <td class="py-3.5 px-3 text-center">
+                    <div class="flex items-center justify-center gap-1">
+                      <button
+                        onclick="portalApp.openAddRecommendationModal(${group.plrNo})"
+                        class="p-1.5 rounded-lg text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 transition-colors cursor-pointer"
+                        title="Add new recommendation to PLR #${group.plrNo}"
+                      >
+                        <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                      </button>
+                      <button
+                        onclick="portalApp.openPlrInspectionModal(${group.plrNo})"
+                        class="p-1.5 rounded-lg text-slate-500 hover:text-[#2E6DA4] hover:bg-blue-50 transition-colors cursor-pointer"
+                        title="Inspect dual-sheet details"
+                      >
+                        <i data-lucide="eye" class="w-4 h-4"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      `;
+    } else {
+      // Flat itemized view with full linked incident description
+      tableBody.innerHTML = `
+        <table class="w-full text-left text-xs sm:text-sm">
+          <thead>
+            <tr class="border-b border-slate-200 bg-slate-50 text-xs font-black uppercase tracking-wider text-slate-600">
+              <th class="py-3 px-3 w-14 text-center">S_NO</th>
+              <th class="py-3 px-3 w-28">PLR # (COL B)</th>
+              <th class="py-3 px-3 w-20">YEAR</th>
+              <th class="py-3 px-3 w-28">DATE</th>
+              <th class="py-3 px-4 min-w-[260px]">UNIQUE PLR INCIDENT DESCRIPTION</th>
+              <th class="py-3 px-4 min-w-[340px]">
+                <div class="flex items-center gap-1.5">
+                  <span>RECOMMENDATIONS (COL E)</span>
+                  <span class="inline-block px-1.5 py-0.5 rounded text-[11px] font-mono font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">Tab: Recommendations</span>
+                </div>
+              </th>
+              <th class="py-3 px-3 w-36">ACTION ENTITY (COL F)</th>
+              <th class="py-3 px-3 w-32 text-center">STATUS (COL G)</th>
+              <th class="py-3 px-3 w-24 text-center">ACTIONS</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 font-medium">
+            ${pageItems.length === 0 ? `
+              <tr>
+                <td colspan="9" class="py-8 text-center text-slate-500">
+                  No recommendations match the active filter criteria.
+                </td>
+              </tr>
+            ` : pageItems.map(item => {
+              const isOpen = (item.status || '').toLowerCase() === 'open';
+              const parentPlr = plrsMap.get(String(item.plrNo).toUpperCase());
+              const sisterRecs = (recsMap.get(String(item.plrNo).toUpperCase()) || []).filter(r => r.sNo !== item.sNo);
+
+              return `
+                <tr class="hover:bg-slate-50/80 transition-colors align-top">
+                  <td class="py-3 px-3 font-mono text-center text-slate-500">${item.sNo}</td>
+                  <td class="py-3 px-3 font-mono font-bold">
+                    <button
+                      onclick="portalApp.openPlrInspectionModal(${item.plrNo})"
+                      class="font-mono font-bold text-[#2E6DA4] hover:underline cursor-pointer flex items-center gap-1"
+                      title="Cross-reference PLR #${item.plrNo}"
+                    >
+                      #${item.plrNo}
+                    </button>
+                  </td>
+                  <td class="py-3 px-3 font-mono text-slate-600">${item.year || (parentPlr ? parentPlr.year : '—')}</td>
+                  <td class="py-3 px-3 font-mono text-slate-600">${item.date || (parentPlr ? parentPlr.date : '—')}</td>
+                  <td class="py-3 px-4 text-slate-800 text-xs leading-relaxed max-w-sm">
+                    ${parentPlr ? `
+                      <div class="font-semibold text-slate-900 mb-1">
+                        ${parentPlr.incident}
+                      </div>
+                      <div class="text-[10px] text-slate-500 flex items-center gap-1 font-mono">
+                        <span class="font-bold text-[#2E6DA4]">[${parentPlr.machine}]</span>
+                        <span>• Dept: ${parentPlr.dept}</span>
+                      </div>
+                      ${sisterRecs.length > 0 ? `
+                        <div class="mt-1 text-[10px] text-blue-700 bg-blue-50/80 rounded px-1.5 py-0.5 border border-blue-200 inline-block font-sans">
+                          + ${sisterRecs.length} other rec${sisterRecs.length > 1 ? 's' : ''} for this incident
+                        </div>
+                      ` : ''}
+                    ` : '—'}
+                  </td>
+                  <td class="py-3 px-4 text-slate-800 text-xs leading-relaxed max-w-lg">${item.recommendation}</td>
+                  <td class="py-3 px-3">
+                    <div class="flex flex-wrap gap-1">
+                      ${splitAndNormalizeActionEntities(item.actionBy).map(d => `
+                        <span
+                          onclick="portalApp.filterRecByDeptDirect('${d.replace(/'/g, "\\'")}', true)"
+                          class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-800 border border-slate-200 hover:bg-blue-50 hover:text-[#2E6DA4] hover:border-blue-300 transition-colors cursor-pointer"
+                          title="Filter by ${d}"
+                        >
+                          ${d}
+                        </span>
+                      `).join('')}
+                    </div>
+                  </td>
+                  <td class="py-3 px-3 text-center">
+                    <button
+                      onclick="portalApp.toggleRecommendationStatus(${item.sNo})"
+                      class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold border transition-all cursor-pointer shadow-2xs hover:scale-105 active:scale-95 ${
+                        isOpen
+                          ? 'bg-rose-50 text-rose-700 border-rose-300 hover:bg-rose-100'
+                          : 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100'
+                      }"
+                      title="Click to toggle status: currently ${item.status}. Click to change to ${isOpen ? 'Closed' : 'Open'}"
+                    >
+                      <i data-lucide="${isOpen ? 'alert-circle' : 'check-circle-2'}" class="w-3.5 h-3.5 ${isOpen ? 'text-rose-600' : 'text-emerald-600'}"></i>
+                      <span>${item.status}</span>
+                      <i data-lucide="refresh-cw" class="w-2.5 h-2.5 opacity-40 ml-0.5"></i>
+                    </button>
+                  </td>
+                  <td class="py-3 px-3 text-center">
+                    <div class="flex items-center justify-center gap-1">
+                      <button
+                        onclick="portalApp.openEditRecommendationModal(${item.sNo})"
+                        class="p-1.5 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+                        title="Edit recommendation text, department, status"
+                      >
+                        <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                      </button>
+                      <button
+                        onclick="portalApp.deleteRecommendation(${item.sNo})"
+                        class="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                        title="Delete recommendation"
+                      >
+                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                      </button>
+                      <button
+                        onclick="portalApp.openPlrInspectionModal(${item.plrNo})"
+                        class="p-1.5 rounded-lg text-slate-500 hover:text-[#2E6DA4] hover:bg-blue-50 transition-colors cursor-pointer"
+                        title="View dual-sheet inspection modal"
+                      >
+                        <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      `;
+    }
 
     // Pagination
     if (pagination) {
@@ -4947,6 +5243,13 @@
     portalApp.renderTableSection();
   };
 
+  portalApp.setRecGroupingMode = function (mode) {
+    const s = getPlrState();
+    s.recGroupingMode = mode;
+    s.recPage = 1;
+    portalApp.renderTableSection();
+  };
+
   portalApp.resetPlrFilters = function () {
     window.portalApp.state.plrState = getDefaultPlrState();
     portalApp.renderPlrSuite();
@@ -4957,19 +5260,25 @@
 
   portalApp.exportPlrCSV = function () {
     const s = getPlrState();
+    const recsMap = getRecsMapByPlr();
+    const plrsMap = getPlrsMap();
     let csv = '';
     let filename = 'FPCL_PLR_Export.csv';
 
     if (s.activeTab === 'incidents') {
       const data = getPlrData();
-      csv = 'S_NO,PLR_NO,YEAR,DATE,INCIDENT,MACHINE,PRIORITY,ACTION_ENTITY,STATUS\n';
+      csv = 'S_NO,PLR_NO,YEAR,DATE,INCIDENT,ALL_RECOMMENDATIONS,RECOMMENDATION_COUNT,MACHINE,PRIORITY,ACTION_ENTITY,STATUS\n';
       data.forEach(d => {
+        const recList = recsMap.get(String(d.plrNo).toUpperCase()) || [];
+        const recsText = recList.map((r, i) => `[${i + 1}] (${r.status}) ${r.recommendation} [${r.actionBy || 'General'}]`).join(' | ');
         const row = [
           d.sNo,
           d.plrNo,
           d.year,
           `"${(d.date || '').replace(/"/g, '""')}"`,
           `"${(d.incident || '').replace(/"/g, '""')}"`,
+          `"${recsText.replace(/"/g, '""')}"`,
+          recList.length,
           `"${(d.machine || '').replace(/"/g, '""')}"`,
           `"${(d.priority || '').replace(/"/g, '""')}"`,
           `"${(d.dept || '').replace(/"/g, '""')}"`,
@@ -4977,23 +5286,25 @@
         ];
         csv += row.join(',') + '\n';
       });
-      filename = 'FPCL_PLR_Incidents_233.csv';
+      filename = 'FPCL_PLR_Incidents_with_Recommendations.csv';
     } else {
       const data = getPlrRecs();
-      csv = 'S_NO,PLR_NO,YEAR,DATE,RECOMMENDATION,ACTION_ENTITY,STATUS\n';
+      csv = 'S_NO,PLR_NO,YEAR,DATE,UNIQUE_PLR_INCIDENT_DESCRIPTION,RECOMMENDATION,ACTION_ENTITY,STATUS\n';
       data.forEach(d => {
+        const parentPlr = plrsMap.get(String(d.plrNo).toUpperCase());
         const row = [
           d.sNo,
           d.plrNo,
           d.year,
           `"${(d.date || '').replace(/"/g, '""')}"`,
+          `"${((parentPlr && parentPlr.incident) || '').replace(/"/g, '""')}"`,
           `"${(d.recommendation || '').replace(/"/g, '""')}"`,
           `"${(d.actionBy || '').replace(/"/g, '""')}"`,
           d.status
         ];
         csv += row.join(',') + '\n';
       });
-      filename = 'FPCL_PLR_Recommendations_534.csv';
+      filename = 'FPCL_PLR_Recommendations_with_Incidents.csv';
     }
 
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });

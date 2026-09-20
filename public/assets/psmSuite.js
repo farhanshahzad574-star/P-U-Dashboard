@@ -1995,45 +1995,279 @@
                 </div>
               </div>
 
-              <!-- Donut SVG & Legend -->
-              <div class="py-2">
+              <!-- Enlarged Donut SVG Container -->
+              <div class="py-2 flex-1 flex items-center justify-center">
                 ${this.renderBreakdownDonut(filtered)}
-              </div>
-
-              <!-- Bottom Compliance Ratio Bar -->
-              <div
-                class="pt-3 border-t border-slate-100 space-y-1.5 cursor-pointer group"
-                onclick="FPCL_PSM_SUITE.openDataModal({ title: 'Compliance & Resolution Ratio', badge: 'Compliance Bar', subtitle: '${closurePercentage}% resolved (${closedCount} closed, ${openCount} open of ${totalFiltered} in scope)' })"
-                onmouseenter="FPCL_PSM_SUITE.showTooltip(event, { title: 'Compliance Ratio', badge: 'Resolution', color: '#0D9488', subtitle: 'Audit Progress Distribution', metrics: [{ label: 'Resolved Rate', value: '${closurePercentage}%', color: '#10B981' }, { label: 'Closed Findings', value: '${closedCount}', color: '#10B981' }, { label: 'Open Findings', value: '${openCount}', color: '#F43F5E' }, { label: 'Total In Scope', value: '${totalFiltered}' }], hint: 'Click bar to explore detailed audit records' })"
-                onmousemove="FPCL_PSM_SUITE.moveTooltip(event)"
-                onmouseleave="FPCL_PSM_SUITE.hideTooltip()"
-              >
-                <div class="flex items-center justify-between text-xs font-bold">
-                  <span class="text-slate-600 group-hover:text-teal-700 transition-colors">Compliance Ratio</span>
-                  <span class="text-teal-700 font-mono font-black">${closurePercentage}% Closure</span>
-                </div>
-                <div class="w-full bg-slate-100 h-3 rounded-full overflow-hidden flex shadow-inner">
-                  <div
-                    class="bg-emerald-500 hover:bg-emerald-600 h-3 transition-colors cursor-pointer"
-                    style="width: ${closurePercentage}%;"
-                    title="Click to view Closed findings: ${closedCount}"
-                    onclick="event.stopPropagation(); FPCL_PSM_SUITE.openDataModal({ title: 'Closed Audit Findings', badge: 'Resolved', subtitle: '${closedCount} closed audit findings', filterStatus: 'Close' })"
-                  ></div>
-                  <div
-                    class="bg-rose-500 hover:bg-rose-600 h-3 transition-colors cursor-pointer"
-                    style="width: ${openPercentage}%;"
-                    title="Click to view Open findings: ${openCount}"
-                    onclick="event.stopPropagation(); FPCL_PSM_SUITE.openDataModal({ title: 'Open Audit Findings', badge: 'Active Open', subtitle: '${openCount} open audit findings requiring resolution', filterStatus: 'Open' })"
-                  ></div>
-                </div>
-                <div class="flex items-center justify-between text-[10px] font-mono font-bold text-slate-500">
-                  <span class="text-emerald-700 hover:underline cursor-pointer" onclick="event.stopPropagation(); FPCL_PSM_SUITE.openDataModal({ title: 'Closed Findings', badge: 'Resolved', filterStatus: 'Close' })">${closedCount} Closed</span>
-                  <span class="text-rose-700 hover:underline cursor-pointer" onclick="event.stopPropagation(); FPCL_PSM_SUITE.openDataModal({ title: 'Open Findings', badge: 'Active Open', filterStatus: 'Open' })">${openCount} Open</span>
-                </div>
               </div>
 
             </div>
 
+          </div>
+
+          <!-- ========================================================================= -->
+          <!-- 6. AUDIT FINDINGS & OBSERVATIONS MASTER LOGS TABLE                         -->
+          <!-- ========================================================================= -->
+          <div id="psm-records-table-container" class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs space-y-4">
+            <!-- Header & Toolbar -->
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-3 border-b border-slate-100">
+              <div class="flex items-center gap-3">
+                <div class="p-2 rounded-xl bg-teal-50 text-teal-700 border border-teal-200">
+                  <i data-lucide="clipboard-list" class="w-5 h-5"></i>
+                </div>
+                <div>
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <h3 class="text-sm sm:text-base font-black tracking-tight text-slate-900 uppercase">Audit Findings &amp; Observations Master Log</h3>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-teal-50 text-teal-800 border border-teal-200">
+                      ${totalFiltered} In Scope
+                    </span>
+                  </div>
+                  <p class="text-xs text-slate-500 mt-0.5">
+                    Line-item observations, severity levels, action departments, and resolution tracking
+                  </p>
+                </div>
+              </div>
+
+              <!-- Toolbar Controls -->
+              <div class="flex flex-wrap items-center gap-2.5">
+                <!-- Search Box -->
+                <div class="relative flex-1 min-w-[180px] max-w-xs">
+                  <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-slate-400">
+                    <i data-lucide="search" class="w-3.5 h-3.5"></i>
+                  </div>
+                  <input
+                    id="psm-search-input"
+                    type="text"
+                    value="${s.searchQuery}"
+                    oninput="FPCL_PSM_SUITE.setSearchQuery(this.value)"
+                    placeholder="Search findings, obs #, dept.."
+                    class="w-full pl-8 pr-7 py-1.5 text-xs rounded-xl border border-slate-300 bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-teal-500 font-medium"
+                  />
+                  ${s.searchQuery ? `
+                    <button onclick="FPCL_PSM_SUITE.clearSearch()" class="absolute inset-y-0 right-0 pr-2 flex items-center text-slate-400 hover:text-slate-700 cursor-pointer">
+                      <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                    </button>
+                  ` : ''}
+                </div>
+
+                <!-- Dept Quick Filter -->
+                <div class="flex items-center gap-1 text-xs text-slate-700">
+                  <span class="font-bold text-slate-500 uppercase text-[11px]">DEPT:</span>
+                  <select
+                    onchange="FPCL_PSM_SUITE.setDeptFilter(this.value)"
+                    class="text-xs font-semibold px-2 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-800 focus:outline-none focus:ring-1 focus:ring-teal-500 cursor-pointer"
+                  >
+                    <option value="all" ${s.deptFilter === 'all' ? 'selected' : ''}>All</option>
+                    ${allDepts.map(d => `<option value="${d}" ${s.deptFilter === d ? 'selected' : ''}>${d}</option>`).join('')}
+                  </select>
+                </div>
+
+                <!-- Status Quick Filter -->
+                <div class="flex items-center gap-1 text-xs text-slate-700">
+                  <span class="font-bold text-slate-500 uppercase text-[11px]">STATUS:</span>
+                  <select
+                    onchange="FPCL_PSM_SUITE.setStatusFilter(this.value)"
+                    class="text-xs font-semibold px-2 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-800 focus:outline-none focus:ring-1 focus:ring-teal-500 cursor-pointer"
+                  >
+                    <option value="all" ${s.statusFilter === 'all' ? 'selected' : ''}>All</option>
+                    <option value="Open" ${s.statusFilter === 'Open' ? 'selected' : ''}>Open (${openCount})</option>
+                    <option value="Close" ${s.statusFilter === 'Close' ? 'selected' : ''}>Close (${closedCount})</option>
+                  </select>
+                </div>
+
+                <!-- Page Size Selector -->
+                <div class="flex items-center gap-1 text-xs text-slate-700">
+                  <span class="font-bold text-slate-500 uppercase text-[11px]">SHOW:</span>
+                  <select
+                    onchange="FPCL_PSM_SUITE.setPageSize(this.value)"
+                    class="text-xs font-semibold px-2 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-800 focus:outline-none focus:ring-1 focus:ring-teal-500 cursor-pointer font-mono"
+                  >
+                    <option value="10" ${s.pageSize === 10 || s.pageSize === '10' ? 'selected' : ''}>10</option>
+                    <option value="15" ${s.pageSize === 15 || s.pageSize === '15' ? 'selected' : ''}>15</option>
+                    <option value="25" ${s.pageSize === 25 || s.pageSize === '25' ? 'selected' : ''}>25</option>
+                    <option value="50" ${s.pageSize === 50 || s.pageSize === '50' ? 'selected' : ''}>50</option>
+                    <option value="all" ${s.pageSize === 'all' ? 'selected' : ''}>All</option>
+                  </select>
+                </div>
+
+                <!-- Export CSV Button -->
+                <button
+                  type="button"
+                  onclick="FPCL_PSM_SUITE.exportAuditsCSV()"
+                  class="px-2.5 py-1.5 rounded-lg text-xs font-bold text-teal-800 bg-teal-50 hover:bg-teal-100 border border-teal-200 flex items-center gap-1.5 cursor-pointer shadow-2xs transition-colors shrink-0"
+                  title="Export filtered audit findings to CSV"
+                >
+                  <i data-lucide="download" class="w-3.5 h-3.5 text-teal-600"></i>
+                  <span>Export CSV</span>
+                </button>
+
+                <!-- Reset Button -->
+                ${(s.statusFilter !== 'all' || s.deptFilter !== 'all' || s.unitFilter !== 'all' || s.elementFilter !== 'all' || s.natureFilter !== 'all' || s.auditFilter !== 'all' || s.searchQuery) ? `
+                  <button
+                    type="button"
+                    onclick="FPCL_PSM_SUITE.resetAllFilters()"
+                    class="px-2.5 py-1.5 rounded-lg text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 flex items-center gap-1 cursor-pointer shadow-2xs transition-colors shrink-0"
+                    title="Reset all filters"
+                  >
+                    <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                    <span>Reset</span>
+                  </button>
+                ` : ''}
+              </div>
+            </div>
+
+            <!-- Responsive Findings Table -->
+            <div class="overflow-x-auto rounded-xl border border-slate-200">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-600 uppercase tracking-wider select-none">
+                    <th class="py-3 px-3 w-12 text-center">Sr.</th>
+                    <th class="py-3 px-3 w-28">Obs #</th>
+                    <th class="py-3 px-3 w-28">Audit #</th>
+                    <th class="py-3 px-3 w-32">PSM Element</th>
+                    <th class="py-3 px-3 w-32">Auditee Dept</th>
+                    <th class="py-3 px-4 min-w-[300px]">Observation &amp; Findings Description</th>
+                    <th class="py-3 px-3 w-32">Action Dept</th>
+                    <th class="py-3 px-3 w-24">Severity</th>
+                    <th class="py-3 px-3 text-center w-28">Status</th>
+                    <th class="py-3 px-3 min-w-[150px]">Remarks</th>
+                    <th class="py-3 px-3 text-center w-16">Inspect</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
+                  ${pageItems.length === 0 ? `
+                    <tr>
+                      <td colspan="11" class="py-12 text-center text-slate-400">
+                        <i data-lucide="inbox" class="w-8 h-8 mx-auto mb-2 text-slate-300"></i>
+                        <p class="font-semibold text-sm text-slate-700">No audit findings found</p>
+                        <p class="text-xs mt-1">Try adjusting your search query or filter criteria.</p>
+                        <button
+                          type="button"
+                          onclick="FPCL_PSM_SUITE.resetAllFilters()"
+                          class="mt-3 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-teal-50 text-teal-700 border border-teal-200 font-bold hover:bg-teal-100 cursor-pointer"
+                        >
+                          Reset Filters
+                        </button>
+                      </td>
+                    </tr>
+                  ` : pageItems.map((item, idx) => {
+                    const rowNum = startIndex + idx + 1;
+                    const isClose = (item.status || '').toLowerCase() === 'close';
+                    return `
+                      <tr
+                        onclick="FPCL_PSM_SUITE.inspectFinding('${item.observationNo}')"
+                        class="hover:bg-teal-50/40 transition-colors cursor-pointer group"
+                      >
+                        <td class="py-3 px-3 text-center font-mono text-slate-400 font-bold text-[11px]">${rowNum}</td>
+                        <td class="py-3 px-3 font-mono font-bold text-teal-700 whitespace-nowrap">
+                          <button
+                            type="button"
+                            onclick="event.stopPropagation(); FPCL_PSM_SUITE.inspectFinding('${item.observationNo}')"
+                            class="hover:underline font-mono font-bold text-left cursor-pointer"
+                            title="Inspect observation"
+                          >
+                            ${item.observationNo || '-'}
+                          </button>
+                        </td>
+                        <td class="py-3 px-3 font-mono text-slate-600 text-[11px] whitespace-nowrap">${item.auditNo || '-'}</td>
+                        <td class="py-3 px-3 whitespace-nowrap">
+                          <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold ${this.getElementBadgeStyle(item.psmElement)}">
+                            ${item.psmElement || 'General'}
+                          </span>
+                        </td>
+                        <td class="py-3 px-3 whitespace-nowrap">
+                          <span class="font-semibold text-slate-800">${item.auditeeDepartment || '-'}</span>
+                          ${item.auditeeUnit ? `<span class="block text-[10px] text-slate-400 font-mono">${item.auditeeUnit}</span>` : ''}
+                        </td>
+                        <td class="py-3 px-4 text-slate-800 text-xs leading-relaxed max-w-md">
+                          <div class="line-clamp-2" title="${(item.finding || '').replace(/"/g, '&quot;')}">
+                            ${item.finding || '—'}
+                          </div>
+                        </td>
+                        <td class="py-3 px-3 whitespace-nowrap">
+                          <span class="font-bold text-slate-900 group-hover:text-teal-700 transition-colors">${item.actionDepartment || 'Unassigned'}</span>
+                          ${item.actionUnit ? `<span class="block text-[10px] text-slate-400 font-mono">${item.actionUnit}</span>` : ''}
+                        </td>
+                        <td class="py-3 px-3 whitespace-nowrap">
+                          <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                            ${item.nature || 'Minor'}
+                          </span>
+                        </td>
+                        <td class="py-3 px-3 text-center whitespace-nowrap">
+                          <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${
+                            isClose
+                              ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                              : 'bg-rose-50 text-rose-800 border-rose-300'
+                          }">
+                            <span class="w-1.5 h-1.5 rounded-full ${isClose ? 'bg-emerald-500' : 'bg-rose-500'}"></span>
+                            ${item.status}
+                          </span>
+                        </td>
+                        <td class="py-3 px-3 text-[11px] text-slate-500 max-w-xs truncate" title="${(item.actionRemarks || item.hseqRemarks || '').replace(/"/g, '&quot;')}">
+                          ${item.actionRemarks || item.hseqRemarks || '—'}
+                        </td>
+                        <td class="py-3 px-3 text-center">
+                          <button
+                            type="button"
+                            onclick="event.stopPropagation(); FPCL_PSM_SUITE.inspectFinding('${item.observationNo}');"
+                            class="p-1.5 rounded-lg text-slate-400 hover:text-teal-700 hover:bg-teal-100 transition-colors cursor-pointer"
+                            title="View Full Observation Details"
+                          >
+                            <i data-lucide="eye" class="w-4 h-4"></i>
+                          </button>
+                        </td>
+                      </tr>
+                    `;
+                  }).join('')}
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Pagination Footer -->
+            <div class="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-slate-500">
+              <div class="font-medium">
+                Showing <strong>${pageItems.length > 0 ? startIndex + 1 : 0}</strong> to <strong>${Math.min(startIndex + pageSize, totalFiltered)}</strong> of <strong>${totalFiltered}</strong> audit observations
+              </div>
+
+              ${totalPages > 1 ? `
+                <div class="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    ${currentPage <= 1 ? 'disabled' : ''}
+                    onclick="FPCL_PSM_SUITE.setPage(1)"
+                    class="px-2.5 py-1.5 rounded-lg border border-slate-200 font-bold hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                  >
+                    First
+                  </button>
+                  <button
+                    type="button"
+                    ${currentPage <= 1 ? 'disabled' : ''}
+                    onclick="FPCL_PSM_SUITE.setPage(${currentPage - 1})"
+                    class="px-2.5 py-1.5 rounded-lg border border-slate-200 font-bold hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                  >
+                    Prev
+                  </button>
+                  <span class="px-3 py-1 font-mono font-bold text-teal-700 bg-teal-50 rounded-lg border border-teal-200">
+                    Page ${currentPage} of ${totalPages}
+                  </span>
+                  <button
+                    type="button"
+                    ${currentPage >= totalPages ? 'disabled' : ''}
+                    onclick="FPCL_PSM_SUITE.setPage(${currentPage + 1})"
+                    class="px-2.5 py-1.5 rounded-lg border border-slate-200 font-bold hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                  >
+                    Next
+                  </button>
+                  <button
+                    type="button"
+                    ${currentPage >= totalPages ? 'disabled' : ''}
+                    onclick="FPCL_PSM_SUITE.setPage(${totalPages})"
+                    class="px-2.5 py-1.5 rounded-lg border border-slate-200 font-bold hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                  >
+                    Last
+                  </button>
+                </div>
+              ` : ''}
+            </div>
           </div>
         `;
       }
@@ -3244,14 +3478,14 @@
       const items = isElement ? this.getElementAggregation(filteredData) : this.getSeverityAggregation(filteredData);
       
       if (items.length === 0) {
-        return `<div class="text-center py-8 text-xs text-slate-400 font-medium">No records available in current scope</div>`;
+        return `<div class="text-center py-16 text-xs text-slate-400 font-medium">No records available in current scope</div>`;
       }
 
       // Elegant palette colors for slices
       const colors = ['#0D9488', '#0284C7', '#6366F1', '#EC4899', '#F59E0B', '#8B5CF6', '#10B981'];
 
       const total = items.reduce((acc, it) => acc + it.count, 0);
-      const radius = 88;
+      const radius = 105;
       const circumference = 2 * Math.PI * radius;
 
       let currentOffset = 0;
@@ -3265,14 +3499,14 @@
 
         return `
           <circle
-            cx="120" cy="120" r="${radius}"
+            cx="140" cy="140" r="${radius}"
             fill="transparent"
             stroke="${color}"
-            stroke-width="${isFiltered ? '32' : '26'}"
+            stroke-width="${isFiltered ? '38' : '30'}"
             stroke-dasharray="${sliceLength} ${circumference - sliceLength}"
             stroke-dashoffset="${offset}"
             style="cursor: pointer; pointer-events: stroke;"
-            class="transition-all duration-300 hover:opacity-85 hover:stroke-[30px]"
+            class="transition-all duration-300 hover:opacity-85 hover:stroke-[36px]"
             onclick="event.stopPropagation(); FPCL_PSM_SUITE.onDonutSliceClick('${isElement ? 'element' : 'nature'}', '${it.name.replace(/'/g, "\\'")}')"
             onmouseenter="FPCL_PSM_SUITE.showTooltip(event, { title: '${it.name.replace(/'/g, "\\'")}', badge: '${isElement ? 'PSM Element' : 'Severity'}', color: '${color}', subtitle: 'Audit Breakdown Slice', metrics: [{ label: 'Count', value: '${it.count}' }, { label: 'Share of Audit', value: '${it.percentage}%' }, { label: 'Total In Scope', value: '${total}' }], hint: 'Click to open pop-up window with ${it.count} findings for ${it.name.replace(/'/g, "\\'")}' })"
             onmousemove="FPCL_PSM_SUITE.moveTooltip(event)"
@@ -3283,46 +3517,21 @@
         `;
       }).join('');
 
-      const legendHtml = items.map((it, i) => {
-        const color = colors[i % colors.length];
-        const isFiltered = (isElement && this.state.elementFilter === it.name) || (!isElement && this.state.natureFilter === it.name);
-        return `
-          <button
-            onclick="event.stopPropagation(); FPCL_PSM_SUITE.onDonutSliceClick('${isElement ? 'element' : 'nature'}', '${it.name.replace(/'/g, "\\'")}')"
-            onmouseenter="FPCL_PSM_SUITE.showTooltip(event, { title: '${it.name.replace(/'/g, "\\'")}', badge: '${isElement ? 'PSM Element' : 'Severity'}', color: '${color}', subtitle: 'Audit Filter Tag', metrics: [{ label: 'Count', value: '${it.count}' }, { label: 'Share', value: '${it.percentage}%' }], hint: 'Click to explore ${it.count} findings in pop-up window' })"
-            onmousemove="FPCL_PSM_SUITE.moveTooltip(event)"
-            onmouseleave="FPCL_PSM_SUITE.hideTooltip()"
-            class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all text-left cursor-pointer ${
-              isFiltered 
-                ? 'bg-slate-900 text-white border-slate-900 shadow-sm font-bold ring-2 ring-slate-400' 
-                : 'bg-slate-50 hover:bg-slate-100 text-slate-800 border-slate-200 shadow-2xs hover:border-slate-300'
-            }"
-            title="Click to pop up window for ${it.name}"
-          >
-            <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: ${color};"></span>
-            <span class="text-xs font-bold truncate max-w-[130px] sm:max-w-[160px]">${it.name}</span>
-            <span class="text-[11px] font-mono px-1.5 py-0.5 rounded font-semibold ${isFiltered ? 'bg-white/20 text-white' : 'bg-white text-slate-700 border border-slate-200'}">
-              ${it.count} (${it.percentage}%)
-            </span>
-          </button>
-        `;
-      }).join('');
-
       return `
-        <div class="flex flex-col items-center justify-center w-full gap-5">
-          <!-- Enlarged Donut SVG -->
+        <div class="flex items-center justify-center w-full h-full py-4">
+          <!-- Enlarged Donut SVG Container -->
           <div
-            class="relative w-48 h-48 min-[400px]:w-60 min-[400px]:h-60 sm:w-68 sm:h-68 shrink-0 cursor-pointer select-none"
+            class="relative w-64 h-64 min-[400px]:w-72 min-[400px]:h-72 sm:w-80 sm:h-80 md:w-96 md:h-96 lg:w-[380px] lg:h-[380px] shrink-0 cursor-pointer select-none mx-auto"
             onclick="FPCL_PSM_SUITE.onDonutGeneralClick()"
             title="Click any part of donut to open data window"
           >
-            <svg viewBox="0 0 240 240" class="w-full h-full transform -rotate-90">
+            <svg viewBox="0 0 280 280" class="w-full h-full transform -rotate-90">
               <!-- Background Track Ring (Clickable) -->
               <circle
-                cx="120" cy="120" r="${radius}"
+                cx="140" cy="140" r="${radius}"
                 fill="transparent"
                 stroke="#F1F5F9"
-                stroke-width="26"
+                stroke-width="30"
                 class="cursor-pointer transition-colors hover:stroke-slate-200"
                 onclick="event.stopPropagation(); FPCL_PSM_SUITE.onDonutGeneralClick()"
               />
@@ -3336,19 +3545,14 @@
                 onmouseenter="FPCL_PSM_SUITE.showTooltip(event, { title: 'Complete Audit Scope', badge: 'All Findings', color: '#0F172A', subtitle: '${isElement ? 'All PSM Elements' : 'All Severity Levels'}', metrics: [{ label: 'Total In Scope', value: '${total}' }], hint: 'Click to open pop-up window for all ${total} audit records' })"
                 onmousemove="FPCL_PSM_SUITE.moveTooltip(event)"
                 onmouseleave="FPCL_PSM_SUITE.hideTooltip()"
-                class="w-32 h-32 sm:w-36 sm:h-36 rounded-full flex flex-col items-center justify-center pointer-events-auto cursor-pointer bg-white hover:bg-slate-50 transition-all duration-200 group border border-slate-100 shadow-xs"
+                class="w-40 h-40 sm:w-48 sm:h-48 md:w-56 md:h-56 rounded-full flex flex-col items-center justify-center pointer-events-auto cursor-pointer bg-white hover:bg-slate-50 transition-all duration-200 group border border-slate-100 shadow-md"
                 title="Click to open pop-up window for all ${total} audit records"
               >
-                <span class="text-3xl sm:text-4xl font-black font-mono text-slate-900 group-hover:text-teal-700 transition-colors leading-none">${total}</span>
-                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest group-hover:text-teal-600 transition-colors mt-1.5">FINDINGS</span>
-                <span class="text-[9px] font-bold text-teal-700 bg-teal-50 px-2.5 py-0.5 rounded-full border border-teal-200 mt-2 opacity-90 group-hover:opacity-100 transition-opacity">Click for data</span>
+                <span class="text-4xl sm:text-5xl md:text-6xl font-black font-mono text-slate-900 group-hover:text-teal-700 transition-colors leading-none">${total}</span>
+                <span class="text-[11px] sm:text-xs font-black text-slate-500 uppercase tracking-widest group-hover:text-teal-600 transition-colors mt-2">FINDINGS</span>
+                <span class="text-[9px] sm:text-[10px] font-extrabold text-teal-700 bg-teal-50 px-3 py-1 rounded-full border border-teal-200 mt-2.5 opacity-90 group-hover:opacity-100 transition-opacity">Click for data</span>
               </div>
             </div>
-          </div>
-
-          <!-- Breakdown Legends Placed at Bottom -->
-          <div class="w-full pt-4 border-t border-slate-100 flex flex-wrap items-center justify-center gap-2">
-            ${legendHtml}
           </div>
         </div>
       `;

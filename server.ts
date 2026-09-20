@@ -133,6 +133,17 @@ PSM Audit Data Summary (Phase 1 Internal Audit Findings June 2026):
   * Emergency Planning & Response.
   * Contractor Safety Management.
 `
+  },
+  'strategic': {
+    name: 'Strategic',
+    description: 'Executive Strategic Planning & Initiatives Dashboard',
+    scopeKeywords: ['strategic', 'strategy', 'planning', 'milestone', 'initiative', 'governance', 'kpi', 'target', 'vision', 'long-term', 'roadmap'],
+    context: `
+You are the Strategic Assistant for the Strategic dashboard on the FPCL Portal.
+Status: Awaiting Data.
+The Strategic dashboard is configured in the executive navigation bar with a unique royal amethyst/violet theme.
+Its operational data, strategic milestones, and executive KPIs will be provided later.
+`
   }
 };
 

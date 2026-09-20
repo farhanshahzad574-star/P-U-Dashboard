@@ -1,6 +1,6 @@
 {
   "name": "Executive Dashboard",
-  "description": "FFBL Power Company Limited - Executive Dashboard featuring synchronized Overview with HSEQ KPIs, PLR, PSM Audits, and PSM Validation dashboards.",
+  "description": "FFBL Power Company Limited - Executive Dashboard featuring synchronized Overview with HSEQ KPIs, PLR, PSM Audits, PSM Validation, and Strategic dashboards.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

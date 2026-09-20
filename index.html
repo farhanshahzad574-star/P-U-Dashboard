@@ -4,9 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Executive Dashboard</title>
-    <meta name="description" content="FFBL Power Company Limited - Executive Dashboard featuring synchronized Overview with HSEQ KPIs, PLR, PSM Audits, and PSM Validation dashboards." />
+    <meta name="description" content="FFBL Power Company Limited - Executive Dashboard featuring synchronized Overview with HSEQ KPIs, PLR, PSM Audits, PSM Validation, and Strategic dashboards." />
     <meta property="og:title" content="Executive Dashboard" />
-    <meta property="og:description" content="FFBL Power Company Limited - Executive Dashboard featuring synchronized Overview with HSEQ KPIs, PLR, PSM Audits, and PSM Validation dashboards." />
+    <meta property="og:description" content="FFBL Power Company Limited - Executive Dashboard featuring synchronized Overview with HSEQ KPIs, PLR, PSM Audits, PSM Validation, and Strategic dashboards." />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
 
@@ -89,6 +89,8 @@
     <script src="/assets/psmData.js?v=20260916b"></script>
     <script src="/assets/psmValidationData.js?v=20260919a"></script>
     <script src="/assets/psmSuite.js?v=20260919b"></script>
+    <!-- Strategic Dashboard Suite & Departmental Tiles -->
+    <script src="/assets/strategicSuite.js?v=20260919a"></script>
 
     <style>
       /* Base font legibility: standard across devices, calibrated for wall displays */
@@ -352,18 +354,20 @@
           margin-top: 0.15rem !important;
         }
         #kpi-val-safe-manhours {
-          font-size: clamp(1.05rem, 4.8vw, 1.35rem) !important;
+          font-size: clamp(1.4rem, 6.2vw, 2.15rem) !important;
           font-weight: 900 !important;
-          letter-spacing: -0.04em !important;
-          line-height: 1.1 !important;
+          letter-spacing: -0.05em !important;
+          line-height: 1 !important;
           white-space: nowrap !important;
-          max-width: 100% !important;
-          overflow: hidden !important;
-          text-overflow: ellipsis !important;
+          max-width: none !important;
+          margin: auto -8px !important;
+          display: block !important;
+          text-align: center !important;
         }
         .hseq-kpi-val {
-          font-size: 1.95rem !important;
-          line-height: 1.05 !important;
+          font-size: 2.15rem !important;
+          line-height: 1 !important;
+          margin: auto 0 !important;
         }
         .donut-center-val {
           font-size: 1.32rem !important;
@@ -982,31 +986,31 @@
           <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-4">
             
             <!-- 1. Safe Manhours (Emerald / Green) -->
-            <div class="card-hover-effect relative overflow-hidden rounded-xl border border-emerald-200/90 bg-gradient-to-b from-emerald-50/70 via-white to-emerald-50/30 p-2.5 sm:p-4 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between items-center text-center min-h-[105px] sm:min-h-[135px]">
+            <div class="card-hover-effect relative overflow-hidden rounded-xl border border-emerald-200/90 bg-gradient-to-b from-emerald-50/70 via-white to-emerald-50/30 p-2 sm:p-4 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between items-center text-center min-h-[96px] sm:min-h-[135px]">
               <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-500 to-teal-500"></div>
-              <div class="flex items-center justify-center gap-1.5 w-full text-center">
+              <div class="flex items-center justify-center gap-1.5 w-full text-center shrink-0">
                 <div class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 shadow-2xs border border-emerald-200">
                   <i data-lucide="shield-check" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
                 </div>
                 <span class="text-[10px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider font-mono text-center truncate">Safe Manhours</span>
               </div>
-              <div class="pt-1.5 sm:pt-3 pb-1 flex flex-col justify-center items-center text-center min-w-0 w-full overflow-hidden">
-                <div id="kpi-val-safe-manhours" class="text-base min-[360px]:text-lg min-[400px]:text-xl sm:text-3xl lg:text-[1.7rem] xl:text-[2.1rem] 2xl:text-[2.4rem] font-black font-mono tracking-tight text-emerald-800 leading-none whitespace-nowrap text-center" title="Safe Manhours">
-                  2,200,445
+              <div class="flex-1 flex flex-col justify-center items-center text-center min-w-0 w-full overflow-hidden my-auto py-1">
+                <div id="kpi-val-safe-manhours" class="text-xl min-[360px]:text-2xl min-[400px]:text-[1.7rem] sm:text-3xl lg:text-[1.7rem] xl:text-[2.1rem] 2xl:text-[2.4rem] font-black font-mono tracking-tight text-emerald-800 leading-none whitespace-nowrap text-center -mx-2 sm:mx-0 my-auto" title="Safe Manhours">
+                  22,280,445
                 </div>
               </div>
             </div>
 
             <!-- 2. Fire Incidents (Rose / Coral) -->
-            <div class="card-hover-effect relative overflow-hidden rounded-xl border border-rose-200/90 bg-gradient-to-b from-rose-50/70 via-white to-orange-50/20 p-2.5 sm:p-4 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between items-center text-center min-h-[105px] sm:min-h-[135px]">
+            <div class="card-hover-effect relative overflow-hidden rounded-xl border border-rose-200/90 bg-gradient-to-b from-rose-50/70 via-white to-orange-50/20 p-2 sm:p-4 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between items-center text-center min-h-[96px] sm:min-h-[135px]">
               <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-rose-500 to-red-500"></div>
-              <div class="flex items-center justify-center gap-1.5 w-full text-center">
+              <div class="flex items-center justify-center gap-1.5 w-full text-center shrink-0">
                 <div class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center shrink-0 shadow-2xs border border-rose-200">
                   <i data-lucide="flame" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
                 </div>
                 <span class="text-[10px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider font-mono text-center truncate">Fire</span>
               </div>
-              <div class="pt-1.5 sm:pt-3 pb-1 flex flex-col justify-center items-center text-center">
+              <div class="flex-1 flex flex-col justify-center items-center text-center my-auto py-1">
                 <div id="kpi-val-fire" class="text-2xl sm:text-4xl lg:text-5xl xl:text-6xl font-black font-mono tracking-tight text-rose-700 leading-none text-center hseq-kpi-val">
                   0
                 </div>
@@ -1014,15 +1018,15 @@
             </div>
 
             <!-- 3. Lost Time Injury (LTI) (Royal Blue / Indigo) -->
-            <div class="card-hover-effect relative overflow-hidden rounded-xl border border-indigo-200/90 bg-gradient-to-b from-indigo-50/70 via-white to-blue-50/20 p-2.5 sm:p-4 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between items-center text-center min-h-[105px] sm:min-h-[135px]">
+            <div class="card-hover-effect relative overflow-hidden rounded-xl border border-indigo-200/90 bg-gradient-to-b from-indigo-50/70 via-white to-blue-50/20 p-2 sm:p-4 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between items-center text-center min-h-[96px] sm:min-h-[135px]">
               <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-indigo-500 to-blue-600"></div>
-              <div class="flex items-center justify-center gap-1.5 w-full text-center">
+              <div class="flex items-center justify-center gap-1.5 w-full text-center shrink-0">
                 <div class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center shrink-0 shadow-2xs border border-indigo-200">
                   <i data-lucide="activity" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
                 </div>
                 <span class="text-[10px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider font-mono text-center truncate">LTI</span>
               </div>
-              <div class="pt-1.5 sm:pt-3 pb-1 flex flex-col justify-center items-center text-center">
+              <div class="flex-1 flex flex-col justify-center items-center text-center my-auto py-1">
                 <div id="kpi-val-lti" class="text-2xl sm:text-4xl lg:text-5xl xl:text-6xl font-black font-mono tracking-tight text-indigo-800 leading-none text-center hseq-kpi-val">
                   0
                 </div>
@@ -1030,15 +1034,15 @@
             </div>
 
             <!-- 4. Medical Treatment (Violet / Purple) -->
-            <div class="card-hover-effect relative overflow-hidden rounded-xl border border-purple-200/90 bg-gradient-to-b from-purple-50/70 via-white to-violet-50/20 p-2.5 sm:p-4 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between items-center text-center min-h-[105px] sm:min-h-[135px]">
+            <div class="card-hover-effect relative overflow-hidden rounded-xl border border-purple-200/90 bg-gradient-to-b from-purple-50/70 via-white to-violet-50/20 p-2 sm:p-4 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between items-center text-center min-h-[96px] sm:min-h-[135px]">
               <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-purple-500 to-violet-600"></div>
-              <div class="flex items-center justify-center gap-1.5 w-full text-center">
+              <div class="flex items-center justify-center gap-1.5 w-full text-center shrink-0">
                 <div class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center shrink-0 shadow-2xs border border-purple-200">
                   <i data-lucide="stethoscope" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
                 </div>
                 <span class="text-[10px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider font-mono text-center truncate">Medical Treatment</span>
               </div>
-              <div class="pt-1.5 sm:pt-3 pb-1 flex flex-col justify-center items-center text-center">
+              <div class="flex-1 flex flex-col justify-center items-center text-center my-auto py-1">
                 <div id="kpi-val-medical" class="text-2xl sm:text-4xl lg:text-5xl xl:text-6xl font-black font-mono tracking-tight text-purple-800 leading-none text-center hseq-kpi-val">
                   0
                 </div>
@@ -1046,15 +1050,15 @@
             </div>
 
             <!-- 5. First Aid Case (Amber / Orange) -->
-            <div class="card-hover-effect relative overflow-hidden rounded-xl border border-amber-200/90 bg-gradient-to-b from-amber-50/70 via-white to-yellow-50/20 p-2.5 sm:p-4 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between items-center text-center min-h-[105px] sm:min-h-[135px]">
+            <div class="card-hover-effect relative overflow-hidden rounded-xl border border-amber-200/90 bg-gradient-to-b from-amber-50/70 via-white to-yellow-50/20 p-2 sm:p-4 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between items-center text-center min-h-[96px] sm:min-h-[135px]">
               <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-500 to-orange-500"></div>
-              <div class="flex items-center justify-center gap-1.5 w-full text-center">
+              <div class="flex items-center justify-center gap-1.5 w-full text-center shrink-0">
                 <div class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center shrink-0 shadow-2xs border border-amber-200">
                   <i data-lucide="bandage" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
                 </div>
                 <span class="text-[10px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider font-mono text-center truncate">First Aid Case</span>
               </div>
-              <div class="pt-1.5 sm:pt-3 pb-1 flex flex-col justify-center items-center text-center">
+              <div class="flex-1 flex flex-col justify-center items-center text-center my-auto py-1">
                 <div id="kpi-val-first-aid" class="text-2xl sm:text-4xl lg:text-5xl xl:text-6xl font-black font-mono tracking-tight text-amber-800 leading-none text-center hseq-kpi-val">
                   5
                 </div>
@@ -1062,15 +1066,15 @@
             </div>
 
             <!-- 6. Nearmiss (Sky / Cyan) -->
-            <div class="card-hover-effect relative overflow-hidden rounded-xl border border-sky-200/90 bg-gradient-to-b from-sky-50/70 via-white to-cyan-50/20 p-2.5 sm:p-4 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between items-center text-center min-h-[105px] sm:min-h-[135px]">
+            <div class="card-hover-effect relative overflow-hidden rounded-xl border border-sky-200/90 bg-gradient-to-b from-sky-50/70 via-white to-cyan-50/20 p-2 sm:p-4 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between items-center text-center min-h-[96px] sm:min-h-[135px]">
               <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-sky-500 to-cyan-600"></div>
-              <div class="flex items-center justify-center gap-1.5 w-full text-center">
+              <div class="flex items-center justify-center gap-1.5 w-full text-center shrink-0">
                 <div class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center shrink-0 shadow-2xs border border-sky-200">
                   <i data-lucide="alert-triangle" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
                 </div>
                 <span class="text-[10px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider font-mono text-center truncate">Nearmiss</span>
               </div>
-              <div class="pt-1.5 sm:pt-3 pb-1 flex flex-col justify-center items-center text-center">
+              <div class="flex-1 flex flex-col justify-center items-center text-center my-auto py-1">
                 <div id="kpi-val-nearmiss" class="text-2xl sm:text-4xl lg:text-5xl xl:text-6xl font-black font-mono tracking-tight text-sky-800 leading-none text-center hseq-kpi-val">
                   24
                 </div>
@@ -1182,9 +1186,9 @@
                   class="w-full appearance-none bg-slate-50 border border-slate-300 hover:border-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-slate-900 text-xs sm:text-sm font-bold rounded-xl px-3.5 py-2.5 pr-9 transition-all cursor-pointer shadow-2xs"
                   title="Filter cross-dashboard actions by Open or Closed status"
                 >
-                  <option value="all">All Statuses (Open &amp; Closed)</option>
-                  <option value="open">Open Actions</option>
-                  <option value="close">Closed Actions</option>
+                  <option value="all">All (Open / Close)</option>
+                  <option value="open">Open</option>
+                  <option value="close">Close</option>
                 </select>
                 <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
                   <i data-lucide="chevron-down" class="w-4 h-4"></i>
@@ -1678,6 +1682,13 @@
         <!-- ========================================================================= -->
         <div id="psm-specialized-container" class="hidden space-y-6">
           <!-- Populated dynamically via FPCL_PSM_SUITE.render() -->
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- DEDICATED STRATEGIC DASHBOARD SUITE CONTAINER (20 DEPARTMENT TILES)       -->
+        <!-- ========================================================================= -->
+        <div id="strategic-specialized-container" class="hidden space-y-6">
+          <!-- Populated dynamically via FPCL_STRATEGIC_SUITE.render() -->
         </div>
 
       </section>
@@ -2242,6 +2253,36 @@
           actions: [
             { id: 'PSM-VAL-2026-001', desc: 'Complete Training & Development qualification validation for operational cadre', owner: 'HSEQ / T&D', due: '2026-09-30', priority: 'High', status: 'Completed' },
             { id: 'PSM-VAL-2026-002', desc: 'Conduct refresher PSM element certification assessments for engineering personnel', owner: 'Operations & L&D', due: '2026-10-15', priority: 'Medium', status: 'In Progress' }
+          ]
+        },
+        {
+          id: 'strategic',
+          name: 'Strategic',
+          code: 'STRATEGIC',
+          icon: 'target',
+          status: 'Active',
+          hasSheetLink: true,
+          category: 'Executive & Governance',
+          department: 'Corporate Strategy & Planning',
+          cadence: 'Quarterly Strategic Milestones',
+          description: 'Departmental performance frameworks & operational strategy across all 20 specialized units: Strategic Master, Admin & Security, Asset Integrity, Operations, Machinery, Technical & HSE.',
+          color: {
+            bg: '#FAF5FF',
+            primary: '#7C3AED',
+            secondary: '#C4B5FD',
+            text: '#4C1D95'
+          },
+          gradient: 'from-purple-600 via-violet-600 to-indigo-700',
+          gradientStop1: '#7C3AED',
+          gradientStop2: '#4338CA',
+          tagStyle: 'bg-purple-50 text-purple-900 border-purple-200',
+          kpis: { total: 20, closed: 18, inProgress: 2, overdue: 0, compliance: '94.0%' },
+          punchList: { open: 2, closed: 18, total: 20, rate: '94.0%' },
+          dataReadiness: { master: '100%', signoff: '100%' },
+          statusComment: '20 Departmental Strategic Tiles Active with 2026 Milestone Roadmaps.',
+          actions: [
+            { id: 'STRAT-2026-001', desc: 'Deploy 2026 Operational Excellence & Zero-Harm Plant Program', owner: 'Executive Committee', due: '2026-12-31', priority: 'High', status: 'Completed' },
+            { id: 'STRAT-2026-002', desc: 'Execute Departmental Strategic Alignment Reviews across all 20 units', owner: 'Corporate Planning', due: '2026-10-31', priority: 'High', status: 'In Progress' }
           ]
         },
         {
@@ -3563,7 +3604,7 @@
             // Fallback to baseline in case of offline/network issues
             if (!this.state.hseqKpis) {
               this.renderHseqKpiValues({
-                safeManhours: 2200445,
+                safeManhours: 22280445,
                 fire: 0,
                 lti: 0,
                 medicalTreatment: 0,
@@ -3593,7 +3634,7 @@
           const nearmissEl = document.getElementById('kpi-val-nearmiss');
 
           if (safeManhoursEl) {
-            const rawVal = kpis.safeManhours !== undefined ? kpis.safeManhours : 2200445;
+            const rawVal = kpis.safeManhours !== undefined ? kpis.safeManhours : 22280445;
             safeManhoursEl.textContent = Number(rawVal).toLocaleString();
             safeManhoursEl.title = `${Number(rawVal).toLocaleString()} Safe Manhours`;
             this.fitSafeManhoursText();
@@ -3623,12 +3664,13 @@
           if (!el || !el.parentElement) return;
           el.style.removeProperty('font-size');
           const container = el.parentElement;
-          const maxW = container.clientWidth;
+          // Negative margins expand effective width on mobile
+          const maxW = container.clientWidth + 16;
           if (maxW > 0 && el.scrollWidth > maxW) {
             const currentSize = parseFloat(window.getComputedStyle(el).fontSize);
             if (currentSize > 0) {
-              const scaledSize = Math.floor((maxW / el.scrollWidth) * currentSize * 0.94);
-              el.style.setProperty('font-size', Math.max(11, scaledSize) + 'px', 'important');
+              const scaledSize = Math.floor((maxW / el.scrollWidth) * currentSize * 0.96);
+              el.style.setProperty('font-size', Math.max(12, scaledSize) + 'px', 'important');
             }
           }
         },
@@ -4602,15 +4644,34 @@
           document.documentElement.style.setProperty('--dashboard-family-bg', dashboard.color.bg);
           document.documentElement.style.setProperty('--dashboard-family-text', dashboard.color.text);
 
-          // Specialized PLR Suite vs PSM Suite vs Standard Dashboard Containers
+          // Specialized PLR Suite vs PSM Suite vs Strategic Suite vs Standard Dashboard Containers
           const stdContainer = document.getElementById('standard-detail-container');
           const plrContainer = document.getElementById('plr-specialized-container');
           const psmContainer = document.getElementById('psm-specialized-container');
+          const strategicContainer = document.getElementById('strategic-specialized-container');
 
-          if (dashboardId === 'plr') {
+          if (dashboardId === 'strategic') {
+            if (headerCard) headerCard.classList.add('hidden');
+            if (connCard) connCard.classList.add('hidden');
+            const psmActions = document.getElementById('detail-psm-actions');
+            if (psmActions) psmActions.classList.add('hidden');
+            if (stdContainer) stdContainer.classList.add('hidden');
+            if (plrContainer) plrContainer.classList.add('hidden');
+            if (psmContainer) psmContainer.classList.add('hidden');
+            if (strategicContainer) {
+              strategicContainer.classList.remove('hidden');
+              if (window.FPCL_STRATEGIC_SUITE && typeof window.FPCL_STRATEGIC_SUITE.render === 'function') {
+                window.FPCL_STRATEGIC_SUITE.render();
+              }
+            }
+            const breadcrumbActive = document.getElementById('breadcrumb-active-name');
+            if (breadcrumbActive) breadcrumbActive.textContent = 'Strategic Dashboard';
+          } else if (dashboardId === 'plr') {
+            if (headerCard) headerCard.classList.remove('hidden');
             if (connCard) connCard.classList.add('hidden');
             if (stdContainer) stdContainer.classList.add('hidden');
             if (psmContainer) psmContainer.classList.add('hidden');
+            if (strategicContainer) strategicContainer.classList.add('hidden');
             if (plrContainer) {
               plrContainer.classList.remove('hidden');
               if (window.portalApp && typeof window.portalApp.renderPlrSuite === 'function') {
@@ -4622,11 +4683,13 @@
               sheetKeyEl.title = 'PLRs white dashboard (PLRStatus & Recommendations)';
             }
           } else if (dashboardId === 'sub-hse-psm' || dashboardId === 'psm-validation') {
+            if (headerCard) headerCard.classList.remove('hidden');
             if (connCard) connCard.classList.add('hidden');
             const psmActions = document.getElementById('detail-psm-actions');
             if (psmActions) psmActions.classList.remove('hidden');
             if (stdContainer) stdContainer.classList.add('hidden');
             if (plrContainer) plrContainer.classList.add('hidden');
+            if (strategicContainer) strategicContainer.classList.add('hidden');
             if (psmContainer) {
               psmContainer.classList.remove('hidden');
               const targetSub = (dashboardId === 'psm-validation') ? 'validation' : 'audits';
@@ -4667,8 +4730,10 @@
               }
             }
           } else {
+            if (headerCard) headerCard.classList.remove('hidden');
             if (plrContainer) plrContainer.classList.add('hidden');
             if (psmContainer) psmContainer.classList.add('hidden');
+            if (strategicContainer) strategicContainer.classList.add('hidden');
             if (stdContainer) stdContainer.classList.remove('hidden');
             if (sheetKeyEl) {
               sheetKeyEl.textContent = dashboard.hasSheetLink ? 'Connected' : (dashboard.statusComment || 'Data will be provided later');
@@ -4821,6 +4886,8 @@
           if (plrContainer) plrContainer.classList.add('hidden');
           const psmContainer = document.getElementById('psm-specialized-container');
           if (psmContainer) psmContainer.classList.add('hidden');
+          const strategicContainer = document.getElementById('strategic-specialized-container');
+          if (strategicContainer) strategicContainer.classList.add('hidden');
           if (window.FPCL_PSM_SUITE && window.FPCL_PSM_SUITE.state) {
             window.FPCL_PSM_SUITE.state.activeSubDashboard = 'audits';
           }
@@ -5110,6 +5177,25 @@
               'What are the primary PSM elements tracked?',
               'How many findings are closed vs open?'
             ]
+          },
+          'strategic': {
+            name: 'Strategic Assistant',
+            shortName: 'Strategic',
+            subtitle: 'Departmental Strategy & 2026 Milestone Roadmaps',
+            icon: 'target',
+            colorBg: '#FAF5FF',
+            borderColor: '#C4B5FD',
+            textColor: '#7C3AED',
+            gradient: 'from-purple-600 via-violet-600 to-indigo-700',
+            buttonGradient: 'linear-gradient(135deg, #7C3AED, #6366F1)',
+            badgeClass: 'bg-purple-50 text-purple-700 border-purple-200',
+            welcomeMessage: 'Hello! I am the **Strategic Performance Assistant**.\n\nI can assist with:\n- **20 Department Strategic Tiles**: Strategic Dashboard (Featured), Admin & Security, Asset Integrity & IMS, Business Development, Civil, E&I, Finance, HSEQ, HCM, IMS, Information Technology, Inspection & Workshop Services, L&D, Machinery, Mechanical, Operations, Reliability, SCM, Technical, Technical & HSE\n- **2026 Milestone Roadmaps**: Strategic initiatives, target completion dates, and executive owners\n- **Departmental KPIs**: Structural integrity, power availability, safety indices, and financial variances\n\n*Feel free to ask about any department strategic mandate or initiative!*',
+            suggestions: [
+              'What are the key initiatives for Admin & Security?',
+              'Show 2026 roadmap for Operations & Machinery',
+              'What KPIs are tracked in Asset Integrity & IMS?',
+              'List all 20 strategic departments'
+            ]
           }
         },
 
@@ -5119,14 +5205,15 @@
           messages: {
             'overview': [],
             'plr': [],
-            'sub-hse-psm': []
+            'sub-hse-psm': [],
+            'strategic': []
           },
           isLoading: false
         },
 
         initChatbot() {
           // Initialize default welcome messages if empty
-          ['overview', 'plr', 'sub-hse-psm'].forEach(key => {
+          ['overview', 'plr', 'sub-hse-psm', 'strategic'].forEach(key => {
             if (this.chatbotState.messages[key].length === 0) {
               const cfg = this.chatbotConfig[key];
               this.chatbotState.messages[key].push({
@@ -5143,7 +5230,9 @@
         },
 
         syncChatbotTheme(dashboardId) {
-          const key = (dashboardId === 'plr' || dashboardId === 'sub-hse-psm' || dashboardId === 'psm-validation') ? (dashboardId === 'psm-validation' ? 'sub-hse-psm' : dashboardId) : 'overview';
+          const key = (dashboardId === 'plr' || dashboardId === 'sub-hse-psm' || dashboardId === 'psm-validation' || dashboardId === 'strategic')
+            ? (dashboardId === 'psm-validation' ? 'sub-hse-psm' : dashboardId)
+            : 'overview';
           this.chatbotState.activeKey = key;
           const cfg = this.chatbotConfig[key] || this.chatbotConfig['overview'];
 
