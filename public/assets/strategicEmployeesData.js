@@ -13,13 +13,13 @@
     {
       id: 'strategic-master',
       name: 'Strategic Dashboard',
-      code: 'STRAT-BOSS',
+      code: 'STRAT-COO',
       isBossDashboard: true,
       category: 'Executive & Governance',
       icon: 'target',
-      employeeName: 'Executive Leadership (Boss)',
-      employeeRole: 'Chief Executive Officer / Plant Director',
-      employeeEmail: 'ceo.office@fpcl.com',
+      employeeName: 'Executive Leadership (COO)',
+      employeeRole: 'Chief Operating Officer',
+      employeeEmail: 'coo.office@fpcl.com',
       sheetUrl: '',
       sheetTab: 'ExecutiveRollup',
       gid: '0',
@@ -32,7 +32,7 @@
         gradient: 'from-purple-600 via-violet-600 to-indigo-700',
         badgeBg: 'bg-purple-100 text-purple-800 border-purple-200'
       },
-      description: 'Executive rollup dashboard for Boss to track overall status of actions across all employees.'
+      description: 'Executive rollup dashboard for COO to track overall status of actions across all departments.'
     },
     {
       id: 'admin-security',

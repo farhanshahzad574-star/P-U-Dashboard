@@ -643,7 +643,7 @@
 
       this.saveStoredActions();
       this.state.isSyncingAll = false;
-      this.showToast('All Sheets Synced', 'All employee sheets refreshed for Boss Executive Dashboard.', 'success');
+      this.showToast('All Sheets Synced', 'All department sheets refreshed for COO Executive Dashboard.', 'success');
       this.render();
       if (this.state.selectedTileId === 'strategic-master') {
         this.openDetailModal('strategic-master');
@@ -795,7 +795,7 @@
                 <div>
                   <div class="flex items-center gap-2 flex-wrap">
                     <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-400 text-amber-950 uppercase tracking-wider">
-                      Boss Executive Dashboard
+                      COO Executive Dashboard
                     </span>
                     <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-400/20 text-purple-200 border border-purple-300/30">
                       Company-Wide Employee Action Rollup
@@ -1294,7 +1294,7 @@
                     ${tile.code}
                   </span>
                   <h4 class="text-lg font-black text-white mt-1">${tile.name}</h4>
-                  <p class="text-xs text-white/80">${tile.isBossDashboard ? 'Boss Executive Dashboard' : `Assigned: ${tile.employeeName}`}</p>
+                  ${tile.isBossDashboard ? `<p class="text-xs text-amber-300 font-bold mt-0.5">COO Executive Dashboard</p>` : ''}
                 </div>
               </div>
             </div>
@@ -1485,7 +1485,7 @@
                       </span>
                     ` : `
                       <span class="hidden md:inline px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-50 text-amber-800 border border-amber-300">
-                        Boss Executive Rollup
+                        COO Executive Dashboard
                       </span>
                     `}
                   </div>
@@ -1578,7 +1578,7 @@
               Strategic Dashboard
             </h1>
             <p class="text-xs sm:text-sm text-slate-300 font-medium max-w-lg">
-              Individual employee Google Sheet trackers with central Boss Executive Summary rollup.
+              Individual department Google Sheet trackers with central COO Executive Dashboard rollup.
             </p>
           </div>
         </div>
@@ -1652,75 +1652,57 @@
           <div id="strategic-tiles-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-5">
             ${filtered.map(tile => {
               if (tile.isBossDashboard) {
-                // Featured Boss Dashboard Tile
+                // Featured COO Strategic Dashboard Tile
                 return `
                   <div
                     id="tile-${tile.id}"
                     onclick="window.FPCL_STRATEGIC_SUITE.handleTileClick('${tile.id}')"
-                    class="group relative bg-gradient-to-br from-purple-900 to-indigo-950 text-white rounded-2xl p-5 sm:p-6 border-2 border-purple-400/50 flex flex-col items-center justify-center text-center cursor-pointer overflow-hidden transition-all duration-250 shadow-md hover:shadow-xl hover:-translate-y-1 select-none min-h-[175px] sm:min-h-[190px]"
+                    class="group relative bg-gradient-to-br from-purple-900 to-indigo-950 text-white rounded-2xl p-6 sm:p-7 border-2 border-purple-400/50 flex flex-col items-center justify-center text-center cursor-pointer overflow-hidden transition-all duration-250 shadow-md hover:shadow-xl hover:-translate-y-1 select-none min-h-[190px] sm:min-h-[210px] gap-3"
                   >
                     <!-- Top Accent Gold Stripe -->
                     <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500"></div>
 
-                    <!-- Crown / Boss Icon -->
-                    <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-amber-400/20 border border-amber-300/40 flex items-center justify-center text-amber-300 shrink-0 transition-transform duration-250 group-hover:scale-110 shadow-lg mx-auto">
-                      <i data-lucide="crown" class="w-6 h-6 sm:w-7 sm:h-7"></i>
+                    <!-- Executive Icon (Enlarged and Center Aligned) -->
+                    <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-amber-400/20 border border-amber-300/40 flex items-center justify-center text-amber-300 shrink-0 transition-transform duration-250 group-hover:scale-110 shadow-lg mx-auto">
+                      <i data-lucide="crown" class="w-7 h-7 sm:w-8 sm:h-8"></i>
                     </div>
 
-                    <!-- Title -->
-                    <div class="mt-3 w-full text-center">
-                      <h3 class="text-base sm:text-lg font-black tracking-tight text-white group-hover:text-amber-300 transition-colors leading-snug">
+                    <!-- Title & COO Badge (Enlarged, Center Aligned, No Closed/Open Counts) -->
+                    <div class="w-full text-center flex flex-col items-center justify-center">
+                      <h3 class="text-base sm:text-lg md:text-xl font-black tracking-tight text-white group-hover:text-amber-300 transition-colors leading-snug">
                         ${tile.name}
                       </h3>
-                      <p class="text-[11px] text-amber-200 font-semibold mt-0.5">Boss Executive Rollup</p>
-                    </div>
-
-                    <!-- Live Summary Pill -->
-                    <div class="mt-2.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-xs border border-white/20 text-[10px] font-mono font-bold text-white flex items-center gap-1.5">
-                      <span class="text-emerald-300">${rollup.closedActions} Closed</span>
-                      <span>•</span>
-                      <span class="text-rose-300">${rollup.openActions} Open</span>
+                      <span class="inline-block mt-1.5 px-3 py-0.5 rounded-full text-xs font-extrabold bg-amber-400 text-amber-950 uppercase tracking-wider shadow-xs">
+                        COO Executive Dashboard
+                      </span>
                     </div>
                   </div>
                 `;
               }
 
-              // Standard Employee Department Tile
+              // Standard Department Tile (Enlarged, Center Aligned, Names Removed, Status Removed)
               return `
                 <div
                   id="tile-${tile.id}"
                   onclick="window.FPCL_STRATEGIC_SUITE.handleTileClick('${tile.id}')"
-                  class="group relative bg-white hover:bg-slate-50/80 rounded-2xl p-4 sm:p-5 border border-slate-200 hover:border-purple-300 flex flex-col items-center justify-between text-center cursor-pointer overflow-hidden transition-all duration-250 shadow-2xs hover:shadow-lg hover:-translate-y-1 select-none min-h-[175px] sm:min-h-[190px]"
+                  class="group relative bg-white hover:bg-slate-50/80 rounded-2xl p-5 sm:p-6 border border-slate-200 hover:border-purple-300 flex flex-col items-center justify-center text-center cursor-pointer overflow-hidden transition-all duration-250 shadow-2xs hover:shadow-lg hover:-translate-y-1 select-none min-h-[190px] sm:min-h-[210px] gap-3.5"
                 >
                   <!-- Top Accent Gradient Stripe -->
-                  <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${tile.theme.gradient}"></div>
+                  <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r ${tile.theme.gradient}"></div>
 
-                  <!-- Tile Icon -->
+                  <!-- Tile Icon (Enlarged and Center Aligned) -->
                   <div
-                    class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-250 group-hover:scale-110 shadow-2xs border mx-auto mt-1"
+                    class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center shrink-0 transition-transform duration-250 group-hover:scale-110 shadow-2xs border mx-auto"
                     style="background-color: ${tile.theme.bg}; border-color: ${tile.theme.border}; color: ${tile.theme.primary};"
                   >
-                    <i data-lucide="${tile.icon}" class="w-5 h-5 sm:w-6 sm:h-6"></i>
+                    <i data-lucide="${tile.icon}" class="w-7 h-7 sm:w-8 sm:h-8"></i>
                   </div>
 
-                  <!-- Tile & Employee Name -->
-                  <div class="mt-2 w-full text-center flex-1 flex flex-col justify-center">
-                    <h3 class="text-sm sm:text-base font-black tracking-tight text-slate-800 group-hover:text-purple-700 transition-colors leading-snug">
+                  <!-- Department Name (Bigger text size, Center Aligned) -->
+                  <div class="w-full text-center flex items-center justify-center">
+                    <h3 class="text-base sm:text-lg md:text-xl font-extrabold tracking-tight text-slate-800 group-hover:text-purple-700 transition-colors leading-snug px-1 text-center">
                       ${tile.name}
                     </h3>
-                    <p class="text-[11px] text-slate-500 font-semibold mt-0.5 truncate max-w-full px-1">
-                      ${tile.employeeName}
-                    </p>
-                  </div>
-
-                  <!-- Open vs Closed Status Pill -->
-                  <div class="mt-2 w-full pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] font-mono font-bold px-1">
-                    <span class="text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
-                      ${tile.stats.closed} Closed
-                    </span>
-                    <span class="${tile.stats.open > 0 ? 'text-rose-700 bg-rose-50 border-rose-200' : 'text-slate-400 bg-slate-50 border-slate-200'} px-1.5 py-0.5 rounded border">
-                      ${tile.stats.open} Open
-                    </span>
                   </div>
                 </div>
               `;
