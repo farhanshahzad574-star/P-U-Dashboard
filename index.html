@@ -4926,9 +4926,19 @@
           const psmContainer = document.getElementById('psm-specialized-container');
           if (psmContainer) psmContainer.classList.add('hidden');
           const strategicContainer = document.getElementById('strategic-specialized-container');
-          if (strategicContainer) strategicContainer.classList.add('hidden');
-          if (window.FPCL_STRATEGIC_SUITE && typeof window.FPCL_STRATEGIC_SUITE.backToGrid === 'function') {
-            window.FPCL_STRATEGIC_SUITE.backToGrid();
+          if (strategicContainer) {
+            strategicContainer.classList.add('hidden');
+            strategicContainer.hidden = true;
+            strategicContainer.style.marginTop = '';
+          }
+          if (window.FPCL_STRATEGIC_SUITE && window.FPCL_STRATEGIC_SUITE.state) {
+            window.FPCL_STRATEGIC_SUITE.state.currentView = 'grid';
+            window.FPCL_STRATEGIC_SUITE.state.selectedTileId = null;
+            window.FPCL_STRATEGIC_SUITE.state.activeAuthTileId = null;
+            window.FPCL_STRATEGIC_SUITE.state.isMasterActive = false;
+            if (window.FPCL_STRATEGIC_SUITE.state.unlockedTiles && typeof window.FPCL_STRATEGIC_SUITE.state.unlockedTiles.clear === 'function') {
+              window.FPCL_STRATEGIC_SUITE.state.unlockedTiles.clear();
+            }
           }
           if (window.FPCL_PSM_SUITE && window.FPCL_PSM_SUITE.state) {
             window.FPCL_PSM_SUITE.state.activeSubDashboard = 'audits';
