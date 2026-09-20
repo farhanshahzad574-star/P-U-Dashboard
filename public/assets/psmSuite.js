@@ -1159,7 +1159,7 @@
                 </span>
               </div>
               <div class="mt-3 flex items-baseline gap-2">
-                <span class="text-4xl sm:text-5xl font-black font-mono tracking-tight text-slate-900">${totalFiltered}</span>
+                <span class="text-5xl sm:text-6xl font-black font-mono tracking-tight text-slate-900 kpi-metric-val">${totalFiltered}</span>
                 <span class="text-xs font-mono font-bold text-slate-500">/ ${totalRaw} Total</span>
               </div>
               <div class="mt-2.5 flex items-center justify-between text-xs text-slate-500">
@@ -1182,7 +1182,7 @@
                 </span>
               </div>
               <div class="mt-3 flex items-baseline gap-2">
-                <span class="text-4xl sm:text-5xl font-black font-mono tracking-tight text-emerald-600">${trainedYesCount}</span>
+                <span class="text-5xl sm:text-6xl font-black font-mono tracking-tight text-emerald-600 kpi-metric-val">${trainedYesCount}</span>
                 <span class="text-xs font-mono font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">${trainingPct}%</span>
               </div>
               <div class="mt-2.5 flex items-center justify-between text-xs text-slate-500">
@@ -1205,7 +1205,7 @@
                 </span>
               </div>
               <div class="mt-3 flex items-baseline gap-2">
-                <span class="text-4xl sm:text-5xl font-black font-mono tracking-tight text-teal-700">${passedCount}</span>
+                <span class="text-5xl sm:text-6xl font-black font-mono tracking-tight text-teal-700 kpi-metric-val">${passedCount}</span>
                 <span class="text-xs font-mono font-extrabold text-teal-800 bg-teal-50 px-2 py-0.5 rounded-full border border-teal-200">${passPct}%</span>
               </div>
               <div class="mt-2.5 flex items-center justify-between text-xs text-slate-500">
@@ -1228,9 +1228,8 @@
                 </span>
               </div>
               <div class="mt-3 flex items-baseline gap-2 flex-wrap">
-                <span class="text-2xl sm:text-3xl font-black font-mono tracking-tight text-blue-950">
-                  ${moduleBreakdown.length} <span class="text-xs font-sans text-slate-500 font-bold">${moduleBreakdown.length === 1 ? 'Active Module' : 'Active Modules'}</span>
-                </span>
+                <span class="text-5xl sm:text-6xl font-black font-mono tracking-tight text-blue-950 kpi-metric-val">${moduleBreakdown.length}</span>
+                <span class="text-xs font-sans text-slate-500 font-bold">${moduleBreakdown.length === 1 ? 'Active Module' : 'Active Modules'}</span>
               </div>
               <div class="mt-2.5 flex items-center justify-between text-xs text-slate-500">
                 <span>Validation Result</span>
@@ -2372,7 +2371,7 @@
       }
     },
 
-    // Upgraded 960px Horizontal grouped/stacked bar chart for departments (PLR consistent styling & text sizing)
+    // 960px Horizontal grouped/stacked bar chart for departments (PLR reference: 706px chart width, 15px bar height, 9.5px value font, 11px total font)
     renderDepartmentBarChart(deptList) {
       if (!deptList || deptList.length === 0) {
         return `<div class="text-center py-8 text-xs text-slate-400">No data available</div>`;
@@ -2387,17 +2386,21 @@
         ticks.push(t);
       }
 
-      const rowHeight = 42;
-      const chartHeight = deptList.length * rowHeight + 50;
-      const svgWidth = 960;
-      const labelWidth = 190;
-      const plotWidth = svgWidth - labelWidth - 110;
+      // Standard PLR Bar Chart Geometry: 960 width, 190 padLeft, 64 padRight => 706px chart width
+      const w = 960;
+      const padLeft = 190;
+      const padRight = 64;
+      const padTop = 32;
+      const padBottom = 38;
+      const rowH = 26;
+      const chartW = w - padLeft - padRight;
+      const h = padTop + deptList.length * rowH + padBottom;
 
       const barsSvg = deptList.map((d, i) => {
-        const y = i * rowHeight + 12;
-        const totalW = (d.total / tickMax) * plotWidth;
-        const openW = (d.open / tickMax) * plotWidth;
-        const closeW = (d.close / tickMax) * plotWidth;
+        const y = padTop + i * rowH;
+        const totalW = (d.total / tickMax) * chartW;
+        const openW = (d.open / tickMax) * chartW;
+        const closeW = (d.close / tickMax) * chartW;
         const isSelected = this.state.deptFilter === d.name;
 
         return `
@@ -2411,24 +2414,24 @@
             <title>${d.name}: ${d.total} Total (${d.open} Open, ${d.close} Closed • ${d.closureRate}% Resolved) - Click to open data</title>
 
             <!-- Row hover highlight -->
-            <rect x="0" y="${y - 4}" width="${svgWidth}" height="${rowHeight}" fill="${isSelected ? '#F0FDFA' : 'transparent'}" class="group-hover:fill-teal-50/60 transition-colors rounded-lg"/>
+            <rect x="0" y="${y - 3}" width="${w}" height="${rowH}" fill="${isSelected ? '#F0FDFA' : 'transparent'}" class="group-hover:fill-teal-50/60 transition-colors rounded-lg"/>
             
-            <!-- Department Label (Increased font size 13px bold) -->
-            <text x="${labelWidth - 14}" y="${y + 16}" fill="${isSelected ? '#0D9488' : '#1E293B'}" font-size="13" font-weight="${isSelected ? '900' : '800'}" font-family="'Plus Jakarta Sans', system-ui, sans-serif" text-anchor="end" class="transition-colors group-hover:fill-teal-700">
+            <!-- Department Label (11px, bold, matching PLR reference) -->
+            <text x="${padLeft - 14}" y="${y + 14}" fill="${isSelected ? '#0D9488' : '#1E293B'}" font-size="11" font-weight="${isSelected ? '900' : '700'}" font-family="'Plus Jakarta Sans', system-ui, sans-serif" text-anchor="end" class="transition-colors group-hover:fill-teal-700">
               ${d.name}
             </text>
 
             <!-- Background Track -->
-            <rect x="${labelWidth}" y="${y + 2}" width="${plotWidth}" height="22" rx="5" fill="#F1F5F9"/>
+            <rect x="${padLeft}" y="${y + 2}" width="${chartW}" height="15" rx="4" fill="#F1F5F9"/>
 
             <!-- Open Findings Bar (Rose) -->
             ${d.open > 0 ? `
               <rect
-                x="${labelWidth}"
+                x="${padLeft}"
                 y="${y + 2}"
                 width="${openW}"
-                height="22"
-                rx="${d.close > 0 ? '5 0 0 5' : '5'}"
+                height="15"
+                rx="${d.close > 0 ? '4 0 0 4' : '4'}"
                 fill="#F43F5E"
                 class="transition-all opacity-95 group-hover:opacity-100 cursor-pointer"
                 onclick="event.stopPropagation(); FPCL_PSM_SUITE.openDataModal({ title: '${d.name.replace(/'/g, "\\'")} — Open Findings', badge: 'Active Open', subtitle: '${d.open} Open Findings Requiring Action', filterDept: '${d.name.replace(/'/g, "\\'")}', filterStatus: 'Open' })"
@@ -2438,19 +2441,19 @@
               >
                 <title>${d.name} Open: ${d.open} findings</title>
               </rect>
-              ${openW > 18 ? `
-                <text x="${labelWidth + openW / 2}" y="${y + 17}" fill="#ffffff" font-size="12" font-weight="900" font-family="monospace" text-anchor="middle" pointer-events="none">${d.open}</text>
+              ${openW >= 14 ? `
+                <text x="${padLeft + openW / 2}" y="${y + 14.5}" fill="#ffffff" font-size="9.5" font-weight="900" font-family="monospace" text-anchor="middle" pointer-events="none">${d.open}</text>
               ` : ''}
             ` : ''}
 
             <!-- Closed Findings Bar (Emerald) -->
             ${d.close > 0 ? `
               <rect
-                x="${labelWidth + openW}"
+                x="${padLeft + openW}"
                 y="${y + 2}"
                 width="${closeW}"
-                height="22"
-                rx="${d.open > 0 ? '0 5 5 0' : '5'}"
+                height="15"
+                rx="${d.open > 0 ? '0 4 4 0' : '4'}"
                 fill="#10B981"
                 class="transition-all opacity-95 group-hover:opacity-100 cursor-pointer"
                 onclick="event.stopPropagation(); FPCL_PSM_SUITE.openDataModal({ title: '${d.name.replace(/'/g, "\\'")} — Closed Findings', badge: 'Resolved', subtitle: '${d.close} Closed & Verified Findings', filterDept: '${d.name.replace(/'/g, "\\'")}', filterStatus: 'Close' })"
@@ -2460,33 +2463,35 @@
               >
                 <title>${d.name} Closed: ${d.close} findings</title>
               </rect>
-              ${closeW > 18 ? `
-                <text x="${labelWidth + openW + closeW / 2}" y="${y + 17}" fill="#ffffff" font-size="12" font-weight="900" font-family="monospace" text-anchor="middle" pointer-events="none">${d.close}</text>
+              ${closeW >= 14 ? `
+                <text x="${padLeft + openW + closeW / 2}" y="${y + 14.5}" fill="#ffffff" font-size="9.5" font-weight="900" font-family="monospace" text-anchor="middle" pointer-events="none">${d.close}</text>
               ` : ''}
             ` : ''}
 
-            <!-- Total count & Resolution % at end of bar -->
-            <text x="${labelWidth + totalW + 12}" y="${y + 17}" fill="#0F172A" font-size="12" font-weight="900" font-family="'Plus Jakarta Sans', monospace">
-              ${d.total} <tspan fill="#0D9488" font-size="11" font-weight="700">(${d.closureRate}%)</tspan>
+            <!-- Total count & Resolution % at end of bar (11px, bold font, monospace) -->
+            <text x="${padLeft + chartW + 12}" y="${y + 14}" fill="#0F172A" font-size="11" font-weight="800" font-family="monospace">
+              ${d.total} <tspan fill="#0D9488" font-size="10" font-weight="700">(${d.closureRate}%)</tspan>
             </text>
           </g>
         `;
       }).join('');
 
-      // Grid line ticks with enhanced 11px font
+      // Grid line ticks (10px monospace, matching PLR reference)
       const gridSvg = ticks.map(t => {
-        const x = labelWidth + (t / tickMax) * plotWidth;
+        const x = padLeft + (t / tickMax) * chartW;
         return `
-          <line x1="${x}" y1="5" x2="${x}" y2="${deptList.length * rowHeight + 14}" stroke="#E2E8F0" stroke-width="1.5" stroke-dasharray="3 3"/>
-          <text x="${x}" y="${deptList.length * rowHeight + 32}" fill="#64748B" font-size="11" font-weight="700" font-family="monospace" text-anchor="middle">${t}</text>
+          <line x1="${x}" y1="${padTop - 6}" x2="${x}" y2="${padTop + deptList.length * rowH + 4}" stroke="#E2E8F0" stroke-width="1.5" stroke-dasharray="3 3"/>
+          <text x="${x}" y="${padTop + deptList.length * rowH + 20}" fill="#64748B" font-size="10" font-weight="600" font-family="monospace" text-anchor="middle">${t}</text>
         `;
       }).join('');
 
       return `
-        <svg viewBox="0 0 ${svgWidth} ${chartHeight}" class="w-full h-auto select-none overflow-visible">
-          ${gridSvg}
-          ${barsSvg}
-        </svg>
+        <div class="w-full overflow-x-auto select-none">
+          <svg viewBox="0 0 ${w} ${h}" class="w-full min-w-[700px] h-auto overflow-hidden">
+            ${gridSvg}
+            ${barsSvg}
+          </svg>
+        </div>
       `;
     },
 
@@ -2897,17 +2902,21 @@
         ticks.push(t);
       }
 
-      const rowHeight = 42;
-      const chartHeight = deptBreakdown.length * rowHeight + 50;
-      const svgWidth = 960;
-      const labelWidth = 190;
-      const plotWidth = svgWidth - labelWidth - 110;
+      // Standard PLR Bar Chart Geometry: 960 width, 190 padLeft, 64 padRight => 706px chart width
+      const w = 960;
+      const padLeft = 190;
+      const padRight = 64;
+      const padTop = 32;
+      const padBottom = 38;
+      const rowH = 26;
+      const chartW = w - padLeft - padRight;
+      const h = padTop + deptBreakdown.length * rowH + padBottom;
 
       const barsSvg = deptBreakdown.map((d, i) => {
-        const y = i * rowHeight + 12;
-        const totalW = (d.total / tickMax) * plotWidth;
-        const trainedW = (d.trained / tickMax) * plotWidth;
-        const untrainedW = (d.untrained / tickMax) * plotWidth;
+        const y = padTop + i * rowH;
+        const totalW = (d.total / tickMax) * chartW;
+        const trainedW = (d.trained / tickMax) * chartW;
+        const untrainedW = (d.untrained / tickMax) * chartW;
         const isSelected = this.state.validationState && this.state.validationState.deptFilter === d.name;
 
         return `
@@ -2920,69 +2929,71 @@
             title="Click to filter by ${d.name} (${d.trained} Trained, ${d.untrained} Require Training)"
           >
             <!-- Row hover background -->
-            <rect x="0" y="${y - 4}" width="${svgWidth}" height="${rowHeight}" fill="${isSelected ? '#F0FDFA' : 'transparent'}" class="group-hover:fill-teal-50/60 transition-colors rounded-lg"/>
+            <rect x="0" y="${y - 3}" width="${w}" height="${rowH}" fill="${isSelected ? '#F0FDFA' : 'transparent'}" class="group-hover:fill-teal-50/60 transition-colors rounded-lg"/>
             
-            <!-- Department Label (13px bold) -->
-            <text x="${labelWidth - 14}" y="${y + 16}" fill="${isSelected ? '#0D9488' : '#1E293B'}" font-size="13" font-weight="${isSelected ? '900' : '800'}" font-family="'Plus Jakarta Sans', system-ui, sans-serif" text-anchor="end" class="transition-colors group-hover:fill-teal-700">
+            <!-- Department Label (11px, bold, matching PLR reference) -->
+            <text x="${padLeft - 14}" y="${y + 14}" fill="${isSelected ? '#0D9488' : '#1E293B'}" font-size="11" font-weight="${isSelected ? '900' : '700'}" font-family="'Plus Jakarta Sans', system-ui, sans-serif" text-anchor="end" class="transition-colors group-hover:fill-teal-700">
               ${d.name}
             </text>
 
             <!-- Background Track -->
-            <rect x="${labelWidth}" y="${y + 2}" width="${plotWidth}" height="22" rx="5" fill="#F1F5F9"/>
+            <rect x="${padLeft}" y="${y + 2}" width="${chartW}" height="15" rx="4" fill="#F1F5F9"/>
 
             <!-- Trained Personnel Bar (Emerald) -->
             ${d.trained > 0 ? `
               <rect
-                x="${labelWidth}"
+                x="${padLeft}"
                 y="${y + 2}"
                 width="${trainedW}"
-                height="22"
-                rx="${d.untrained > 0 ? '5 0 0 5' : '5'}"
+                height="15"
+                rx="${d.untrained > 0 ? '4 0 0 4' : '4'}"
                 fill="#10B981"
                 class="transition-all opacity-95 group-hover:opacity-100"
               />
-              ${trainedW > 18 ? `
-                <text x="${labelWidth + trainedW / 2}" y="${y + 17}" fill="#ffffff" font-size="12" font-weight="900" font-family="monospace" text-anchor="middle" pointer-events="none">${d.trained}</text>
+              ${trainedW >= 14 ? `
+                <text x="${padLeft + trainedW / 2}" y="${y + 14.5}" fill="#ffffff" font-size="9.5" font-weight="900" font-family="monospace" text-anchor="middle" pointer-events="none">${d.trained}</text>
               ` : ''}
             ` : ''}
 
             <!-- Require Training / Untrained Bar (Amber) -->
             ${d.untrained > 0 ? `
               <rect
-                x="${labelWidth + trainedW}"
+                x="${padLeft + trainedW}"
                 y="${y + 2}"
                 width="${untrainedW}"
-                height="22"
-                rx="${d.trained > 0 ? '0 5 5 0' : '5'}"
+                height="15"
+                rx="${d.trained > 0 ? '0 4 4 0' : '4'}"
                 fill="#F59E0B"
                 class="transition-all opacity-95 group-hover:opacity-100"
               />
-              ${untrainedW > 18 ? `
-                <text x="${labelWidth + trainedW + untrainedW / 2}" y="${y + 17}" fill="#ffffff" font-size="12" font-weight="900" font-family="monospace" text-anchor="middle" pointer-events="none">${d.untrained}</text>
+              ${untrainedW >= 14 ? `
+                <text x="${padLeft + trainedW + untrainedW / 2}" y="${y + 14.5}" fill="#ffffff" font-size="9.5" font-weight="900" font-family="monospace" text-anchor="middle" pointer-events="none">${d.untrained}</text>
               ` : ''}
             ` : ''}
 
-            <!-- Total count & Compliance % label -->
-            <text x="${labelWidth + totalW + 12}" y="${y + 17}" fill="#0F172A" font-size="12" font-weight="900" font-family="'Plus Jakarta Sans', monospace">
-              ${d.total} <tspan fill="${d.compliance === 100 ? '#10B981' : '#F59E0B'}" font-size="11" font-weight="700">(${d.compliance}% Compliant)</tspan>
+            <!-- Total count & Compliance % label (11px monospace, matching PLR reference) -->
+            <text x="${padLeft + chartW + 12}" y="${y + 14}" fill="#0F172A" font-size="11" font-weight="800" font-family="monospace">
+              ${d.total} <tspan fill="${d.compliance === 100 ? '#10B981' : '#F59E0B'}" font-size="10" font-weight="700">(${d.compliance}%)</tspan>
             </text>
           </g>
         `;
       }).join('');
 
       const gridSvg = ticks.map(t => {
-        const x = labelWidth + (t / tickMax) * plotWidth;
+        const x = padLeft + (t / tickMax) * chartW;
         return `
-          <line x1="${x}" y1="5" x2="${x}" y2="${deptBreakdown.length * rowHeight + 14}" stroke="#E2E8F0" stroke-width="1.5" stroke-dasharray="3 3"/>
-          <text x="${x}" y="${deptBreakdown.length * rowHeight + 32}" fill="#64748B" font-size="11" font-weight="700" font-family="monospace" text-anchor="middle">${t}</text>
+          <line x1="${x}" y1="${padTop - 6}" x2="${x}" y2="${padTop + deptBreakdown.length * rowH + 4}" stroke="#E2E8F0" stroke-width="1.5" stroke-dasharray="3 3"/>
+          <text x="${x}" y="${padTop + deptBreakdown.length * rowH + 20}" fill="#64748B" font-size="10" font-weight="600" font-family="monospace" text-anchor="middle">${t}</text>
         `;
       }).join('');
 
       return `
-        <svg viewBox="0 0 ${svgWidth} ${chartHeight}" class="w-full h-auto select-none overflow-visible">
-          ${gridSvg}
-          ${barsSvg}
-        </svg>
+        <div class="w-full overflow-x-auto select-none">
+          <svg viewBox="0 0 ${w} ${h}" class="w-full min-w-[700px] h-auto overflow-hidden">
+            ${gridSvg}
+            ${barsSvg}
+          </svg>
+        </div>
       `;
     },
 
@@ -3008,18 +3019,22 @@
         ticks.push(t);
       }
 
-      const rowHeight = 42;
-      const chartHeight = moduleBreakdown.length * rowHeight + 50;
-      const svgWidth = 960;
-      const labelWidth = 190;
-      const plotWidth = svgWidth - labelWidth - 110;
+      // Standard PLR Bar Chart Geometry: 960 width, 190 padLeft, 64 padRight => 706px chart width
+      const w = 960;
+      const padLeft = 190;
+      const padRight = 64;
+      const padTop = 32;
+      const padBottom = 38;
+      const rowH = 26;
+      const chartW = w - padLeft - padRight;
+      const h = padTop + moduleBreakdown.length * rowH + padBottom;
 
       const barsSvg = moduleBreakdown.map((m, index) => {
-        const y = index * rowHeight + 12;
-        const totalW = (m.total / tickMax) * plotWidth;
-        const passedW = (m.passed / tickMax) * plotWidth;
-        const failedW = (m.failed / tickMax) * plotWidth;
-        const pendingW = (m.pending / tickMax) * plotWidth;
+        const y = padTop + index * rowH;
+        const totalW = (m.total / tickMax) * chartW;
+        const passedW = (m.passed / tickMax) * chartW;
+        const failedW = (m.failed / tickMax) * chartW;
+        const pendingW = (m.pending / tickMax) * chartW;
         const isSelected = vs.moduleFilter === m.name;
 
         return `
@@ -3031,85 +3046,87 @@
              title="Click to filter by ${m.name} (${m.passed} Passed, ${m.failed} Failed)">
             
             <!-- Row hover background -->
-            <rect x="0" y="${y - 4}" width="${svgWidth}" height="${rowHeight}" fill="${isSelected ? '#EFF6FF' : 'transparent'}" class="group-hover:fill-blue-50/60 transition-colors rounded-lg"/>
+            <rect x="0" y="${y - 3}" width="${w}" height="${rowH}" fill="${isSelected ? '#EFF6FF' : 'transparent'}" class="group-hover:fill-blue-50/60 transition-colors rounded-lg"/>
 
-            <!-- Module Label (13px bold, matching department matrix) -->
-            <text x="${labelWidth - 14}" y="${y + 16}" fill="${isSelected ? '#1D4ED8' : '#1E293B'}" font-size="13" font-weight="${isSelected ? '900' : '800'}" font-family="'Plus Jakarta Sans', system-ui, sans-serif" text-anchor="end" class="transition-colors group-hover:fill-blue-700">
+            <!-- Module Label (11px, bold, matching PLR reference) -->
+            <text x="${padLeft - 14}" y="${y + 14}" fill="${isSelected ? '#1D4ED8' : '#1E293B'}" font-size="11" font-weight="${isSelected ? '900' : '700'}" font-family="'Plus Jakarta Sans', system-ui, sans-serif" text-anchor="end" class="transition-colors group-hover:fill-blue-700">
               ${m.name.length > 22 ? m.name.substring(0, 21) + '…' : m.name}
             </text>
 
             <!-- Background track bar -->
-            <rect x="${labelWidth}" y="${y + 2}" width="${plotWidth}" height="22" rx="5" fill="#F1F5F9"/>
+            <rect x="${padLeft}" y="${y + 2}" width="${chartW}" height="15" rx="4" fill="#F1F5F9"/>
 
             <!-- Passed Segment (Emerald) -->
             ${m.passed > 0 ? `
               <rect
-                x="${labelWidth}"
+                x="${padLeft}"
                 y="${y + 2}"
                 width="${passedW}"
-                height="22"
-                rx="${m.failed > 0 || m.pending > 0 ? '5 0 0 5' : '5'}"
+                height="15"
+                rx="${m.failed > 0 || m.pending > 0 ? '4 0 0 4' : '4'}"
                 fill="#10B981"
                 class="transition-all opacity-95 group-hover:opacity-100"
               />
-              ${passedW > 18 ? `
-                <text x="${labelWidth + passedW / 2}" y="${y + 17}" fill="#ffffff" font-size="12" font-weight="900" font-family="monospace" text-anchor="middle" pointer-events="none">${m.passed}</text>
+              ${passedW >= 14 ? `
+                <text x="${padLeft + passedW / 2}" y="${y + 14.5}" fill="#ffffff" font-size="9.5" font-weight="900" font-family="monospace" text-anchor="middle" pointer-events="none">${m.passed}</text>
               ` : ''}
             ` : ''}
 
             <!-- Failed Segment (Rose) -->
             ${m.failed > 0 ? `
               <rect
-                x="${labelWidth + passedW}"
+                x="${padLeft + passedW}"
                 y="${y + 2}"
                 width="${failedW}"
-                height="22"
-                rx="${m.passed > 0 ? (m.pending > 0 ? '0' : '0 5 5 0') : (m.pending > 0 ? '5 0 0 5' : '5')}"
+                height="15"
+                rx="${m.passed > 0 ? (m.pending > 0 ? '0' : '0 4 4 0') : (m.pending > 0 ? '4 0 0 4' : '4')}"
                 fill="#EF4444"
                 class="transition-all opacity-95 group-hover:opacity-100"
               />
-              ${failedW > 18 ? `
-                <text x="${labelWidth + passedW + failedW / 2}" y="${y + 17}" fill="#ffffff" font-size="12" font-weight="900" font-family="monospace" text-anchor="middle" pointer-events="none">${m.failed}</text>
+              ${failedW >= 14 ? `
+                <text x="${padLeft + passedW + failedW / 2}" y="${y + 14.5}" fill="#ffffff" font-size="9.5" font-weight="900" font-family="monospace" text-anchor="middle" pointer-events="none">${m.failed}</text>
               ` : ''}
             ` : ''}
 
             <!-- Pending Segment (Slate) -->
             ${m.pending > 0 ? `
               <rect
-                x="${labelWidth + passedW + failedW}"
+                x="${padLeft + passedW + failedW}"
                 y="${y + 2}"
                 width="${pendingW}"
-                height="22"
-                rx="${m.passed > 0 || m.failed > 0 ? '0 5 5 0' : '5'}"
+                height="15"
+                rx="${m.passed > 0 || m.failed > 0 ? '0 4 4 0' : '4'}"
                 fill="#94A3B8"
                 class="transition-all opacity-95 group-hover:opacity-100"
               />
-              ${pendingW > 18 ? `
-                <text x="${labelWidth + passedW + failedW + pendingW / 2}" y="${y + 17}" fill="#ffffff" font-size="12" font-weight="900" font-family="monospace" text-anchor="middle" pointer-events="none">${m.pending}</text>
+              ${pendingW >= 14 ? `
+                <text x="${padLeft + passedW + failedW + pendingW / 2}" y="${y + 14.5}" fill="#ffffff" font-size="9.5" font-weight="900" font-family="monospace" text-anchor="middle" pointer-events="none">${m.pending}</text>
               ` : ''}
             ` : ''}
 
-            <!-- Total count & Pass Rate % label -->
-            <text x="${labelWidth + totalW + 12}" y="${y + 17}" fill="#0F172A" font-size="12" font-weight="900" font-family="'Plus Jakarta Sans', monospace">
-              ${m.total} <tspan fill="${m.passRate === 100 ? '#10B981' : m.failed > 0 ? '#EF4444' : '#F59E0B'}" font-size="11" font-weight="700">(${m.passRate}% Pass)</tspan>
+            <!-- Total count & Pass Rate % label (11px monospace, matching PLR reference) -->
+            <text x="${padLeft + chartW + 12}" y="${y + 14}" fill="#0F172A" font-size="11" font-weight="800" font-family="monospace">
+              ${m.total} <tspan fill="${m.passRate === 100 ? '#10B981' : m.failed > 0 ? '#EF4444' : '#F59E0B'}" font-size="10" font-weight="700">(${m.passRate}% Pass)</tspan>
             </text>
           </g>
         `;
       }).join('');
 
       const gridSvg = ticks.map(t => {
-        const x = labelWidth + (t / tickMax) * plotWidth;
+        const x = padLeft + (t / tickMax) * chartW;
         return `
-          <line x1="${x}" y1="5" x2="${x}" y2="${moduleBreakdown.length * rowHeight + 14}" stroke="#E2E8F0" stroke-width="1.5" stroke-dasharray="3 3"/>
-          <text x="${x}" y="${moduleBreakdown.length * rowHeight + 32}" fill="#64748B" font-size="11" font-weight="700" font-family="monospace" text-anchor="middle">${t}</text>
+          <line x1="${x}" y1="${padTop - 6}" x2="${x}" y2="${padTop + moduleBreakdown.length * rowH + 4}" stroke="#E2E8F0" stroke-width="1.5" stroke-dasharray="3 3"/>
+          <text x="${x}" y="${padTop + moduleBreakdown.length * rowH + 20}" fill="#64748B" font-size="10" font-weight="600" font-family="monospace" text-anchor="middle">${t}</text>
         `;
       }).join('');
 
       return `
-        <svg viewBox="0 0 ${svgWidth} ${chartHeight}" class="w-full h-auto select-none overflow-visible">
-          ${gridSvg}
-          ${barsSvg}
-        </svg>
+        <div class="w-full overflow-x-auto select-none">
+          <svg viewBox="0 0 ${w} ${h}" class="w-full min-w-[700px] h-auto overflow-hidden">
+            ${gridSvg}
+            ${barsSvg}
+          </svg>
+        </div>
       `;
     },
 

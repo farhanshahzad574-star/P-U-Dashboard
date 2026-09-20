@@ -850,7 +850,7 @@
             </div>
 
             <!-- Top Search Bar (In line with dashboard menu, same size as dashboard buttons) -->
-            <div class="relative w-40 sm:w-48 lg:w-56 shrink-0">
+            <div class="relative w-32 sm:w-36 lg:w-44 shrink-0">
               <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none text-slate-400">
                 <i data-lucide="search" class="w-3 h-3"></i>
               </div>
@@ -1347,7 +1347,7 @@
             <!-- PSM Header Actions (SEARCH FINDING & Control Buttons) -->
             <div id="detail-psm-actions" class="hidden shrink-0 flex items-center flex-wrap gap-2.5">
               <!-- SEARCH FINDING in PSM Header -->
-              <div class="relative w-48 sm:w-56 md:w-64">
+              <div class="relative w-36 sm:w-44 md:w-48">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-white/80">
                   <i data-lucide="search" class="w-3.5 h-3.5"></i>
                 </div>
@@ -1688,7 +1688,7 @@
         <!-- ========================================================================= -->
         <!-- DEDICATED STRATEGIC DASHBOARD SUITE CONTAINER (20 DEPARTMENT TILES)       -->
         <!-- ========================================================================= -->
-        <div id="strategic-specialized-container" class="hidden space-y-6">
+        <div id="strategic-specialized-container" class="hidden space-y-2.5 sm:space-y-3 !mt-1 sm:!mt-1.5">
           <!-- Populated dynamically via FPCL_STRATEGIC_SUITE.render() -->
         </div>
 
@@ -3400,6 +3400,9 @@
           // Build comparison items: Includes all modules, labeling PSM as PSM Audits, and plotting PSM Validation bars
           const chartItems = [];
           DASHBOARD_REGISTRY.forEach(d => {
+            // Exclude strategic from the Overview Progress Comparison Status
+            if (d.id === 'strategic') return;
+
             if (d.id === 'psm-validation') {
               chartItems.push({
                 id: 'psm-validation',
@@ -4425,6 +4428,13 @@
           const detailView = document.getElementById('dashboard-detail-view');
           detailView.classList.remove('hidden');
 
+          // FFC apps, Travel requests, and Netweaver buttons should only be displayed on overview page
+          const quickLinksBar = document.getElementById('overview-quick-links-bar');
+          if (quickLinksBar) {
+            quickLinksBar.classList.add('hidden');
+            quickLinksBar.classList.remove('flex');
+          }
+
           // Scroll to top
           window.scrollTo({ top: 0, behavior: 'smooth' });
 
@@ -4655,21 +4665,33 @@
           const strategicContainer = document.getElementById('strategic-specialized-container');
 
           if (dashboardId === 'strategic') {
-            if (headerCard) headerCard.classList.add('hidden');
-            if (connCard) connCard.classList.add('hidden');
+            if (headerCard) { headerCard.classList.add('hidden'); headerCard.hidden = true; }
+            if (connCard) { connCard.classList.add('hidden'); connCard.hidden = true; }
             const psmActions = document.getElementById('detail-psm-actions');
-            if (psmActions) psmActions.classList.add('hidden');
-            if (stdContainer) stdContainer.classList.add('hidden');
-            if (plrContainer) plrContainer.classList.add('hidden');
-            if (psmContainer) psmContainer.classList.add('hidden');
+            if (psmActions) { psmActions.classList.add('hidden'); psmActions.hidden = true; }
+            if (stdContainer) { stdContainer.classList.add('hidden'); stdContainer.hidden = true; }
+            if (plrContainer) { plrContainer.classList.add('hidden'); plrContainer.hidden = true; }
+            if (psmContainer) { psmContainer.classList.add('hidden'); psmContainer.hidden = true; }
             if (strategicContainer) {
               strategicContainer.classList.remove('hidden');
+              strategicContainer.hidden = false;
+              strategicContainer.style.marginTop = '0.375rem';
               if (window.FPCL_STRATEGIC_SUITE && typeof window.FPCL_STRATEGIC_SUITE.render === 'function') {
                 window.FPCL_STRATEGIC_SUITE.render();
               }
             }
             const breadcrumbActive = document.getElementById('breadcrumb-active-name');
             if (breadcrumbActive) breadcrumbActive.textContent = 'Strategic Dashboard';
+          } else {
+            if (strategicContainer) {
+              strategicContainer.style.marginTop = '';
+              strategicContainer.hidden = true;
+            }
+            if (headerCard) headerCard.hidden = false;
+            if (stdContainer) stdContainer.hidden = false;
+            if (plrContainer) plrContainer.hidden = false;
+            if (psmContainer) psmContainer.hidden = false;
+          }
           } else if (dashboardId === 'plr') {
             if (headerCard) headerCard.classList.remove('hidden');
             if (connCard) connCard.classList.add('hidden');
@@ -4903,6 +4925,14 @@
           const headerCard = document.getElementById('detail-header-card');
           if (headerCard) headerCard.classList.remove('hidden');
           document.getElementById('portal-landing-view').classList.remove('hidden');
+
+          // FFC apps, Travel requests, and Netweaver buttons should only be displayed on overview page
+          const quickLinksBar = document.getElementById('overview-quick-links-bar');
+          if (quickLinksBar) {
+            quickLinksBar.classList.remove('hidden');
+            quickLinksBar.classList.add('flex');
+          }
+
           window.scrollTo({ top: 0, behavior: 'smooth' });
           this.updateRollupStats();
           this.renderCards();

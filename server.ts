@@ -727,7 +727,7 @@ const STRATEGIC_TILE_REGISTRY: Record<string, { envKeys: string[]; code: string;
   'civil': { envKeys: ['CIVIL_SHEET_URL'], code: 'CIV', defaultTab: 'Civil_Actions', name: 'Civil' },
   'ei': { envKeys: ['EI_SHEET_URL'], code: 'EI', defaultTab: 'EI_Actions', name: 'E&I' },
   'finance': { envKeys: ['FINANCE_SHEET_URL'], code: 'FIN', defaultTab: 'Finance_Actions', name: 'Finance' },
-  'hseq': { envKeys: ['HSEQ_KPI', 'HSEQ_SHEET_URL'], code: 'HSEQ', defaultTab: 'HSEQ_KPI', name: 'HSEQ' },
+  'hseq': { envKeys: ['HSEQ_SHEET_URL', 'HSEQ_KPI'], code: 'HSEQ', defaultTab: 'HSEQ_KPI', name: 'HSEQ' },
   'hcm': { envKeys: ['HCM_SHEET_URL'], code: 'HCM', defaultTab: 'HCM_Actions', name: 'HCM' },
   'ims': { envKeys: ['IMS_SHEET_URL'], code: 'IMS', defaultTab: 'IMS_Actions', name: 'IMS' },
   'it': { envKeys: ['IT_SHEET_URL'], code: 'IT', defaultTab: 'IT_Actions', name: 'IT' },
