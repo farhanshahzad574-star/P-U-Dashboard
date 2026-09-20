@@ -43,15 +43,14 @@
       // Dynamic filters and pagination for Individual Tile Dashboard
       tileFilterSearch: '',
       tileFilterStatus: 'all', // 'all' | 'Open' | 'Closed'
-      tileFilterPriority: 'all', // 'all' | 'High' | 'Medium' | 'Low'
       tilePage: 1,
       tilePageSize: 15,
       tileLastSynced: {},
+      tileActions: {},
       // Dynamic filters and pagination for Strategic Master Rollup Dashboard
       masterFilterSearch: '',
       masterFilterDept: 'all', // 'all' | tileId
       masterFilterStatus: 'all', // 'all' | 'Open' | 'Closed'
-      masterFilterPriority: 'all', // 'all' | 'High' | 'Medium' | 'Low'
       masterPage: 1,
       masterPageSize: 15,
       masterLastSynced: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -268,8 +267,6 @@
             ...action,
             tileId: tile.id,
             department: tile.name,
-            employeeName: tile.employeeName,
-            employeeRole: tile.employeeRole,
             code: tile.code
           });
         });
@@ -467,7 +464,7 @@
         if (errorBox) {
           errorBox.innerHTML = `
             <i data-lucide="alert-circle" class="w-4 h-4 shrink-0 text-rose-600"></i>
-            <span>Wrong password</span>
+            <span>wrong password</span>
           `;
           errorBox.classList.remove('hidden');
           if (window.lucide) window.lucide.createIcons();
@@ -594,10 +591,41 @@
       this.render();
     },
 
+    // Explicitly set action status via dropdown menu ('Open' | 'Closed')
+    setActionStatus(tileId, actionId, newStatus) {
+      const tile = this.getTileData(tileId);
+      if (!tile) return;
+
+      const actions = [...tile.actions];
+      const action = actions.find(a => a.id === actionId);
+      if (!action) return;
+
+      action.status = newStatus;
+      if (newStatus === 'Closed' || newStatus === 'Completed') {
+        const today = new Date().toISOString().split('T')[0];
+        action.closureDate = today;
+      } else {
+        action.closureDate = '';
+      }
+
+      this.customActions[tileId] = actions;
+      this.saveStoredActions();
+
+      this.showToast(
+        'Action Status Updated',
+        `Action ${action.id} is now ${newStatus.toUpperCase()}`,
+        newStatus === 'Closed' ? 'success' : 'info'
+      );
+
+      if (this.state.selectedTileId) {
+        this.openDetailModal(this.state.selectedTileId);
+      }
+      this.render();
+    },
+
     // Add a new action item to an employee tile
     addNewAction(tileId) {
       const descInput = document.getElementById('new-action-desc');
-      const prioritySelect = document.getElementById('new-action-priority');
       const dueInput = document.getElementById('new-action-due');
       const statusSelect = document.getElementById('new-action-status');
 
@@ -617,11 +645,10 @@
       const newAction = {
         id: newId,
         title: descInput.value.trim(),
-        priority: prioritySelect ? prioritySelect.value : 'High',
         dueDate: dueInput ? dueInput.value : new Date().toISOString().split('T')[0],
         status,
         closureDate: status === 'Closed' ? new Date().toISOString().split('T')[0] : '',
-        remarks: 'Directly logged into Employee Action Sheet.'
+        remarks: 'Directly logged into Action Sheet.'
       };
 
       actions.unshift(newAction);
@@ -665,22 +692,18 @@
       if (!tile || !tile.actions) return [];
       const q = (this.state.tileFilterSearch || '').toLowerCase().trim();
       const statusF = this.state.tileFilterStatus || 'all';
-      const prioF = this.state.tileFilterPriority || 'all';
 
       return tile.actions.filter(a => {
         const isClosed = a.status === 'Closed' || a.status === 'Completed';
         if (statusF === 'Open' && isClosed) return false;
         if (statusF === 'Closed' && !isClosed) return false;
 
-        if (prioF !== 'all' && (a.priority || '').toLowerCase() !== prioF.toLowerCase()) return false;
-
         if (q) {
           const matchId = (a.id || '').toLowerCase().includes(q);
           const matchTitle = (a.title || '').toLowerCase().includes(q);
           const matchRemarks = (a.remarks || '').toLowerCase().includes(q);
           const matchDue = (a.dueDate || '').toLowerCase().includes(q);
-          const matchPrio = (a.priority || '').toLowerCase().includes(q);
-          if (!matchId && !matchTitle && !matchRemarks && !matchDue && !matchPrio) return false;
+          if (!matchId && !matchTitle && !matchRemarks && !matchDue) return false;
         }
 
         return true;
@@ -696,7 +719,6 @@
     clearTileFilters() {
       this.state.tileFilterSearch = '';
       this.state.tileFilterStatus = 'all';
-      this.state.tileFilterPriority = 'all';
       this.state.tilePage = 1;
       this.render();
     },
@@ -723,14 +745,13 @@
         return;
       }
 
-      const headers = ['Sr #', 'Action ID', 'Action Description', 'Due Date', 'Status', 'Closure Date', 'Remarks'];
+      const headers = ['Sr #', 'Action ID', 'Action Description', 'Due Date', 'Status', 'Remarks'];
       const rows = data.map((d, i) => [
         i + 1,
         `"${String(d.id || '').replace(/"/g, '""')}"`,
         `"${String(d.title || '').replace(/"/g, '""')}"`,
         `"${String(d.dueDate || '').replace(/"/g, '""')}"`,
         `"${String(d.status || '').replace(/"/g, '""')}"`,
-        `"${String(d.closureDate || '').replace(/"/g, '""')}"`,
         `"${String(d.remarks || '').replace(/"/g, '""')}"`
       ]);
 
@@ -771,7 +792,6 @@
       const q = (this.state.masterFilterSearch || '').toLowerCase().trim();
       const deptF = this.state.masterFilterDept || 'all';
       const statusF = this.state.masterFilterStatus || 'all';
-      const prioF = this.state.masterFilterPriority || 'all';
 
       return all.filter(a => {
         if (deptF !== 'all' && a.tileId !== deptF && (a.department || '').toLowerCase() !== deptF.toLowerCase()) {
@@ -782,16 +802,13 @@
         if (statusF === 'Open' && isClosed) return false;
         if (statusF === 'Closed' && !isClosed) return false;
 
-        if (prioF !== 'all' && (a.priority || '').toLowerCase() !== prioF.toLowerCase()) return false;
-
         if (q) {
           const matchId = (a.id || '').toLowerCase().includes(q);
           const matchTitle = (a.title || '').toLowerCase().includes(q);
           const matchDept = (a.department || '').toLowerCase().includes(q);
-          const matchLead = (a.employeeName || '').toLowerCase().includes(q);
           const matchRemarks = (a.remarks || '').toLowerCase().includes(q);
           const matchDue = (a.dueDate || '').toLowerCase().includes(q);
-          if (!matchId && !matchTitle && !matchDept && !matchLead && !matchRemarks && !matchDue) return false;
+          if (!matchId && !matchTitle && !matchDept && !matchRemarks && !matchDue) return false;
         }
 
         return true;
@@ -808,7 +825,6 @@
       this.state.masterFilterSearch = '';
       this.state.masterFilterDept = 'all';
       this.state.masterFilterStatus = 'all';
-      this.state.masterFilterPriority = 'all';
       this.state.masterPage = 1;
       this.render();
     },
@@ -833,7 +849,7 @@
         return;
       }
 
-      const headers = ['Sr #', 'Department', 'Code', 'Action ID', 'Action Description', 'Due Date', 'Status', 'Closure Date', 'Remarks'];
+      const headers = ['Sr #', 'Department', 'Code', 'Action ID', 'Action Description', 'Due Date', 'Status', 'Remarks'];
       const rows = data.map((d, i) => [
         i + 1,
         `"${String(d.department || '').replace(/"/g, '""')}"`,
@@ -842,7 +858,6 @@
         `"${String(d.title || '').replace(/"/g, '""')}"`,
         `"${String(d.dueDate || '').replace(/"/g, '""')}"`,
         `"${String(d.status || '').replace(/"/g, '""')}"`,
-        `"${String(d.closureDate || '').replace(/"/g, '""')}"`,
         `"${String(d.remarks || '').replace(/"/g, '""')}"`
       ]);
 
@@ -1266,18 +1281,14 @@
       const filteredOpen = filteredTotal - filteredClosed;
       const filteredRate = filteredTotal > 0 ? Math.round((filteredClosed / filteredTotal) * 100) : 0;
 
-      // Priority Breakdown for Trend Bars
-      const prioHigh = allActions.filter(a => a.priority === 'High');
-      const prioHighClosed = prioHigh.filter(a => a.status === 'Closed' || a.status === 'Completed').length;
-      const prioHighRate = prioHigh.length > 0 ? Math.round((prioHighClosed / prioHigh.length) * 100) : 0;
-
-      const prioMed = allActions.filter(a => a.priority === 'Medium');
-      const prioMedClosed = prioMed.filter(a => a.status === 'Closed' || a.status === 'Completed').length;
-      const prioMedRate = prioMed.length > 0 ? Math.round((prioMedClosed / prioMed.length) * 100) : 0;
-
-      const prioLow = allActions.filter(a => a.priority === 'Low');
-      const prioLowClosed = prioLow.filter(a => a.status === 'Closed' || a.status === 'Completed').length;
-      const prioLowRate = prioLow.length > 0 ? Math.round((prioLowClosed / prioLow.length) * 100) : 0;
+      // Chart context actions (respecting department filter)
+      const deptActions = this.state.masterFilterDept === 'all' 
+        ? allActions 
+        : allActions.filter(a => a.employeeId === this.state.masterFilterDept || a.departmentId === this.state.masterFilterDept);
+      const chartTotal = deptActions.length;
+      const chartClosed = deptActions.filter(a => a.status === 'Closed' || a.status === 'Completed').length;
+      const chartOpen = chartTotal - chartClosed;
+      const chartRate = chartTotal > 0 ? Math.round((chartClosed / chartTotal) * 100) : 0;
 
       // Pagination for Simple Table
       const page = this.state.masterPage || 1;
@@ -1288,22 +1299,33 @@
       const endIdx = Math.min(filteredTotal, startIdx + pageSize);
       const pagedActions = filteredActions.slice(startIdx, endIdx);
 
-      const isFiltered = this.state.masterFilterSearch || this.state.masterFilterDept !== 'all' || this.state.masterFilterStatus !== 'all' || this.state.masterFilterPriority !== 'all';
+      const isFiltered = this.state.masterFilterSearch || this.state.masterFilterDept !== 'all' || this.state.masterFilterStatus !== 'all';
 
       return `
         <div class="space-y-6">
-          <!-- TOP ACTION HEADER BAR WITH SYNC & EXPORT -->
+          <!-- TOP ACTION HEADER BAR WITH BACK, SYNC, EXPORT & LOCK -->
           <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div class="space-y-1">
-              <div class="flex items-center gap-2 flex-wrap">
-                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-purple-100 text-purple-800 border border-purple-200">
-                  Strategic Dashboard
-                </span>
-                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-200">
-                  Aggregated From All Department Tiles
-                </span>
+            <div class="flex items-center gap-3.5">
+              <button
+                type="button"
+                onclick="window.FPCL_STRATEGIC_SUITE.backToGrid()"
+                class="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition-all cursor-pointer shrink-0"
+                title="Back to Strategic Dashboard Matrix"
+              >
+                <i data-lucide="arrow-left" class="w-5 h-5"></i>
+              </button>
+
+              <div class="space-y-1">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-purple-100 text-purple-800 border border-purple-200">
+                    Strategic Dashboard
+                  </span>
+                  <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-200">
+                    Aggregated From All Department Tiles
+                  </span>
+                </div>
+                <h2 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">COO Executive Dashboard</h2>
               </div>
-              <h2 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">COO Executive Dashboard</h2>
             </div>
 
             <div class="flex items-center gap-2 flex-wrap">
@@ -1340,6 +1362,17 @@
                   <span>Reset Filters</span>
                 </button>
               ` : ''}
+
+              <!-- Lock & Return -->
+              <button
+                type="button"
+                onclick="window.FPCL_STRATEGIC_SUITE.backToGrid()"
+                class="px-3.5 py-2 text-xs font-bold rounded-xl bg-slate-100 hover:bg-rose-50 text-slate-700 hover:text-rose-700 hover:border-rose-200 border border-slate-200 transition-colors cursor-pointer flex items-center gap-1.5 shadow-2xs"
+                title="Lock dashboard immediately and return to grid"
+              >
+                <i data-lucide="lock" class="w-3.5 h-3.5"></i>
+                <span>Lock & Return</span>
+              </button>
             </div>
           </div>
 
@@ -1354,7 +1387,7 @@
                 <input
                   type="text"
                   value="${this.state.masterFilterSearch || ''}"
-                  placeholder="Filter actions, leads, IDs..."
+                  placeholder="Filter actions, IDs, remarks..."
                   class="w-full pl-9 pr-8 py-2 bg-slate-50 hover:bg-white focus:bg-white text-slate-900 border border-slate-200 focus:border-purple-500 rounded-xl text-xs font-medium outline-none transition-all"
                   oninput="window.FPCL_STRATEGIC_SUITE.setMasterFilter('masterFilterSearch', this.value)"
                 />
@@ -1400,63 +1433,97 @@
 
           <!-- KPI VALUES -->
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
-              <div class="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Company Actions</div>
-              <div class="text-2xl sm:text-3xl font-black text-slate-900 mt-1">${filteredTotal}</div>
-              <div class="text-[11px] text-slate-400 mt-1">Across 19 Department Tiles</div>
+            <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs text-center flex flex-col items-center justify-center">
+              <div class="text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Total Company Actions</div>
+              <div class="text-2xl sm:text-3xl font-black text-slate-900 mt-1 text-center">${filteredTotal}</div>
             </div>
 
-            <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
-              <div class="text-xs font-bold text-emerald-700 uppercase tracking-wider">Closed Actions</div>
-              <div class="text-2xl sm:text-3xl font-black text-emerald-600 mt-1">${filteredClosed}</div>
-              <div class="text-[11px] font-semibold text-emerald-700 mt-1">${filteredRate}% Closure Rate</div>
+            <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs text-center flex flex-col items-center justify-center">
+              <div class="text-xs font-bold text-emerald-700 uppercase tracking-wider text-center">Closed Actions</div>
+              <div class="text-2xl sm:text-3xl font-black text-emerald-600 mt-1 text-center">${filteredClosed}</div>
             </div>
 
-            <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
-              <div class="text-xs font-bold text-rose-700 uppercase tracking-wider">Open Actions</div>
-              <div class="text-2xl sm:text-3xl font-black text-rose-600 mt-1">${filteredOpen}</div>
-              <div class="text-[11px] font-semibold text-rose-700 mt-1">Pending Execution</div>
+            <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs text-center flex flex-col items-center justify-center">
+              <div class="text-xs font-bold text-rose-700 uppercase tracking-wider text-center">Open Actions</div>
+              <div class="text-2xl sm:text-3xl font-black text-rose-600 mt-1 text-center">${filteredOpen}</div>
             </div>
 
-            <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
-              <div class="text-xs font-bold text-purple-700 uppercase tracking-wider">100% Closed Depts</div>
-              <div class="text-2xl sm:text-3xl font-black text-purple-700 mt-1">${rollup.employeesFullyClosed} / ${allTiles.length}</div>
-              <div class="text-[11px] font-semibold text-purple-700 mt-1">Zero Open Actions</div>
+            <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs text-center flex flex-col items-center justify-center">
+              <div class="text-xs font-bold text-purple-700 uppercase tracking-wider text-center">100% Closed Depts</div>
+              <div class="text-2xl sm:text-3xl font-black text-purple-700 mt-1 text-center">${rollup.employeesFullyClosed} / ${allTiles.length}</div>
             </div>
           </div>
 
-          <!-- TREND BARS (NO EXTRA DESCRIPTIONS OR TEXTS BELOW HEADING AND AT BOTTOM OF VISUALS) -->
+          <!-- TREND BARS & DONUT CHART: ACTION STATUS TRENDS & OPEN/CLOSE DONUT -->
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Trend Card 1: Department Performance Trend Bars -->
-            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-4">
-              <div class="flex items-center justify-between">
-                <h3 class="text-sm font-bold text-slate-900">Department Performance Trends</h3>
-                <span class="text-xs font-mono font-bold text-slate-500">19 Departments</span>
+            <!-- Trend Card 1: Action Status Trends (matching attached image) -->
+            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs flex flex-col justify-between space-y-4">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2 border-b border-slate-100">
+                <div class="flex items-center gap-2">
+                  <div class="w-8 h-8 rounded-xl bg-purple-100 text-purple-800 flex items-center justify-center font-black text-xs border border-purple-200 shrink-0">
+                    <i data-lucide="bar-chart-2" class="w-4 h-4"></i>
+                  </div>
+                  <div>
+                    <h3 class="text-sm font-bold text-slate-900 leading-tight">Action Status Trends</h3>
+                    <span class="text-xs font-mono font-bold text-slate-500">${allTiles.length} Departments</span>
+                  </div>
+                </div>
+
+                <!-- Legend: Open (Red), Closed (Green), Total -->
+                <div class="flex items-center gap-2 text-xs font-bold flex-wrap">
+                  <div class="flex items-center gap-1.5 bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-200/80">
+                    <span class="w-2.5 h-2.5 rounded-full bg-[#f43f5e] shrink-0"></span>
+                    <span class="text-slate-600">Open:</span>
+                    <span class="font-mono text-rose-700 font-black">${chartOpen}</span>
+                  </div>
+                  <div class="flex items-center gap-1.5 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200/80">
+                    <span class="w-2.5 h-2.5 rounded-full bg-[#10b981] shrink-0"></span>
+                    <span class="text-slate-600">Closed:</span>
+                    <span class="font-mono text-emerald-700 font-black">${chartClosed}</span>
+                  </div>
+                  <div class="flex items-center gap-1.5 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200/80">
+                    <span class="text-slate-600">Total:</span>
+                    <span class="font-mono text-slate-800 font-black">${chartTotal}</span>
+                  </div>
+                </div>
               </div>
 
-              <div class="space-y-3 max-h-[360px] overflow-y-auto pr-2">
-                ${allTiles.map(t => {
-                  const tTotal = t.stats.total;
-                  const tClosed = t.stats.closed;
-                  const tRate = t.stats.rate;
-                  return `
-                    <div class="space-y-1">
-                      <div class="flex items-center justify-between text-xs">
-                        <span class="font-bold text-slate-800 truncate max-w-[200px]">${t.name} (${t.code})</span>
-                        <span class="font-mono font-semibold text-slate-600">${tClosed}/${tTotal} (${tRate}%)</span>
-                      </div>
-                      <div class="w-full h-4 bg-slate-100 rounded-lg overflow-hidden flex shadow-inner">
-                        <div class="bg-emerald-500 h-full transition-all duration-300" style="width: ${tRate}%"></div>
-                        <div class="bg-rose-400 h-full transition-all duration-300" style="width: ${100 - tRate}%"></div>
-                      </div>
-                    </div>
-                  `;
-                }).join('')}
+              <!-- All Departments Stacked Bar Chart (matching attached image) -->
+              <div class="max-h-[380px] overflow-y-auto overflow-x-auto rounded-xl border border-slate-200/70 bg-slate-50/40 p-2 select-none">
+                ${(() => {
+                  const bossRows = allTiles.map(t => {
+                    const actions = (t.actions || (this.state?.tileActions?.[t.id]) || []);
+                    const tTotal = actions.length;
+                    const tClosed = actions.filter(a => a.status === 'Closed' || a.status === 'Completed').length;
+                    const tOpen = tTotal - tClosed;
+                    const tRate = tTotal > 0 ? Math.round((tClosed / tTotal) * 100) : 0;
+                    return {
+                      id: t.id,
+                      name: t.name,
+                      code: t.code,
+                      open: tOpen,
+                      closed: tClosed,
+                      total: tTotal,
+                      rate: tRate,
+                      isActive: this.state.masterFilterDept === t.id
+                    };
+                  }).sort((a, b) => b.total - a.total);
+
+                  return this.renderActionStatusTrendsSvg(bossRows, {
+                    width: 700,
+                    padLeft: 135,
+                    padRight: 50,
+                    rowHeight: 34,
+                    barHeight: 16,
+                    activeTileId: this.state.masterFilterDept !== 'all' ? this.state.masterFilterDept : null,
+                    interactive: true
+                  });
+                })()}
               </div>
             </div>
 
             <!-- Trend Card 2: Open vs Close Donut Chart (Right side of Action Status Trends) -->
-            ${this.renderOpenCloseDonutCard(filteredClosed, filteredOpen, filteredTotal, filteredRate)}
+            ${this.renderOpenCloseDonutCard(chartClosed, chartOpen, chartTotal, chartRate, this.state.masterFilterStatus || 'all')}
           </div>
 
           <!-- SIMPLE TABLE FOR TEXT DATA WITH FILTER & PAGINATION -->
@@ -1511,8 +1578,9 @@
                         <td class="py-2.5 px-3.5 text-slate-900 font-medium">${a.title}</td>
                         <td class="py-2.5 px-3.5 text-slate-600">${a.dueDate || '-'}</td>
                         <td class="py-2.5 px-3.5">
-                          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${isClosed ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'}">
-                            ${isClosed ? 'Closed' : 'Open'}
+                          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${isClosed ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-rose-50 text-rose-800 border border-rose-200'}">
+                            <span class="w-1.5 h-1.5 rounded-full ${isClosed ? 'bg-emerald-500' : 'bg-rose-500'}"></span>
+                            ${a.status || (isClosed ? 'Closed' : 'Open')}
                           </span>
                         </td>
                         <td class="py-2.5 px-3.5 text-slate-500">${a.remarks || '-'}</td>
@@ -1553,10 +1621,324 @@
     },
 
     // =========================================================================
+    // RENDER: ACTION STATUS TRENDS SVG (HORIZONTAL STACKED BAR CHART MATCHING ATTACHED IMAGE)
+    // =========================================================================
+    renderActionStatusTrendsSvg(rows, options = {}) {
+      if (!rows || rows.length === 0) {
+        return `<div class="p-6 text-center text-xs text-slate-400">No actions recorded</div>`;
+      }
+
+      const w = options.width || 700;
+      const padLeft = options.padLeft || 135;
+      const padRight = options.padRight || 50;
+      const padTop = 16;
+      const padBottom = 26;
+      const rowH = options.rowHeight || 34;
+      const barH = options.barHeight || 16;
+      const chartW = Math.max(100, w - padLeft - padRight);
+      const maxVal = options.maxVal !== undefined ? options.maxVal : Math.max(...rows.map(r => r.total), 1);
+      const totalH = padTop + rows.length * rowH + padBottom;
+
+      // Vertical dashed grid lines (0, 25%, 50%, 75%, 100%)
+      const gridSteps = [0, 0.25, 0.5, 0.75, 1];
+      const gridSvg = gridSteps.map(step => {
+        const x = padLeft + step * chartW;
+        const val = Math.round(step * maxVal);
+        return `
+          <line x1="${x}" y1="${padTop - 6}" x2="${x}" y2="${padTop + rows.length * rowH + 4}" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="3 3"/>
+          <text x="${x}" y="${padTop + rows.length * rowH + 18}" fill="#94a3b8" font-size="9.5" font-family="monospace" font-weight="600" text-anchor="middle">${val}</text>
+        `;
+      }).join('');
+
+      // Department horizontal stacked rows
+      const rowsSvg = rows.map((r, index) => {
+        const y = padTop + index * rowH;
+        const barY = y + Math.round((rowH - barH) / 2);
+        const textY = barY + barH - 4;
+        const openW = maxVal > 0 ? (r.open / maxVal) * chartW : 0;
+        const closedW = maxVal > 0 ? (r.closed / maxVal) * chartW : 0;
+        const isActive = options.activeTileId ? (options.activeTileId === r.id) : Boolean(r.isActive);
+        const clickAttr = (options.interactive !== false && r.id && r.id !== 'current') ? `onclick="window.FPCL_STRATEGIC_SUITE.handleTileClick('${r.id}')"` : '';
+        const clipId = `clip-trend-${r.id || 'r'}-${index}-${Math.floor(Math.random() * 10000)}`;
+
+        return `
+          <g class="group cursor-pointer" ${clickAttr}>
+            <!-- Background Row Hover Strip -->
+            <rect
+              x="4"
+              y="${y - 1}"
+              width="${w - 8}"
+              height="${rowH - 2}"
+              rx="6"
+              fill="${isActive ? '#f5f3ff' : 'transparent'}"
+              stroke="${isActive ? '#c4b5fd' : 'transparent'}"
+              stroke-width="1"
+              class="group-hover:fill-slate-100/70 transition-colors"
+            />
+
+            <!-- Department Name Label on Left (Y-axis) -->
+            <text
+              x="${padLeft - 14}"
+              y="${textY}"
+              fill="${isActive ? '#7c3aed' : '#1e293b'}"
+              font-size="11"
+              font-weight="${isActive ? '900' : '700'}"
+              font-family="'Plus Jakarta Sans', system-ui, -apple-system, sans-serif"
+              text-anchor="end"
+              class="transition-colors group-hover:fill-purple-700"
+            >
+              ${r.name || r.code}
+              <title>${r.name || r.code}: ${r.total} Total (${r.open} Open, ${r.closed} Closed, ${r.rate}% Rate)</title>
+            </text>
+
+            <!-- Subtle Background Track Bar -->
+            <rect
+              x="${padLeft}"
+              y="${barY}"
+              width="${chartW}"
+              height="${barH}"
+              rx="4"
+              fill="#f1f5f9"
+              class="group-hover:fill-slate-200/70 transition-colors"
+            />
+
+            <!-- Clip path for stacked bars so outer corners remain rounded rx=4 -->
+            <defs>
+              <clipPath id="${clipId}">
+                <rect x="${padLeft}" y="${barY}" width="${chartW}" height="${barH}" rx="4"/>
+              </clipPath>
+            </defs>
+
+            <!-- Stacked Bars (Clipped) -->
+            <g clip-path="url(#${clipId})">
+              <!-- Open Findings Bar (Rose-500 #f43f5e) -->
+              ${r.open > 0 ? `
+                <rect
+                  x="${padLeft}"
+                  y="${barY}"
+                  width="${openW}"
+                  height="${barH}"
+                  fill="#f43f5e"
+                  class="transition-all hover:brightness-110"
+                />
+              ` : ''}
+
+              <!-- Closed Findings Bar (Emerald-500 #10b981) -->
+              ${r.closed > 0 ? `
+                <rect
+                  x="${padLeft + openW}"
+                  y="${barY}"
+                  width="${closedW}"
+                  height="${barH}"
+                  fill="#10b981"
+                  class="transition-all hover:brightness-110"
+                />
+              ` : ''}
+            </g>
+
+            <!-- Open Value Text inside Rose Bar -->
+            ${r.open > 0 && openW >= 14 ? `
+              <text
+                x="${padLeft + openW / 2}"
+                y="${textY}"
+                fill="#ffffff"
+                font-size="9.5"
+                font-weight="900"
+                font-family="monospace"
+                text-anchor="middle"
+                class="pointer-events-none select-none"
+              >${r.open}</text>
+            ` : ''}
+
+            <!-- Closed Value Text inside Emerald Bar -->
+            ${r.closed > 0 && closedW >= 14 ? `
+              <text
+                x="${padLeft + openW + closedW / 2}"
+                y="${textY}"
+                fill="#ffffff"
+                font-size="9.5"
+                font-weight="900"
+                font-family="monospace"
+                text-anchor="middle"
+                class="pointer-events-none select-none"
+              >${r.closed}</text>
+            ` : ''}
+
+            <!-- Total Count Metric on Right -->
+            <text
+              x="${padLeft + chartW + 12}"
+              y="${textY}"
+              fill="#64748b"
+              font-size="11"
+              font-weight="800"
+              font-family="monospace"
+              text-anchor="start"
+              class="transition-colors group-hover:fill-slate-900"
+            >${r.total}</text>
+          </g>
+        `;
+      }).join('');
+
+      return `
+        <div class="w-full overflow-x-auto select-none">
+          <svg viewBox="0 0 ${w} ${totalH}" class="w-full min-w-[580px] h-auto overflow-hidden">
+            ${gridSvg}
+            ${rowsSvg}
+          </svg>
+        </div>
+      `;
+    },
+
+    // =========================================================================
+    // RENDER: SINGLE STATUS BAR / TRENDS CARD FOR INDIVIDUAL TILE DASHBOARDS
+    // =========================================================================
+    renderSingleStatusBar(arg1, arg2, arg3, arg4, arg5, arg6) {
+      let tile = null;
+      let closed = 0;
+      let open = 0;
+      let total = 0;
+      let rate = 0;
+      let filterStatus = 'all';
+
+      if (typeof arg1 === 'object' && arg1 !== null) {
+        tile = arg1;
+        closed = Number(arg2) || 0;
+        open = Number(arg3) || 0;
+        total = Number(arg4) || 0;
+        rate = Number(arg5) || 0;
+        filterStatus = arg6 || 'all';
+      } else {
+        closed = Number(arg1) || 0;
+        open = Number(arg2) || 0;
+        total = Number(arg3) || 0;
+        rate = Number(arg4) || 0;
+        filterStatus = arg5 || 'all';
+        tile = (this.state.selectedTileId ? this.getTileData(this.state.selectedTileId) : null);
+      }
+
+      const allEmployeeTiles = this.getAllTiles().filter(t => !t.isBossDashboard);
+      const allDepts = allEmployeeTiles.map(t => {
+        const actions = (t.actions || (this.state?.tileActions?.[t.id]) || []);
+        const tTotal = actions.length;
+        const tClosed = actions.filter(a => a.status === 'Closed' || a.status === 'Completed').length;
+        const tOpen = tTotal - tClosed;
+        const tRate = tTotal > 0 ? Math.round((tClosed / tTotal) * 100) : 0;
+        return {
+          id: t.id,
+          name: t.name,
+          code: t.code,
+          open: tOpen,
+          closed: tClosed,
+          total: tTotal,
+          rate: tRate,
+          isActive: Boolean(tile && tile.id === t.id)
+        };
+      }).sort((a, b) => b.total - a.total);
+
+      const tileName = tile ? (tile.name || tile.code) : 'Department';
+      const singleRow = [{
+        id: tile ? tile.id : 'current',
+        name: tileName,
+        code: tile ? tile.code : 'CUR',
+        open,
+        closed,
+        total,
+        rate,
+        isActive: true
+      }];
+
+      return `
+        <div class="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-xs flex flex-col justify-between space-y-4">
+          <!-- Header with Title, Tile Badge and Open/Closed Legend -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-xl bg-purple-100 text-purple-800 flex items-center justify-center font-black text-xs border border-purple-200 shrink-0">
+                ${tile ? tile.code : 'ACT'}
+              </div>
+              <div>
+                <h3 class="text-sm sm:text-base font-black text-slate-900 leading-tight">Action Status Trends</h3>
+                <p class="text-[11px] text-slate-500 font-medium">${tileName} • Open vs Closed Trends</p>
+              </div>
+            </div>
+
+            <!-- Legend Badges matching attached image colors -->
+            <div class="flex items-center gap-2 text-xs font-bold flex-wrap">
+              <div class="flex items-center gap-1.5 bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-200/80">
+                <span class="w-2.5 h-2.5 rounded-full bg-[#f43f5e] shrink-0"></span>
+                <span class="text-slate-600">Open:</span>
+                <span class="font-mono text-rose-700 font-black">${open}</span>
+              </div>
+              <div class="flex items-center gap-1.5 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200/80">
+                <span class="w-2.5 h-2.5 rounded-full bg-[#10b981] shrink-0"></span>
+                <span class="text-slate-600">Closed:</span>
+                <span class="font-mono text-emerald-700 font-black">${closed}</span>
+              </div>
+              <div class="flex items-center gap-1.5 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200/80">
+                <span class="text-slate-600">Total:</span>
+                <span class="font-mono text-slate-800 font-black">${total}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 1: Focused Department Bar (matching attached image) -->
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between text-xs font-bold text-slate-600 px-1">
+              <span class="flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-purple-600"></span>
+                <span>${tileName} Trend Bar</span>
+              </span>
+              <span class="font-mono text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200/60 font-bold">${rate}% Closed</span>
+            </div>
+            <div class="bg-slate-50/60 rounded-xl border border-slate-200/70 p-2.5">
+              ${this.renderActionStatusTrendsSvg(singleRow, {
+                width: 700,
+                padLeft: 135,
+                padRight: 50,
+                rowHeight: 36,
+                barHeight: 18,
+                maxVal: total > 0 ? total : 1,
+                activeTileId: tile ? tile.id : 'current',
+                interactive: false
+              })}
+            </div>
+          </div>
+
+          <!-- Section 2: All Departments Comparison (Horizontal Stacked Bar Chart as attached image) -->
+          <div class="pt-2 border-t border-slate-100 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-700 uppercase tracking-wider">Strategic Departments Benchmark</span>
+              <span class="text-[11px] font-mono text-slate-400">Click department row to view</span>
+            </div>
+            <div class="max-h-[220px] overflow-y-auto overflow-x-auto rounded-xl border border-slate-200/70 bg-slate-50/40 p-2 select-none">
+              ${this.renderActionStatusTrendsSvg(allDepts, {
+                width: 700,
+                padLeft: 135,
+                padRight: 50,
+                rowHeight: 32,
+                barHeight: 16,
+                activeTileId: tile ? tile.id : null,
+                interactive: true
+              })}
+            </div>
+          </div>
+
+          ${filterStatus !== 'all' ? `
+            <div class="pt-1">
+              <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold ${filterStatus === 'Open' ? 'bg-rose-50 text-rose-700 border border-rose-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'}">
+                Filtered to ${filterStatus} Actions
+              </span>
+            </div>
+          ` : ''}
+        </div>
+      `;
+    },
+
+    // =========================================================================
     // RENDER: OPEN / CLOSE DONUT CHART (Right side of Action Status Trends)
     // =========================================================================
-    renderOpenCloseDonutCard(closed, open, total, rate) {
-      const circumference = 339.292; // 2 * PI * 54
+    renderOpenCloseDonutCard(closed, open, total, rate, filterStatus = 'all') {
+      const radius = 68;
+      const circumference = 2 * Math.PI * radius; // ~427.257
       const closedPct = total > 0 ? closed / total : 0;
       const openPct = total > 0 ? open / total : 0;
       const closedDash = Math.min(circumference, Math.max(0, closedPct * circumference));
@@ -1564,79 +1946,85 @@
       const closedRate = total > 0 ? Math.round(closedPct * 100) : 0;
       const openRate = total > 0 ? Math.round(openPct * 100) : 0;
 
+      let displayRate = `${rate}%`;
+      let svgArcs = '';
+
+      if (total === 0) {
+        displayRate = '0%';
+        svgArcs = '';
+      } else if (filterStatus === 'Open') {
+        displayRate = `${openRate}%`;
+        svgArcs = `
+          <circle
+            cx="90" cy="90" r="${radius}"
+            fill="none"
+            stroke="#f43f5e"
+            stroke-width="18"
+            stroke-dasharray="${openDash} ${circumference}"
+            stroke-dashoffset="0"
+            stroke-linecap="round"
+            class="transition-all duration-500"
+          />
+        `;
+      } else if (filterStatus === 'Closed') {
+        displayRate = `${closedRate}%`;
+        svgArcs = `
+          <circle
+            cx="90" cy="90" r="${radius}"
+            fill="none"
+            stroke="#10b981"
+            stroke-width="18"
+            stroke-dasharray="${closedDash} ${circumference}"
+            stroke-dashoffset="0"
+            stroke-linecap="round"
+            class="transition-all duration-500"
+          />
+        `;
+      } else {
+        // All
+        displayRate = `${rate}%`;
+        svgArcs = `
+          <!-- Closed Arc (Emerald) -->
+          <circle
+            cx="90" cy="90" r="${radius}"
+            fill="none"
+            stroke="#10b981"
+            stroke-width="18"
+            stroke-dasharray="${closedDash} ${circumference}"
+            stroke-dashoffset="0"
+            stroke-linecap="${open > 0 && closed > 0 ? 'butt' : 'round'}"
+            class="transition-all duration-500"
+          />
+          <!-- Open Arc (Rose) -->
+          <circle
+            cx="90" cy="90" r="${radius}"
+            fill="none"
+            stroke="#f43f5e"
+            stroke-width="18"
+            stroke-dasharray="${openDash} ${circumference}"
+            stroke-dashoffset="-${closedDash}"
+            stroke-linecap="${open > 0 && closed > 0 ? 'butt' : 'round'}"
+            class="transition-all duration-500"
+          />
+        `;
+      }
+
       return `
         <div class="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-xs flex flex-col justify-between space-y-4">
           <div class="flex items-center justify-between">
-            <div>
-              <h3 class="text-sm sm:text-base font-black text-slate-900">Open vs Closed Donut Chart</h3>
-              <p class="text-xs text-slate-500 mt-0.5">Real-time status breakdown</p>
-            </div>
-            <span class="px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-slate-100 text-slate-700 border border-slate-200">
-              ${total} Total
-            </span>
+            <h3 class="text-sm sm:text-base font-black text-slate-900">Open vs Closed Donut Chart</h3>
           </div>
 
-          <div class="flex flex-col sm:flex-row items-center justify-center gap-6 py-2">
-            <!-- Donut SVG with Center Metric -->
-            <div class="relative w-40 h-40 shrink-0 flex items-center justify-center">
-              <svg viewBox="0 0 160 160" class="w-full h-full">
+          <div class="flex-1 flex flex-col items-center justify-center py-4">
+            <!-- Center Aligned, Enlarged Donut SVG with Center Value -->
+            <div class="relative w-52 h-52 sm:w-60 sm:h-60 mx-auto flex items-center justify-center">
+              <svg viewBox="0 0 180 180" class="w-full h-full transform -rotate-90">
                 <!-- Base track -->
-                <circle cx="80" cy="80" r="54" fill="none" stroke="#f1f5f9" stroke-width="16" />
-                ${total > 0 ? `
-                  <!-- Closed Arc (Emerald) -->
-                  <circle
-                    cx="80" cy="80" r="54"
-                    fill="none"
-                    stroke="#10b981"
-                    stroke-width="16"
-                    stroke-dasharray="${closedDash} ${circumference}"
-                    stroke-dashoffset="0"
-                    transform="rotate(-90 80 80)"
-                    stroke-linecap="${open > 0 && closed > 0 ? 'butt' : 'round'}"
-                    class="transition-all duration-500"
-                  />
-                  <!-- Open Arc (Rose) -->
-                  <circle
-                    cx="80" cy="80" r="54"
-                    fill="none"
-                    stroke="#f43f5e"
-                    stroke-width="16"
-                    stroke-dasharray="${openDash} ${circumference}"
-                    stroke-dashoffset="-${closedDash}"
-                    transform="rotate(-90 80 80)"
-                    stroke-linecap="${open > 0 && closed > 0 ? 'butt' : 'round'}"
-                    class="transition-all duration-500"
-                  />
-                ` : ''}
+                <circle cx="90" cy="90" r="${radius}" fill="none" stroke="#f1f5f9" stroke-width="18" />
+                ${svgArcs}
               </svg>
               <div class="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
-                <span class="text-2xl font-black text-slate-900 tracking-tight leading-none">${rate}%</span>
-                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">Closed</span>
-              </div>
-            </div>
-
-            <!-- Legend & Metric Details -->
-            <div class="w-full sm:w-auto flex-1 space-y-3">
-              <!-- Closed Box -->
-              <div class="flex items-center justify-between p-3 rounded-xl bg-emerald-50/70 border border-emerald-200/80">
-                <div class="flex items-center gap-2.5">
-                  <span class="w-3.5 h-3.5 rounded-full bg-emerald-500 ring-4 ring-emerald-100 shrink-0"></span>
-                  <span class="text-xs font-bold text-emerald-950">Closed Actions</span>
-                </div>
-                <div class="text-right">
-                  <div class="text-xs font-mono font-black text-emerald-700">${closed} <span class="text-[11px] font-medium text-emerald-600">(${closedRate}%)</span></div>
-                </div>
-              </div>
-
-              <!-- Open Box -->
-              <div class="flex items-center justify-between p-3 rounded-xl bg-rose-50/70 border border-rose-200/80">
-                <div class="flex items-center gap-2.5">
-                  <span class="w-3.5 h-3.5 rounded-full bg-rose-500 ring-4 ring-rose-100 shrink-0"></span>
-                  <span class="text-xs font-bold text-rose-950">Open Actions</span>
-                </div>
-                <div class="text-right">
-                  <div class="text-xs font-mono font-black text-rose-700">${open} <span class="text-[11px] font-medium text-rose-600">(${openRate}%)</span></div>
-                </div>
+                <span class="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight leading-none">${displayRate}</span>
               </div>
             </div>
           </div>
@@ -1663,19 +2051,6 @@
       const filteredOpen = filteredTotal - filteredClosed;
       const filteredRate = filteredTotal > 0 ? Math.round((filteredClosed / filteredTotal) * 100) : 0;
 
-      // Priority Breakdown for Trend Bars
-      const prioHigh = allActions.filter(a => a.priority === 'High');
-      const prioHighClosed = prioHigh.filter(a => a.status === 'Closed' || a.status === 'Completed').length;
-      const prioHighRate = prioHigh.length > 0 ? Math.round((prioHighClosed / prioHigh.length) * 100) : 0;
-
-      const prioMed = allActions.filter(a => a.priority === 'Medium');
-      const prioMedClosed = prioMed.filter(a => a.status === 'Closed' || a.status === 'Completed').length;
-      const prioMedRate = prioMed.length > 0 ? Math.round((prioMedClosed / prioMed.length) * 100) : 0;
-
-      const prioLow = allActions.filter(a => a.priority === 'Low');
-      const prioLowClosed = prioLow.filter(a => a.status === 'Closed' || a.status === 'Completed').length;
-      const prioLowRate = prioLow.length > 0 ? Math.round((prioLowClosed / prioLow.length) * 100) : 0;
-
       // Pagination for Simple Table
       const page = this.state.tilePage || 1;
       const pageSize = this.state.tilePageSize || 15;
@@ -1685,7 +2060,7 @@
       const endIdx = Math.min(filteredTotal, startIdx + pageSize);
       const pagedActions = filteredActions.slice(startIdx, endIdx);
 
-      const isFiltered = this.state.tileFilterSearch || this.state.tileFilterStatus !== 'all' || this.state.tileFilterPriority !== 'all';
+      const isFiltered = this.state.tileFilterSearch || this.state.tileFilterStatus !== 'all';
       const isSyncing = this.state.syncStatus[tile.id] === 'syncing';
       const lastSynced = this.state.tileLastSynced[tile.id] || 'Active';
 
@@ -1694,7 +2069,6 @@
         return this.renderScmDashboard(tile, {
           allActions, filteredActions, totalActions, closedActions, openActions, overallRate,
           filteredTotal, filteredClosed, filteredOpen, filteredRate,
-          prioHigh, prioHighRate, prioMed, prioMedRate, prioLow, prioLowRate,
           pagedActions, safePage, totalPages, pageSize,
           isFiltered, isSyncing, lastSynced
         });
@@ -1725,7 +2099,7 @@
               </div>
             </div>
 
-            <!-- Header Actions: Sync, Open Sheet, Config & Filter-aware CSV Export -->
+            <!-- Header Actions: Sync, Config & Filter-aware CSV Export -->
             <div class="flex items-center gap-2 flex-wrap">
               <!-- Sync Option -->
               <button
@@ -1738,20 +2112,6 @@
                 <span>${isSyncing ? 'Syncing...' : 'Sync Sheet'}</span>
                 <span class="text-[10px] opacity-80 font-normal">(${lastSynced})</span>
               </button>
-
-              <!-- Open Google Sheet Link -->
-              ${tile.sheetUrl ? `
-                <a
-                  href="${tile.sheetUrl}"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="px-3 py-2 text-xs font-semibold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-all flex items-center gap-1.5 cursor-pointer"
-                  title="Open live Google Sheet in new tab"
-                >
-                  <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
-                  <span>Open Sheet</span>
-                </a>
-              ` : ''}
 
               <!-- Sheet Settings Modal Option -->
               <button
@@ -1784,6 +2144,17 @@
                   <span>Reset</span>
                 </button>
               ` : ''}
+
+              <!-- Lock & Return -->
+              <button
+                type="button"
+                onclick="window.FPCL_STRATEGIC_SUITE.backToGrid()"
+                class="px-3.5 py-2 text-xs font-bold rounded-xl bg-slate-100 hover:bg-rose-50 text-slate-700 hover:text-rose-700 hover:border-rose-200 border border-slate-200 transition-colors cursor-pointer flex items-center gap-1.5 shadow-2xs"
+                title="Lock dashboard immediately and return to grid"
+              >
+                <i data-lucide="lock" class="w-3.5 h-3.5"></i>
+                <span>Lock & Return</span>
+              </button>
             </div>
           </div>
 
@@ -1831,92 +2202,31 @@
 
           <!-- KPI VALUES -->
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
-              <div class="text-xs font-bold text-slate-500 uppercase tracking-wider">Assigned Actions</div>
-              <div class="text-2xl sm:text-3xl font-black text-slate-900 mt-1">${filteredTotal}</div>
-              <div class="text-[11px] text-slate-400 mt-1">Total in Google Sheet: ${totalActions}</div>
+            <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs text-center flex flex-col items-center justify-center">
+              <div class="text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Total Actions</div>
+              <div class="text-2xl sm:text-3xl font-black text-slate-900 mt-1 text-center">${filteredTotal}</div>
             </div>
 
-            <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
-              <div class="text-xs font-bold text-emerald-700 uppercase tracking-wider">Closed Actions</div>
-              <div class="text-2xl sm:text-3xl font-black text-emerald-600 mt-1">${filteredClosed}</div>
-              <div class="text-[11px] font-semibold text-emerald-700 mt-1">${filteredRate}% Closure Rate</div>
+            <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs text-center flex flex-col items-center justify-center">
+              <div class="text-xs font-bold text-emerald-700 uppercase tracking-wider text-center">Closed Actions</div>
+              <div class="text-2xl sm:text-3xl font-black text-emerald-600 mt-1 text-center">${filteredClosed}</div>
             </div>
 
-            <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
-              <div class="text-xs font-bold text-rose-700 uppercase tracking-wider">Open Actions</div>
-              <div class="text-2xl sm:text-3xl font-black text-rose-600 mt-1">${filteredOpen}</div>
-              <div class="text-[11px] font-semibold text-rose-700 mt-1">Pending Closure</div>
+            <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs text-center flex flex-col items-center justify-center">
+              <div class="text-xs font-bold text-rose-700 uppercase tracking-wider text-center">Open Actions</div>
+              <div class="text-2xl sm:text-3xl font-black text-rose-600 mt-1 text-center">${filteredOpen}</div>
             </div>
 
-            <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
-              <div class="text-xs font-bold text-purple-700 uppercase tracking-wider">Overall Progress</div>
-              <div class="text-2xl sm:text-3xl font-black text-purple-700 mt-1">${overallRate}%</div>
-              <div class="text-[11px] font-semibold text-purple-700 mt-1">${closedActions} of ${totalActions} Completed</div>
+            <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs text-center flex flex-col items-center justify-center">
+              <div class="text-xs font-bold text-purple-700 uppercase tracking-wider text-center">Overall Progress</div>
+              <div class="text-2xl sm:text-3xl font-black text-purple-700 mt-1 text-center">${overallRate}%</div>
             </div>
           </div>
 
           <!-- TREND BARS & DONUT CHART BELOW KPI VALUES -->
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Trend Card 1: Action Status Trends (Thicker Bars) -->
-            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-4 flex flex-col justify-between">
-              <div class="flex items-center justify-between">
-                <div>
-                  <h3 class="text-sm font-bold text-slate-900">Action Status Trends</h3>
-                  <p class="text-xs text-slate-500 mt-0.5">Execution & completion distribution</p>
-                </div>
-                <span class="text-xs font-mono font-bold text-slate-600 px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200">
-                  ${closedActions} Closed / ${openActions} Open
-                </span>
-              </div>
-
-              <div class="space-y-4 pt-1">
-                <!-- Overall Closure Bar -->
-                <div class="space-y-1.5">
-                  <div class="flex items-center justify-between text-xs">
-                    <span class="font-bold text-slate-800">Overall Closure Progress</span>
-                    <span class="font-mono font-bold text-purple-700">${overallRate}% (${closedActions} of ${totalActions})</span>
-                  </div>
-                  <div class="w-full h-6 bg-slate-100 rounded-xl overflow-hidden flex shadow-inner">
-                    <div class="bg-emerald-500 h-full flex items-center justify-center text-[11px] font-bold text-white transition-all duration-300" style="width: ${overallRate}%">
-                      ${overallRate >= 12 ? overallRate + '%' : ''}
-                    </div>
-                    <div class="bg-rose-400 h-full flex items-center justify-center text-[11px] font-bold text-white transition-all duration-300" style="width: ${100 - overallRate}%">
-                      ${(100 - overallRate) >= 12 ? (100 - overallRate) + '%' : ''}
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Closed Items Proportion -->
-                <div class="space-y-1.5">
-                  <div class="flex items-center justify-between text-xs">
-                    <span class="font-bold text-slate-800">Closed Items Proportion</span>
-                    <span class="font-mono font-bold text-emerald-700">${closedActions} / ${totalActions} (${totalActions > 0 ? Math.round((closedActions / totalActions) * 100) : 0}%)</span>
-                  </div>
-                  <div class="w-full h-6 bg-slate-100 rounded-xl overflow-hidden shadow-inner flex">
-                    <div class="bg-emerald-500 h-full flex items-center justify-end pr-2 text-[11px] font-bold text-white transition-all duration-300" style="width: ${totalActions > 0 ? (closedActions / totalActions) * 100 : 0}%">
-                      ${totalActions > 0 && Math.round((closedActions / totalActions) * 100) >= 15 ? closedActions + ' Closed' : ''}
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Open Items Proportion -->
-                <div class="space-y-1.5">
-                  <div class="flex items-center justify-between text-xs">
-                    <span class="font-bold text-slate-800">Open Items Proportion</span>
-                    <span class="font-mono font-bold text-rose-700">${openActions} / ${totalActions} (${totalActions > 0 ? Math.round((openActions / totalActions) * 100) : 0}%)</span>
-                  </div>
-                  <div class="w-full h-6 bg-slate-100 rounded-xl overflow-hidden shadow-inner flex">
-                    <div class="bg-rose-500 h-full flex items-center justify-end pr-2 text-[11px] font-bold text-white transition-all duration-300" style="width: ${totalActions > 0 ? (openActions / totalActions) * 100 : 0}%">
-                      ${totalActions > 0 && Math.round((openActions / totalActions) * 100) >= 15 ? openActions + ' Open' : ''}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Trend Card 2: Open vs Close Donut Chart (Right side of Action Status Trends) -->
-            ${this.renderOpenCloseDonutCard(closedActions, openActions, totalActions, overallRate)}
+            ${this.renderSingleStatusBar(tile, closedActions, openActions, totalActions, overallRate, this.state.tileFilterStatus || 'all')}
+            ${this.renderOpenCloseDonutCard(closedActions, openActions, totalActions, overallRate, this.state.tileFilterStatus || 'all')}
           </div>
 
           <!-- SIMPLE TABLE FOR TEXT DATA WITH FILTER & PAGINATION -->
@@ -1951,14 +2261,13 @@
                     <th class="py-3 px-3.5 min-w-[280px]">Action Description</th>
                     <th class="py-3 px-3.5 w-28">Due Date</th>
                     <th class="py-3 px-3.5 w-24">Status</th>
-                    <th class="py-3 px-3.5 w-28">Closure Date</th>
                     <th class="py-3 px-3.5 min-w-[180px]">Remarks</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
                   ${pagedActions.length === 0 ? `
                     <tr>
-                      <td colspan="6" class="py-8 text-center text-slate-400">
+                      <td colspan="5" class="py-8 text-center text-slate-400">
                         No actions match the active filters.
                       </td>
                     </tr>
@@ -1970,16 +2279,11 @@
                         <td class="py-2.5 px-3.5 text-slate-900 font-medium">${a.title}</td>
                         <td class="py-2.5 px-3.5 text-slate-600">${a.dueDate || '-'}</td>
                         <td class="py-2.5 px-3.5">
-                          <button
-                            type="button"
-                            onclick="window.FPCL_STRATEGIC_SUITE.toggleActionStatus('${tile.id}', '${a.id}')"
-                            class="px-2.5 py-0.5 rounded-full text-[10px] font-bold transition-all cursor-pointer ${isClosed ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200' : 'bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200'}"
-                            title="Click to toggle status"
-                          >
-                            ${isClosed ? 'Closed' : 'Open'}
-                          </button>
+                          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${isClosed ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-rose-50 text-rose-800 border border-rose-200'}">
+                            <span class="w-1.5 h-1.5 rounded-full ${isClosed ? 'bg-emerald-500' : 'bg-rose-500'}"></span>
+                            ${a.status || (isClosed ? 'Closed' : 'Open')}
+                          </span>
                         </td>
-                        <td class="py-2.5 px-3.5 text-slate-600">${a.closureDate || '-'}</td>
                         <td class="py-2.5 px-3.5 text-slate-500">${a.remarks || '-'}</td>
                       </tr>
                     `;
@@ -2092,20 +2396,6 @@
                   <span class="text-[10px] opacity-75 font-mono">(${lastSynced})</span>
                 </button>
 
-                <!-- Open Sheet Link -->
-                ${tile.sheetUrl ? `
-                  <a
-                    href="${tile.sheetUrl}"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="px-3 py-2.5 text-xs font-semibold rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
-                    title="Open live Google Sheet in new tab"
-                  >
-                    <i data-lucide="external-link" class="w-4 h-4 text-amber-300"></i>
-                    <span>Open Sheet</span>
-                  </a>
-                ` : ''}
-
                 <!-- Sheet Settings Modal -->
                 <button
                   type="button"
@@ -2138,6 +2428,17 @@
                     <span>Reset</span>
                   </button>
                 ` : ''}
+
+                <!-- Lock & Return -->
+                <button
+                  type="button"
+                  onclick="window.FPCL_STRATEGIC_SUITE.backToGrid()"
+                  class="px-3.5 py-2 text-xs font-bold rounded-xl bg-white/10 hover:bg-rose-500/20 text-white hover:text-rose-200 border border-white/20 transition-colors cursor-pointer flex items-center gap-1.5 shadow-2xs"
+                  title="Lock dashboard immediately and return to grid"
+                >
+                  <i data-lucide="lock" class="w-3.5 h-3.5"></i>
+                  <span>Lock & Return</span>
+                </button>
               </div>
             </div>
           </div>
@@ -2145,65 +2446,39 @@
           <!-- SCM OPERATIONAL READINESS & PROCUREMENT KPI CARDS (6 CARDS) -->
           <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
             <!-- Card 1: Total SCM Deliverables -->
-            <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs hover:shadow-md transition-shadow">
-              <div class="flex items-center justify-between text-slate-500 mb-1">
-                <span class="text-[11px] font-bold uppercase tracking-wider">SCM Deliverables</span>
-                <i data-lucide="package" class="w-4 h-4 text-purple-600"></i>
-              </div>
-              <div class="text-2xl sm:text-3xl font-black text-slate-900">${filteredTotal}</div>
-              <p class="text-[10px] text-slate-500 mt-1">Total in Google Sheet: ${totalActions}</p>
+            <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs hover:shadow-md transition-shadow text-center flex flex-col items-center justify-center">
+              <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500 text-center">SCM Deliverables</div>
+              <div class="text-2xl sm:text-3xl font-black text-slate-900 mt-1 text-center">${filteredTotal}</div>
             </div>
 
             <!-- Card 2: Closed & Procured -->
-            <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs hover:shadow-md transition-shadow">
-              <div class="flex items-center justify-between text-slate-500 mb-1">
-                <span class="text-[11px] font-bold uppercase tracking-wider">Closed / Procured</span>
-                <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600"></i>
-              </div>
-              <div class="text-2xl sm:text-3xl font-black text-emerald-600">${filteredClosed}</div>
-              <p class="text-[10px] text-emerald-700 font-semibold mt-1">${filteredRate}% completed</p>
+            <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs hover:shadow-md transition-shadow text-center flex flex-col items-center justify-center">
+              <div class="text-[11px] font-bold uppercase tracking-wider text-emerald-700 text-center">Closed / Procured</div>
+              <div class="text-2xl sm:text-3xl font-black text-emerald-600 mt-1 text-center">${filteredClosed}</div>
             </div>
 
             <!-- Card 3: Open / In-Procurement -->
-            <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs hover:shadow-md transition-shadow">
-              <div class="flex items-center justify-between text-slate-500 mb-1">
-                <span class="text-[11px] font-bold uppercase tracking-wider">Open / Pending</span>
-                <i data-lucide="clock" class="w-4 h-4 text-amber-600"></i>
-              </div>
-              <div class="text-2xl sm:text-3xl font-black text-amber-600">${filteredOpen}</div>
-              <p class="text-[10px] text-slate-500 mt-1">Pending delivery / PO</p>
+            <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs hover:shadow-md transition-shadow text-center flex flex-col items-center justify-center">
+              <div class="text-[11px] font-bold uppercase tracking-wider text-amber-700 text-center">Open / Pending</div>
+              <div class="text-2xl sm:text-3xl font-black text-amber-600 mt-1 text-center">${filteredOpen}</div>
             </div>
 
             <!-- Card 4: SCM Execution Rate -->
-            <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs hover:shadow-md transition-shadow">
-              <div class="flex items-center justify-between text-slate-500 mb-1">
-                <span class="text-[11px] font-bold uppercase tracking-wider">Execution Rate</span>
-                <i data-lucide="trending-up" class="w-4 h-4 text-blue-600"></i>
-              </div>
-              <div class="text-2xl sm:text-3xl font-black text-blue-600">${overallRate}%</div>
-              <div class="w-full bg-slate-100 rounded-full h-1.5 mt-2 overflow-hidden">
-                <div class="bg-blue-600 h-1.5 rounded-full" style="width: ${overallRate}%"></div>
-              </div>
+            <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs hover:shadow-md transition-shadow text-center flex flex-col items-center justify-center">
+              <div class="text-[11px] font-bold uppercase tracking-wider text-blue-700 text-center">Execution Rate</div>
+              <div class="text-2xl sm:text-3xl font-black text-blue-600 mt-1 text-center">${overallRate}%</div>
             </div>
 
             <!-- Card 5: Critical Turnaround Spares -->
-            <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs hover:shadow-md transition-shadow">
-              <div class="flex items-center justify-between text-slate-500 mb-1">
-                <span class="text-[11px] font-bold uppercase tracking-wider">Turnaround Spares</span>
-                <i data-lucide="shield-alert" class="w-4 h-4 text-emerald-600"></i>
-              </div>
-              <div class="text-2xl sm:text-3xl font-black text-slate-900">100%</div>
-              <p class="text-[10px] text-emerald-700 font-semibold mt-1">High-alloy valves on site</p>
+            <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs hover:shadow-md transition-shadow text-center flex flex-col items-center justify-center">
+              <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500 text-center">Turnaround Spares</div>
+              <div class="text-2xl sm:text-3xl font-black text-slate-900 mt-1 text-center">100%</div>
             </div>
 
             <!-- Card 6: Physical Inventory Accuracy -->
-            <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs hover:shadow-md transition-shadow">
-              <div class="flex items-center justify-between text-slate-500 mb-1">
-                <span class="text-[11px] font-bold uppercase tracking-wider">Barcode Match</span>
-                <i data-lucide="barcode" class="w-4 h-4 text-indigo-600"></i>
-              </div>
-              <div class="text-2xl sm:text-3xl font-black text-indigo-600">99.4%</div>
-              <p class="text-[10px] text-slate-500 mt-1">Cyclic warehouse match</p>
+            <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs hover:shadow-md transition-shadow text-center flex flex-col items-center justify-center">
+              <div class="text-[11px] font-bold uppercase tracking-wider text-indigo-700 text-center">Barcode Match</div>
+              <div class="text-2xl sm:text-3xl font-black text-indigo-600 mt-1 text-center">99.4%</div>
             </div>
           </div>
 
@@ -2214,7 +2489,6 @@
                 <i data-lucide="layers" class="w-4 h-4 text-amber-600"></i>
                 <h3 class="text-sm font-bold text-slate-800">SCM Strategic Milestones & Category Performance</h3>
               </div>
-              <span class="text-xs text-slate-500">Live operational tracker</span>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
@@ -2305,65 +2579,8 @@
 
           <!-- TREND BARS & DONUT CHART (SCM ACTION STATUS & OPEN/CLOSE DONUT) -->
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Trend Card 1: Action Status Trends (Thicker Bars) -->
-            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-4 flex flex-col justify-between">
-              <div class="flex items-center justify-between">
-                <div>
-                  <h3 class="text-sm font-bold text-slate-900">Action Status Trends</h3>
-                  <p class="text-xs text-slate-500 mt-0.5">Execution & completion distribution</p>
-                </div>
-                <span class="text-xs font-mono font-bold text-slate-600 px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200">
-                  ${closedActions} Closed / ${openActions} Open
-                </span>
-              </div>
-
-              <div class="space-y-4 pt-1">
-                <!-- Overall Closure Bar -->
-                <div class="space-y-1.5">
-                  <div class="flex items-center justify-between text-xs">
-                    <span class="font-bold text-slate-800">Overall Closure Progress</span>
-                    <span class="font-mono font-bold text-purple-700">${overallRate}% (${closedActions} of ${totalActions})</span>
-                  </div>
-                  <div class="w-full h-6 bg-slate-100 rounded-xl overflow-hidden flex shadow-inner">
-                    <div class="bg-emerald-500 h-full flex items-center justify-center text-[11px] font-bold text-white transition-all duration-300" style="width: ${overallRate}%">
-                      ${overallRate >= 12 ? overallRate + '%' : ''}
-                    </div>
-                    <div class="bg-rose-400 h-full flex items-center justify-center text-[11px] font-bold text-white transition-all duration-300" style="width: ${100 - overallRate}%">
-                      ${(100 - overallRate) >= 12 ? (100 - overallRate) + '%' : ''}
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Closed Items Proportion -->
-                <div class="space-y-1.5">
-                  <div class="flex items-center justify-between text-xs">
-                    <span class="font-bold text-slate-800">Closed Items Proportion</span>
-                    <span class="font-mono font-bold text-emerald-700">${closedActions} / ${totalActions} (${totalActions > 0 ? Math.round((closedActions / totalActions) * 100) : 0}%)</span>
-                  </div>
-                  <div class="w-full h-6 bg-slate-100 rounded-xl overflow-hidden shadow-inner flex">
-                    <div class="bg-emerald-500 h-full flex items-center justify-end pr-2 text-[11px] font-bold text-white transition-all duration-300" style="width: ${totalActions > 0 ? (closedActions / totalActions) * 100 : 0}%">
-                      ${totalActions > 0 && Math.round((closedActions / totalActions) * 100) >= 15 ? closedActions + ' Closed' : ''}
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Open Items Proportion -->
-                <div class="space-y-1.5">
-                  <div class="flex items-center justify-between text-xs">
-                    <span class="font-bold text-slate-800">Open Items Proportion</span>
-                    <span class="font-mono font-bold text-rose-700">${openActions} / ${totalActions} (${totalActions > 0 ? Math.round((openActions / totalActions) * 100) : 0}%)</span>
-                  </div>
-                  <div class="w-full h-6 bg-slate-100 rounded-xl overflow-hidden shadow-inner flex">
-                    <div class="bg-rose-500 h-full flex items-center justify-end pr-2 text-[11px] font-bold text-white transition-all duration-300" style="width: ${totalActions > 0 ? (openActions / totalActions) * 100 : 0}%">
-                      ${totalActions > 0 && Math.round((openActions / totalActions) * 100) >= 15 ? openActions + ' Open' : ''}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Trend Card 2: Open vs Close Donut Chart -->
-            ${this.renderOpenCloseDonutCard(closedActions, openActions, totalActions, overallRate)}
+            ${this.renderSingleStatusBar(tile, closedActions, openActions, totalActions, overallRate, this.state.tileFilterStatus || 'all')}
+            ${this.renderOpenCloseDonutCard(closedActions, openActions, totalActions, overallRate, this.state.tileFilterStatus || 'all')}
           </div>
 
           <!-- SCM FILTER BAR -->
@@ -2439,14 +2656,13 @@
                     <th class="py-3 px-3.5 min-w-[280px]">Action & Scope Description</th>
                     <th class="py-3 px-3.5 w-28">Due Date</th>
                     <th class="py-3 px-3.5 w-24">Status</th>
-                    <th class="py-3 px-3.5 w-28">Closure Date</th>
                     <th class="py-3 px-3.5 min-w-[180px]">Remarks / Supplier Details</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
                   ${pagedActions.length === 0 ? `
                     <tr>
-                      <td colspan="6" class="py-8 text-center text-slate-400">
+                      <td colspan="5" class="py-8 text-center text-slate-400">
                         No SCM deliverables match the active filter.
                       </td>
                     </tr>
@@ -2458,16 +2674,11 @@
                         <td class="py-2.5 px-3.5 text-slate-900 font-medium">${a.title}</td>
                         <td class="py-2.5 px-3.5 text-slate-600">${a.dueDate || '-'}</td>
                         <td class="py-2.5 px-3.5">
-                          <button
-                            type="button"
-                            onclick="window.FPCL_STRATEGIC_SUITE.toggleActionStatus('${tile.id}', '${a.id}')"
-                            class="px-2.5 py-0.5 rounded-full text-[10px] font-bold transition-all cursor-pointer ${isClosed ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200' : 'bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200'}"
-                            title="Click to toggle status between Open and Closed"
-                          >
-                            ${isClosed ? 'Closed' : 'Open'}
-                          </button>
+                          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${isClosed ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-800 border border-amber-200'}">
+                            <span class="w-1.5 h-1.5 rounded-full ${isClosed ? 'bg-emerald-500' : 'bg-amber-500'}"></span>
+                            ${a.status || (isClosed ? 'Closed' : 'Open')}
+                          </span>
                         </td>
-                        <td class="py-2.5 px-3.5 text-slate-600">${a.closureDate || '-'}</td>
                         <td class="py-2.5 px-3.5 text-slate-500">${a.remarks || '-'}</td>
                       </tr>
                     `;
@@ -2695,52 +2906,7 @@
           const isBoss = selectedTile.isBossDashboard;
           const html = `
             <div class="space-y-6 animate-in fade-in duration-200">
-              <!-- FULL-PAGE DASHBOARD TOP NAVIGATION BAR WITH BACK BUTTON -->
-              <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div class="flex items-center gap-3">
-                  <button
-                    type="button"
-                    id="btn-strategic-fullpage-back"
-                    onclick="window.FPCL_STRATEGIC_SUITE.backToGrid()"
-                    class="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs font-bold bg-[#1E293B] hover:bg-slate-800 text-white transition-all shadow-md group cursor-pointer"
-                    title="Back to Strategic Tiles Grid (locks dashboard and requires password on next click)"
-                  >
-                    <i data-lucide="arrow-left" class="w-4 h-4 transition-transform group-hover:-translate-x-1 text-amber-400"></i>
-                    <span>Back to Strategic Dashboard</span>
-                  </button>
-
-                  <div class="flex items-center gap-2 text-xs">
-                    <span class="text-slate-300">/</span>
-                    <span class="font-bold text-slate-800 text-sm truncate max-w-[180px] sm:max-w-md">${selectedTile.name}</span>
-                    ${isBoss ? `
-                      <span class="hidden md:inline px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-50 text-amber-800 border border-amber-300">
-                        COO Executive Dashboard
-                      </span>
-                    ` : ''}
-                  </div>
-                </div>
-
-                <div class="flex items-center gap-2 self-end sm:self-auto flex-wrap">
-                  <!-- Auto-lock security indicator -->
-                  <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200 shadow-2xs">
-                    <i data-lucide="shield-check" class="w-3.5 h-3.5 text-amber-600"></i>
-                    <span>Auto-locks on return</span>
-                  </span>
-
-                  <!-- Lock & Return button -->
-                  <button
-                    type="button"
-                    onclick="window.FPCL_STRATEGIC_SUITE.backToGrid()"
-                    class="px-3.5 py-1.5 text-xs font-bold rounded-xl bg-slate-100 hover:bg-rose-50 text-slate-700 hover:text-rose-700 hover:border-rose-200 border border-slate-200 transition-colors cursor-pointer flex items-center gap-1.5 shadow-2xs"
-                    title="Lock dashboard immediately and return to grid"
-                  >
-                    <i data-lucide="lock" class="w-3.5 h-3.5"></i>
-                    <span>Lock & Return</span>
-                  </button>
-                </div>
-              </div>
-
-              <!-- FULL-PAGE DASHBOARD BODY (NOT A MODAL!) -->
+              <!-- FULL-PAGE DASHBOARD BODY WITH MERGED UNIFIED HEADER -->
               <div id="strategic-fullpage-body" class="w-full">
                 ${isBoss ? this.renderBossDashboard() : this.renderEmployeeActionSheet(selectedTile)}
               </div>
@@ -2787,8 +2953,6 @@
         const matchQuery = !q ||
           t.name.toLowerCase().includes(q) ||
           t.code.toLowerCase().includes(q) ||
-          t.employeeName.toLowerCase().includes(q) ||
-          t.employeeRole.toLowerCase().includes(q) ||
           (t.category && t.category.toLowerCase().includes(q));
 
         return matchQuery;
@@ -2825,7 +2989,7 @@
                 id="strategic-search-input"
                 type="text"
                 value="${this.state.searchQuery}"
-                placeholder="Search department, employee, or code..."
+                placeholder="Search department or code..."
                 class="w-full pl-9 pr-9 py-2 bg-slate-50 hover:bg-white focus:bg-white text-slate-900 border border-slate-200 focus:border-purple-500 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-purple-200 transition-all shadow-2xs"
                 oninput="window.FPCL_STRATEGIC_SUITE.setSearchQuery(this.value)"
               />
