@@ -4682,22 +4682,16 @@
             }
             const breadcrumbActive = document.getElementById('breadcrumb-active-name');
             if (breadcrumbActive) breadcrumbActive.textContent = 'Strategic Dashboard';
-          } else {
-            if (strategicContainer) {
-              strategicContainer.style.marginTop = '';
-              strategicContainer.hidden = true;
-            }
-            if (headerCard) headerCard.hidden = false;
-            if (stdContainer) stdContainer.hidden = false;
-            if (plrContainer) plrContainer.hidden = false;
-            if (psmContainer) psmContainer.hidden = false;
-          }
           } else if (dashboardId === 'plr') {
-            if (headerCard) headerCard.classList.remove('hidden');
+            if (headerCard) { headerCard.classList.remove('hidden'); headerCard.hidden = false; }
             if (connCard) connCard.classList.add('hidden');
-            if (stdContainer) stdContainer.classList.add('hidden');
-            if (psmContainer) psmContainer.classList.add('hidden');
-            if (strategicContainer) strategicContainer.classList.add('hidden');
+            if (stdContainer) { stdContainer.classList.add('hidden'); stdContainer.hidden = true; }
+            if (psmContainer) { psmContainer.classList.add('hidden'); psmContainer.hidden = true; }
+            if (strategicContainer) {
+              strategicContainer.classList.add('hidden');
+              strategicContainer.hidden = true;
+              strategicContainer.style.marginTop = '';
+            }
             if (plrContainer) {
               plrContainer.classList.remove('hidden');
               if (window.portalApp && typeof window.portalApp.renderPlrSuite === 'function') {
@@ -4709,15 +4703,20 @@
               sheetKeyEl.title = 'PLRs white dashboard (PLRStatus & Recommendations)';
             }
           } else if (dashboardId === 'sub-hse-psm' || dashboardId === 'psm-validation') {
-            if (headerCard) headerCard.classList.remove('hidden');
+            if (headerCard) { headerCard.classList.remove('hidden'); headerCard.hidden = false; }
             if (connCard) connCard.classList.add('hidden');
             const psmActions = document.getElementById('detail-psm-actions');
-            if (psmActions) psmActions.classList.remove('hidden');
-            if (stdContainer) stdContainer.classList.add('hidden');
-            if (plrContainer) plrContainer.classList.add('hidden');
-            if (strategicContainer) strategicContainer.classList.add('hidden');
+            if (psmActions) { psmActions.classList.remove('hidden'); psmActions.hidden = false; }
+            if (stdContainer) { stdContainer.classList.add('hidden'); stdContainer.hidden = true; }
+            if (plrContainer) { plrContainer.classList.add('hidden'); plrContainer.hidden = true; }
+            if (strategicContainer) {
+              strategicContainer.classList.add('hidden');
+              strategicContainer.hidden = true;
+              strategicContainer.style.marginTop = '';
+            }
             if (psmContainer) {
               psmContainer.classList.remove('hidden');
+              psmContainer.hidden = false;
               const targetSub = (dashboardId === 'psm-validation') ? 'validation' : 'audits';
               if (window.FPCL_PSM_SUITE) {
                 if (typeof window.FPCL_PSM_SUITE.setSubDashboard === 'function') {
@@ -4756,11 +4755,15 @@
               }
             }
           } else {
-            if (headerCard) headerCard.classList.remove('hidden');
-            if (plrContainer) plrContainer.classList.add('hidden');
-            if (psmContainer) psmContainer.classList.add('hidden');
-            if (strategicContainer) strategicContainer.classList.add('hidden');
-            if (stdContainer) stdContainer.classList.remove('hidden');
+            if (headerCard) { headerCard.classList.remove('hidden'); headerCard.hidden = false; }
+            if (plrContainer) { plrContainer.classList.add('hidden'); plrContainer.hidden = true; }
+            if (psmContainer) { psmContainer.classList.add('hidden'); psmContainer.hidden = true; }
+            if (strategicContainer) {
+              strategicContainer.classList.add('hidden');
+              strategicContainer.hidden = true;
+              strategicContainer.style.marginTop = '';
+            }
+            if (stdContainer) { stdContainer.classList.remove('hidden'); stdContainer.hidden = false; }
             if (sheetKeyEl) {
               sheetKeyEl.textContent = dashboard.hasSheetLink ? 'Connected' : (dashboard.statusComment || 'Data will be provided later');
               sheetKeyEl.title = dashboard.statusComment || 'Data will be provided later';
@@ -4878,9 +4881,19 @@
         },
 
         /**
-         * VIEW SWITCHER: Return to Main Portal Grid View
+         * VIEW SWITCHER: Return to Main Portal Grid View or Previous Step
          */
         backToPortal() {
+          // Stepwise Navigation: If currently viewing a tile or COO dashboard in Strategic Dashboard, go back to Strategic tiles grid
+          if (this.state.activeDashboardId === 'strategic' && window.FPCL_STRATEGIC_SUITE && window.FPCL_STRATEGIC_SUITE.state && window.FPCL_STRATEGIC_SUITE.state.currentView !== 'grid') {
+            window.FPCL_STRATEGIC_SUITE.backToGrid();
+            return;
+          }
+          // Stepwise Navigation: If in PSM validation sub-dashboard, go back to PSM audits
+          if (this.state.activeDashboardId === 'psm' && window.FPCL_PSM_SUITE && window.FPCL_PSM_SUITE.state && window.FPCL_PSM_SUITE.state.activeSubDashboard === 'validation') {
+            window.FPCL_PSM_SUITE.switchSubDashboard('audits');
+            return;
+          }
           this.state.activeDashboardId = null;
           window.location.hash = '';
           this.showLandingView(false);

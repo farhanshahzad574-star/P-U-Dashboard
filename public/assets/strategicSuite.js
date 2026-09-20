@@ -60,7 +60,8 @@
         old: false,
         new: false,
         confirm: false,
-        masterInput: false
+        masterInput: false,
+        reset: false
       }
     },
 
@@ -362,13 +363,15 @@
         auth: 'strategic-auth-pwd-input',
         old: 'strategic-change-old-pwd',
         new: 'strategic-change-new-pwd',
-        confirm: 'strategic-change-confirm-pwd'
+        confirm: 'strategic-change-confirm-pwd',
+        reset: 'strategic-reset-pwd-input'
       };
       const iconMap = {
         auth: 'strategic-auth-eye-icon',
         old: 'strategic-change-old-eye',
         new: 'strategic-change-new-eye',
-        confirm: 'strategic-change-confirm-eye'
+        confirm: 'strategic-change-confirm-eye',
+        reset: 'strategic-reset-eye-icon'
       };
       const inputEl = document.getElementById(inputMap[fieldKey]);
       const iconEl = document.getElementById(iconMap[fieldKey]);
@@ -377,6 +380,10 @@
         iconEl.setAttribute('data-lucide', isVisible ? 'eye-off' : 'eye');
         window.lucide.createIcons();
       }
+    },
+
+    openResetModal(tileId) {
+      this.openAuthModal(tileId, 'reset');
     },
 
     handleTileClick(tileId) {
@@ -406,8 +413,17 @@
         modal.classList.add('flex');
       }
 
+      const titleText = document.getElementById('strategic-auth-modal-title-text');
+      const titleIcon = document.getElementById('strategic-auth-modal-title-icon');
+      if (titleText) {
+        titleText.textContent = view === 'reset' ? 'Reset Password' : (view === 'change' ? 'Change Password' : 'Strategic Security Verification');
+      }
+      if (titleIcon && window.lucide) {
+        titleIcon.setAttribute('data-lucide', view === 'reset' ? 'key' : (view === 'change' ? 'key-round' : 'shield-check'));
+      }
+
       setTimeout(() => {
-        const inputId = view === 'unlock' ? 'strategic-auth-pwd-input' : 'strategic-change-old-pwd';
+        const inputId = view === 'reset' ? 'strategic-reset-pwd-input' : (view === 'unlock' ? 'strategic-auth-pwd-input' : 'strategic-change-old-pwd');
         const input = document.getElementById(inputId);
         if (input) {
           input.value = '';
@@ -425,6 +441,40 @@
         modal.classList.remove('flex');
       }
       this.state.activeAuthTileId = null;
+    },
+
+    submitResetPassword() {
+      const tileId = this.state.activeAuthTileId;
+      const tile = this.getTileData(tileId);
+      if (!tile) return;
+
+      const input = document.getElementById('strategic-reset-pwd-input');
+      const errorBox = document.getElementById('strategic-reset-error-msg');
+      const val = input ? input.value.trim() : '';
+
+      // Master password resets tile to initial password and opens the tile directly
+      if (val === this.MASTER_PASSWORD || val === 'FPCL@COO#2026') {
+        this.resetTilePassword(tileId);
+        this.state.unlockedTiles.add(tileId);
+        this.closeAuthModal();
+        this.openDetailModal(tileId);
+        this.showToast('Password Reset', `${tile.name} opened with initial password.`, 'success');
+        this.render();
+      } else {
+        if (errorBox) {
+          errorBox.innerHTML = `
+            <i data-lucide="alert-circle" class="w-4 h-4 shrink-0 text-rose-600"></i>
+            <span>wrong password</span>
+          `;
+          errorBox.classList.remove('hidden');
+          if (window.lucide) window.lucide.createIcons();
+        }
+        if (input) {
+          input.classList.add('border-rose-500', 'bg-rose-50');
+          setTimeout(() => input.classList.remove('border-rose-500', 'bg-rose-50'), 1500);
+          input.focus();
+        }
+      }
     },
 
     switchAuthView(view) {
@@ -794,21 +844,25 @@
       const statusF = this.state.masterFilterStatus || 'all';
 
       return all.filter(a => {
-        if (deptF !== 'all' && a.tileId !== deptF && (a.department || '').toLowerCase() !== deptF.toLowerCase()) {
-          return false;
+        if (deptF !== 'all') {
+          const matchTileId = (a.tileId || '').toLowerCase() === deptF.toLowerCase();
+          const matchCode = (a.code || '').toLowerCase() === deptF.toLowerCase();
+          const matchDept = (a.department || '').toLowerCase() === deptF.toLowerCase();
+          if (!matchTileId && !matchCode && !matchDept) return false;
         }
 
-        const isClosed = a.status === 'Closed' || a.status === 'Completed';
+        const isClosed = a.status === 'Closed' || a.status === 'Completed' || (a.status || '').toLowerCase().includes('close');
         if (statusF === 'Open' && isClosed) return false;
         if (statusF === 'Closed' && !isClosed) return false;
 
         if (q) {
           const matchId = (a.id || '').toLowerCase().includes(q);
-          const matchTitle = (a.title || '').toLowerCase().includes(q);
+          const matchTitle = (a.title || a.action || a.desc || '').toLowerCase().includes(q);
           const matchDept = (a.department || '').toLowerCase().includes(q);
+          const matchCode = (a.code || '').toLowerCase().includes(q);
           const matchRemarks = (a.remarks || '').toLowerCase().includes(q);
           const matchDue = (a.dueDate || '').toLowerCase().includes(q);
-          if (!matchId && !matchTitle && !matchDept && !matchRemarks && !matchDue) return false;
+          if (!matchId && !matchTitle && !matchDept && !matchCode && !matchRemarks && !matchDue) return false;
         }
 
         return true;
@@ -817,6 +871,24 @@
 
     setMasterFilter(key, val) {
       this.state[key] = val;
+      this.state.masterPage = 1;
+      this.render();
+      if (key === 'masterFilterSearch') {
+        const inp = document.getElementById('strategic-master-search-input');
+        if (inp) {
+          inp.focus();
+          const len = inp.value.length;
+          inp.setSelectionRange(len, len);
+        }
+      }
+    },
+
+    toggleMasterDeptFilter(deptId) {
+      if (this.state.masterFilterDept === deptId) {
+        this.state.masterFilterDept = 'all';
+      } else {
+        this.state.masterFilterDept = deptId;
+      }
       this.state.masterPage = 1;
       this.render();
     },
@@ -849,15 +921,20 @@
         return;
       }
 
-      const headers = ['Sr #', 'Department', 'Code', 'Action ID', 'Action Description', 'Due Date', 'Status', 'Remarks'];
+      const deptF = this.state.masterFilterDept || 'all';
+      const statusF = this.state.masterFilterStatus || 'all';
+      const q = (this.state.masterFilterSearch || '').trim();
+
+      const headers = ['Sr #', 'Department', 'Department Code', 'Action ID', 'Action Description', 'Due Date', 'Status', 'Closure Date', 'Remarks'];
       const rows = data.map((d, i) => [
         i + 1,
         `"${String(d.department || '').replace(/"/g, '""')}"`,
         `"${String(d.code || '').replace(/"/g, '""')}"`,
         `"${String(d.id || '').replace(/"/g, '""')}"`,
-        `"${String(d.title || '').replace(/"/g, '""')}"`,
+        `"${String(d.title || d.action || d.desc || '').replace(/"/g, '""')}"`,
         `"${String(d.dueDate || '').replace(/"/g, '""')}"`,
         `"${String(d.status || '').replace(/"/g, '""')}"`,
+        `"${String(d.closureDate || '').replace(/"/g, '""')}"`,
         `"${String(d.remarks || '').replace(/"/g, '""')}"`
       ]);
 
@@ -867,12 +944,16 @@
       const link = document.createElement('a');
       link.setAttribute('href', url);
       const dateStr = new Date().toISOString().slice(0, 10);
-      link.setAttribute('download', `FPCL_Strategic_Dashboard_Rollup_Filtered_${dateStr}.csv`);
+      let filterTag = '';
+      if (deptF !== 'all') filterTag += `_${deptF.toUpperCase()}`;
+      if (statusF !== 'all') filterTag += `_${statusF}`;
+      if (q) filterTag += `_search`;
+      link.setAttribute('download', `FPCL_COO_Executive_Dashboard_Actions${filterTag}_${dateStr}.csv`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
-      this.showToast('CSV Exported', `Exported ${data.length} filtered company actions to CSV`, 'success');
+      this.showToast('CSV Exported', `Exported ${data.length} actions based on applied filters to CSV`, 'success');
     },
 
     openSheetConfigModal(tileId) {
@@ -1308,6 +1389,19 @@
     // STRICT USER REQUIREMENT:
     // "On clicking each tile full page dashboard should open with back button and once moved back clicking should require/ask pasward"
     backToGrid() {
+      if (window.portalApp && window.portalApp.state) {
+        window.portalApp.state.activeDashboardId = 'strategic';
+      }
+      const landingView = document.getElementById('portal-landing-view');
+      if (landingView) landingView.classList.add('hidden');
+      const detailView = document.getElementById('dashboard-detail-view');
+      if (detailView) detailView.classList.remove('hidden');
+      const strategicContainer = document.getElementById('strategic-specialized-container');
+      if (strategicContainer) {
+        strategicContainer.classList.remove('hidden');
+        strategicContainer.hidden = false;
+      }
+
       this.state.unlockedTiles.clear();
       this.state.selectedTileId = null;
       this.state.activeAuthTileId = null;
@@ -1321,12 +1415,11 @@
 
       this.render();
 
-      const container = document.getElementById('strategic-specialized-container');
-      if (container) {
-        container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (strategicContainer) {
+        strategicContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
 
-      this.showToast('Dashboard Locked', 'Returned to matrix. Password required to access tiles.', 'info');
+      this.showToast('Dashboard Locked', 'Returned to Strategic Dashboard. Password required to access tiles.', 'info');
     },
 
     closeDetailModal() {
@@ -1357,7 +1450,7 @@
       // Chart context actions (respecting department filter)
       const deptActions = this.state.masterFilterDept === 'all' 
         ? allActions 
-        : allActions.filter(a => a.employeeId === this.state.masterFilterDept || a.departmentId === this.state.masterFilterDept);
+        : allActions.filter(a => (a.tileId || '').toLowerCase() === this.state.masterFilterDept.toLowerCase() || (a.code || '').toLowerCase() === this.state.masterFilterDept.toLowerCase() || (a.department || '').toLowerCase() === this.state.masterFilterDept.toLowerCase());
       const chartTotal = deptActions.length;
       const chartClosed = deptActions.filter(a => a.status === 'Closed' || a.status === 'Completed').length;
       const chartOpen = chartTotal - chartClosed;
@@ -1398,12 +1491,9 @@
                       <i data-lucide="crown" class="w-3 h-3 text-slate-950"></i>
                       <span>COO Executive Suite</span>
                     </span>
-                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-white/10 text-amber-200 border border-amber-300/30">
-                      Cross-Departmental Enterprise Rollup • ${allTiles.length} Divisions
-                    </span>
                   </div>
                   <h2 class="text-base sm:text-lg font-black text-white tracking-tight leading-snug mt-0.5">
-                    Chief Operating Officer Executive Dashboard
+                    COO Executive Dashboard
                   </h2>
                 </div>
               </div>
@@ -1421,12 +1511,12 @@
                   <span class="text-[10px] opacity-75 font-mono font-bold">(${this.state.masterLastSynced || 'Live'})</span>
                 </button>
 
-                <!-- Export CSV with Emerald/Teal Gradient -->
+                <!-- Export CSV with Emerald/Teal Gradient (Respects applied filters) -->
                 <button
                   type="button"
                   onclick="window.FPCL_STRATEGIC_SUITE.exportMasterCSV()"
                   class="px-3.5 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white transition-all cursor-pointer flex items-center gap-1.5 shadow-md hover:shadow-lg hover:-translate-y-0.5"
-                  title="Download CSV based on active filter"
+                  title="Download CSV based on applied filters"
                 >
                   <i data-lucide="download" class="w-3.5 h-3.5"></i>
                   <span>Export CSV (${filteredTotal})</span>
@@ -1466,6 +1556,7 @@
                   <i data-lucide="search" class="w-3.5 h-3.5"></i>
                 </div>
                 <input
+                  id="strategic-master-search-input"
                   type="text"
                   value="${this.state.masterFilterSearch || ''}"
                   placeholder="Filter actions, IDs, remarks..."
@@ -1501,9 +1592,9 @@
                   class="w-full py-1.5 pl-3 pr-8 bg-slate-50 hover:bg-white focus:bg-white text-slate-800 border border-slate-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 rounded-xl text-xs font-bold outline-none transition-all cursor-pointer appearance-none shadow-2xs"
                   onchange="window.FPCL_STRATEGIC_SUITE.setMasterFilter('masterFilterStatus', this.value)"
                 >
-                  <option value="all" ${this.state.masterFilterStatus === 'all' ? 'selected' : ''}>All Statuses (${totalActions})</option>
-                  <option value="Open" ${this.state.masterFilterStatus === 'Open' ? 'selected' : ''}>Open Only (${openActions})</option>
-                  <option value="Closed" ${this.state.masterFilterStatus === 'Closed' ? 'selected' : ''}>Closed (${closedActions})</option>
+                  <option value="all" ${this.state.masterFilterStatus === 'all' ? 'selected' : ''}>All Statuses (${chartTotal})</option>
+                  <option value="Open" ${this.state.masterFilterStatus === 'Open' ? 'selected' : ''}>Open Only (${chartOpen})</option>
+                  <option value="Closed" ${this.state.masterFilterStatus === 'Closed' ? 'selected' : ''}>Closed (${chartClosed})</option>
                 </select>
                 <div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-slate-500">
                   <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
@@ -1517,9 +1608,13 @@
             <!-- 4 KPI Metrics in 2x2 Grid -->
             <div class="xl:col-span-2 grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-2 gap-2.5 sm:gap-3">
               <!-- 1. Total Actions: Corporate Royal Indigo/Navy Family with Gold Accent -->
-              <div class="relative overflow-hidden rounded-2xl border-2 border-indigo-200 bg-gradient-to-b from-indigo-50/70 via-white to-indigo-50/30 p-3.5 sm:p-4 shadow-xs hover:shadow-md transition-all text-center flex flex-col items-center justify-center">
+              <div
+                onclick="window.FPCL_STRATEGIC_SUITE.setMasterFilter('masterFilterStatus', 'all')"
+                class="relative overflow-hidden rounded-2xl border-2 ${this.state.masterFilterStatus === 'all' ? 'border-indigo-500 ring-2 ring-indigo-300 shadow-md' : 'border-indigo-200'} bg-gradient-to-b from-indigo-50/70 via-white to-indigo-50/30 p-3.5 sm:p-4 shadow-xs hover:shadow-md transition-all text-center flex flex-col items-center justify-center cursor-pointer group"
+                title="Click to show all action items"
+              >
                 <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-indigo-600 via-blue-500 to-amber-400"></div>
-                <span class="text-xs font-extrabold uppercase tracking-wider text-indigo-900 bg-indigo-100/80 px-2.5 py-0.5 rounded-full border border-indigo-200/60">
+                <span class="text-xs font-extrabold uppercase tracking-wider text-indigo-900 bg-indigo-100/80 px-2.5 py-0.5 rounded-full border border-indigo-200/60 group-hover:bg-indigo-200 transition-colors">
                   Total Actions
                 </span>
                 <div class="text-4xl sm:text-5xl font-black font-mono tracking-tight text-slate-900 kpi-metric-val mt-1.5">${filteredTotal}</div>
@@ -1527,9 +1622,13 @@
               </div>
 
               <!-- 2. Closed Actions: Emerald & Mint Family with Gold Accent -->
-              <div class="relative overflow-hidden rounded-2xl border-2 border-emerald-200 bg-gradient-to-b from-emerald-50/70 via-white to-emerald-50/30 p-3.5 sm:p-4 shadow-xs hover:shadow-md transition-all text-center flex flex-col items-center justify-center">
+              <div
+                onclick="window.FPCL_STRATEGIC_SUITE.setMasterFilter('masterFilterStatus', 'Closed')"
+                class="relative overflow-hidden rounded-2xl border-2 ${this.state.masterFilterStatus === 'Closed' ? 'border-emerald-500 ring-2 ring-emerald-300 shadow-md' : 'border-emerald-200'} bg-gradient-to-b from-emerald-50/70 via-white to-emerald-50/30 p-3.5 sm:p-4 shadow-xs hover:shadow-md transition-all text-center flex flex-col items-center justify-center cursor-pointer group"
+                title="Click to filter by Closed actions"
+              >
                 <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-500 via-teal-400 to-amber-400"></div>
-                <span class="text-xs font-extrabold uppercase tracking-wider text-emerald-900 bg-emerald-100/80 px-2.5 py-0.5 rounded-full border border-emerald-200/60">
+                <span class="text-xs font-extrabold uppercase tracking-wider text-emerald-900 bg-emerald-100/80 px-2.5 py-0.5 rounded-full border border-emerald-200/60 group-hover:bg-emerald-200 transition-colors">
                   Closed Actions
                 </span>
                 <div class="text-4xl sm:text-5xl font-black font-mono tracking-tight text-emerald-600 kpi-metric-val mt-1.5">${filteredClosed}</div>
@@ -1537,9 +1636,13 @@
               </div>
 
               <!-- 3. Open Actions: Rose & Coral Family with Gold Accent -->
-              <div class="relative overflow-hidden rounded-2xl border-2 border-rose-200 bg-gradient-to-b from-rose-50/70 via-white to-rose-50/30 p-3.5 sm:p-4 shadow-xs hover:shadow-md transition-all text-center flex flex-col items-center justify-center">
+              <div
+                onclick="window.FPCL_STRATEGIC_SUITE.setMasterFilter('masterFilterStatus', 'Open')"
+                class="relative overflow-hidden rounded-2xl border-2 ${this.state.masterFilterStatus === 'Open' ? 'border-rose-500 ring-2 ring-rose-300 shadow-md' : 'border-rose-200'} bg-gradient-to-b from-rose-50/70 via-white to-rose-50/30 p-3.5 sm:p-4 shadow-xs hover:shadow-md transition-all text-center flex flex-col items-center justify-center cursor-pointer group"
+                title="Click to filter by Open actions"
+              >
                 <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-rose-500 via-pink-400 to-amber-400"></div>
-                <span class="text-xs font-extrabold uppercase tracking-wider text-rose-900 bg-rose-100/80 px-2.5 py-0.5 rounded-full border border-rose-200/60">
+                <span class="text-xs font-extrabold uppercase tracking-wider text-rose-900 bg-rose-100/80 px-2.5 py-0.5 rounded-full border border-rose-200/60 group-hover:bg-rose-200 transition-colors">
                   Open Actions
                 </span>
                 <div class="text-4xl sm:text-5xl font-black font-mono tracking-tight text-rose-600 kpi-metric-val mt-1.5">${filteredOpen}</div>
@@ -1554,7 +1657,7 @@
                   <span>Overall Progress</span>
                 </span>
                 <div class="text-4xl sm:text-5xl font-black font-mono tracking-tight text-amber-800 kpi-metric-val mt-1.5">${overallRate}%</div>
-                <span class="text-[11px] font-black text-amber-900 bg-amber-200/60 border border-amber-300/80 px-2.5 py-0.5 rounded-full mt-0.5">Enterprise Closure Rate</span>
+                <span class="text-[11px] font-black text-amber-900 bg-amber-200/60 border border-amber-300/80 px-2.5 py-0.5 rounded-full mt-0.5">Closure Rate</span>
               </div>
             </div>
 
@@ -1643,6 +1746,7 @@
                   maxVal: globalMax,
                   activeTileId: this.state.masterFilterDept !== 'all' ? this.state.masterFilterDept : null,
                   interactive: true,
+                  isBossChart: true,
                   centerAlign: true
                 };
 
@@ -1799,7 +1903,9 @@
         const openW = maxVal > 0 ? (r.open / maxVal) * chartW : 0;
         const closedW = maxVal > 0 ? (r.closed / maxVal) * chartW : 0;
         const isActive = options.activeTileId ? (options.activeTileId === r.id) : Boolean(r.isActive);
-        const clickAttr = (options.interactive !== false && r.id && r.id !== 'current') ? `onclick="window.FPCL_STRATEGIC_SUITE.handleTileClick('${r.id}')"` : '';
+        const clickAttr = (options.interactive !== false && r.id && r.id !== 'current') 
+          ? (options.isBossChart ? `onclick="window.FPCL_STRATEGIC_SUITE.toggleMasterDeptFilter('${r.id}')"` : `onclick="window.FPCL_STRATEGIC_SUITE.handleTileClick('${r.id}')"`) 
+          : '';
         const clipId = `clip-trend-${r.id || 'r'}-${index}-${Math.floor(Math.random() * 10000)}`;
 
         // Smart dynamic font scaling so numbers are maximized but fit inside bars
@@ -1807,7 +1913,7 @@
         const closedFont = closedW < (barFontSize * 1.3) ? Math.max(10, Math.round(closedW * 0.72)) : barFontSize;
 
         return `
-          <g class="group cursor-pointer" ${clickAttr}>
+          <g class="group ${clickAttr ? 'cursor-pointer' : ''}" ${clickAttr}>
             <!-- Background Row Hover Strip -->
             <rect
               x="4"
@@ -1834,7 +1940,7 @@
               class="transition-colors group-hover:fill-purple-700"
             >
               ${r.name || r.code}
-              <title>${r.name || r.code}: ${r.total} Total (${r.open} Open, ${r.closed} Closed, ${r.rate}% Rate)</title>
+              <title>${options.isBossChart ? `Click to filter COO dashboard by ${r.name || r.code} (or toggle all) - ` : ''}${r.name || r.code}: ${r.total} Total (${r.open} Open, ${r.closed} Closed, ${r.rate}% Rate)</title>
             </text>
 
             <!-- Subtle Background Track Bar -->
@@ -1986,7 +2092,7 @@
       }];
 
       return `
-        <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col justify-between space-y-3.5">
+        <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col h-full space-y-3 sm:space-y-4">
           <!-- Header with Title and Tile Badge -->
           <div class="flex items-center justify-between pb-3 border-b border-slate-100 flex-wrap gap-2">
             <div class="flex items-center gap-2.5">
@@ -2015,25 +2121,27 @@
             </div>
           </div>
 
-          <!-- Section: Focused Department Stacked Bar (Center Aligned, Thick Bar, High-Visibility Numbers) -->
-          <div class="bg-slate-50/80 rounded-2xl border border-slate-200/80 p-3 sm:p-4 flex items-center justify-center">
-            ${this.renderActionStatusTrendsSvg(singleRow, {
-              width: 880,
-              padLeft: 120,
-              padRight: 120,
-              padTop: 18,
-              padBottom: 32,
-              rowHeight: 88,
-              barHeight: 58,
-              barFontSize: 28,
-              labelFontSize: 17,
-              gridFontSize: 13,
-              totalFontSize: 26,
-              maxVal: total > 0 ? total : 1,
-              activeTileId: tile ? tile.id : 'current',
-              interactive: false,
-              centerAlign: true
-            })}
+          <!-- Section: Focused Department Stacked Bar (Middle Aligned Vertically & Horizontally) -->
+          <div class="flex-1 flex flex-col items-center justify-center w-full my-auto py-2">
+            <div class="w-full bg-slate-50/80 rounded-2xl border border-slate-200/80 p-3 sm:p-4 flex items-center justify-center">
+              ${this.renderActionStatusTrendsSvg(singleRow, {
+                width: 760,
+                padLeft: 195,
+                padRight: 60,
+                padTop: 16,
+                padBottom: 30,
+                rowHeight: 84,
+                barHeight: 52,
+                barFontSize: 26,
+                labelFontSize: 16,
+                gridFontSize: 13,
+                totalFontSize: 24,
+                maxVal: total > 0 ? total : 1,
+                activeTileId: tile ? tile.id : 'current',
+                interactive: false,
+                centerAlign: true
+              })}
+            </div>
           </div>
 
           ${filterStatus !== 'all' ? `
@@ -2049,10 +2157,11 @@
 
     // =========================================================================
     // RENDER: OPEN / CLOSE DONUT CHART (Right side of Action Status Trends)
+    // Scaled via native SVG vector text coordinates to prevent overlap on laptop displays
     // =========================================================================
     renderOpenCloseDonutCard(closed, open, total, rate, filterStatus = 'all') {
-      const radius = 68;
-      const circumference = 2 * Math.PI * radius; // ~427.257
+      const radius = 74;
+      const circumference = 2 * Math.PI * radius; // ~464.956
       const closedPct = total > 0 ? closed / total : 0;
       const openPct = total > 0 ? open / total : 0;
       const closedDash = Math.min(circumference, Math.max(0, closedPct * circumference));
@@ -2061,19 +2170,22 @@
       const openRate = total > 0 ? Math.round(openPct * 100) : 0;
 
       let displayRate = `${rate}%`;
+      let subLabel = 'CLOSED RATE';
       let svgArcs = '';
 
       if (total === 0) {
         displayRate = '0%';
+        subLabel = 'NO ACTIONS';
         svgArcs = '';
       } else if (filterStatus === 'Open') {
         displayRate = `${openRate}%`;
+        subLabel = 'OPEN RATE';
         svgArcs = `
           <circle
-            cx="90" cy="90" r="${radius}"
+            cx="100" cy="100" r="${radius}"
             fill="none"
             stroke="#f43f5e"
-            stroke-width="18"
+            stroke-width="15"
             stroke-dasharray="${openDash} ${circumference}"
             stroke-dashoffset="0"
             stroke-linecap="round"
@@ -2082,12 +2194,13 @@
         `;
       } else if (filterStatus === 'Closed') {
         displayRate = `${closedRate}%`;
+        subLabel = 'CLOSED RATE';
         svgArcs = `
           <circle
-            cx="90" cy="90" r="${radius}"
+            cx="100" cy="100" r="${radius}"
             fill="none"
             stroke="#10b981"
-            stroke-width="18"
+            stroke-width="15"
             stroke-dasharray="${closedDash} ${circumference}"
             stroke-dashoffset="0"
             stroke-linecap="round"
@@ -2097,13 +2210,14 @@
       } else {
         // All
         displayRate = `${rate}%`;
+        subLabel = 'CLOSED RATE';
         svgArcs = `
           <!-- Closed Arc (Emerald) -->
           <circle
-            cx="90" cy="90" r="${radius}"
+            cx="100" cy="100" r="${radius}"
             fill="none"
             stroke="#10b981"
-            stroke-width="18"
+            stroke-width="15"
             stroke-dasharray="${closedDash} ${circumference}"
             stroke-dashoffset="0"
             stroke-linecap="${open > 0 && closed > 0 ? 'butt' : 'round'}"
@@ -2111,10 +2225,10 @@
           />
           <!-- Open Arc (Rose) -->
           <circle
-            cx="90" cy="90" r="${radius}"
+            cx="100" cy="100" r="${radius}"
             fill="none"
             stroke="#f43f5e"
-            stroke-width="18"
+            stroke-width="15"
             stroke-dasharray="${openDash} ${circumference}"
             stroke-dashoffset="-${closedDash}"
             stroke-linecap="${open > 0 && closed > 0 ? 'butt' : 'round'}"
@@ -2124,24 +2238,46 @@
       }
 
       return `
-        <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col justify-between space-y-3">
-          <div class="flex items-center justify-between pb-3 border-b border-slate-100">
-            <h3 class="text-base sm:text-lg font-black text-slate-900 leading-tight">Open vs Closed Donut Chart</h3>
-            <span class="text-xs font-mono font-bold text-slate-600 bg-slate-100 px-2.5 py-0.5 rounded-md border border-slate-200">Distribution</span>
+        <div class="bg-white border border-slate-200 rounded-2xl p-3.5 sm:p-4 shadow-xs flex flex-col justify-between space-y-2 h-full">
+          <div class="flex items-center justify-between pb-2.5 border-b border-slate-100">
+            <h3 class="text-sm sm:text-base font-black text-slate-900 leading-tight">Open vs Closed Donut Chart</h3>
+            <span class="text-[11px] font-mono font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">Distribution</span>
           </div>
 
-          <div class="flex-1 flex flex-col items-center justify-center py-2">
-            <!-- Center Aligned, Proportionate Donut SVG with Center Value -->
-            <div class="relative w-48 h-48 sm:w-56 sm:h-56 mx-auto flex items-center justify-center">
-              <svg viewBox="0 0 180 180" class="w-full h-full transform -rotate-90">
-                <!-- Base track -->
-                <circle cx="90" cy="90" r="${radius}" fill="none" stroke="#f1f5f9" stroke-width="20" />
-                ${svgArcs}
+          <div class="flex-1 flex flex-col items-center justify-center py-1">
+            <!-- Center Aligned, Scalable Vector Donut SVG with Proportional Native SVG Centered Text -->
+            <div class="w-full max-w-[190px] sm:max-w-[210px] aspect-square mx-auto flex items-center justify-center">
+              <svg viewBox="0 0 200 200" class="w-full h-full select-none overflow-visible">
+                <g transform="rotate(-90 100 100)">
+                  <!-- Base track -->
+                  <circle cx="100" cy="100" r="${radius}" fill="none" stroke="#f1f5f9" stroke-width="15" />
+                  ${svgArcs}
+                </g>
+                <!-- SVG Native Scalable Centered Rate Value -->
+                <text
+                  x="100"
+                  y="93"
+                  text-anchor="middle"
+                  dominant-baseline="central"
+                  fill="#0f172a"
+                  font-size="32"
+                  font-weight="900"
+                  font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+                  letter-spacing="-0.03em"
+                >${displayRate}</text>
+                <!-- SVG Native Scalable Centered Sub-label with generous clearance -->
+                <text
+                  x="100"
+                  y="117"
+                  text-anchor="middle"
+                  dominant-baseline="central"
+                  fill="#64748b"
+                  font-size="10"
+                  font-weight="800"
+                  font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+                  letter-spacing="0.08em"
+                >${subLabel}</text>
               </svg>
-              <div class="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
-                <span class="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight leading-none">${displayRate}</span>
-                <span class="text-xs font-bold text-slate-500 mt-1.5 uppercase tracking-wider">Closed Rate</span>
-              </div>
             </div>
           </div>
         </div>
@@ -2212,19 +2348,20 @@
                   <span class="px-2 py-0.2 rounded-full text-xs font-mono font-black uppercase tracking-wider bg-purple-100 text-purple-800 border border-purple-200">
                     ${tile.code}
                   </span>
-                  <!-- Google Sheet Connection Indicator (Green connected, Orange broken) -->
-                  <button
-                    type="button"
-                    onclick="window.FPCL_STRATEGIC_SUITE.openSheetConfigModal('${tile.id}')"
-                    class="inline-flex items-center gap-1.5 px-2 py-0.2 rounded-full text-xs font-bold border transition-colors cursor-pointer ${isConnected ? 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100' : 'bg-amber-50 text-amber-900 border-amber-300 hover:bg-amber-100'}"
-                    title="${isConnected ? 'Google Sheet is connected (Green)' : 'Google Sheet link broken / unlinked (Orange) - Click to configure'}"
-                  >
-                    <span class="relative flex h-2 w-2">
-                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full ${isConnected ? 'bg-emerald-400 opacity-75' : 'bg-amber-400 opacity-75'}"></span>
-                      <span class="relative inline-flex rounded-full h-2 w-2 ${isConnected ? 'bg-emerald-500' : 'bg-amber-500'}"></span>
-                    </span>
-                    <span>${isConnected ? 'Sheet Connected' : 'Link Broken'}</span>
-                  </button>
+                  ${!isConnected ? `
+                    <button
+                      type="button"
+                      onclick="window.FPCL_STRATEGIC_SUITE.openSheetConfigModal('${tile.id}')"
+                      class="inline-flex items-center gap-1.5 px-2 py-0.2 rounded-full text-xs font-bold border transition-colors cursor-pointer bg-amber-50 text-amber-900 border-amber-300 hover:bg-amber-100"
+                      title="Google Sheet link broken / unlinked (Orange) - Click to configure"
+                    >
+                      <span class="relative flex h-2 w-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                      </span>
+                      <span>Link Broken</span>
+                    </button>
+                  ` : ''}
                 </div>
                 <h2 class="text-base sm:text-xl font-black text-slate-900 tracking-tight leading-snug mt-0.5">${tile.name} Dashboard</h2>
               </div>
@@ -2771,6 +2908,53 @@
       const tile = this.getTileData(tileId);
       if (!tile) return;
 
+      if (this.state.authView === 'reset') {
+        container.innerHTML = `
+          <div class="space-y-4 pt-1">
+            <div id="strategic-reset-error-msg" class="hidden p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-bold flex items-center gap-2"></div>
+
+            <div class="space-y-1.5">
+              <div class="relative">
+                <input
+                  id="strategic-reset-pwd-input"
+                  type="${this.state.visibility.reset ? 'text' : 'password'}"
+                  placeholder="Password..."
+                  class="w-full px-3.5 py-2.5 pr-10 text-xs font-mono rounded-xl border border-slate-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 bg-white text-slate-900 outline-none"
+                  oninput="const eb = document.getElementById('strategic-reset-error-msg'); if (eb) eb.classList.add('hidden');"
+                  onkeydown="if(event.key==='Enter') window.FPCL_STRATEGIC_SUITE.submitResetPassword()"
+                />
+                <button
+                  type="button"
+                  onclick="window.FPCL_STRATEGIC_SUITE.toggleVisibility('reset')"
+                  class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer"
+                >
+                  <i id="strategic-reset-eye-icon" data-lucide="${this.state.visibility.reset ? 'eye-off' : 'eye'}" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="pt-2 flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onclick="window.FPCL_STRATEGIC_SUITE.closeAuthModal()"
+                class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 border border-slate-200 transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onclick="window.FPCL_STRATEGIC_SUITE.submitResetPassword()"
+                class="px-4 py-2 rounded-xl text-xs font-bold text-slate-950 bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 hover:from-amber-500 hover:to-yellow-400 shadow-xs transition-all cursor-pointer"
+              >
+                Reset Password
+              </button>
+            </div>
+          </div>
+        `;
+        if (window.lucide) window.lucide.createIcons();
+        return;
+      }
+
       if (this.state.authView === 'unlock') {
         container.innerHTML = `
           <div class="space-y-4">
@@ -2917,9 +3101,9 @@
         <div id="strategic-auth-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs hidden items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
           <div class="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl space-y-4 max-h-[92vh] flex flex-col overflow-hidden">
             <div class="flex items-center justify-between pb-3 border-b border-slate-200">
-              <div class="flex items-center gap-2 text-slate-800 font-bold text-sm">
-                <i data-lucide="shield-check" class="w-4 h-4 text-purple-600"></i>
-                <span>Strategic Security Verification</span>
+              <div id="strategic-auth-modal-title" class="flex items-center gap-2 text-slate-800 font-bold text-sm">
+                <i id="strategic-auth-modal-title-icon" data-lucide="shield-check" class="w-4 h-4 text-purple-600"></i>
+                <span id="strategic-auth-modal-title-text">Strategic Security Verification</span>
               </div>
               <button
                 onclick="window.FPCL_STRATEGIC_SUITE.closeAuthModal()"
@@ -3105,6 +3289,16 @@
                     <!-- Top Accent Gold Stripe -->
                     <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500"></div>
 
+                    <!-- Reset Password Key Icon (Direct Single-Field Reset to Initial Password via Master Key) -->
+                    <button
+                      type="button"
+                      onclick="event.stopPropagation(); window.FPCL_STRATEGIC_SUITE.openResetModal('${tile.id}')"
+                      class="absolute top-2.5 left-2.5 z-10 w-7 h-7 rounded-lg flex items-center justify-center text-amber-300/80 hover:text-amber-200 hover:bg-white/10 transition-all cursor-pointer shadow-2xs border border-transparent hover:border-amber-400/30"
+                      title="Reset Password"
+                    >
+                      <i data-lucide="key" class="w-3.5 h-3.5"></i>
+                    </button>
+
                     <!-- Right Top Corner Connection Dot (Green = Connected, Orange = Link Broken) -->
                     <div
                       class="absolute top-3 right-3 z-10 flex items-center gap-1"
@@ -3143,6 +3337,16 @@
                 >
                   <!-- Top Accent Gradient Stripe -->
                   <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r ${tile.theme.gradient}"></div>
+
+                  <!-- Reset Password Key Icon (Direct Single-Field Reset to Initial Password via Master Key) -->
+                  <button
+                    type="button"
+                    onclick="event.stopPropagation(); window.FPCL_STRATEGIC_SUITE.openResetModal('${tile.id}')"
+                    class="absolute top-2.5 left-2.5 z-10 w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-amber-600 hover:bg-slate-100 transition-all cursor-pointer shadow-2xs border border-transparent hover:border-slate-200"
+                    title="Reset Password"
+                  >
+                    <i data-lucide="key" class="w-3.5 h-3.5"></i>
+                  </button>
 
                   <!-- Right Top Corner Connection Dot (Green = Connected, Orange = Link Broken) -->
                   <div
