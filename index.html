@@ -90,7 +90,8 @@
     <script src="/assets/psmValidationData.js?v=20260919a"></script>
     <script src="/assets/psmSuite.js?v=20260919b"></script>
     <!-- Strategic Dashboard Suite & Departmental Tiles -->
-    <script src="/assets/strategicSuite.js?v=20260920b"></script>
+    <script src="/assets/strategicEmployeesData.js?v=20260920c"></script>
+    <script src="/assets/strategicSuite.js?v=20260920c"></script>
 
     <style>
       /* Base font legibility: standard across devices, calibrated for wall displays */
@@ -3916,6 +3917,9 @@
 
           const query = this.state.searchQuery.toLowerCase().trim();
           const filtered = DASHBOARD_REGISTRY.filter(item => {
+            // Exclude strategic from the Overview Department Card Grid
+            if (item.id === 'strategic') return false;
+
             const matchesQuery = !query || 
               item.name.toLowerCase().includes(query) ||
               item.code.toLowerCase().includes(query) ||
@@ -4888,6 +4892,9 @@
           if (psmContainer) psmContainer.classList.add('hidden');
           const strategicContainer = document.getElementById('strategic-specialized-container');
           if (strategicContainer) strategicContainer.classList.add('hidden');
+          if (window.FPCL_STRATEGIC_SUITE && typeof window.FPCL_STRATEGIC_SUITE.backToGrid === 'function') {
+            window.FPCL_STRATEGIC_SUITE.backToGrid();
+          }
           if (window.FPCL_PSM_SUITE && window.FPCL_PSM_SUITE.state) {
             window.FPCL_PSM_SUITE.state.activeSubDashboard = 'audits';
           }
