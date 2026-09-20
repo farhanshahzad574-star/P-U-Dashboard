@@ -5,7 +5,7 @@
  * Features 20 Professional Rounded Corner Tiles:
  * 1. Strategic Dashboard (First Featured Tile)
  * 2. Admin & Security
- * 3. Asset Integrity & IMS
+ * 3. Asset Integrity
  * 4. Business Development
  * 5. Civil
  * 6. E&I
@@ -21,8 +21,8 @@
  * 16. Operations
  * 17. Reliability
  * 18. SCM
- * 19. Technical
- * 20. Technical & HSE
+ * 19. Projects
+ * 20. Process
  */
 
 (function() {
@@ -95,9 +95,9 @@
       ]
     },
     {
-      id: 'asset-integrity-ims',
-      name: 'Asset Integrity & IMS',
-      code: 'AIM',
+      id: 'asset-integrity',
+      name: 'Asset Integrity',
+      code: 'AI',
       category: 'Safety, Quality & Integrity',
       icon: 'activity',
       theme: {
@@ -114,12 +114,12 @@
       cadence: 'Bi-Monthly Tracking',
       progress: 96,
       status: 'Active',
-      summary: 'Plant-wide structural integrity, Risk-Based Inspection (RBI), pressure vessel corrosion surveillance, and IMS standard compliance.',
+      summary: 'Plant-wide structural integrity, Risk-Based Inspection (RBI), pressure vessel corrosion surveillance, and asset lifecycle governance.',
       tags: ['RBI Inspection', 'CUI Mitigation', 'Vessel Integrity', 'Corrosion Monitoring'],
       initiatives: [
         { name: 'Risk-Based Inspection (RBI) Program Rollout on Boilers', owner: 'Asset Integrity Unit', target: 'Q2 2026', status: 'Completed', progress: 100 },
         { name: 'Corrosion Under Insulation (CUI) Ultrasonic Survey', owner: 'Integrity & NDT Team', target: 'Q3 2026', status: 'On Track', progress: 95 },
-        { name: 'ISO 55001 Asset Management Framework Re-certification', owner: 'IMS Section', target: 'Q4 2026', status: 'In Progress', progress: 88 }
+        { name: 'Asset Integrity & Management Framework Re-certification', owner: 'Integrity Section', target: 'Q4 2026', status: 'In Progress', progress: 88 }
       ],
       kpis: [
         { label: 'Integrity Index', val: '98.4%', status: 'Optimal' },
@@ -623,11 +623,11 @@
       ]
     },
     {
-      id: 'technical',
-      name: 'Technical',
-      code: 'TECH',
+      id: 'projects',
+      name: 'Projects',
+      code: 'PROJ',
       category: 'Operations & Engineering',
-      icon: 'sliders',
+      icon: 'briefcase',
       theme: {
         bg: '#EEF2FF',
         border: '#C7D2FE',
@@ -637,30 +637,30 @@
         gradient: 'from-indigo-600 via-blue-600 to-violet-700',
         badgeBg: 'bg-indigo-100 text-indigo-800 border-indigo-200'
       },
-      subtitle: 'Process Engineering, Optimization & Studies',
-      lead: 'Lead Technical Services Engineer',
-      cadence: 'Bi-Monthly Performance Reviews',
+      subtitle: 'Capital Projects, Plant Capex & Modifications',
+      lead: 'Lead Projects Engineer',
+      cadence: 'Monthly Project Milestones',
       progress: 94,
       status: 'Active',
-      summary: 'Thermodynamic plant cycle modeling, process simulation, design modifications, performance guarantee tests, and Management of Change (MOC).',
-      tags: ['Thermodynamic Model', 'Cycle Efficiency', 'MOC Reviews', 'Process Studies'],
+      summary: 'Capital project execution, plant modification packages, EPC contractor governance, schedule & budget variance tracking, and facility upgrades.',
+      tags: ['Capex Projects', 'Plant Upgrades', 'EPC Contractors', 'Project Milestones'],
       initiatives: [
-        { name: 'Thermodynamic Cycle Simulation Digital Twin Integration', owner: 'Process Engineering', target: 'Q2 2026', status: 'Completed', progress: 100 },
-        { name: 'Cooling Water Syphon Energy Recovery & Vacuum Gain Study', owner: 'Technical Studies', target: 'Q3 2026', status: 'On Track', progress: 92 },
-        { name: 'Technical Management of Change (MOC) Engineering Review Velocity', owner: 'Technical Team', target: 'Q4 2026', status: 'On Track', progress: 90 }
+        { name: 'Plant Efficiency & Modernization Capex Project Execution', owner: 'Projects Unit', target: 'Q2 2026', status: 'Completed', progress: 100 },
+        { name: 'Cooling Water Syphon Energy Recovery Project Package', owner: 'Projects Engineering', target: 'Q3 2026', status: 'On Track', progress: 92 },
+        { name: 'Capital Management of Change (MOC) Engineering Project Delivery', owner: 'Projects Directorate', target: 'Q4 2026', status: 'On Track', progress: 90 }
       ],
       kpis: [
-        { label: 'MOC Reviews Executed', val: '100% On-Time', status: 'Optimal' },
-        { label: 'Net Efficiency Gain', val: '+1.8 MW', status: 'Optimal' },
-        { label: 'Engineering Studies', val: '8 Completed', status: 'Optimal' }
+        { label: 'Projects On-Schedule', val: '100% On-Time', status: 'Optimal' },
+        { label: 'Capex Budget Variance', val: '-1.8%', status: 'Optimal' },
+        { label: 'Active Projects', val: '8 Active', status: 'Optimal' }
       ]
     },
     {
-      id: 'technical-hse',
-      name: 'Technical & HSE',
-      code: 'T-HSE',
-      category: 'Safety, Quality & Integrity',
-      icon: 'shield',
+      id: 'process',
+      name: 'Process',
+      code: 'PROC',
+      category: 'Operations & Engineering',
+      icon: 'git-merge',
       theme: {
         bg: '#ECFDF5',
         border: '#6EE7B7',
@@ -670,22 +670,22 @@
         gradient: 'from-emerald-600 via-teal-600 to-cyan-700',
         badgeBg: 'bg-emerald-100 text-emerald-800 border-emerald-200'
       },
-      subtitle: 'Process Safety Engineering & Critical Barriers',
-      lead: 'Manager Technical & Process Safety',
-      cadence: 'Monthly Process Safety Committee',
+      subtitle: 'Process Engineering, Plant Optimization & Studies',
+      lead: 'Manager Process Engineering & Safety',
+      cadence: 'Monthly Process Review',
       progress: 97,
       status: 'Active',
-      summary: 'PHA/HAZOP study execution, Safety Critical Equipment (SCE) barrier integrity, Bowtie barrier audits, and emergency containment systems.',
-      tags: ['PHA / HAZOP', 'Barrier Integrity', 'SCE Audits', 'Process Safety'],
+      summary: 'Thermodynamic plant cycle modeling, process simulation studies, PHA/HAZOP study execution, Safety Critical Equipment (SCE) barrier integrity, and process optimization.',
+      tags: ['Process Simulation', 'PHA / HAZOP', 'Barrier Integrity', 'Process Studies'],
       initiatives: [
         { name: 'Process Hazard Analysis (PHA/HAZOP) Revalidation Cycle', owner: 'Process Safety Lead', target: 'Q2 2026', status: 'Completed', progress: 100 },
-        { name: 'Safety Critical Equipment (SCE) Barrier Health Verification', owner: 'Technical Safety Unit', target: 'Q3 2026', status: 'On Track', progress: 96 },
-        { name: 'Plant Emergency Isolation Valve (ESD) Fast-Trip Stroke Audits', owner: 'Cross-functional Team', target: 'Q4 2026', status: 'On Track', progress: 92 }
+        { name: 'Safety Critical Equipment (SCE) Barrier Health Verification', owner: 'Process Engineering Unit', target: 'Q3 2026', status: 'On Track', progress: 96 },
+        { name: 'Thermodynamic Cycle Simulation Digital Twin Integration', owner: 'Process Engineering Team', target: 'Q4 2026', status: 'On Track', progress: 92 }
       ],
       kpis: [
         { label: 'SCE Barrier Health', val: '100%', status: 'Optimal' },
         { label: 'PHA Findings Closed', val: '98.2%', status: 'Optimal' },
-        { label: 'ESD Trip Reliability', val: '100%', status: 'Optimal' }
+        { label: 'Net Efficiency Gain', val: '+1.8 MW', status: 'Optimal' }
       ]
     }
   ];
@@ -730,7 +730,11 @@
 
     getTilePassword(tileId) {
       const stored = this.getStoredPasswords();
-      return stored[tileId] || this.DEFAULT_INITIAL_PASSWORD;
+      if (stored[tileId]) return stored[tileId];
+      if (tileId === 'asset-integrity' && stored['asset-integrity-ims']) return stored['asset-integrity-ims'];
+      if (tileId === 'projects' && stored['technical']) return stored['technical'];
+      if (tileId === 'process' && stored['technical-hse']) return stored['technical-hse'];
+      return this.DEFAULT_INITIAL_PASSWORD;
     },
 
     setTilePassword(tileId, newPassword) {
@@ -763,7 +767,11 @@
 
     isTileCustomized(tileId) {
       const stored = this.getStoredPasswords();
-      return Boolean(stored[tileId] && stored[tileId] !== this.DEFAULT_INITIAL_PASSWORD);
+      const val = stored[tileId] ||
+        (tileId === 'asset-integrity' ? stored['asset-integrity-ims'] : null) ||
+        (tileId === 'projects' ? stored['technical'] : null) ||
+        (tileId === 'process' ? stored['technical-hse'] : null);
+      return Boolean(val && val !== this.DEFAULT_INITIAL_PASSWORD);
     },
 
     showToast(title, message, type = 'info') {
@@ -894,16 +902,8 @@
     },
 
     onAuthPasswordInput(val) {
-      const trimmed = (val || '').trim();
-      const masterBanner = document.getElementById('strategic-master-detected-banner');
       const errorBox = document.getElementById('strategic-auth-error-msg');
       if (errorBox) errorBox.classList.add('hidden');
-
-      if (trimmed === this.MASTER_PASSWORD) {
-        if (masterBanner) masterBanner.classList.remove('hidden');
-      } else {
-        if (masterBanner) masterBanner.classList.add('hidden');
-      }
     },
 
     submitUnlock() {
@@ -916,26 +916,18 @@
       const val = input ? input.value.trim() : '';
       const currentPwd = this.getTilePassword(tileId);
 
-      if (val === this.MASTER_PASSWORD) {
-        // Master password opens all dashboards!
-        this.state.lastMasterUsed = true;
+      if (val === this.MASTER_PASSWORD || val === currentPwd) {
+        this.state.lastMasterUsed = (val === this.MASTER_PASSWORD);
         this.state.unlockedTiles.add(tileId);
         this.closeAuthModal();
         this.openDetailModal(tileId);
-        this.showToast('Master Access Verified', `Opened ${tile.name} with Master credentials.`, 'success');
-        this.render();
-      } else if (val === currentPwd) {
-        this.state.lastMasterUsed = false;
-        this.state.unlockedTiles.add(tileId);
-        this.closeAuthModal();
-        this.openDetailModal(tileId);
-        this.showToast('Access Granted', `${tile.name} strategic dossier unlocked.`, 'success');
+        this.showToast('Access Granted', `${tile.name} strategic dashboard unlocked.`, 'success');
         this.render();
       } else {
         if (errorBox) {
           errorBox.innerHTML = `
             <i data-lucide="alert-circle" class="w-4 h-4 shrink-0 text-rose-600"></i>
-            <span>Incorrect password. Default initial password is <strong>Abcd@1234</strong> or use Master Password <strong>abcd@Psuser12345</strong>.</span>
+            <span>Incorrect password. Please enter a valid password.</span>
           `;
           errorBox.classList.remove('hidden');
           if (window.lucide) window.lucide.createIcons();
@@ -1019,22 +1011,12 @@
 
       this.resetTilePassword(tileId);
 
-      const successBanner = document.getElementById('strategic-reset-success-banner');
-      if (successBanner) {
-        successBanner.innerHTML = `
-          <i data-lucide="check-circle" class="w-4 h-4 shrink-0 text-emerald-600"></i>
-          <span>Password for <strong>${tile ? tile.name : 'this tile'}</strong> has been reset to initial password: <strong>Abcd@1234</strong></span>
-        `;
-        successBanner.classList.remove('hidden');
-        if (window.lucide) window.lucide.createIcons();
-      }
-
       const input = document.getElementById('strategic-auth-pwd-input');
       if (input) {
         input.value = this.DEFAULT_INITIAL_PASSWORD;
       }
 
-      this.showToast('Password Reset', `Password reset to initial Abcd@1234 for ${tile ? tile.name : 'tile'}.`, 'success');
+      this.showToast('Password Reset', `Password reset to default for ${tile ? tile.name : 'tile'}.`, 'success');
       this.render();
     },
 
@@ -1043,7 +1025,7 @@
       this.state.isMasterActive = true;
       this.closeAuthModal();
       this.closeMasterModal();
-      this.showToast('Master Access Granted', 'All 20 Department Dashboards are now unlocked.', 'success');
+      this.showToast('Access Granted', 'All 20 Department Dashboards are now unlocked.', 'success');
       this.render();
 
       if (this.state.selectedTileId) {
@@ -1062,26 +1044,12 @@
       this.state.unlockedTiles.clear();
       this.state.isMasterActive = false;
       this.closeDetailModal();
-      this.showToast('All Dashboards Locked', 'Initial password Abcd@1234 required to access each tile.', 'info');
+      this.showToast('All Dashboards Locked', 'Password required to access each tile.', 'info');
       this.render();
     },
 
     openMasterModal() {
-      const modal = document.getElementById('strategic-master-modal');
-      if (modal) {
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-        const input = document.getElementById('strategic-master-modal-pwd');
-        if (input) {
-          input.value = '';
-          input.focus();
-        }
-        const masterActions = document.getElementById('strategic-master-actions-panel');
-        if (masterActions) masterActions.classList.add('hidden');
-        const errBox = document.getElementById('strategic-master-error');
-        if (errBox) errBox.classList.add('hidden');
-      }
-      if (window.lucide) window.lucide.createIcons();
+      // Master security options removed as per security policy
     },
 
     closeMasterModal() {
@@ -1093,17 +1061,7 @@
     },
 
     onMasterModalInput(val) {
-      const trimmed = (val || '').trim();
-      const actionsPanel = document.getElementById('strategic-master-actions-panel');
-      const errBox = document.getElementById('strategic-master-error');
-      if (errBox) errBox.classList.add('hidden');
-
-      if (trimmed === this.MASTER_PASSWORD) {
-        if (actionsPanel) actionsPanel.classList.remove('hidden');
-        if (window.lucide) window.lucide.createIcons();
-      } else {
-        if (actionsPanel) actionsPanel.classList.add('hidden');
-      }
+      // Kept for backward compatibility
     },
 
     submitMasterModalUnlockAll() {
@@ -1111,12 +1069,6 @@
       const val = input ? input.value.trim() : '';
       if (val === this.MASTER_PASSWORD || this.state.isMasterActive) {
         this.unlockAllDashboards();
-      } else {
-        const errBox = document.getElementById('strategic-master-error');
-        if (errBox) {
-          errBox.textContent = 'Invalid Master Password. Enter abcd@Psuser12345';
-          errBox.classList.remove('hidden');
-        }
       }
     },
 
@@ -1126,14 +1078,8 @@
       if (val === this.MASTER_PASSWORD || this.state.isMasterActive) {
         this.resetAllPasswords();
         this.closeMasterModal();
-        this.showToast('Global Reset Complete', 'All 20 strategic dashboards reset to initial password Abcd@1234.', 'success');
+        this.showToast('Reset Complete', 'All 20 strategic dashboards reset to default password.', 'success');
         this.render();
-      } else {
-        const errBox = document.getElementById('strategic-master-error');
-        if (errBox) {
-          errBox.textContent = 'Invalid Master Password. Enter abcd@Psuser12345';
-          errBox.classList.remove('hidden');
-        }
       }
     },
 
@@ -1151,13 +1097,13 @@
         container.innerHTML = `
           <div class="space-y-4">
             <!-- Header Identity -->
-            <div class="p-4 rounded-2xl bg-gradient-to-r ${tile.theme.gradient} text-white relative overflow-hidden shadow-xs">
-              <div class="flex items-center gap-3 relative z-10">
-                <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white shrink-0 shadow-inner">
-                  <i data-lucide="${tile.icon}" class="w-5 h-5"></i>
+            <div class="p-4 rounded-2xl bg-gradient-to-r ${tile.theme.gradient} text-white relative overflow-hidden shadow-xs text-center">
+              <div class="flex flex-col items-center justify-center text-center relative z-10 gap-2">
+                <div class="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center text-white shrink-0 shadow-inner mx-auto">
+                  <i data-lucide="${tile.icon}" class="w-6 h-6"></i>
                 </div>
                 <div>
-                  <div class="flex items-center gap-2">
+                  <div class="flex items-center justify-center gap-2">
                     <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-white/20 text-white border border-white/30 uppercase">
                       ${tile.code}
                     </span>
@@ -1166,26 +1112,11 @@
                       <span>Password Required</span>
                     </span>
                   </div>
-                  <h4 class="text-base font-black text-white mt-1">${tile.name}</h4>
-                  <p class="text-xs text-white/80">${tile.subtitle}</p>
+                  <h4 class="text-lg font-black text-white mt-1.5 text-center">${tile.name}</h4>
+                  <p class="text-xs text-white/80 text-center">${tile.subtitle}</p>
                 </div>
               </div>
             </div>
-
-            <!-- Instructions Notice -->
-            <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-600 flex items-start gap-2.5">
-              <i data-lucide="shield-check" class="w-4 h-4 text-purple-600 shrink-0 mt-0.5"></i>
-              <div class="leading-relaxed">
-                Enter password to open <strong>${tile.name}</strong>.
-                <div class="mt-1 text-[11px] text-slate-500">
-                  • Initial default password: <code class="px-1.5 py-0.5 rounded bg-slate-200/70 font-mono text-slate-800 font-bold">Abcd@1234</code><br/>
-                  • Master password: <code class="px-1.5 py-0.5 rounded bg-slate-200/70 font-mono text-slate-800 font-bold">abcd@Psuser12345</code> (opens all dashboards)
-                </div>
-              </div>
-            </div>
-
-            <!-- Reset Success Banner -->
-            <div id="strategic-reset-success-banner" class="hidden p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium flex items-center gap-2 animate-in fade-in"></div>
 
             <!-- Error Banner -->
             <div id="strategic-auth-error-msg" class="hidden p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-medium flex items-center gap-2 animate-in fade-in"></div>
@@ -1197,7 +1128,7 @@
                 <input
                   id="strategic-auth-pwd-input"
                   type="${this.state.visibility.auth ? 'text' : 'password'}"
-                  placeholder="Enter tile password or Master password..."
+                  placeholder="Enter password..."
                   class="w-full px-3.5 py-2.5 pr-10 text-xs font-mono font-medium rounded-xl border border-slate-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 bg-white text-slate-900 transition-all outline-none"
                   oninput="window.FPCL_STRATEGIC_SUITE.onAuthPasswordInput(this.value)"
                   onkeydown="if(event.key==='Enter') window.FPCL_STRATEGIC_SUITE.submitUnlock()"
@@ -1209,38 +1140,6 @@
                   title="Toggle password visibility"
                 >
                   <i id="strategic-auth-eye-icon" data-lucide="${this.state.visibility.auth ? 'eye-off' : 'eye'}" class="w-4 h-4"></i>
-                </button>
-              </div>
-            </div>
-
-            <!-- MASTER PASSWORD DETECTED SPECIAL ACTION PANEL (Requirement: one button that will reset the passward to initial passward of Abcd@1234) -->
-            <div id="strategic-master-detected-banner" class="hidden p-3.5 rounded-xl bg-purple-50 border border-purple-200 text-purple-900 space-y-2.5 animate-in fade-in">
-              <div class="flex items-center gap-2 text-xs font-bold text-purple-800">
-                <i data-lucide="shield-alert" class="w-4 h-4 text-purple-600"></i>
-                <span>Master Administrator Credentials Verified!</span>
-              </div>
-              <p class="text-[11px] text-purple-700 leading-normal">
-                Master password <code>abcd@Psuser12345</code> detected. You can unlock this tile, unlock all dashboards, or reset this tile's custom password back to initial defaults.
-              </p>
-              <div class="flex items-center gap-2 pt-1 flex-wrap">
-                <!-- THE REQUIRED RESET BUTTON -->
-                <button
-                  type="button"
-                  id="btn-master-reset-initial"
-                  onclick="window.FPCL_STRATEGIC_SUITE.resetActiveTileToDefault()"
-                  class="px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-400 hover:bg-amber-300 text-amber-950 border border-amber-300 flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs"
-                  title="Click to reset password of this tile to Abcd@1234"
-                >
-                  <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
-                  <span>Reset Password to Initial (Abcd@1234)</span>
-                </button>
-                <button
-                  type="button"
-                  onclick="window.FPCL_STRATEGIC_SUITE.unlockAllDashboards()"
-                  class="px-3 py-1.5 rounded-lg text-xs font-bold bg-purple-700 hover:bg-purple-800 text-white flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs"
-                >
-                  <i data-lucide="unlock" class="w-3.5 h-3.5"></i>
-                  <span>Unlock All 20 Dashboards</span>
                 </button>
               </div>
             </div>
@@ -1317,7 +1216,7 @@
                   <input
                     id="strategic-change-old-pwd"
                     type="${this.state.visibility.old ? 'text' : 'password'}"
-                    placeholder="Enter old correct password (or Master Password)..."
+                    placeholder="Enter old correct password..."
                     class="w-full px-3.5 py-2 pr-10 text-xs font-mono rounded-xl border border-slate-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 bg-white text-slate-900 outline-none"
                   />
                   <button
@@ -1328,7 +1227,6 @@
                     <i id="strategic-change-old-eye" data-lucide="${this.state.visibility.old ? 'eye-off' : 'eye'}" class="w-4 h-4"></i>
                   </button>
                 </div>
-                <p class="text-[10px] text-slate-400 font-mono">Initial default was Abcd@1234</p>
               </div>
 
               <!-- New Password -->
@@ -1469,7 +1367,6 @@
                       ${tile.status}
                     </span>
                     ${tile.isFeatured ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-400 text-amber-950 font-mono uppercase">Featured Tile</span>' : ''}
-                    ${isMaster ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-400 text-purple-950 font-mono uppercase">Master Access</span>' : ''}
                   </div>
                   <h3 class="text-xl sm:text-2xl font-black tracking-tight mt-1 text-white">${tile.name}</h3>
                   <p class="text-xs sm:text-sm text-white/80 font-medium">${tile.subtitle}</p>
@@ -1479,47 +1376,6 @@
                 <div class="text-[10px] uppercase font-bold tracking-wider text-white/70">Strategic Progress</div>
                 <div class="text-2xl font-black font-mono text-white">${tile.progress}%</div>
                 <div class="text-[10px] text-white/70">${tile.cadence}</div>
-              </div>
-            </div>
-
-            <!-- Security Quick Action Toolbar inside Header -->
-            <div class="relative z-10 mt-4 pt-3 border-t border-white/20 flex items-center justify-between flex-wrap gap-2 text-xs">
-              <div class="flex items-center gap-2">
-                <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-white/90">
-                  <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-300"></i>
-                  <span>Security: ${isCustom ? 'Custom Password Set' : 'Initial Password (Abcd@1234)'}</span>
-                </span>
-              </div>
-              <div class="flex items-center gap-2 flex-wrap">
-                <button
-                  type="button"
-                  onclick="window.FPCL_STRATEGIC_SUITE.openAuthModal('${tile.id}', 'change')"
-                  class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-white/20 hover:bg-white/30 text-white border border-white/25 transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
-                  title="Change this tile password"
-                >
-                  <i data-lucide="key-round" class="w-3.5 h-3.5"></i>
-                  <span>Change Password</span>
-                </button>
-                ${(isMaster || isCustom) ? `
-                  <button
-                    type="button"
-                    onclick="window.FPCL_STRATEGIC_SUITE.resetActiveTileToDefault('${tile.id}')"
-                    class="px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-400 hover:bg-amber-300 text-amber-950 border border-amber-300 transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
-                    title="Reset to default initial password Abcd@1234"
-                  >
-                    <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
-                    <span>Reset Password to Initial (Abcd@1234)</span>
-                  </button>
-                ` : ''}
-                <button
-                  type="button"
-                  onclick="window.FPCL_STRATEGIC_SUITE.lockTile('${tile.id}')"
-                  class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-black/25 hover:bg-black/35 text-white/90 border border-white/20 transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
-                  title="Lock tile and close"
-                >
-                  <i data-lucide="lock" class="w-3.5 h-3.5"></i>
-                  <span>Lock Tile</span>
-                </button>
               </div>
             </div>
           </div>
@@ -1668,64 +1524,28 @@
         return matchQuery && matchCategory;
       });
 
-      // Aggregate statistics across tiles
-      const totalTiles = this.data.length; // 20
-      const totalInitiatives = this.data.reduce((acc, t) => acc + (t.initiatives ? t.initiatives.length : 0), 0);
-      const avgProgress = Math.round(this.data.reduce((acc, t) => acc + t.progress, 0) / totalTiles);
-
       const html = `
         <!-- STRATEGIC DASHBOARD HEADER BANNER -->
-        <div class="bg-gradient-to-r from-[#1E293B] via-[#0F172A] to-[#1E1B4B] rounded-2xl sm:rounded-3xl p-5 sm:p-7 text-white shadow-xl relative overflow-hidden border border-slate-700/60">
+        <div class="bg-gradient-to-r from-[#1E293B] via-[#0F172A] to-[#1E1B4B] rounded-2xl sm:rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden border border-slate-700/60 text-center">
           <div class="absolute -right-16 -top-16 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
           <div class="absolute -left-16 -bottom-16 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
-          <div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
-            <div class="space-y-2 max-w-3xl">
-              <div class="flex items-center gap-2.5 flex-wrap">
-                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-wider bg-purple-500/20 text-purple-200 border border-purple-400/30 shadow-2xs">
-                  <i data-lucide="target" class="w-3.5 h-3.5 text-purple-300"></i>
-                  <span>FPCL STRATEGIC GOVERNANCE</span>
-                </span>
-                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-200 border border-emerald-400/30">
-                  <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                  <span>20 Departmental Tiles Active</span>
-                </span>
-                <span class="text-xs text-slate-400 font-mono">2026 Framework</span>
-              </div>
-              <h1 class="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white">
-                Strategic Dashboard
-              </h1>
-              <p class="text-xs sm:text-sm text-slate-300 font-medium leading-relaxed">
-                Departmental performance frameworks, operational transformation roadmaps, and executive milestone governance across all 20 specialized units.
-              </p>
-            </div>
-
-            <!-- Quick Metrics Header Cards -->
-            <div class="grid grid-cols-3 gap-2.5 sm:gap-3 shrink-0">
-              <div class="bg-white/10 backdrop-blur-md border border-white/10 rounded-xl p-3 text-center min-w-[95px] sm:min-w-[110px]">
-                <span class="text-[10px] uppercase font-bold tracking-wider text-slate-300 block">Total Tiles</span>
-                <span class="text-xl sm:text-2xl font-black font-mono text-white mt-0.5 block">${totalTiles}</span>
-                <span class="text-[9px] text-purple-200 font-medium">100% Configured</span>
-              </div>
-              <div class="bg-white/10 backdrop-blur-md border border-white/10 rounded-xl p-3 text-center min-w-[95px] sm:min-w-[110px]">
-                <span class="text-[10px] uppercase font-bold tracking-wider text-slate-300 block">Initiatives</span>
-                <span class="text-xl sm:text-2xl font-black font-mono text-white mt-0.5 block">${totalInitiatives}</span>
-                <span class="text-[9px] text-emerald-300 font-medium">Active Programs</span>
-              </div>
-              <div class="bg-white/10 backdrop-blur-md border border-white/10 rounded-xl p-3 text-center min-w-[95px] sm:min-w-[110px]">
-                <span class="text-[10px] uppercase font-bold tracking-wider text-slate-300 block">Avg Progress</span>
-                <span class="text-xl sm:text-2xl font-black font-mono text-emerald-300 mt-0.5 block">${avgProgress}%</span>
-                <span class="text-[9px] text-slate-300 font-medium">On Schedule</span>
-              </div>
-            </div>
+          <div class="relative z-10 flex flex-col items-center justify-center text-center space-y-2 max-w-2xl mx-auto">
+            <span class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-wider bg-purple-500/20 text-purple-200 border border-purple-400/30 shadow-2xs">
+              <i data-lucide="target" class="w-3.5 h-3.5 text-purple-300"></i>
+              <span>FPCL STRATEGIC GOVERNANCE</span>
+            </span>
+            <h1 class="text-3xl sm:text-4xl font-black tracking-tight text-white text-center">
+              Strategic Dashboard
+            </h1>
           </div>
         </div>
 
-        <!-- SEARCH & CATEGORY FILTER TOOLBAR -->
-        <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs space-y-3">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <!-- SEARCH & CONTROLS TOOLBAR -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-3.5 sm:p-4 shadow-xs">
+          <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
             <!-- Search Input -->
-            <div class="relative flex-1 max-w-md">
+            <div class="relative flex-1 max-w-md w-full">
               <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                 <i data-lucide="search" class="w-4 h-4"></i>
               </div>
@@ -1733,7 +1553,7 @@
                 id="strategic-search-input"
                 type="text"
                 value="${this.state.searchQuery}"
-                placeholder="Search department, initiative, keyword..."
+                placeholder="Search department..."
                 class="w-full pl-9 pr-9 py-2 bg-slate-50 hover:bg-white focus:bg-white text-slate-900 border border-slate-200 focus:border-purple-500 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-purple-200 transition-all shadow-2xs"
                 oninput="window.FPCL_STRATEGIC_SUITE.setSearchQuery(this.value)"
               />
@@ -1748,67 +1568,30 @@
               ` : ''}
             </div>
 
-            <!-- Counter & Master Controls -->
-            <div class="flex items-center justify-between sm:justify-end gap-2 text-xs text-slate-500 flex-wrap">
-              <span class="font-medium mr-1 hidden md:inline">
-                Showing <strong class="text-slate-800 font-bold">${filtered.length}</strong> of ${totalTiles} Tiles
-              </span>
-              <button
-                type="button"
-                onclick="window.FPCL_STRATEGIC_SUITE.openMasterModal()"
-                class="px-3 py-1.5 rounded-xl text-xs font-bold bg-purple-50 hover:bg-purple-100 text-purple-900 border border-purple-200 transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs"
-                title="Master Administrator Portal & Reset Controls"
-              >
-                <i data-lucide="shield-check" class="w-3.5 h-3.5 text-purple-600"></i>
-                <span>Master Security</span>
-              </button>
+            <!-- Controls -->
+            <div class="flex items-center justify-center sm:justify-end gap-2 text-xs text-slate-500 flex-wrap">
               ${(this.state.unlockedTiles.size > 0 || this.state.isMasterActive) ? `
                 <button
                   type="button"
                   onclick="window.FPCL_STRATEGIC_SUITE.lockAllTiles()"
-                  class="px-2.5 py-1.5 text-xs font-semibold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer flex items-center gap-1.5 shadow-2xs"
+                  class="px-3 py-1.5 text-xs font-semibold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer flex items-center gap-1.5 shadow-2xs"
                   title="Lock all unlocked tiles"
                 >
                   <i data-lucide="lock" class="w-3.5 h-3.5 text-slate-500"></i>
-                  <span>Lock All (${this.state.isMasterActive ? 'All' : this.state.unlockedTiles.size})</span>
+                  <span>Lock All</span>
                 </button>
               ` : ''}
-              ${(this.state.searchQuery || this.state.categoryFilter !== 'all') ? `
+              ${this.state.searchQuery ? `
                 <button
                   type="button"
                   onclick="window.FPCL_STRATEGIC_SUITE.resetFilters()"
-                  class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer flex items-center gap-1 shadow-2xs"
+                  class="px-3 py-1.5 text-xs font-semibold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer flex items-center gap-1 shadow-2xs"
                 >
                   <i data-lucide="rotate-ccw" class="w-3 h-3"></i>
                   <span>Reset</span>
                 </button>
               ` : ''}
             </div>
-          </div>
-
-          <!-- Category Filter Pills -->
-          <div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs scrollbar-none">
-            ${[
-              { id: 'all', label: 'All Departments (20)' },
-              { id: 'Corporate & Strategic Governance', label: 'Corporate & Governance (4)' },
-              { id: 'Operations & Engineering', label: 'Operations & Engineering (6)' },
-              { id: 'Safety, Quality & Integrity', label: 'Safety & Quality (5)' },
-              { id: 'Corporate Services & People', label: 'Support & People (5)' }
-            ].map(cat => {
-              const isActive = this.state.categoryFilter === cat.id;
-              return `
-                <button
-                  onclick="window.FPCL_STRATEGIC_SUITE.setCategoryFilter('${cat.id}')"
-                  class="px-3 py-1.5 rounded-xl font-bold whitespace-nowrap transition-all cursor-pointer text-xs ${
-                    isActive
-                      ? 'bg-[#1E293B] text-white shadow-xs'
-                      : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
-                  }"
-                >
-                  ${cat.label}
-                </button>
-              `;
-            }).join('')}
           </div>
         </div>
 
@@ -1828,106 +1611,30 @@
             </button>
           </div>
         ` : `
-          <div id="strategic-tiles-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
+          <div id="strategic-tiles-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-5">
             ${filtered.map(tile => {
-              const isUnlocked = this.state.isMasterActive || this.state.unlockedTiles.has(tile.id);
-              const isCustom = this.isTileCustomized(tile.id);
-
               return `
                 <div
                   id="tile-${tile.id}"
                   onclick="window.FPCL_STRATEGIC_SUITE.handleTileClick('${tile.id}')"
-                  class="group relative bg-white hover:bg-slate-50/50 rounded-2xl p-5 border border-slate-200/90 hover:border-slate-300/90 flex flex-col justify-between cursor-pointer overflow-hidden transition-all duration-300 shadow-xs hover:shadow-xl hover:-translate-y-1.5 select-none"
-                  style="min-height: 250px;"
+                  class="group relative bg-white hover:bg-slate-50/80 rounded-2xl p-5 sm:p-6 border border-slate-200 hover:border-purple-300 flex flex-col items-center justify-center text-center cursor-pointer overflow-hidden transition-all duration-250 shadow-2xs hover:shadow-lg hover:-translate-y-1 select-none min-h-[165px] sm:min-h-[180px]"
                 >
                   <!-- Top Accent Gradient Stripe -->
-                  <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r ${tile.theme.gradient}"></div>
+                  <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${tile.theme.gradient}"></div>
 
-                  <div>
-                    <!-- Tile Header: Icon, Code Badge, Lock/Unlock Status -->
-                    <div class="flex items-start justify-between gap-2.5">
-                      <div class="flex items-center gap-3">
-                        <div
-                          class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 shadow-2xs border"
-                          style="background-color: ${tile.theme.bg}; border-color: ${tile.theme.border}; color: ${tile.theme.primary};"
-                        >
-                          <i data-lucide="${tile.icon}" class="w-5 h-5"></i>
-                        </div>
-                        <div>
-                          <div class="flex items-center gap-1.5 flex-wrap">
-                            <span class="px-2 py-0.5 rounded-md text-[10px] font-mono font-extrabold uppercase border ${tile.theme.badgeBg}">
-                              ${tile.code}
-                            </span>
-                            ${tile.isFeatured ? `
-                              <span class="px-1.5 py-0.5 rounded text-[9px] font-bold font-mono uppercase bg-amber-100 text-amber-900 border border-amber-300">
-                                FIRST TILE
-                              </span>
-                            ` : ''}
-                          </div>
-                          <span class="text-[10px] font-semibold text-slate-400 block mt-0.5 truncate max-w-[130px]">
-                            ${tile.category}
-                          </span>
-                        </div>
-                      </div>
-
-                      <!-- Security status pill -->
-                      <div class="flex items-center gap-1">
-                        ${isUnlocked ? `
-                          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1 shadow-2xs" title="Unlocked">
-                            <i data-lucide="unlock" class="w-2.5 h-2.5"></i>
-                            <span class="hidden xs:inline">Open</span>
-                          </span>
-                        ` : `
-                          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200 flex items-center gap-1 shadow-2xs" title="Protected (Default: Abcd@1234)">
-                            <i data-lucide="lock" class="w-2.5 h-2.5 text-amber-600"></i>
-                            <span class="hidden xs:inline">Locked</span>
-                          </span>
-                        `}
-                        ${isCustom ? `
-                          <span class="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-purple-50 text-purple-700 border border-purple-200" title="Custom Password Active">
-                            Custom
-                          </span>
-                        ` : ''}
-                      </div>
-                    </div>
-
-                    <!-- Department Title & Subtitle -->
-                    <div class="mt-4 space-y-1">
-                      <h3 class="text-base sm:text-lg font-black tracking-tight text-slate-800 group-hover:text-purple-700 transition-colors leading-snug">
-                        ${tile.name}
-                      </h3>
-                      <p class="text-xs text-slate-500 font-medium line-clamp-2 leading-relaxed">
-                        ${tile.subtitle}
-                      </p>
-                    </div>
-
-                    <!-- Strategic Progress Bar -->
-                    <div class="mt-4 pt-3 border-t border-slate-100 space-y-1.5">
-                      <div class="flex items-center justify-between text-[11px]">
-                        <span class="text-slate-500 font-medium">Strategic Roadmap</span>
-                        <span class="font-mono font-bold text-slate-700">${tile.progress}%</span>
-                      </div>
-                      <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                        <div
-                          class="h-full rounded-full transition-all duration-500 bg-gradient-to-r ${tile.theme.gradient}"
-                          style="width: ${tile.progress}%;"
-                        ></div>
-                      </div>
-                    </div>
+                  <!-- Tile Icon (Centered, Prominent) -->
+                  <div
+                    class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center shrink-0 transition-transform duration-250 group-hover:scale-110 shadow-2xs border mx-auto"
+                    style="background-color: ${tile.theme.bg}; border-color: ${tile.theme.border}; color: ${tile.theme.primary};"
+                  >
+                    <i data-lucide="${tile.icon}" class="w-6 h-6 sm:w-7 sm:h-7"></i>
                   </div>
 
-                  <!-- Tile Footer: Initiatives count & Action Prompt -->
-                  <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-                    <span class="text-[11px] font-medium text-slate-500 flex items-center gap-1">
-                      <i data-lucide="layers" class="w-3 h-3 text-slate-400"></i>
-                      <span>${tile.initiatives.length} Initiatives</span>
-                    </span>
-
-                    <span class="inline-flex items-center gap-1 text-[11px] font-bold text-purple-700 group-hover:text-purple-900 group-hover:translate-x-0.5 transition-all">
-                      <i data-lucide="${isUnlocked ? 'folder-open' : 'key-round'}" class="w-3.5 h-3.5"></i>
-                      <span>${isUnlocked ? 'Open Dossier' : 'Unlock Tile'}</span>
-                      <i data-lucide="arrow-right" class="w-3 h-3"></i>
-                    </span>
+                  <!-- Tile Name (Center Aligned, adjusted text size to use empty space) -->
+                  <div class="mt-3.5 w-full text-center flex-1 flex items-center justify-center">
+                    <h3 class="text-base sm:text-lg font-black tracking-tight text-slate-800 group-hover:text-purple-700 transition-colors leading-snug text-center">
+                      ${tile.name}
+                    </h3>
                   </div>
                 </div>
               `;
@@ -1987,151 +1694,6 @@
 
             <div id="strategic-auth-modal-body" class="overflow-y-auto pr-1 flex-1">
               <!-- Dynamically populated via renderAuthModal() -->
-            </div>
-          </div>
-        </div>
-
-        <!-- MODAL 3: MASTER SECURITY & PASSWORD RESET PORTAL -->
-        <div id="strategic-master-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs hidden items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
-          <div class="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl max-w-xl w-full p-5 sm:p-6 shadow-2xl space-y-4 max-h-[92vh] flex flex-col overflow-hidden">
-            <div class="flex items-center justify-between pb-3 border-b border-slate-200">
-              <div class="flex items-center gap-2 text-slate-800 font-bold text-sm">
-                <i data-lucide="shield-alert" class="w-4 h-4 text-purple-600"></i>
-                <span>Master Security & Password Tools</span>
-              </div>
-              <button
-                onclick="window.FPCL_STRATEGIC_SUITE.closeMasterModal()"
-                class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
-                title="Close modal"
-              >
-                <i data-lucide="x" class="w-5 h-5"></i>
-              </button>
-            </div>
-
-            <div class="overflow-y-auto pr-1 flex-1 space-y-4 text-xs">
-              <!-- Banner -->
-              <div class="p-3.5 rounded-2xl bg-gradient-to-r from-purple-900 to-indigo-900 text-white space-y-1">
-                <div class="flex items-center gap-2 font-bold text-sm text-purple-200">
-                  <i data-lucide="key" class="w-4 h-4"></i>
-                  <span>Master Administrator Access</span>
-                </div>
-                <p class="text-[11px] text-purple-200/80">
-                  Enter master password <code class="px-1 py-0.5 rounded bg-white/20 text-white font-mono font-bold">abcd@Psuser12345</code> to unlock all dashboards or reset passwords back to the initial <code class="px-1 py-0.5 rounded bg-white/20 text-white font-mono font-bold">Abcd@1234</code>.
-                </p>
-              </div>
-
-              <!-- Input -->
-              <div class="space-y-1.5">
-                <label class="block text-xs font-bold text-slate-700">Enter Master Password</label>
-                <div class="relative">
-                  <input
-                    id="strategic-master-modal-pwd"
-                    type="password"
-                    placeholder="Enter abcd@Psuser12345..."
-                    class="w-full px-3.5 py-2.5 pr-10 text-xs font-mono rounded-xl border border-slate-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 bg-white text-slate-900 outline-none"
-                    oninput="window.FPCL_STRATEGIC_SUITE.onMasterModalInput(this.value)"
-                    onkeydown="if(event.key==='Enter') window.FPCL_STRATEGIC_SUITE.submitMasterModalUnlockAll()"
-                  />
-                  <button
-                    type="button"
-                    onclick="window.FPCL_STRATEGIC_SUITE.toggleVisibility('masterInput')"
-                    class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer"
-                  >
-                    <i id="strategic-master-eye" data-lucide="eye" class="w-4 h-4"></i>
-                  </button>
-                </div>
-                <div id="strategic-master-error" class="hidden text-xs text-rose-600 font-semibold mt-1"></div>
-              </div>
-
-              <!-- Master Actions Panel (Revealed when correct master password entered) -->
-              <div id="strategic-master-actions-panel" class="hidden space-y-3 pt-2 border-t border-slate-200 animate-in fade-in">
-                <div class="font-bold text-slate-700 flex items-center gap-1.5">
-                  <i data-lucide="sliders" class="w-3.5 h-3.5 text-purple-600"></i>
-                  <span>Master Administrator Actions</span>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                  <!-- Global Reset Button -->
-                  <button
-                    type="button"
-                    onclick="window.FPCL_STRATEGIC_SUITE.submitMasterModalResetAll()"
-                    class="p-3 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-950 font-bold transition-all text-left flex items-start gap-2.5 cursor-pointer shadow-2xs"
-                  >
-                    <i data-lucide="rotate-ccw" class="w-4 h-4 text-amber-700 shrink-0 mt-0.5"></i>
-                    <div>
-                      <div>Reset All to Initial (Abcd@1234)</div>
-                      <div class="text-[10px] text-amber-800/80 font-normal mt-0.5">Reverts all 20 departmental tile passwords to Abcd@1234</div>
-                    </div>
-                  </button>
-
-                  <!-- Unlock All Button -->
-                  <button
-                    type="button"
-                    onclick="window.FPCL_STRATEGIC_SUITE.submitMasterModalUnlockAll()"
-                    class="p-3 rounded-xl bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-950 font-bold transition-all text-left flex items-start gap-2.5 cursor-pointer shadow-2xs"
-                  >
-                    <i data-lucide="unlock" class="w-4 h-4 text-purple-700 shrink-0 mt-0.5"></i>
-                    <div>
-                      <div>Unlock All 20 Dashboards</div>
-                      <div class="text-[10px] text-purple-800/80 font-normal mt-0.5">Grants full session access to all department dossiers</div>
-                    </div>
-                  </button>
-                </div>
-
-                <!-- Tile Status & Reset List -->
-                <div class="space-y-2 pt-2">
-                  <div class="text-xs font-bold text-slate-600 flex items-center justify-between">
-                    <span>Department Tiles Status</span>
-                    <span class="text-[10px] font-normal text-slate-400 font-mono">20 Total Tiles</span>
-                  </div>
-                  <div class="max-h-48 overflow-y-auto space-y-1.5 pr-1 border border-slate-200 rounded-xl p-2 bg-slate-50/50">
-                    ${this.data.map(t => {
-                      const isCust = this.isTileCustomized(t.id);
-                      return `
-                        <div class="p-2 rounded-lg bg-white border border-slate-200 flex items-center justify-between gap-2">
-                          <div class="flex items-center gap-2 truncate">
-                            <span class="w-2 h-2 rounded-full ${isCust ? 'bg-purple-500' : 'bg-emerald-500'} shrink-0"></span>
-                            <span class="font-mono font-bold text-[11px] text-slate-700">${t.code}</span>
-                            <span class="font-medium text-slate-600 truncate">${t.name}</span>
-                          </div>
-                          <div class="flex items-center gap-1.5 shrink-0">
-                            <span class="text-[10px] font-mono ${isCust ? 'text-purple-700 font-bold' : 'text-slate-400'}">
-                              ${isCust ? 'Custom Password' : 'Initial (Abcd@1234)'}
-                            </span>
-                            ${isCust ? `
-                              <button
-                                type="button"
-                                onclick="window.FPCL_STRATEGIC_SUITE.resetActiveTileToDefault('${t.id}')"
-                                class="px-2 py-0.5 text-[10px] font-bold rounded bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 cursor-pointer"
-                                title="Reset to initial password Abcd@1234"
-                              >
-                                Reset
-                              </button>
-                            ` : ''}
-                          </div>
-                        </div>
-                      `;
-                    }).join('')}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="pt-3 border-t border-slate-200 flex items-center justify-between">
-              <button
-                type="button"
-                onclick="window.FPCL_STRATEGIC_SUITE.lockAllTiles()"
-                class="text-xs font-semibold text-slate-600 hover:text-slate-800"
-              >
-                Lock All Dashboards
-              </button>
-              <button
-                type="button"
-                onclick="window.FPCL_STRATEGIC_SUITE.closeMasterModal()"
-                class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer shadow-2xs"
-              >
-                Close
-              </button>
             </div>
           </div>
         </div>

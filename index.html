@@ -90,7 +90,7 @@
     <script src="/assets/psmValidationData.js?v=20260919a"></script>
     <script src="/assets/psmSuite.js?v=20260919b"></script>
     <!-- Strategic Dashboard Suite & Departmental Tiles -->
-    <script src="/assets/strategicSuite.js?v=20260919a"></script>
+    <script src="/assets/strategicSuite.js?v=20260920b"></script>
 
     <style>
       /* Base font legibility: standard across devices, calibrated for wall displays */
@@ -2164,6 +2164,36 @@
           actions: []
         },
         {
+          id: 'strategic',
+          name: 'Strategic',
+          code: 'STRATEGIC',
+          icon: 'target',
+          status: 'Active',
+          hasSheetLink: true,
+          category: 'Executive & Governance',
+          department: 'Corporate Strategy & Planning',
+          cadence: 'Quarterly Strategic Milestones',
+          description: 'Departmental performance frameworks & operational strategy across all 20 specialized units: Strategic Master, Admin & Security, Asset Integrity, Operations, Machinery, Process, Projects.',
+          color: {
+            bg: '#FAF5FF',
+            primary: '#7C3AED',
+            secondary: '#C4B5FD',
+            text: '#4C1D95'
+          },
+          gradient: 'from-purple-600 via-violet-600 to-indigo-700',
+          gradientStop1: '#7C3AED',
+          gradientStop2: '#4338CA',
+          tagStyle: 'bg-purple-50 text-purple-900 border-purple-200',
+          kpis: { total: 20, closed: 18, inProgress: 2, overdue: 0, compliance: '94.0%' },
+          punchList: { open: 2, closed: 18, total: 20, rate: '94.0%' },
+          dataReadiness: { master: '100%', signoff: '100%' },
+          statusComment: '20 Departmental Strategic Tiles Active with 2026 Milestone Roadmaps.',
+          actions: [
+            { id: 'STRAT-2026-001', desc: 'Deploy 2026 Operational Excellence & Zero-Harm Plant Program', owner: 'Executive Committee', due: '2026-12-31', priority: 'High', status: 'Completed' },
+            { id: 'STRAT-2026-002', desc: 'Execute Departmental Strategic Alignment Reviews across all 20 units', owner: 'Corporate Planning', due: '2026-10-31', priority: 'High', status: 'In Progress' }
+          ]
+        },
+        {
           id: 'plr',
           name: 'PLR',
           code: 'PLR',
@@ -2253,36 +2283,6 @@
           actions: [
             { id: 'PSM-VAL-2026-001', desc: 'Complete Training & Development qualification validation for operational cadre', owner: 'HSEQ / T&D', due: '2026-09-30', priority: 'High', status: 'Completed' },
             { id: 'PSM-VAL-2026-002', desc: 'Conduct refresher PSM element certification assessments for engineering personnel', owner: 'Operations & L&D', due: '2026-10-15', priority: 'Medium', status: 'In Progress' }
-          ]
-        },
-        {
-          id: 'strategic',
-          name: 'Strategic',
-          code: 'STRATEGIC',
-          icon: 'target',
-          status: 'Active',
-          hasSheetLink: true,
-          category: 'Executive & Governance',
-          department: 'Corporate Strategy & Planning',
-          cadence: 'Quarterly Strategic Milestones',
-          description: 'Departmental performance frameworks & operational strategy across all 20 specialized units: Strategic Master, Admin & Security, Asset Integrity, Operations, Machinery, Technical & HSE.',
-          color: {
-            bg: '#FAF5FF',
-            primary: '#7C3AED',
-            secondary: '#C4B5FD',
-            text: '#4C1D95'
-          },
-          gradient: 'from-purple-600 via-violet-600 to-indigo-700',
-          gradientStop1: '#7C3AED',
-          gradientStop2: '#4338CA',
-          tagStyle: 'bg-purple-50 text-purple-900 border-purple-200',
-          kpis: { total: 20, closed: 18, inProgress: 2, overdue: 0, compliance: '94.0%' },
-          punchList: { open: 2, closed: 18, total: 20, rate: '94.0%' },
-          dataReadiness: { master: '100%', signoff: '100%' },
-          statusComment: '20 Departmental Strategic Tiles Active with 2026 Milestone Roadmaps.',
-          actions: [
-            { id: 'STRAT-2026-001', desc: 'Deploy 2026 Operational Excellence & Zero-Harm Plant Program', owner: 'Executive Committee', due: '2026-12-31', priority: 'High', status: 'Completed' },
-            { id: 'STRAT-2026-002', desc: 'Execute Departmental Strategic Alignment Reviews across all 20 units', owner: 'Corporate Planning', due: '2026-10-31', priority: 'High', status: 'In Progress' }
           ]
         },
         {
@@ -5189,11 +5189,11 @@
             gradient: 'from-purple-600 via-violet-600 to-indigo-700',
             buttonGradient: 'linear-gradient(135deg, #7C3AED, #6366F1)',
             badgeClass: 'bg-purple-50 text-purple-700 border-purple-200',
-            welcomeMessage: 'Hello! I am the **Strategic Performance Assistant**.\n\nI can assist with:\n- **20 Department Strategic Tiles**: Strategic Dashboard (Featured), Admin & Security, Asset Integrity & IMS, Business Development, Civil, E&I, Finance, HSEQ, HCM, IMS, Information Technology, Inspection & Workshop Services, L&D, Machinery, Mechanical, Operations, Reliability, SCM, Technical, Technical & HSE\n- **2026 Milestone Roadmaps**: Strategic initiatives, target completion dates, and executive owners\n- **Departmental KPIs**: Structural integrity, power availability, safety indices, and financial variances\n\n*Feel free to ask about any department strategic mandate or initiative!*',
+            welcomeMessage: 'Hello! I am the **Strategic Performance Assistant**.\n\nI can assist with:\n- **20 Department Strategic Tiles**: Strategic Dashboard (Featured), Admin & Security, Asset Integrity, Business Development, Civil, E&I, Finance, HSEQ, HCM, IMS, Information Technology, Inspection & Workshop Services, L&D, Machinery, Mechanical, Operations, Reliability, SCM, Projects, Process\n- **2026 Milestone Roadmaps**: Strategic initiatives, target completion dates, and executive owners\n- **Departmental KPIs**: Structural integrity, power availability, safety indices, and financial variances\n\n*Feel free to ask about any department strategic mandate or initiative!*',
             suggestions: [
               'What are the key initiatives for Admin & Security?',
               'Show 2026 roadmap for Operations & Machinery',
-              'What KPIs are tracked in Asset Integrity & IMS?',
+              'What KPIs are tracked in Asset Integrity?',
               'List all 20 strategic departments'
             ]
           }
