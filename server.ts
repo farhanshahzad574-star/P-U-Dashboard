@@ -137,12 +137,26 @@ PSM Audit Data Summary (Phase 1 Internal Audit Findings June 2026):
   'strategic': {
     name: 'Strategic',
     description: 'Executive Strategic Planning & Initiatives Dashboard',
-    scopeKeywords: ['strategic', 'strategy', 'planning', 'milestone', 'initiative', 'governance', 'kpi', 'target', 'vision', 'long-term', 'roadmap'],
+    scopeKeywords: ['strategic', 'strategy', 'planning', 'milestone', 'initiative', 'governance', 'kpi', 'target', 'vision', 'long-term', 'roadmap', 'boss', 'matrix'],
     context: `
 You are the Strategic Assistant for the Strategic dashboard on the FPCL Portal.
-Status: Awaiting Data.
-The Strategic dashboard is configured in the executive navigation bar with a unique royal amethyst/violet theme.
-Its operational data, strategic milestones, and executive KPIs will be provided later.
+Tracks 20 Departmental Tiles across Plant Integrity, Operations, Corporate Services, and Governance.
+Includes specialized dashboards for SCM (Supply Chain Management - Faisal Javed), Mechanical, Electrical & Instrumentation, Operations, Finance, IT, and more.
+`
+  },
+  'scm': {
+    name: 'SCM',
+    description: 'Supply Chain Management Strategic Dashboard (Lead: Faisal Javed)',
+    scopeKeywords: ['scm', 'supply chain', 'procurement', 'vendor', 'warehouse', 'spare', 'inventory', 'contract', 'purchase', 'rfq', 'faisal'],
+    context: `
+You are the SCM Assistant for the Supply Chain Management Strategic Dashboard.
+Lead: Faisal Javed, Head of Supply Chain Management (faisal.javed@fpcl.com).
+SCM Strategic Scope & Action Plan:
+- Critical Turnaround Spares: High-alloy valve stock and long-lead critical parts secured with QA inspection certs.
+- Bulk Chemical Agreements: Framework contracts for water treatment chemicals and specialty resins awarded with 8.4% cost savings.
+- Inventory Integrity: Warehouse cyclic stock audits maintaining 99.4% physical barcode match accuracy.
+- Supplier Localization: Secondary domestic vendor qualification for catalyst pre-filters undergoing plant quality lab tests.
+- Digital Transformation: Vendor performance scoring and automated delivery tracking scorecard in user acceptance testing.
 `
   }
 };
@@ -458,10 +472,14 @@ app.all('/api/sheets/fetch', async (req: Request, res: Response): Promise<void> 
     const sheetTab = req.body?.sheetTab || req.query?.sheetTab || 'Recommendations';
     const customGid = req.body?.gid || req.query?.gid;
 
-    // Resolve URL from environment variables if not provided
-    if (!url || typeof url !== 'string') {
+    // Resolve URL from environment variables if not provided or default placeholder
+    if (!url || typeof url !== 'string' || url.includes('1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms')) {
       const sLower = (sheetTab || '').toLowerCase();
-      if (sLower.includes('validation') || sLower.includes('valid')) {
+      const tileId = (req.body?.tileId || req.query?.tileId || '').toLowerCase();
+      if (sLower === 'scm' || sLower.includes('scm') || tileId === 'scm') {
+        const scmSecret = process.env.SCM_SHEET_URL || process.env.STRATEGIC_SCM_SHEET_URL || process.env.GOOGLE_SHEET_SCM || process.env.SCM_URL || process.env.SCM;
+        if (scmSecret) url = scmSecret;
+      } else if (sLower.includes('validation') || sLower.includes('valid')) {
         url = process.env.PSM_Validation_sheet_URL || process.env.PSM_VALIDATION_SHEET_URL || process.env.PSM_Validation_sheet || 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTyc0eRsaIpv3DWLdBbEplWo5FqrNwuCFpFrXM4_A6pRTkQgHz56DaN9FMV0cuCkQXnXfPDyKS_nsYC/pub?gid=1928323828&single=true&output=csv';
       } else if (sLower.includes('hseq') || sLower.includes('kpi')) {
         url = process.env.HSEQ_KPI || 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTyc0eRsaIpv3DWLdBbEplWo5FqrNwuCFpFrXM4_A6pRTkQgHz56DaN9FMV0cuCkQXnXfPDyKS_nsYC/pub?gid=553516171&single=true&output=csv';
@@ -507,7 +525,12 @@ app.all('/api/sheets/fetch', async (req: Request, res: Response): Promise<void> 
     // Build list of candidate sheet tabs to query
     const candidateTabs: string[] = [sheetTab];
     const sLower = (sheetTab || '').toLowerCase();
-    if (sLower === 'plr' || sLower.includes('plr')) {
+    if (sLower === 'scm' || sLower.includes('scm')) {
+      const extraScmTabs = ['SCM', 'SCM_Actions', 'SCM Actions', 'Supply Chain', 'Procurement', 'Sheet1'];
+      extraScmTabs.forEach(t => {
+        if (!candidateTabs.includes(t)) candidateTabs.push(t);
+      });
+    } else if (sLower === 'plr' || sLower.includes('plr')) {
       const extraPlrTabs = ['PLRstatus', 'PLRStatus', 'PLR', 'PLRs', 'PLR status', 'PLR Status', 'PLRs status', 'PLRs Status', 'PLR Incident', 'PLR Incidents', 'Incidents', 'Incident', 'Outages', 'Plant Records'];
       extraPlrTabs.forEach(t => {
         if (!candidateTabs.includes(t)) candidateTabs.push(t);
@@ -559,6 +582,10 @@ app.all('/api/sheets/fetch', async (req: Request, res: Response): Promise<void> 
         candidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tab)}`);
         candidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&sheet=${encodeURIComponent(tab)}`);
       }
+
+      // Universal fallback to primary/default sheet if tab-specific name was not matched
+      candidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv`);
+      candidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv`);
     }
 
     let csvText = '';
@@ -679,6 +706,294 @@ app.all('/api/sheets/fetch', async (req: Request, res: Response): Promise<void> 
   } catch (err: any) {
     console.error('Error in /api/sheets/fetch:', err);
     res.status(500).json({ success: false, error: err?.message || 'Internal server error fetching Google Sheet.' });
+  }
+});
+
+interface StrategicActionItem {
+  id: string;
+  title: string;
+  priority: 'High' | 'Medium' | 'Low';
+  dueDate: string;
+  status: 'Open' | 'Closed';
+  closureDate: string;
+  remarks: string;
+}
+
+const STRATEGIC_TILE_REGISTRY: Record<string, { envKeys: string[]; code: string; defaultTab: string; name: string }> = {
+  'strategic-master': { envKeys: ['STRATEGIC_SHEET_URL', 'STRATEGIC_MASTER_SHEET_URL'], code: 'STRAT', defaultTab: 'Master', name: 'Strategic Master (COO)' },
+  'admin-security': { envKeys: ['ADMIN_SECURITY_SHEET_URL'], code: 'ADM', defaultTab: 'Admin_Security_Actions', name: 'Admin & Security' },
+  'asset-integrity': { envKeys: ['ASSET_INTEGRITY_SHEET_URL'], code: 'AI', defaultTab: 'Asset_Integrity_Actions', name: 'Asset Integrity' },
+  'business-development': { envKeys: ['BUSINESS_DEVELOPMENT_SHEET_URL'], code: 'BD', defaultTab: 'Business_Development_Actions', name: 'Business Development' },
+  'civil': { envKeys: ['CIVIL_SHEET_URL'], code: 'CIV', defaultTab: 'Civil_Actions', name: 'Civil' },
+  'ei': { envKeys: ['EI_SHEET_URL'], code: 'EI', defaultTab: 'EI_Actions', name: 'E&I' },
+  'finance': { envKeys: ['FINANCE_SHEET_URL'], code: 'FIN', defaultTab: 'Finance_Actions', name: 'Finance' },
+  'hseq': { envKeys: ['HSEQ_KPI', 'HSEQ_SHEET_URL'], code: 'HSEQ', defaultTab: 'HSEQ_KPI', name: 'HSEQ' },
+  'hcm': { envKeys: ['HCM_SHEET_URL'], code: 'HCM', defaultTab: 'HCM_Actions', name: 'HCM' },
+  'ims': { envKeys: ['IMS_SHEET_URL'], code: 'IMS', defaultTab: 'IMS_Actions', name: 'IMS' },
+  'it': { envKeys: ['IT_SHEET_URL'], code: 'IT', defaultTab: 'IT_Actions', name: 'IT' },
+  'inspection': { envKeys: ['INSPECTION_SHEET_URL'], code: 'INSP', defaultTab: 'Inspection_Actions', name: 'Inspection' },
+  'ld': { envKeys: ['LD_SHEET_URL'], code: 'LD', defaultTab: 'LD_Actions', name: 'L&D' },
+  'machinery': { envKeys: ['MACHINERY_SHEET_URL'], code: 'MACH', defaultTab: 'Machinery_Actions', name: 'Machinery' },
+  'mechanical': { envKeys: ['MECHANICAL_SHEET_URL'], code: 'MECH', defaultTab: 'Mechanical_Actions', name: 'Mechanical' },
+  'operations': { envKeys: ['OPERATIONS_SHEET_URL'], code: 'OPS', defaultTab: 'Operations_Actions', name: 'Operations' },
+  'reliability': { envKeys: ['RELIABILITY_SHEET_URL'], code: 'REL', defaultTab: 'Reliability_Actions', name: 'Reliability' },
+  'scm': { envKeys: ['SCM_SHEET_URL', 'STRATEGIC_SCM_SHEET_URL', 'GOOGLE_SHEET_SCM', 'SCM_URL', 'SCM'], code: 'SCM', defaultTab: 'SCM', name: 'SCM' },
+  'projects': { envKeys: ['PROJECTS_SHEET_URL'], code: 'PRJ', defaultTab: 'Projects_Actions', name: 'Projects' },
+  'process': { envKeys: ['PROCESS_SHEET_URL'], code: 'PROC', defaultTab: 'Process_Actions', name: 'Process' }
+};
+
+function getSheetUrlForTile(tileId: string): string {
+  const reg = STRATEGIC_TILE_REGISTRY[tileId];
+  if (!reg) return '';
+  for (const k of reg.envKeys) {
+    if (process.env[k] && process.env[k]?.trim()) {
+      return process.env[k]!.trim();
+    }
+  }
+  return '';
+}
+
+function parseCsvToStrategicActions(csvText: string, defaultCode: string): StrategicActionItem[] {
+  if (!csvText) return [];
+  const lines = csvText.split(/\r\n|\n|\r/).filter(l => l.trim().length > 0);
+  if (lines.length <= 1) return [];
+
+  const headers = lines[0].split(',').map(h => h.replace(/^"|"$/g, '').trim().toLowerCase());
+  const findCol = (candidates: string[]) => headers.findIndex(h => candidates.some(c => h.includes(c)));
+
+  const idCol = findCol(['id', 'code', 'action #', 'action#', 'item', 'sr', 's_no', 's.no', 'sno', 'no', '#']);
+  const descCol = findCol(['action', 'task', 'title', 'desc', 'description', 'activity', 'deliverable']);
+  const statusCol = findCol(['status', 'state', 'condition', 'open_close status', 'open_close']);
+  const priorityCol = findCol(['priority', 'prio', 'urgency']);
+  const dueCol = findCol(['due', 'target', 'deadline', 'date', 'target date']);
+  const remarksCol = findCol(['remark', 'note', 'comment', 'closure', 'remarks']);
+  const closureCol = findCol(['closure date', 'closed on', 'completed date', 'resolved date']);
+
+  const parsed: StrategicActionItem[] = [];
+  for (let i = 1; i < lines.length; i++) {
+    const row: string[] = [];
+    let inQuotes = false;
+    let token = '';
+    for (let c = 0; c < lines[i].length; c++) {
+      const ch = lines[i][c];
+      if (ch === '"') {
+        inQuotes = !inQuotes;
+      } else if (ch === ',' && !inQuotes) {
+        row.push(token.trim());
+        token = '';
+      } else {
+        token += ch;
+      }
+    }
+    row.push(token.trim());
+
+    const desc = descCol !== -1 ? (row[descCol] || '') : (row[1] || row[0] || '');
+    if (!desc || desc.trim().length === 0) continue;
+
+    const rawStatus = statusCol !== -1 ? (row[statusCol] || 'Open') : 'Open';
+    const isClosed = /close|done|complete|resolved/i.test(rawStatus);
+    const status: 'Open' | 'Closed' = isClosed ? 'Closed' : 'Open';
+
+    let rawId = idCol !== -1 && row[idCol] ? row[idCol].trim() : '';
+    let id = rawId;
+    if (!id) {
+      id = `${defaultCode}-${String(i).padStart(2, '0')}`;
+    } else if (/^\d+$/.test(id)) {
+      id = `${defaultCode}-${id.padStart(2, '0')}`;
+    }
+
+    const rawPriority = priorityCol !== -1 ? (row[priorityCol] || '') : '';
+    let priority: 'High' | 'Medium' | 'Low' = 'High';
+    if (/low|p3/i.test(rawPriority)) {
+      priority = 'Low';
+    } else if (/med|medium|p2/i.test(rawPriority)) {
+      priority = 'Medium';
+    } else if (/high|critical|p1/i.test(rawPriority)) {
+      priority = 'High';
+    } else {
+      priority = i % 2 === 0 ? 'Medium' : 'High';
+    }
+
+    const dueDate = dueCol !== -1 ? (row[dueCol] || '') : '';
+    const remarks = remarksCol !== -1 ? (row[remarksCol] || '') : '';
+    const closureDate = closureCol !== -1 ? (row[closureCol] || '') : (isClosed ? (dueDate || new Date().toISOString().split('T')[0]) : '');
+
+    parsed.push({
+      id,
+      title: desc,
+      priority,
+      dueDate,
+      status,
+      closureDate,
+      remarks
+    });
+  }
+  return parsed;
+}
+
+// In-memory cache for live strategic data
+const strategicLiveCache: {
+  timestamp: number;
+  data: Record<string, {
+    actions: StrategicActionItem[];
+    rawCsv: string;
+    total: number;
+    closed: number;
+    open: number;
+    rate: number;
+    lastSynced: string;
+  }>;
+} = {
+  timestamp: 0,
+  data: {}
+};
+
+// GET /api/strategic/sheets - Exposes configured Strategic Google Sheets
+app.get('/api/strategic/sheets', (_req: Request, res: Response): void => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+  const sheets: Record<string, any> = {};
+
+  for (const [tileId, reg] of Object.entries(STRATEGIC_TILE_REGISTRY)) {
+    const url = getSheetUrlForTile(tileId);
+    sheets[tileId] = {
+      id: tileId,
+      name: reg.name,
+      sheetUrl: url,
+      sheetTab: reg.defaultTab,
+      fromSecret: Boolean(url)
+    };
+  }
+
+  // Also include backward-compatible aliases
+  sheets['boss'] = sheets['strategic-master'];
+  sheets['admin_security'] = sheets['admin-security'];
+  sheets['asset_integrity'] = sheets['asset-integrity'];
+  sheets['business_dev'] = sheets['business-development'];
+
+  res.json({
+    success: true,
+    sheets
+  });
+});
+
+// GET /api/strategic/live-data - Fetches and returns live parsed Google Sheet deliverables
+app.get('/api/strategic/live-data', async (req: Request, res: Response): Promise<void> => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+  const tileIdQuery = typeof req.query.tileId === 'string' ? req.query.tileId.trim() : '';
+  const forceRefresh = req.query.refresh === 'true' || req.query.force === 'true';
+
+  const now = Date.now();
+  const CACHE_TTL_MS = 20000; // 20 seconds cache
+
+  // Check if cache is still fresh and covers request
+  if (!forceRefresh && (now - strategicLiveCache.timestamp) < CACHE_TTL_MS && Object.keys(strategicLiveCache.data).length > 0) {
+    if (tileIdQuery && strategicLiveCache.data[tileIdQuery]) {
+      res.json({
+        success: true,
+        cached: true,
+        timestamp: strategicLiveCache.timestamp,
+        data: { [tileIdQuery]: strategicLiveCache.data[tileIdQuery] },
+        liveActions: { [tileIdQuery]: strategicLiveCache.data[tileIdQuery].actions }
+      });
+      return;
+    } else if (!tileIdQuery) {
+      const liveActions: Record<string, StrategicActionItem[]> = {};
+      for (const [k, v] of Object.entries(strategicLiveCache.data)) {
+        liveActions[k] = v.actions;
+      }
+      res.json({
+        success: true,
+        cached: true,
+        timestamp: strategicLiveCache.timestamp,
+        data: strategicLiveCache.data,
+        liveActions
+      });
+      return;
+    }
+  }
+
+  const targetsToFetch = tileIdQuery ? [tileIdQuery] : Object.keys(STRATEGIC_TILE_REGISTRY);
+  const fetchPromises = targetsToFetch.map(async (tid) => {
+    const reg = STRATEGIC_TILE_REGISTRY[tid];
+    if (!reg) return null;
+    const sheetUrl = getSheetUrlForTile(tid);
+    if (!sheetUrl) return null;
+
+    const spreadsheetMatch = sheetUrl.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+    if (!spreadsheetMatch) return null;
+    const spreadsheetId = spreadsheetMatch[1];
+
+    const candidateUrls = [
+      `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv`,
+      `https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv`,
+      `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(reg.defaultTab)}`
+    ];
+
+    let csvText = '';
+    for (const url of candidateUrls) {
+      try {
+        const resp = await fetch(url, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Strategic-Dashboard-Sync/2.0)',
+            'Accept': 'text/csv, text/plain, */*'
+          }
+        });
+        if (resp.ok) {
+          const body = await resp.text();
+          if (body && !body.includes('<!DOCTYPE html') && body.length > 10) {
+            csvText = body;
+            break;
+          }
+        }
+      } catch (err) {
+        // Continue to next candidate
+      }
+    }
+
+    if (!csvText) return null;
+
+    const actions = parseCsvToStrategicActions(csvText, reg.code);
+    const total = actions.length;
+    const closed = actions.filter(a => a.status === 'Closed').length;
+    const open = total - closed;
+    const rate = total > 0 ? Math.round((closed / total) * 100) : 0;
+
+    return {
+      tileId: tid,
+      actions,
+      rawCsv: csvText,
+      total,
+      closed,
+      open,
+      rate,
+      lastSynced: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+    };
+  });
+
+  try {
+    const results = await Promise.all(fetchPromises);
+    const updatedData: Record<string, any> = { ...strategicLiveCache.data };
+    const liveActions: Record<string, StrategicActionItem[]> = {};
+
+    for (const resItem of results) {
+      if (resItem) {
+        updatedData[resItem.tileId] = resItem;
+        liveActions[resItem.tileId] = resItem.actions;
+      }
+    }
+
+    strategicLiveCache.timestamp = now;
+    strategicLiveCache.data = updatedData;
+
+    res.json({
+      success: true,
+      timestamp: now,
+      data: tileIdQuery ? { [tileIdQuery]: updatedData[tileIdQuery] } : updatedData,
+      liveActions: tileIdQuery ? { [tileIdQuery]: liveActions[tileIdQuery] } : liveActions
+    });
+  } catch (err: any) {
+    console.error('Error fetching live strategic sheet data:', err);
+    res.status(500).json({ success: false, error: err?.message || 'Failed to fetch live Google Sheet data' });
   }
 });
 

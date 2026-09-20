@@ -72,9 +72,13 @@ export default async function handler(req: any, res: any) {
     const customGid = body.gid || query.gid;
 
     // Resolve URL from environment variables if not provided in payload
-    if (!url || typeof url !== 'string') {
+    if (!url || typeof url !== 'string' || url.includes('1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms')) {
       const sLower = (sheetTab || '').toLowerCase();
-      if (sLower.includes('validation') || sLower.includes('valid')) {
+      const tileId = (body.tileId || query.tileId || '').toLowerCase();
+      if (sLower === 'scm' || sLower.includes('scm') || tileId === 'scm') {
+        const scmSecret = process.env.SCM_SHEET_URL || process.env.STRATEGIC_SCM_SHEET_URL || process.env.GOOGLE_SHEET_SCM || process.env.SCM_URL || process.env.SCM;
+        if (scmSecret) url = scmSecret;
+      } else if (sLower.includes('validation') || sLower.includes('valid')) {
         url = process.env.PSM_Validation_sheet_URL || process.env.PSM_VALIDATION_SHEET_URL || process.env.PSM_Validation_sheet || 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTyc0eRsaIpv3DWLdBbEplWo5FqrNwuCFpFrXM4_A6pRTkQgHz56DaN9FMV0cuCkQXnXfPDyKS_nsYC/pub?gid=1928323828&single=true&output=csv';
       } else if (sLower.includes('hseq') || sLower.includes('kpi')) {
         url = process.env.HSEQ_KPI || 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTyc0eRsaIpv3DWLdBbEplWo5FqrNwuCFpFrXM4_A6pRTkQgHz56DaN9FMV0cuCkQXnXfPDyKS_nsYC/pub?gid=553516171&single=true&output=csv';
@@ -118,7 +122,12 @@ export default async function handler(req: any, res: any) {
 
     const candidateTabs: string[] = [sheetTab];
     const sLower = (sheetTab || '').toLowerCase();
-    if (sLower === 'plr' || sLower.includes('plr')) {
+    if (sLower === 'scm' || sLower.includes('scm')) {
+      const extraScmTabs = ['SCM', 'SCM_Actions', 'SCM Actions', 'Supply Chain', 'Procurement', 'Sheet1'];
+      extraScmTabs.forEach(t => {
+        if (!candidateTabs.includes(t)) candidateTabs.push(t);
+      });
+    } else if (sLower === 'plr' || sLower.includes('plr')) {
       const extraPlrTabs = ['PLRstatus', 'PLRStatus', 'PLR', 'PLRs', 'PLR status', 'PLR Status', 'PLRs status', 'PLRs Status', 'PLR Incident', 'PLR Incidents', 'Incidents', 'Incident', 'Outages', 'Plant Records'];
       extraPlrTabs.forEach(t => {
         if (!candidateTabs.includes(t)) candidateTabs.push(t);

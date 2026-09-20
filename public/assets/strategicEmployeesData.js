@@ -521,8 +521,8 @@
       employeeRole: 'Head of Supply Chain Management',
       employeeEmail: 'faisal.javed@fpcl.com',
       sheetUrl: 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit',
-      sheetTab: 'SCM_Actions',
-      gid: '16',
+      sheetTab: 'SCM',
+      gid: '0',
       theme: {
         bg: '#FEFCE8',
         border: '#FEF08A',
