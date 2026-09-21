@@ -78,6 +78,9 @@ export default async function handler(req: any, res: any) {
       if (sLower === 'scm' || sLower.includes('scm') || tileId === 'scm') {
         const scmSecret = process.env.SCM_SHEET_URL || process.env.STRATEGIC_SCM_SHEET_URL || process.env.GOOGLE_SHEET_SCM || process.env.SCM_URL || process.env.SCM;
         if (scmSecret) url = scmSecret;
+      } else if (tileId.includes('admin') || tileId.includes('security') || sLower.includes('admin') || sLower.includes('security')) {
+        const adminSecret = process.env.ADMIN_SECURITY_SHEET_URL || process.env['Admin_&_Security'] || process.env['ADMIN_&_SECURITY'] || process.env.ADMIN_AND_SECURITY || process.env.ADMIN_SECURITY || process.env.ADMIN_SECURITY_URL || process.env.ADMIN_SHEET_URL || process.env.SECURITY_SHEET_URL;
+        if (adminSecret) url = adminSecret;
       } else if (sLower.includes('validation') || sLower.includes('valid')) {
         url = process.env.PSM_Validation_sheet_URL || process.env.PSM_VALIDATION_SHEET_URL || process.env.PSM_Validation_sheet || 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTyc0eRsaIpv3DWLdBbEplWo5FqrNwuCFpFrXM4_A6pRTkQgHz56DaN9FMV0cuCkQXnXfPDyKS_nsYC/pub?gid=1928323828&single=true&output=csv';
       } else if (sLower.includes('hseq') || sLower.includes('kpi')) {

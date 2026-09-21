@@ -186,9 +186,9 @@
       const config = this.getEmployeesConfig().find(e => e.id === tileId);
       if (!config) return null;
 
-      // Merge with custom sheet config or server secrets
-      const customSheet = this.customSheets[tileId] || {};
-      const serverSheet = (this.serverSheets && this.serverSheets[tileId]) || {};
+      // Merge with custom sheet config or server secrets (with alias resolution)
+      const customSheet = this.customSheets[tileId] || (tileId === 'admin-security' ? this.customSheets['admin_security'] : {}) || {};
+      const serverSheet = (this.serverSheets && (this.serverSheets[tileId] || (tileId === 'admin-security' ? (this.serverSheets['admin_security'] || this.serverSheets['Admin_&_Security']) : null))) || {};
       
       let sheetUrl = config.sheetUrl;
       let sheetTab = config.sheetTab;
@@ -204,15 +204,20 @@
         if (serverSheet.gid !== undefined) gid = serverSheet.gid;
       }
 
-      // Default sheetTab for SCM
+      // Default sheetTab for SCM and Admin & Security
       if (tileId === 'scm') {
         sheetTab = sheetTab || 'SCM';
+      }
+      if (tileId === 'admin-security' || tileId === 'admin_security') {
+        sheetTab = sheetTab || 'Admin_Security_Actions';
       }
 
       // Merge actions
       let actions = [];
       if (this.customActions[tileId]) {
         actions = this.customActions[tileId];
+      } else if (tileId === 'admin-security' && this.customActions['admin_security']) {
+        actions = this.customActions['admin_security'];
       } else if (config.actions) {
         actions = JSON.parse(JSON.stringify(config.actions));
       }
@@ -753,7 +758,11 @@
           const matchTitle = (a.title || '').toLowerCase().includes(q);
           const matchRemarks = (a.remarks || '').toLowerCase().includes(q);
           const matchDue = (a.dueDate || '').toLowerCase().includes(q);
-          if (!matchId && !matchTitle && !matchRemarks && !matchDue) return false;
+          let matchRaw = false;
+          if (a.rawColumns && typeof a.rawColumns === 'object') {
+            matchRaw = Object.values(a.rawColumns).some(v => String(v || '').toLowerCase().includes(q));
+          }
+          if (!matchId && !matchTitle && !matchRemarks && !matchDue && !matchRaw) return false;
         }
 
         return true;
@@ -795,15 +804,52 @@
         return;
       }
 
-      const headers = ['Sr #', 'Action ID', 'Action Description', 'Due Date', 'Status', 'Remarks'];
-      const rows = data.map((d, i) => [
-        i + 1,
-        `"${String(d.id || '').replace(/"/g, '""')}"`,
-        `"${String(d.title || '').replace(/"/g, '""')}"`,
-        `"${String(d.dueDate || '').replace(/"/g, '""')}"`,
-        `"${String(d.status || '').replace(/"/g, '""')}"`,
-        `"${String(d.remarks || '').replace(/"/g, '""')}"`
-      ]);
+      // Check if dynamic columns are present from Excel sheet
+      const firstWithHeaders = data.find(a => Array.isArray(a.columnHeaders) && a.columnHeaders.length > 0);
+      let headers = [];
+      if (firstWithHeaders && firstWithHeaders.columnHeaders.length > 0) {
+        headers = ['Sr #', ...firstWithHeaders.columnHeaders];
+      } else {
+        const colSet = new Set();
+        for (const a of data) {
+          if (a.rawColumns && typeof a.rawColumns === 'object') {
+            Object.keys(a.rawColumns).forEach(k => colSet.add(k));
+          }
+        }
+        if (colSet.size > 0) {
+          headers = ['Sr #', ...Array.from(colSet)];
+        } else {
+          headers = ['Sr #', 'Action ID', 'Action Description', 'Due Date', 'Status', 'Remarks'];
+        }
+      }
+
+      const rows = data.map((d, i) => {
+        const rowVals = [i + 1];
+        for (let h = 1; h < headers.length; h++) {
+          const col = headers[h];
+          const colLower = col.toLowerCase().trim();
+          let val = '';
+          if (d.rawColumns && typeof d.rawColumns === 'object' && d.rawColumns[col] !== undefined) {
+            val = d.rawColumns[col];
+          } else if (d.rawColumns && typeof d.rawColumns === 'object') {
+            const foundKey = Object.keys(d.rawColumns).find(k => k.toLowerCase().trim() === colLower);
+            if (foundKey && d.rawColumns[foundKey] !== undefined) {
+              val = d.rawColumns[foundKey];
+            }
+          }
+          if (!val && val !== 0) {
+            if (/id|code|sr|#|s_no|item/i.test(colLower)) val = d.id || '';
+            else if (/action|title|task|desc|deliverable/i.test(colLower)) val = d.title || '';
+            else if (/due|target|deadline/i.test(colLower)) val = d.dueDate || '';
+            else if (/status|condition/i.test(colLower)) val = d.status || '';
+            else if (/priority|prio/i.test(colLower)) val = d.priority || '';
+            else if (/closure/i.test(colLower)) val = d.closureDate || '';
+            else if (/remark|comment|note/i.test(colLower)) val = d.remarks || '';
+          }
+          rowVals.push(`"${String(val || '').replace(/"/g, '""')}"`);
+        }
+        return rowVals;
+      });
 
       const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\r\n');
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -1288,7 +1334,27 @@
       const lines = csvText.split(/\r\n|\n|\r/).filter(l => l.trim().length > 0);
       if (lines.length <= 1) return [];
 
-      const headers = lines[0].split(',').map(h => h.replace(/^"|"$/g, '').trim().toLowerCase());
+      const parseRowTokens = (line) => {
+        const row = [];
+        let inQuotes = false;
+        let token = '';
+        for (let c = 0; c < line.length; c++) {
+          const ch = line[c];
+          if (ch === '"') {
+            inQuotes = !inQuotes;
+          } else if (ch === ',' && !inQuotes) {
+            row.push(token.trim().replace(/^"|"$/g, ''));
+            token = '';
+          } else {
+            token += ch;
+          }
+        }
+        row.push(token.trim().replace(/^"|"$/g, ''));
+        return row;
+      };
+
+      const rawHeaders = parseRowTokens(lines[0]).filter(h => h.length > 0);
+      const headers = rawHeaders.map(h => h.toLowerCase());
       const findCol = (candidates) => {
         return headers.findIndex(h => candidates.some(c => h.includes(c)));
       };
@@ -1303,22 +1369,7 @@
 
       const parsed = [];
       for (let i = 1; i < lines.length; i++) {
-        // CSV splitter handling quoted values
-        const row = [];
-        let inQuotes = false;
-        let token = '';
-        for (let c = 0; c < lines[i].length; c++) {
-          const ch = lines[i][c];
-          if (ch === '"') {
-            inQuotes = !inQuotes;
-          } else if (ch === ',' && !inQuotes) {
-            row.push(token.trim());
-            token = '';
-          } else {
-            token += ch;
-          }
-        }
-        row.push(token.trim());
+        const row = parseRowTokens(lines[i]);
 
         const desc = descCol !== -1 ? (row[descCol] || '') : (row[1] || row[0] || '');
         if (!desc || desc.trim().length === 0) continue;
@@ -1351,6 +1402,13 @@
         const remarks = remarksCol !== -1 ? (row[remarksCol] || '') : '';
         const closureDate = closureCol !== -1 ? (row[closureCol] || '') : (isClosed ? (dueDate || new Date().toISOString().split('T')[0]) : '');
 
+        // Capture raw columns dictionary for dynamic table rendering
+        const rawColumns = {};
+        for (let c = 0; c < rawHeaders.length; c++) {
+          const headerName = rawHeaders[c];
+          rawColumns[headerName] = row[c] || '';
+        }
+
         parsed.push({
           id,
           title: desc,
@@ -1358,7 +1416,9 @@
           dueDate,
           status,
           closureDate,
-          remarks
+          remarks,
+          rawColumns,
+          columnHeaders: rawHeaders
         });
       }
 
@@ -2316,17 +2376,29 @@
       const isSyncing = this.state.syncStatus[tile.id] === 'syncing';
       const lastSynced = this.state.tileLastSynced[tile.id] || 'Active';
 
-      // SCM Dedicated Dashboard Rendering
-      if (tile.id === 'scm') {
-        return this.renderScmDashboard(tile, {
-          allActions, filteredActions, totalActions, closedActions, openActions, overallRate,
-          filteredTotal, filteredClosed, filteredOpen, filteredRate,
-          pagedActions, safePage, totalPages, pageSize,
-          isFiltered, isSyncing, lastSynced
-        });
-      }
-
+      // All strategic dashboard tiles (excluding COO strategic-master) use the standardized Asset Integrity layout
+      // Note: COO dashboard has its own dedicated master rollup views, while employee dashboards share the Asset Integrity design.
       const isConnected = this.isSheetConnected(tile.id);
+
+      // Determine dynamic columns to show from Excel / Google Sheet data
+      let displayColumns = [];
+      const firstWithHeaders = allActions.find(a => Array.isArray(a.columnHeaders) && a.columnHeaders.length > 0);
+      if (firstWithHeaders && firstWithHeaders.columnHeaders.length > 0) {
+        displayColumns = [...firstWithHeaders.columnHeaders];
+      } else {
+        // Collect unique keys from rawColumns or fallback to standard columns
+        const colSet = new Set();
+        for (const a of allActions) {
+          if (a.rawColumns && typeof a.rawColumns === 'object') {
+            Object.keys(a.rawColumns).forEach(k => colSet.add(k));
+          }
+        }
+        if (colSet.size > 0) {
+          displayColumns = Array.from(colSet);
+        } else {
+          displayColumns = ['ID', 'Action Description', 'Due Date', 'Status', 'Remarks'];
+        }
+      }
 
       return `
         <div class="space-y-2.5 sm:space-y-3">
@@ -2525,34 +2597,79 @@
               <table class="w-full text-left text-xs sm:text-sm border-collapse">
                 <thead>
                   <tr class="bg-slate-50 border-b border-slate-200 text-slate-700 font-bold text-xs sm:text-sm">
-                    <th class="py-3 px-3.5 w-20">ID</th>
-                    <th class="py-3 px-3.5 min-w-[280px]">Action Description</th>
-                    <th class="py-3 px-3.5 w-28">Due Date</th>
-                    <th class="py-3 px-3.5 w-24">Status</th>
-                    <th class="py-3 px-3.5 min-w-[180px]">Remarks</th>
+                    ${displayColumns.map(col => `
+                      <th class="py-3 px-3.5 whitespace-nowrap">${col}</th>
+                    `).join('')}
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 text-xs sm:text-sm">
                   ${pagedActions.length === 0 ? `
                     <tr>
-                      <td colspan="5" class="py-10 text-center text-slate-400 font-medium text-sm">
+                      <td colspan="${Math.max(1, displayColumns.length)}" class="py-10 text-center text-slate-400 font-medium text-sm">
                         No actions match the active filters.
                       </td>
                     </tr>
                   ` : pagedActions.map(a => {
                     const isClosed = a.status === 'Closed' || a.status === 'Completed';
+                    const hasRaw = a.rawColumns && typeof a.rawColumns === 'object' && Object.keys(a.rawColumns).length > 0;
+                    
                     return `
                       <tr class="hover:bg-slate-50/80 transition-colors">
-                        <td class="py-3 px-3.5 font-mono font-bold text-slate-800 text-xs sm:text-sm">${a.id}</td>
-                        <td class="py-3 px-3.5 text-slate-900 font-medium">${a.title}</td>
-                        <td class="py-3 px-3.5 text-slate-600">${a.dueDate || '-'}</td>
-                        <td class="py-3 px-3.5">
-                          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${isClosed ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-rose-50 text-rose-800 border border-rose-200'}">
-                            <span class="w-1.5 h-1.5 rounded-full ${isClosed ? 'bg-emerald-500' : 'bg-rose-500'}"></span>
-                            ${a.status || (isClosed ? 'Closed' : 'Open')}
-                          </span>
-                        </td>
-                        <td class="py-3 px-3.5 text-slate-500">${a.remarks || '-'}</td>
+                        ${displayColumns.map(col => {
+                          const colLower = col.toLowerCase().trim();
+                          let val = '';
+                          if (hasRaw && a.rawColumns[col] !== undefined) {
+                            val = a.rawColumns[col];
+                          } else if (hasRaw) {
+                            // Case-insensitive lookup in rawColumns
+                            const foundKey = Object.keys(a.rawColumns).find(k => k.toLowerCase().trim() === colLower);
+                            if (foundKey && a.rawColumns[foundKey] !== undefined) {
+                              val = a.rawColumns[foundKey];
+                            }
+                          }
+
+                          // Fallbacks if not in rawColumns or standard column names
+                          if (!val && val !== 0) {
+                            if (/id|code|sr|#|s_no|item/i.test(colLower)) val = a.id || '';
+                            else if (/action|title|task|desc|deliverable/i.test(colLower)) val = a.title || '';
+                            else if (/due|target|deadline/i.test(colLower)) val = a.dueDate || '';
+                            else if (/status|condition/i.test(colLower)) val = a.status || '';
+                            else if (/priority|prio/i.test(colLower)) val = a.priority || '';
+                            else if (/closure/i.test(colLower)) val = a.closureDate || '';
+                            else if (/remark|comment|note/i.test(colLower)) val = a.remarks || '';
+                          }
+
+                          // Special styling for status column
+                          if (/status|state|condition|open_close/i.test(colLower)) {
+                            const rowClosed = /close|done|complete|resolved/i.test(String(val));
+                            return `
+                              <td class="py-3 px-3.5 whitespace-nowrap">
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${rowClosed ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-rose-50 text-rose-800 border border-rose-200'}">
+                                  <span class="w-1.5 h-1.5 rounded-full ${rowClosed ? 'bg-emerald-500' : 'bg-rose-500'}"></span>
+                                  ${val || (rowClosed ? 'Closed' : 'Open')}
+                                </span>
+                              </td>
+                            `;
+                          }
+
+                          // Special styling for ID column
+                          if (/id|code|action\s*#|action#|sr/i.test(colLower)) {
+                            return `
+                              <td class="py-3 px-3.5 font-mono font-bold text-slate-800 text-xs sm:text-sm whitespace-nowrap">${val || '-'}</td>
+                            `;
+                          }
+
+                          // Special styling for Description column
+                          if (/action|task|title|desc|description/i.test(colLower)) {
+                            return `
+                              <td class="py-3 px-3.5 text-slate-900 font-medium min-w-[240px]">${val || '-'}</td>
+                            `;
+                          }
+
+                          return `
+                            <td class="py-3 px-3.5 text-slate-600 whitespace-nowrap">${val || '-'}</td>
+                          `;
+                        }).join('')}
                       </tr>
                     `;
                   }).join('')}
@@ -2888,6 +3005,605 @@
                     ${safePage >= totalPages ? 'disabled' : ''}
                     onclick="window.FPCL_STRATEGIC_SUITE.setTilePage(${safePage + 1})"
                     class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed font-semibold cursor-pointer"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            ` : ''}
+          </div>
+        </div>
+      `;
+    },
+
+    // RENDER: ADMIN & SECURITY DEDICATED DASHBOARD
+    renderAdminSecurityDashboard(tile, ctx) {
+      const {
+        allActions, filteredActions, totalActions, closedActions, openActions, overallRate,
+        filteredTotal, filteredClosed, filteredOpen, filteredRate,
+        pagedActions, safePage, totalPages, pageSize,
+        isFiltered, isSyncing, lastSynced
+      } = ctx;
+
+      const sheetTabName = tile.sheetTab || 'Admin_Security_Actions';
+      const isConnected = this.isSheetConnected(tile.id);
+      const sheetSourceLabel = tile.fromSecret
+        ? 'Environment Secret (Admin_&_Security / ADMIN_SECURITY_SHEET_URL)'
+        : (tile.sheetUrl ? 'Live Google Sheet' : 'Default Verified Action Sheet');
+
+      return `
+        <div class="space-y-3 sm:space-y-4">
+          <!-- ADMIN & SECURITY HERO & NAVIGATION BANNER -->
+          <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-zinc-900 rounded-2xl p-3.5 sm:p-4 text-white shadow-lg relative overflow-hidden border border-slate-700">
+            <div class="absolute -right-16 -top-16 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute -left-16 -bottom-16 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+            <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-3.5">
+              <div class="flex items-start sm:items-center gap-3">
+                <button
+                  type="button"
+                  onclick="window.FPCL_STRATEGIC_SUITE.backToGrid()"
+                  class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all cursor-pointer shrink-0 shadow-inner border border-white/10"
+                  title="Back to Strategic Tiles Grid"
+                >
+                  <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                </button>
+
+                <div class="space-y-0.5">
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-slate-200 text-slate-900 shadow-2xs">
+                      ${tile.code || 'ADM'}
+                    </span>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/10 text-slate-200 border border-slate-400/30">
+                      Corporate Services & Plant Defense
+                    </span>
+                    <!-- Google Sheet connection status pill -->
+                    <button
+                      type="button"
+                      onclick="window.FPCL_STRATEGIC_SUITE.openSheetConfigModal('${tile.id}')"
+                      class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold border transition-colors cursor-pointer ${isConnected ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40 hover:bg-emerald-500/30' : 'bg-amber-500/20 text-amber-200 border-amber-400/50 hover:bg-amber-500/30'}"
+                      title="${isConnected ? 'Google Sheet is connected (Green)' : 'Google Sheet link broken / unlinked (Orange) - Click to configure'}"
+                    >
+                      <span class="relative flex h-2 w-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full ${isConnected ? 'bg-emerald-400 opacity-75' : 'bg-amber-400 opacity-75'}"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 ${isConnected ? 'bg-emerald-400' : 'bg-amber-400'}"></span>
+                      </span>
+                      <span>${isConnected ? `Live Sheet: ${sheetTabName}` : 'Link Broken / Not Set'}</span>
+                    </button>
+                  </div>
+
+                  <h1 class="text-lg sm:text-2xl font-black text-white tracking-tight flex items-center gap-2">
+                    <span>Admin & Security Strategic Dashboard</span>
+                  </h1>
+
+                  <div class="flex items-center gap-2 text-xs text-slate-300 flex-wrap">
+                    <span class="text-emerald-400 font-mono text-xs flex items-center gap-1">
+                      <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 inline"></i>
+                      Source: ${sheetSourceLabel}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Action Bar Buttons -->
+              <div class="flex items-center gap-2 flex-wrap self-start md:self-auto">
+                <!-- Sync Live Sheet Button -->
+                <button
+                  type="button"
+                  onclick="window.FPCL_STRATEGIC_SUITE.syncEmployeeSheet('${tile.id}')"
+                  class="px-3.5 py-2 text-xs sm:text-sm font-bold rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition-all cursor-pointer flex items-center gap-2 shadow-md ${isSyncing ? 'opacity-70 animate-pulse' : ''}"
+                  title="Sync live data from Google Sheet for Admin & Security"
+                >
+                  <i data-lucide="refresh-cw" class="w-4 h-4 ${isSyncing ? 'animate-spin' : ''}"></i>
+                  <span>${isSyncing ? 'Syncing...' : 'Sync Live Sheet'}</span>
+                  <span class="text-xs opacity-80 font-mono">(${lastSynced})</span>
+                </button>
+
+                <!-- Sheet Settings Modal -->
+                <button
+                  type="button"
+                  onclick="window.FPCL_STRATEGIC_SUITE.openSheetConfigModal('${tile.id}')"
+                  class="p-2 text-white bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl transition-all cursor-pointer shadow-xs"
+                  title="Configure Google Sheet Link / Tab Name"
+                >
+                  <i data-lucide="settings" class="w-4 h-4"></i>
+                </button>
+
+                <!-- Export CSV -->
+                <button
+                  type="button"
+                  onclick="window.FPCL_STRATEGIC_SUITE.exportTileCSV('${tile.id}')"
+                  class="px-3.5 py-2 text-xs sm:text-sm font-bold rounded-xl bg-slate-700 hover:bg-slate-600 text-white transition-all cursor-pointer flex items-center gap-2 shadow-xs border border-slate-600"
+                  title="Export filtered Admin & Security actions as CSV"
+                >
+                  <i data-lucide="download" class="w-4 h-4"></i>
+                  <span>Export CSV (${filteredTotal})</span>
+                </button>
+
+                ${isFiltered ? `
+                  <button
+                    type="button"
+                    onclick="window.FPCL_STRATEGIC_SUITE.clearTileFilters()"
+                    class="px-3 py-2 text-xs sm:text-sm font-semibold rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer flex items-center gap-1.5"
+                    title="Reset all search and status filters"
+                  >
+                    <i data-lucide="filter-x" class="w-4 h-4"></i>
+                    <span>Reset</span>
+                  </button>
+                ` : ''}
+
+                <!-- Lock & Return -->
+                <button
+                  type="button"
+                  onclick="window.FPCL_STRATEGIC_SUITE.backToGrid()"
+                  class="px-3.5 py-2 text-xs sm:text-sm font-bold rounded-xl bg-white/10 hover:bg-rose-500/20 text-white hover:text-rose-200 border border-white/20 transition-colors cursor-pointer flex items-center gap-1.5 shadow-2xs"
+                  title="Lock dashboard immediately and return to grid"
+                >
+                  <i data-lucide="lock" class="w-4 h-4"></i>
+                  <span>Lock & Return</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- KPI VALUES: 4 PURE GOOGLE SHEET METRICS (100% DRIVEN BY LIVE SHEET) -->
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <!-- Card 1: Total Deliverables -->
+            <div class="bg-white border border-slate-200 hover:border-slate-300 rounded-2xl p-4 shadow-xs text-center flex flex-col items-center justify-center transition-all">
+              <div class="text-xs font-bold uppercase tracking-wider text-slate-500 text-center">Total Deliverables</div>
+              <div class="text-4xl sm:text-5xl font-black font-mono tracking-tight text-slate-900 kpi-metric-val mt-2 text-center">${filteredTotal}</div>
+              <div class="text-[11px] text-slate-400 mt-1 font-medium">From Live Google Sheet</div>
+            </div>
+
+            <!-- Card 2: Closed Actions -->
+            <div class="bg-white border border-slate-200 hover:border-emerald-300 rounded-2xl p-4 shadow-xs text-center flex flex-col items-center justify-center transition-all">
+              <div class="text-xs font-bold uppercase tracking-wider text-emerald-700 text-center">Closed Actions</div>
+              <div class="text-4xl sm:text-5xl font-black font-mono tracking-tight text-emerald-600 kpi-metric-val mt-2 text-center">${filteredClosed}</div>
+              <div class="text-[11px] text-emerald-600/80 mt-1 font-medium">Verified & Completed</div>
+            </div>
+
+            <!-- Card 3: Open Actions -->
+            <div class="bg-white border border-slate-200 hover:border-rose-300 rounded-2xl p-4 shadow-xs text-center flex flex-col items-center justify-center transition-all">
+              <div class="text-xs font-bold uppercase tracking-wider text-rose-700 text-center">Open Actions</div>
+              <div class="text-4xl sm:text-5xl font-black font-mono tracking-tight text-rose-600 kpi-metric-val mt-2 text-center">${filteredOpen}</div>
+              <div class="text-[11px] text-rose-600/80 mt-1 font-medium">Pending Scope</div>
+            </div>
+
+            <!-- Card 4: Overall Progress Rate -->
+            <div class="bg-white border border-slate-200 hover:border-blue-300 rounded-2xl p-4 shadow-xs text-center flex flex-col items-center justify-center transition-all">
+              <div class="text-xs font-bold uppercase tracking-wider text-blue-700 text-center">Overall Progress</div>
+              <div class="text-4xl sm:text-5xl font-black font-mono tracking-tight text-blue-600 kpi-metric-val mt-2 text-center">${overallRate}%</div>
+              <div class="text-[11px] text-blue-600/80 mt-1 font-medium">Closure Target: 100%</div>
+            </div>
+          </div>
+
+          <!-- HORIZONTAL BARS SECTION & DONUT CHART SECTION -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-3.5 sm:gap-4">
+            <!-- HORIZONTAL BARS: Action Status Trends & Live Deliverables Completion Breakdown (7 Cols) -->
+            <div class="lg:col-span-7 space-y-3.5">
+              <!-- Horizontal Bar 1: Action Status Trends Horizontal Stacked Bar -->
+              <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs space-y-3">
+                <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                  <div class="flex items-center gap-2">
+                    <i data-lucide="bar-chart-horizontal" class="w-4 h-4 text-slate-700"></i>
+                    <h3 class="text-sm sm:text-base font-black text-slate-800">Action Status Trends (Horizontal Bar)</h3>
+                  </div>
+                  <span class="text-xs font-bold text-slate-500 font-mono">Total: ${totalActions}</span>
+                </div>
+
+                <!-- High-contrast Horizontal Stacked Bar -->
+                <div class="space-y-2 pt-1">
+                  <div class="flex items-center justify-between text-xs font-bold">
+                    <span class="text-emerald-700 flex items-center gap-1.5">
+                      <span class="w-2.5 h-2.5 rounded-xs bg-emerald-500 inline-block"></span>
+                      Closed: ${closedActions} (${overallRate}%)
+                    </span>
+                    <span class="text-rose-700 flex items-center gap-1.5">
+                      <span class="w-2.5 h-2.5 rounded-xs bg-rose-500 inline-block"></span>
+                      Open: ${openActions} (${100 - overallRate}%)
+                    </span>
+                  </div>
+
+                  <div class="h-6 w-full rounded-xl bg-slate-100 overflow-hidden flex shadow-inner p-0.5 border border-slate-200">
+                    <div
+                      style="width: ${overallRate}%"
+                      class="h-full bg-emerald-500 rounded-l-lg transition-all duration-500 flex items-center justify-center text-[10px] font-bold text-white font-mono"
+                      title="Closed Actions: ${closedActions}"
+                    >
+                      ${overallRate > 15 ? `${overallRate}%` : ''}
+                    </div>
+                    <div
+                      style="width: ${100 - overallRate}%"
+                      class="h-full bg-rose-500 rounded-r-lg transition-all duration-500 flex items-center justify-center text-[10px] font-bold text-white font-mono"
+                      title="Open Actions: ${openActions}"
+                    >
+                      ${(100 - overallRate) > 15 ? `${100 - overallRate}%` : ''}
+                    </div>
+                  </div>
+
+                  <div class="flex justify-between text-[10px] text-slate-400 font-mono px-0.5">
+                    <span>0%</span>
+                    <span>25%</span>
+                    <span>50%</span>
+                    <span>75%</span>
+                    <span>100%</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Horizontal Bar 2: Live Deliverables Progress Breakdown (From Google Sheet) -->
+              <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs space-y-3">
+                <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                  <div class="flex items-center gap-2">
+                    <i data-lucide="layers" class="w-4 h-4 text-emerald-600"></i>
+                    <h3 class="text-sm sm:text-base font-black text-slate-800">Live Deliverable Progress Bars</h3>
+                  </div>
+                  <span class="text-xs font-semibold text-slate-400">Google Sheet Scope</span>
+                </div>
+
+                <div class="space-y-3 pt-1">
+                  ${allActions.length === 0 ? `
+                    <div class="py-4 text-center text-xs text-slate-400 font-medium">No actions found in Google Sheet.</div>
+                  ` : allActions.map(action => {
+                    const isDone = action.status === 'Closed' || action.status === 'Completed';
+                    const progressPercent = isDone ? 100 : 0;
+                    return `
+                      <div class="space-y-1.5">
+                        <div class="flex items-center justify-between text-xs gap-2">
+                          <div class="flex items-center gap-1.5 min-w-0">
+                            <span class="font-mono font-bold text-slate-800 shrink-0">${action.id}</span>
+                            <span class="text-slate-400">|</span>
+                            <span class="font-semibold text-slate-700 truncate" title="${action.title}">${action.title}</span>
+                          </div>
+                          <div class="flex items-center gap-2 font-mono text-[11px] shrink-0">
+                            ${action.dueDate ? `<span class="text-slate-500 hidden sm:inline">Due: ${action.dueDate}</span>` : ''}
+                            <span class="px-2 py-0.5 rounded-md font-bold ${isDone ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-rose-100 text-rose-800 border border-rose-200'}">
+                              ${action.status || (isDone ? 'Closed' : 'Open')}
+                            </span>
+                          </div>
+                        </div>
+                        <div class="h-2 w-full rounded-full bg-slate-100 overflow-hidden flex border border-slate-200/80">
+                          <div
+                            style="width: ${progressPercent}%"
+                            class="h-full ${isDone ? 'bg-emerald-500' : 'bg-rose-400'} transition-all duration-500 rounded-full"
+                          ></div>
+                        </div>
+                      </div>
+                    `;
+                  }).join('')}
+                </div>
+              </div>
+            </div>
+
+            <!-- DONUT CHART: Open vs Closed Donut Chart (5 Cols) -->
+            <div class="lg:col-span-5 flex flex-col">
+              <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs flex-1 flex flex-col justify-between space-y-3">
+                <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                  <div class="flex items-center gap-2">
+                    <i data-lucide="pie-chart" class="w-4 h-4 text-purple-600"></i>
+                    <h3 class="text-sm sm:text-base font-black text-slate-800">Open vs Closed (Donut Chart)</h3>
+                  </div>
+                  <span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                    ${overallRate}% Closed
+                  </span>
+                </div>
+
+                <!-- SVG Donut Chart -->
+                <div class="flex-1 flex flex-col items-center justify-center py-2">
+                  <div class="relative w-44 h-44 sm:w-48 sm:h-48 flex items-center justify-center">
+                    <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                      <!-- Background Circle -->
+                      <circle cx="50" cy="50" r="38" fill="transparent" stroke="#F1F5F9" stroke-width="12"></circle>
+                      
+                      <!-- Open Actions Arc (Rose) -->
+                      <circle
+                        cx="50" cy="50" r="38"
+                        fill="transparent"
+                        stroke="#F43F5E"
+                        stroke-width="12"
+                        stroke-dasharray="238.76"
+                        stroke-dashoffset="0"
+                      ></circle>
+
+                      <!-- Closed Actions Arc (Emerald) -->
+                      <circle
+                        cx="50" cy="50" r="38"
+                        fill="transparent"
+                        stroke="#10B981"
+                        stroke-width="12"
+                        stroke-dasharray="238.76"
+                        stroke-dashoffset="${238.76 - (238.76 * (overallRate / 100))}"
+                        stroke-linecap="round"
+                        class="transition-all duration-1000 ease-out"
+                      ></circle>
+                    </svg>
+
+                    <!-- Center Metrics -->
+                    <div class="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
+                      <span class="text-3xl sm:text-4xl font-black font-mono tracking-tight text-slate-900">${overallRate}%</span>
+                      <span class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-emerald-700">Closed Rate</span>
+                      <span class="text-[10px] text-slate-400 font-mono">${closedActions}/${totalActions} Done</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Donut Legend & Detailed Metric Cards -->
+                <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100">
+                  <div class="p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-200/80 text-center">
+                    <div class="flex items-center justify-center gap-1.5 text-xs font-bold text-emerald-800">
+                      <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                      <span>Closed</span>
+                    </div>
+                    <div class="text-xl font-black font-mono text-emerald-900 mt-0.5">${closedActions}</div>
+                    <div class="text-[10px] text-emerald-700 font-medium">${overallRate}% of Total</div>
+                  </div>
+
+                  <div class="p-2.5 rounded-xl bg-rose-50/70 border border-rose-200/80 text-center">
+                    <div class="flex items-center justify-center gap-1.5 text-xs font-bold text-rose-800">
+                      <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+                      <span>Open</span>
+                    </div>
+                    <div class="text-xl font-black font-mono text-rose-900 mt-0.5">${openActions}</div>
+                    <div class="text-[10px] text-rose-700 font-medium">${100 - overallRate}% of Total</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- EXCEL FILE MAPPING SECTION (BELOW THE CHARTS) -->
+          <div class="bg-white border border-slate-200 rounded-2xl shadow-xs overflow-hidden">
+            <!-- Header -->
+            <div class="p-3.5 sm:p-4 border-b border-slate-200 bg-slate-50/70 flex flex-col md:flex-row md:items-center justify-between gap-3">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-black shadow-xs">
+                  <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+                </div>
+                <div>
+                  <h3 class="text-sm sm:text-base font-black text-slate-900 flex items-center gap-2">
+                    <span>Excel / Google Sheet Field Mapping & Column Schema</span>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                      Live 1:1 Binding
+                    </span>
+                  </h3>
+                  <p class="text-xs text-slate-500 font-medium">
+                    Maps the Google Sheet columns configured in secrets to the Admin & Security dashboard components.
+                  </p>
+                </div>
+              </div>
+
+              <!-- Metadata Pills -->
+              <div class="flex items-center gap-2 flex-wrap text-xs">
+                <span class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-700 font-mono font-bold">
+                  Tab: <span class="text-emerald-700">${sheetTabName}</span>
+                </span>
+                <span class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-700 font-mono font-bold">
+                  Secret: <span class="text-purple-700 font-mono">Admin_&_Security</span>
+                </span>
+                <span class="px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 font-bold flex items-center gap-1">
+                  <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
+                  <span>Schema Validated</span>
+                </span>
+              </div>
+            </div>
+
+            <!-- Column Mapping Grid (6 Excel Columns A - F) -->
+            <div class="p-4">
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
+                <!-- Col A: ID -->
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-2 hover:border-slate-300 transition-colors">
+                  <div class="flex items-center justify-between">
+                    <span class="px-2 py-0.5 rounded-md bg-emerald-600 text-white font-mono font-black text-xs">Col A [1]</span>
+                    <span class="text-[10px] font-mono text-slate-500 font-bold">Code</span>
+                  </div>
+                  <div class="font-bold text-slate-800 text-xs">Deliverable ID</div>
+                  <div class="text-[11px] font-mono text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded-md border border-purple-200">
+                    Mapped to: a.id
+                  </div>
+                  <div class="text-[10px] text-slate-500">
+                    Alphanumeric reference (e.g., ADM-01) for indexing & audits.
+                  </div>
+                </div>
+
+                <!-- Col B: Title / Description -->
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-2 hover:border-slate-300 transition-colors">
+                  <div class="flex items-center justify-between">
+                    <span class="px-2 py-0.5 rounded-md bg-emerald-600 text-white font-mono font-black text-xs">Col B [2]</span>
+                    <span class="text-[10px] font-mono text-slate-500 font-bold">String</span>
+                  </div>
+                  <div class="font-bold text-slate-800 text-xs">Action Description</div>
+                  <div class="text-[11px] font-mono text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded-md border border-purple-200">
+                    Mapped to: a.title
+                  </div>
+                  <div class="text-[10px] text-slate-500">
+                    Primary deliverable work scope and security task description.
+                  </div>
+                </div>
+
+                <!-- Col C: Due Date -->
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-2 hover:border-slate-300 transition-colors">
+                  <div class="flex items-center justify-between">
+                    <span class="px-2 py-0.5 rounded-md bg-emerald-600 text-white font-mono font-black text-xs">Col C [3]</span>
+                    <span class="text-[10px] font-mono text-slate-500 font-bold">Date</span>
+                  </div>
+                  <div class="font-bold text-slate-800 text-xs">Target Due Date</div>
+                  <div class="text-[11px] font-mono text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded-md border border-purple-200">
+                    Mapped to: a.dueDate
+                  </div>
+                  <div class="text-[10px] text-slate-500">
+                    ISO target deadline date (YYYY-MM-DD) for tracking schedules.
+                  </div>
+                </div>
+
+                <!-- Col D: Status -->
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-2 hover:border-slate-300 transition-colors">
+                  <div class="flex items-center justify-between">
+                    <span class="px-2 py-0.5 rounded-md bg-emerald-600 text-white font-mono font-black text-xs">Col D [4]</span>
+                    <span class="text-[10px] font-mono text-slate-500 font-bold">Enum</span>
+                  </div>
+                  <div class="font-bold text-slate-800 text-xs">Execution Status</div>
+                  <div class="text-[11px] font-mono text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded-md border border-purple-200">
+                    Mapped to: a.status
+                  </div>
+                  <div class="text-[10px] text-slate-500">
+                    Drives KPIs, Horizontal Bars, Donut Chart, and status badges.
+                  </div>
+                </div>
+
+                <!-- Col E: Closure Date -->
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-2 hover:border-slate-300 transition-colors">
+                  <div class="flex items-center justify-between">
+                    <span class="px-2 py-0.5 rounded-md bg-emerald-600 text-white font-mono font-black text-xs">Col E [5]</span>
+                    <span class="text-[10px] font-mono text-slate-500 font-bold">Date</span>
+                  </div>
+                  <div class="font-bold text-slate-800 text-xs">Closure Date</div>
+                  <div class="text-[11px] font-mono text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded-md border border-purple-200">
+                    Mapped to: a.closureDate
+                  </div>
+                  <div class="text-[10px] text-slate-500">
+                    Recorded date when verified and closed by department head.
+                  </div>
+                </div>
+
+                <!-- Col F: Remarks -->
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-2 hover:border-slate-300 transition-colors">
+                  <div class="flex items-center justify-between">
+                    <span class="px-2 py-0.5 rounded-md bg-emerald-600 text-white font-mono font-black text-xs">Col F [6]</span>
+                    <span class="text-[10px] font-mono text-slate-500 font-bold">Text</span>
+                  </div>
+                  <div class="font-bold text-slate-800 text-xs">Remarks / Notes</div>
+                  <div class="text-[11px] font-mono text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded-md border border-purple-200">
+                    Mapped to: a.remarks
+                  </div>
+                  <div class="text-[10px] text-slate-500">
+                    Contractor details, RFP status, and security compliance notes.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ADMIN & SECURITY FILTER BAR -->
+          <div class="bg-white border border-slate-200 rounded-2xl p-3.5 sm:p-4 shadow-xs space-y-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <!-- Search Filter -->
+              <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                  <i data-lucide="search" class="w-4 h-4"></i>
+                </div>
+                <input
+                  type="text"
+                  value="${this.state.tileFilterSearch || ''}"
+                  placeholder="Filter Admin & Security deliverables, ID, remarks..."
+                  class="w-full pl-9 pr-8 py-2 bg-slate-50 hover:bg-white focus:bg-white text-slate-900 border border-slate-200 focus:border-slate-800 rounded-xl text-xs sm:text-sm font-medium outline-none transition-all"
+                  oninput="window.FPCL_STRATEGIC_SUITE.setTileFilter('tileFilterSearch', this.value)"
+                />
+                ${this.state.tileFilterSearch ? `
+                  <button
+                    onclick="window.FPCL_STRATEGIC_SUITE.setTileFilter('tileFilterSearch', '')"
+                    class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer"
+                  >
+                    <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                  </button>
+                ` : ''}
+              </div>
+
+              <!-- Status Filter Dropdown -->
+              <div class="relative">
+                <select
+                  onchange="window.FPCL_STRATEGIC_SUITE.setTileFilter('tileFilterStatus', this.value)"
+                  class="w-full px-3.5 py-2 bg-slate-50 hover:bg-white focus:bg-white text-slate-800 border border-slate-200 focus:border-slate-800 rounded-xl text-xs sm:text-sm font-bold outline-none transition-all cursor-pointer"
+                >
+                  <option value="all" ${this.state.tileFilterStatus === 'all' ? 'selected' : ''}>All Statuses (${totalActions})</option>
+                  <option value="Open" ${this.state.tileFilterStatus === 'Open' ? 'selected' : ''}>Open Only (${openActions})</option>
+                  <option value="Closed" ${this.state.tileFilterStatus === 'Closed' ? 'selected' : ''}>Closed Only (${closedActions})</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- DELIVERABLES & ACTION ROSTER TABLE -->
+          <div class="bg-white border border-slate-200 rounded-2xl shadow-xs overflow-hidden">
+            <div class="p-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/60">
+              <div class="flex items-center gap-2">
+                <i data-lucide="list-checks" class="w-4 h-4 text-slate-700"></i>
+                <h3 class="text-sm sm:text-base font-black text-slate-800">
+                  Admin & Security Action Deliverables (${filteredTotal} items)
+                </h3>
+              </div>
+
+              <!-- Page Size Selector -->
+              <div class="flex items-center gap-2 text-xs sm:text-sm text-slate-600">
+                <span class="font-medium">Rows per page:</span>
+                <select
+                  onchange="window.FPCL_STRATEGIC_SUITE.setTilePageSize(Number(this.value))"
+                  class="px-2.5 py-1 rounded-lg border border-slate-200 bg-white text-xs sm:text-sm font-semibold focus:outline-none focus:border-slate-800 cursor-pointer"
+                >
+                  <option value="15" ${pageSize === 15 ? 'selected' : ''}>15</option>
+                  <option value="25" ${pageSize === 25 ? 'selected' : ''}>25</option>
+                  <option value="50" ${pageSize === 50 ? 'selected' : ''}>50</option>
+                  <option value="1000" ${pageSize === 1000 ? 'selected' : ''}>All</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs sm:text-sm border-collapse">
+                <thead>
+                  <tr class="bg-slate-50 border-b border-slate-200 text-slate-700 font-bold text-xs sm:text-sm">
+                    <th class="py-3 px-3.5 w-20">ID</th>
+                    <th class="py-3 px-3.5 min-w-[280px]">Action Description</th>
+                    <th class="py-3 px-3.5 w-28">Due Date</th>
+                    <th class="py-3 px-3.5 w-24">Status</th>
+                    <th class="py-3 px-3.5 min-w-[180px]">Remarks / Contractor Notes</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-xs sm:text-sm">
+                  ${pagedActions.length === 0 ? `
+                    <tr>
+                      <td colspan="5" class="py-10 text-center text-slate-400 font-medium text-sm">
+                        No Admin & Security deliverables match the active search or filters.
+                      </td>
+                    </tr>
+                  ` : pagedActions.map(a => {
+                    const isClosed = a.status === 'Closed' || a.status === 'Completed';
+                    return `
+                      <tr class="hover:bg-slate-50/80 transition-colors">
+                        <td class="py-3 px-3.5 font-mono font-bold text-slate-800 text-xs sm:text-sm">${a.id}</td>
+                        <td class="py-3 px-3.5 text-slate-900 font-medium">${a.title}</td>
+                        <td class="py-3 px-3.5 text-slate-600 font-mono text-xs">${a.dueDate || '-'}</td>
+                        <td class="py-3 px-3.5">
+                          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${isClosed ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-rose-50 text-rose-800 border border-rose-200'}">
+                            <span class="w-1.5 h-1.5 rounded-full ${isClosed ? 'bg-emerald-500' : 'bg-rose-500'}"></span>
+                            ${a.status || (isClosed ? 'Closed' : 'Open')}
+                          </span>
+                        </td>
+                        <td class="py-3 px-3.5 text-slate-500">${a.remarks || '-'}</td>
+                      </tr>
+                    `;
+                  }).join('')}
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Pagination Footer -->
+            ${totalPages > 1 ? `
+              <div class="p-4 border-t border-slate-200 flex items-center justify-between text-xs sm:text-sm text-slate-600">
+                <span class="font-medium">Page ${safePage} of ${totalPages}</span>
+                <div class="flex items-center gap-2">
+                  <button
+                    type="button"
+                    ${safePage <= 1 ? 'disabled' : ''}
+                    onclick="window.FPCL_STRATEGIC_SUITE.setTilePage(${safePage - 1})"
+                    class="px-3.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed font-bold cursor-pointer text-xs sm:text-sm"
+                  >
+                    Previous
+                  </button>
+                  <button
+                    type="button"
+                    ${safePage >= totalPages ? 'disabled' : ''}
+                    onclick="window.FPCL_STRATEGIC_SUITE.setTilePage(${safePage + 1})"
+                    class="px-3.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed font-bold cursor-pointer text-xs sm:text-sm"
                   >
                     Next
                   </button>

@@ -717,11 +717,32 @@ interface StrategicActionItem {
   status: 'Open' | 'Closed';
   closureDate: string;
   remarks: string;
+  rawColumns?: Record<string, string>;
+  columnHeaders?: string[];
 }
 
 const STRATEGIC_TILE_REGISTRY: Record<string, { envKeys: string[]; code: string; defaultTab: string; name: string }> = {
   'strategic-master': { envKeys: ['STRATEGIC_SHEET_URL', 'STRATEGIC_MASTER_SHEET_URL'], code: 'STRAT', defaultTab: 'Master', name: 'Strategic Master (COO)' },
-  'admin-security': { envKeys: ['ADMIN_SECURITY_SHEET_URL'], code: 'ADM', defaultTab: 'Admin_Security_Actions', name: 'Admin & Security' },
+  'admin-security': {
+    envKeys: [
+      'ADMIN_SECURITY_SHEET_URL',
+      'Admin_&_Security',
+      'ADMIN_&_SECURITY',
+      'ADMIN_AND_SECURITY',
+      'ADMIN_SECURITY',
+      'ADMIN_SECURITY_URL',
+      'ADMIN_&_SECURITY_SHEET_URL',
+      'ADMIN_AND_SECURITY_SHEET_URL',
+      'Admin_Security',
+      'Admin_Security_Sheet_Url',
+      'ADMIN_SHEET_URL',
+      'SECURITY_SHEET_URL',
+      'STRATEGIC_ADMIN_SECURITY_SHEET_URL'
+    ],
+    code: 'ADM',
+    defaultTab: 'Admin_Security_Actions',
+    name: 'Admin & Security'
+  },
   'asset-integrity': { envKeys: ['ASSET_INTEGRITY_SHEET_URL'], code: 'AI', defaultTab: 'Asset_Integrity_Actions', name: 'Asset Integrity' },
   'business-development': { envKeys: ['BUSINESS_DEVELOPMENT_SHEET_URL'], code: 'BD', defaultTab: 'Business_Development_Actions', name: 'Business Development' },
   'civil': { envKeys: ['CIVIL_SHEET_URL'], code: 'CIV', defaultTab: 'Civil_Actions', name: 'Civil' },
@@ -743,11 +764,30 @@ const STRATEGIC_TILE_REGISTRY: Record<string, { envKeys: string[]; code: string;
 };
 
 function getSheetUrlForTile(tileId: string): string {
-  const reg = STRATEGIC_TILE_REGISTRY[tileId];
+  const normalizedId = tileId === 'admin_security' || tileId === 'Admin_&_Security' ? 'admin-security' : tileId;
+  const reg = STRATEGIC_TILE_REGISTRY[normalizedId];
   if (!reg) return '';
   for (const k of reg.envKeys) {
     if (process.env[k] && process.env[k]?.trim()) {
       return process.env[k]!.trim();
+    }
+  }
+
+  // Dynamic fuzzy match over all process.env keys
+  const cleanTile = normalizedId.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+  for (const [key, val] of Object.entries(process.env)) {
+    if (!val || typeof val !== 'string' || !val.trim()) continue;
+    const cleanKey = key.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+    if (
+      cleanKey === cleanTile ||
+      cleanKey === `${cleanTile}url` ||
+      cleanKey === `${cleanTile}sheeturl` ||
+      cleanKey === `strategic${cleanTile}sheeturl` ||
+      (cleanTile.includes('admin') && cleanKey.includes('admin') && cleanKey.includes('sec'))
+    ) {
+      if (val.includes('http') || val.includes('spreadsheets') || val.length > 15) {
+        return val.trim();
+      }
     }
   }
   return '';
@@ -758,7 +798,27 @@ function parseCsvToStrategicActions(csvText: string, defaultCode: string): Strat
   const lines = csvText.split(/\r\n|\n|\r/).filter(l => l.trim().length > 0);
   if (lines.length <= 1) return [];
 
-  const headers = lines[0].split(',').map(h => h.replace(/^"|"$/g, '').trim().toLowerCase());
+  const parseRowTokens = (line: string): string[] => {
+    const row: string[] = [];
+    let inQuotes = false;
+    let token = '';
+    for (let c = 0; c < line.length; c++) {
+      const ch = line[c];
+      if (ch === '"') {
+        inQuotes = !inQuotes;
+      } else if (ch === ',' && !inQuotes) {
+        row.push(token.trim().replace(/^"|"$/g, ''));
+        token = '';
+      } else {
+        token += ch;
+      }
+    }
+    row.push(token.trim().replace(/^"|"$/g, ''));
+    return row;
+  };
+
+  const rawHeaders = parseRowTokens(lines[0]).filter(h => h.length > 0);
+  const headers = rawHeaders.map(h => h.toLowerCase());
   const findCol = (candidates: string[]) => headers.findIndex(h => candidates.some(c => h.includes(c)));
 
   const idCol = findCol(['id', 'code', 'action #', 'action#', 'item', 'sr', 's_no', 's.no', 'sno', 'no', '#']);
@@ -771,21 +831,7 @@ function parseCsvToStrategicActions(csvText: string, defaultCode: string): Strat
 
   const parsed: StrategicActionItem[] = [];
   for (let i = 1; i < lines.length; i++) {
-    const row: string[] = [];
-    let inQuotes = false;
-    let token = '';
-    for (let c = 0; c < lines[i].length; c++) {
-      const ch = lines[i][c];
-      if (ch === '"') {
-        inQuotes = !inQuotes;
-      } else if (ch === ',' && !inQuotes) {
-        row.push(token.trim());
-        token = '';
-      } else {
-        token += ch;
-      }
-    }
-    row.push(token.trim());
+    const row = parseRowTokens(lines[i]);
 
     const desc = descCol !== -1 ? (row[descCol] || '') : (row[1] || row[0] || '');
     if (!desc || desc.trim().length === 0) continue;
@@ -818,6 +864,13 @@ function parseCsvToStrategicActions(csvText: string, defaultCode: string): Strat
     const remarks = remarksCol !== -1 ? (row[remarksCol] || '') : '';
     const closureDate = closureCol !== -1 ? (row[closureCol] || '') : (isClosed ? (dueDate || new Date().toISOString().split('T')[0]) : '');
 
+    // Capture raw columns dictionary for dynamic table rendering
+    const rawColumns: Record<string, string> = {};
+    for (let c = 0; c < rawHeaders.length; c++) {
+      const headerName = rawHeaders[c];
+      rawColumns[headerName] = row[c] || '';
+    }
+
     parsed.push({
       id,
       title: desc,
@@ -825,7 +878,9 @@ function parseCsvToStrategicActions(csvText: string, defaultCode: string): Strat
       dueDate,
       status,
       closureDate,
-      remarks
+      remarks,
+      rawColumns,
+      columnHeaders: rawHeaders
     });
   }
   return parsed;
@@ -879,7 +934,8 @@ app.get('/api/strategic/sheets', (_req: Request, res: Response): void => {
 // GET /api/strategic/live-data - Fetches and returns live parsed Google Sheet deliverables
 app.get('/api/strategic/live-data', async (req: Request, res: Response): Promise<void> => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
-  const tileIdQuery = typeof req.query.tileId === 'string' ? req.query.tileId.trim() : '';
+  const rawTileIdQuery = typeof req.query.tileId === 'string' ? req.query.tileId.trim() : '';
+  const tileIdQuery = rawTileIdQuery === 'admin_security' || rawTileIdQuery === 'Admin_&_Security' ? 'admin-security' : rawTileIdQuery;
   const forceRefresh = req.query.refresh === 'true' || req.query.force === 'true';
 
   const now = Date.now();
@@ -922,12 +978,33 @@ app.get('/api/strategic/live-data', async (req: Request, res: Response): Promise
     const spreadsheetMatch = sheetUrl.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
     if (!spreadsheetMatch) return null;
     const spreadsheetId = spreadsheetMatch[1];
+    const gidMatch = sheetUrl.match(/[#?&]gid=([0-9]+)/);
+    const gid = gidMatch ? gidMatch[1] : null;
 
-    const candidateUrls = [
-      `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv`,
-      `https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv`,
-      `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(reg.defaultTab)}`
-    ];
+    const candidateTabs = [reg.defaultTab];
+    if (tid === 'admin-security') {
+      const extraAdminTabs = ['Admin_Security_Actions', 'Admin_&_Security', 'Admin & Security', 'Admin_Security', 'Admin and Security', 'Admin', 'Security', 'Sheet1'];
+      for (const t of extraAdminTabs) {
+        if (!candidateTabs.includes(t)) candidateTabs.push(t);
+      }
+    } else if (tid === 'scm') {
+      const extraScmTabs = ['SCM', 'SCM_Actions', 'SCM Actions', 'Supply Chain', 'Procurement', 'Sheet1'];
+      for (const t of extraScmTabs) {
+        if (!candidateTabs.includes(t)) candidateTabs.push(t);
+      }
+    }
+
+    const candidateUrls: string[] = [];
+    if (gid) {
+      candidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&gid=${gid}`);
+      candidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&gid=${gid}`);
+    }
+    for (const tab of candidateTabs) {
+      candidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tab)}`);
+      candidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&sheet=${encodeURIComponent(tab)}`);
+    }
+    candidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv`);
+    candidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv`);
 
     let csvText = '';
     for (const url of candidateUrls) {
