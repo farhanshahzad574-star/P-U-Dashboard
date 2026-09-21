@@ -154,6 +154,25 @@
       try {
         const storedActions = localStorage.getItem(STORAGE_KEYS.EMPLOYEE_ACTIONS);
         this.customActions = storedActions ? JSON.parse(storedActions) : {};
+
+        // Auto-purge any stale sample student records from previous runs
+        let purged = false;
+        for (const [key, actions] of Object.entries(this.customActions)) {
+          if (Array.isArray(actions)) {
+            const hasSampleData = actions.some(a => 
+              /student name|alexandra|drama club|class level|extracurricular/i.test(a.title || '') ||
+              /student name|alexandra|drama club|class level|extracurricular/i.test(a.remarks || '') ||
+              /student name|alexandra|drama club|class level|extracurricular/i.test(JSON.stringify(a.rawColumns || {}))
+            );
+            if (hasSampleData) {
+              delete this.customActions[key];
+              purged = true;
+            }
+          }
+        }
+        if (purged) {
+          this.saveStoredActions();
+        }
       } catch (e) {
         this.customActions = {};
       }
@@ -161,6 +180,16 @@
       try {
         const storedSheets = localStorage.getItem(STORAGE_KEYS.EMPLOYEE_SHEETS);
         this.customSheets = storedSheets ? JSON.parse(storedSheets) : {};
+        let purgedSheets = false;
+        for (const [key, sheet] of Object.entries(this.customSheets)) {
+          if (sheet && sheet.sheetUrl && sheet.sheetUrl.includes('1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms')) {
+            delete this.customSheets[key];
+            purgedSheets = true;
+          }
+        }
+        if (purgedSheets) {
+          this.saveStoredSheets();
+        }
       } catch (e) {
         this.customSheets = {};
       }
