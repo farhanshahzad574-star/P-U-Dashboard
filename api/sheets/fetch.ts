@@ -163,6 +163,11 @@ export default async function handler(req: any, res: any) {
       extraRecTabs.forEach(t => {
         if (!candidateTabs.includes(t)) candidateTabs.push(t);
       });
+    } else if (sLower.includes('validation') || sLower.includes('valid')) {
+      const extraValTabs = ['PSM Validation', 'PSM_Validation', 'Validation', 'PSMValidation', 'Sheet1'];
+      extraValTabs.forEach(t => {
+        if (!candidateTabs.includes(t)) candidateTabs.push(t);
+      });
     }
 
     const candidateUrls: string[] = [];

@@ -1013,12 +1013,6 @@
                   <i data-lucide="chevron-down" class="w-3 h-3"></i>
                 </div>
               </div>
-
-              <!-- Active Status Badge -->
-              <span id="hseq-year-status-badge" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg text-[11px] font-bold text-blue-800 bg-blue-50/90 border border-blue-200 shadow-2xs">
-                <i data-lucide="sigma" class="w-3 h-3 text-blue-600"></i>
-                <span id="hseq-year-status-text">Sum of All 10 Years (2017–2026)</span>
-              </span>
             </div>
 
             <div class="flex items-center gap-2 text-[11px] text-slate-500 font-medium">
@@ -1034,7 +1028,11 @@
           <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3.5">
             
             <!-- 1. Safe Manhours (Emerald / Green) -->
-            <div class="card-hover-effect relative overflow-hidden rounded-xl border border-emerald-200/90 bg-gradient-to-b from-emerald-50/70 via-white to-emerald-50/30 p-2 sm:p-3 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between items-center text-center min-h-[112px] sm:min-h-[148px]">
+            <div
+              onclick="portalApp.openHseqTrendModal('safeManhours')"
+              class="card-hover-effect relative overflow-hidden rounded-xl border border-emerald-200/90 bg-gradient-to-b from-emerald-50/70 via-white to-emerald-50/30 p-2.5 sm:p-3.5 shadow-2xs hover:shadow-md hover:border-emerald-400 transition-all flex flex-col justify-between items-center text-center min-h-[112px] sm:min-h-[136px] cursor-pointer group/card"
+              title="Click to view Safe Manhours 10-Year Trend Analysis"
+            >
               <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-500 to-teal-500"></div>
               
               <!-- Card Header: Title + Trend Button -->
@@ -1047,29 +1045,28 @@
                 </div>
                 <button
                   type="button"
-                  onclick="portalApp.openHseqTrendModal('safeManhours')"
-                  class="p-1 rounded-md text-emerald-700 hover:text-emerald-950 bg-emerald-100/70 hover:bg-emerald-200 border border-emerald-300 transition-all cursor-pointer group shadow-2xs"
+                  onclick="event.stopPropagation(); portalApp.openHseqTrendModal('safeManhours')"
+                  class="p-1 rounded-md text-emerald-700 hover:text-white bg-emerald-100/80 hover:bg-emerald-600 border border-emerald-300 transition-all cursor-pointer group shadow-2xs"
                   title="View Safe Manhours 10-Year Trend Plotted Line Chart"
                 >
                   <i data-lucide="trending-up" class="w-3.5 h-3.5 group-hover:scale-110 transition-transform"></i>
                 </button>
               </div>
 
-              <!-- Main Value -->
+              <!-- Main Value (Enlarged) -->
               <div class="flex-1 flex flex-col justify-center items-center text-center min-w-0 w-full overflow-hidden my-auto py-1">
-                <div id="kpi-val-safe-manhours" class="text-xl min-[360px]:text-2xl min-[400px]:text-[1.65rem] sm:text-3xl lg:text-[1.55rem] xl:text-[1.95rem] font-black font-mono tracking-tight text-emerald-800 leading-none whitespace-nowrap text-center -mx-2 sm:mx-0 my-auto" title="Safe Manhours">
+                <div id="kpi-val-safe-manhours" class="text-2xl min-[360px]:text-[1.75rem] min-[400px]:text-3xl sm:text-4xl lg:text-3xl xl:text-[2.35rem] font-black font-mono tracking-tight text-emerald-800 leading-none whitespace-nowrap text-center -mx-2 sm:mx-0 my-auto" title="Safe Manhours">
                   222,004,450
                 </div>
-              </div>
-
-              <!-- Subtitle: Category Total Sum -->
-              <div id="kpi-sub-safe-manhours" class="text-[10px] sm:text-[11px] font-bold text-emerald-800/90 font-mono tracking-tight shrink-0 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200/70 mt-1 max-w-full truncate">
-                Sum: 222,004,450
               </div>
             </div>
 
             <!-- 2. TRIR (Planned & Actual in One Card) (Blue / Cyan) -->
-            <div class="card-hover-effect relative overflow-hidden rounded-xl border border-blue-200/90 bg-gradient-to-b from-blue-50/70 via-white to-cyan-50/20 p-2 sm:p-3 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between items-center text-center min-h-[112px] sm:min-h-[148px]">
+            <div
+              onclick="portalApp.openHseqTrendModal('trir')"
+              class="card-hover-effect relative overflow-hidden rounded-xl border border-blue-200/90 bg-gradient-to-b from-blue-50/70 via-white to-cyan-50/20 p-2.5 sm:p-3.5 shadow-2xs hover:shadow-md hover:border-blue-400 transition-all flex flex-col justify-between items-center text-center min-h-[112px] sm:min-h-[136px] cursor-pointer group/card"
+              title="Click to view TRIR Planned vs Actual 10-Year Trend Analysis"
+            >
               <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-500 via-cyan-500 to-indigo-500"></div>
 
               <!-- Card Header: Title + Trend Button -->
@@ -1082,36 +1079,35 @@
                 </div>
                 <button
                   type="button"
-                  onclick="portalApp.openHseqTrendModal('trir')"
-                  class="p-1 rounded-md text-blue-700 hover:text-blue-950 bg-blue-100/70 hover:bg-blue-200 border border-blue-300 transition-all cursor-pointer group shadow-2xs"
+                  onclick="event.stopPropagation(); portalApp.openHseqTrendModal('trir')"
+                  class="p-1 rounded-md text-blue-700 hover:text-white bg-blue-100/80 hover:bg-blue-600 border border-blue-300 transition-all cursor-pointer group shadow-2xs"
                   title="View TRIR Planned vs Actual 10-Year Trend Plotted Line Chart"
                 >
                   <i data-lucide="trending-up" class="w-3.5 h-3.5 group-hover:scale-110 transition-transform"></i>
                 </button>
               </div>
 
-              <!-- Main Value: Planned & Actual side-by-side -->
-              <div class="flex-1 flex items-center justify-center w-full gap-1.5 my-auto py-1">
+              <!-- Main Value: Planned & Actual side-by-side (Enlarged) -->
+              <div class="flex-1 flex items-center justify-center w-full gap-2 my-auto py-1">
                 <!-- Planned Box -->
-                <div class="flex-1 flex flex-col items-center justify-center bg-blue-50/90 border border-blue-200/90 rounded-lg py-1 px-1 shadow-2xs">
-                  <span class="text-[8px] sm:text-[9px] font-black uppercase tracking-wider text-blue-700 font-mono">Planned</span>
-                  <span id="kpi-val-trir-planned" class="text-base sm:text-xl xl:text-2xl font-black font-mono text-blue-950 leading-none mt-0.5">50</span>
+                <div class="flex-1 flex flex-col items-center justify-center bg-blue-50/90 border border-blue-200/90 rounded-lg py-1.5 sm:py-2 px-1 shadow-2xs">
+                  <span class="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-blue-700 font-mono">Planned</span>
+                  <span id="kpi-val-trir-planned" class="text-xl sm:text-2xl xl:text-3xl font-black font-mono text-blue-950 leading-none mt-0.5">50</span>
                 </div>
                 <!-- Actual Box -->
-                <div class="flex-1 flex flex-col items-center justify-center bg-emerald-50/90 border border-emerald-200/90 rounded-lg py-1 px-1 shadow-2xs">
-                  <span class="text-[8px] sm:text-[9px] font-black uppercase tracking-wider text-emerald-700 font-mono">Actual</span>
-                  <span id="kpi-val-trir-actual" class="text-base sm:text-xl xl:text-2xl font-black font-mono text-emerald-800 leading-none mt-0.5">0</span>
+                <div class="flex-1 flex flex-col items-center justify-center bg-emerald-50/90 border border-emerald-200/90 rounded-lg py-1.5 sm:py-2 px-1 shadow-2xs">
+                  <span class="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-emerald-700 font-mono">Actual</span>
+                  <span id="kpi-val-trir-actual" class="text-xl sm:text-2xl xl:text-3xl font-black font-mono text-emerald-800 leading-none mt-0.5">0</span>
                 </div>
-              </div>
-
-              <!-- Subtitle: Category Total Sum -->
-              <div id="kpi-sub-trir" class="text-[10px] sm:text-[11px] font-bold text-blue-800/90 font-mono tracking-tight shrink-0 bg-blue-50 px-2 py-0.5 rounded border border-blue-200/70 mt-1 max-w-full truncate">
-                Sum: Plan 50 | Act 0
               </div>
             </div>
 
             <!-- 3. Lost Time Injury (LTI) (Royal Blue / Indigo) -->
-            <div class="card-hover-effect relative overflow-hidden rounded-xl border border-indigo-200/90 bg-gradient-to-b from-indigo-50/70 via-white to-blue-50/20 p-2 sm:p-3 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between items-center text-center min-h-[112px] sm:min-h-[148px]">
+            <div
+              onclick="portalApp.openHseqTrendModal('lti')"
+              class="card-hover-effect relative overflow-hidden rounded-xl border border-indigo-200/90 bg-gradient-to-b from-indigo-50/70 via-white to-blue-50/20 p-2.5 sm:p-3.5 shadow-2xs hover:shadow-md hover:border-indigo-400 transition-all flex flex-col justify-between items-center text-center min-h-[112px] sm:min-h-[136px] cursor-pointer group/card"
+              title="Click to view LTI 10-Year Trend Analysis"
+            >
               <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-indigo-500 to-blue-600"></div>
 
               <!-- Card Header: Title + Trend Button -->
@@ -1124,29 +1120,28 @@
                 </div>
                 <button
                   type="button"
-                  onclick="portalApp.openHseqTrendModal('lti')"
-                  class="p-1 rounded-md text-indigo-700 hover:text-indigo-950 bg-indigo-100/70 hover:bg-indigo-200 border border-indigo-300 transition-all cursor-pointer group shadow-2xs"
+                  onclick="event.stopPropagation(); portalApp.openHseqTrendModal('lti')"
+                  class="p-1 rounded-md text-indigo-700 hover:text-white bg-indigo-100/80 hover:bg-indigo-600 border border-indigo-300 transition-all cursor-pointer group shadow-2xs"
                   title="View LTI 10-Year Trend Plotted Line Chart"
                 >
                   <i data-lucide="trending-up" class="w-3.5 h-3.5 group-hover:scale-110 transition-transform"></i>
                 </button>
               </div>
 
-              <!-- Main Value -->
+              <!-- Main Value (Enlarged) -->
               <div class="flex-1 flex flex-col justify-center items-center text-center my-auto py-1">
-                <div id="kpi-val-lti" class="text-2xl sm:text-4xl lg:text-5xl xl:text-6xl font-black font-mono tracking-tight text-indigo-800 leading-none text-center hseq-kpi-val">
+                <div id="kpi-val-lti" class="text-3xl sm:text-5xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-black font-mono tracking-tight text-indigo-800 leading-none text-center hseq-kpi-val">
                   0
                 </div>
-              </div>
-
-              <!-- Subtitle: Category Total Sum -->
-              <div id="kpi-sub-lti" class="text-[10px] sm:text-[11px] font-bold text-indigo-800/90 font-mono tracking-tight shrink-0 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200/70 mt-1 max-w-full truncate">
-                Sum: 0 (Zero LTI)
               </div>
             </div>
 
             <!-- 4. Medical Treatment (Violet / Purple) -->
-            <div class="card-hover-effect relative overflow-hidden rounded-xl border border-purple-200/90 bg-gradient-to-b from-purple-50/70 via-white to-violet-50/20 p-2 sm:p-3 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between items-center text-center min-h-[112px] sm:min-h-[148px]">
+            <div
+              onclick="portalApp.openHseqTrendModal('medicalTreatment')"
+              class="card-hover-effect relative overflow-hidden rounded-xl border border-purple-200/90 bg-gradient-to-b from-purple-50/70 via-white to-violet-50/20 p-2.5 sm:p-3.5 shadow-2xs hover:shadow-md hover:border-purple-400 transition-all flex flex-col justify-between items-center text-center min-h-[112px] sm:min-h-[136px] cursor-pointer group/card"
+              title="Click to view Medical Treatment 10-Year Trend Analysis"
+            >
               <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-purple-500 to-violet-600"></div>
 
               <!-- Card Header: Title + Trend Button -->
@@ -1159,29 +1154,28 @@
                 </div>
                 <button
                   type="button"
-                  onclick="portalApp.openHseqTrendModal('medicalTreatment')"
-                  class="p-1 rounded-md text-purple-700 hover:text-purple-950 bg-purple-100/70 hover:bg-purple-200 border border-purple-300 transition-all cursor-pointer group shadow-2xs"
+                  onclick="event.stopPropagation(); portalApp.openHseqTrendModal('medicalTreatment')"
+                  class="p-1 rounded-md text-purple-700 hover:text-white bg-purple-100/80 hover:bg-purple-600 border border-purple-300 transition-all cursor-pointer group shadow-2xs"
                   title="View Medical Treatment 10-Year Trend Plotted Line Chart"
                 >
                   <i data-lucide="trending-up" class="w-3.5 h-3.5 group-hover:scale-110 transition-transform"></i>
                 </button>
               </div>
 
-              <!-- Main Value -->
+              <!-- Main Value (Enlarged) -->
               <div class="flex-1 flex flex-col justify-center items-center text-center my-auto py-1">
-                <div id="kpi-val-medical" class="text-2xl sm:text-4xl lg:text-5xl xl:text-6xl font-black font-mono tracking-tight text-purple-800 leading-none text-center hseq-kpi-val">
+                <div id="kpi-val-medical" class="text-3xl sm:text-5xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-black font-mono tracking-tight text-purple-800 leading-none text-center hseq-kpi-val">
                   0
                 </div>
-              </div>
-
-              <!-- Subtitle: Category Total Sum -->
-              <div id="kpi-sub-medical" class="text-[10px] sm:text-[11px] font-bold text-purple-800/90 font-mono tracking-tight shrink-0 bg-purple-50 px-2 py-0.5 rounded border border-purple-200/70 mt-1 max-w-full truncate">
-                Sum: 0 (Zero Cases)
               </div>
             </div>
 
             <!-- 5. First Aid Case (Amber / Orange) -->
-            <div class="card-hover-effect relative overflow-hidden rounded-xl border border-amber-200/90 bg-gradient-to-b from-amber-50/70 via-white to-yellow-50/20 p-2 sm:p-3 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between items-center text-center min-h-[112px] sm:min-h-[148px]">
+            <div
+              onclick="portalApp.openHseqTrendModal('firstAidCase')"
+              class="card-hover-effect relative overflow-hidden rounded-xl border border-amber-200/90 bg-gradient-to-b from-amber-50/70 via-white to-yellow-50/20 p-2.5 sm:p-3.5 shadow-2xs hover:shadow-md hover:border-amber-400 transition-all flex flex-col justify-between items-center text-center min-h-[112px] sm:min-h-[136px] cursor-pointer group/card"
+              title="Click to view First Aid Case 10-Year Trend Analysis"
+            >
               <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-500 to-orange-500"></div>
 
               <!-- Card Header: Title + Trend Button -->
@@ -1194,29 +1188,28 @@
                 </div>
                 <button
                   type="button"
-                  onclick="portalApp.openHseqTrendModal('firstAidCase')"
-                  class="p-1 rounded-md text-amber-800 hover:text-amber-950 bg-amber-100/70 hover:bg-amber-200 border border-amber-300 transition-all cursor-pointer group shadow-2xs"
+                  onclick="event.stopPropagation(); portalApp.openHseqTrendModal('firstAidCase')"
+                  class="p-1 rounded-md text-amber-800 hover:text-white bg-amber-100/80 hover:bg-amber-600 border border-amber-300 transition-all cursor-pointer group shadow-2xs"
                   title="View First Aid Case 10-Year Trend Plotted Line Chart"
                 >
                   <i data-lucide="trending-up" class="w-3.5 h-3.5 group-hover:scale-110 transition-transform"></i>
                 </button>
               </div>
 
-              <!-- Main Value -->
+              <!-- Main Value (Enlarged) -->
               <div class="flex-1 flex flex-col justify-center items-center text-center my-auto py-1">
-                <div id="kpi-val-first-aid" class="text-2xl sm:text-4xl lg:text-5xl xl:text-6xl font-black font-mono tracking-tight text-amber-800 leading-none text-center hseq-kpi-val">
+                <div id="kpi-val-first-aid" class="text-3xl sm:text-5xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-black font-mono tracking-tight text-amber-800 leading-none text-center hseq-kpi-val">
                   50
                 </div>
-              </div>
-
-              <!-- Subtitle: Category Total Sum -->
-              <div id="kpi-sub-first-aid" class="text-[10px] sm:text-[11px] font-bold text-amber-900/90 font-mono tracking-tight shrink-0 bg-amber-50 px-2 py-0.5 rounded border border-amber-200/70 mt-1 max-w-full truncate">
-                Sum: 50 Cases
               </div>
             </div>
 
             <!-- 6. Nearmiss (Sky / Cyan) -->
-            <div class="card-hover-effect relative overflow-hidden rounded-xl border border-sky-200/90 bg-gradient-to-b from-sky-50/70 via-white to-cyan-50/20 p-2 sm:p-3 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between items-center text-center min-h-[112px] sm:min-h-[148px]">
+            <div
+              onclick="portalApp.openHseqTrendModal('nearmiss')"
+              class="card-hover-effect relative overflow-hidden rounded-xl border border-sky-200/90 bg-gradient-to-b from-sky-50/70 via-white to-cyan-50/20 p-2.5 sm:p-3.5 shadow-2xs hover:shadow-md hover:border-sky-400 transition-all flex flex-col justify-between items-center text-center min-h-[112px] sm:min-h-[136px] cursor-pointer group/card"
+              title="Click to view Near Miss 10-Year Trend Analysis"
+            >
               <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-sky-500 to-cyan-600"></div>
 
               <!-- Card Header: Title + Trend Button -->
@@ -1229,56 +1222,51 @@
                 </div>
                 <button
                   type="button"
-                  onclick="portalApp.openHseqTrendModal('nearmiss')"
-                  class="p-1 rounded-md text-sky-700 hover:text-sky-950 bg-sky-100/70 hover:bg-sky-200 border border-sky-300 transition-all cursor-pointer group shadow-2xs"
+                  onclick="event.stopPropagation(); portalApp.openHseqTrendModal('nearmiss')"
+                  class="p-1 rounded-md text-sky-700 hover:text-white bg-sky-100/80 hover:bg-sky-600 border border-sky-300 transition-all cursor-pointer group shadow-2xs"
                   title="View Near Miss 10-Year Trend Plotted Line Chart"
                 >
                   <i data-lucide="trending-up" class="w-3.5 h-3.5 group-hover:scale-110 transition-transform"></i>
                 </button>
               </div>
 
-              <!-- Main Value -->
+              <!-- Main Value (Enlarged) -->
               <div class="flex-1 flex flex-col justify-center items-center text-center my-auto py-1">
-                <div id="kpi-val-nearmiss" class="text-2xl sm:text-4xl lg:text-5xl xl:text-6xl font-black font-mono tracking-tight text-sky-800 leading-none text-center hseq-kpi-val">
+                <div id="kpi-val-nearmiss" class="text-3xl sm:text-5xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-black font-mono tracking-tight text-sky-800 leading-none text-center hseq-kpi-val">
                   240
                 </div>
-              </div>
-
-              <!-- Subtitle: Category Total Sum -->
-              <div id="kpi-sub-nearmiss" class="text-[10px] sm:text-[11px] font-bold text-sky-900/90 font-mono tracking-tight shrink-0 bg-sky-50 px-2 py-0.5 rounded border border-sky-200/70 mt-1 max-w-full truncate">
-                Sum: 240 Reports
               </div>
             </div>
 
           </div>
+
         </div>
 
         <!-- ========================================================================= -->
-        <!-- PROGRESS COMPARISON STATUS (Expanded Full-Width Bar Chart)                -->
+        <!-- PROGRESS COMPARISON/ACTION STATUS (Stacked Column Chart)                  -->
         <!-- ========================================================================= -->
         <div class="bg-gradient-to-b from-white to-slate-50/90 border border-slate-200/90 rounded-2xl p-5 sm:p-6 shadow-xs space-y-3">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-2.5 border-b border-slate-100 gap-2">
             <div>
               <h3 class="text-sm sm:text-base font-black text-[#1E293B] tracking-wide flex items-center gap-2">
-                <span class="text-lg">📊</span> PROGRESS COMPARISON STATUS
+                <span class="text-lg">📊</span> PROGRESS COMPARISON/ACTION STATUS
               </h3>
             </div>
             <div class="flex flex-wrap items-center gap-2 text-xs font-mono font-bold">
-              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-blue-50 text-blue-700 border border-blue-200" title="Total Actions / Total Personnel">
-                <span class="w-2.5 h-2.5 rounded-sm bg-blue-600"></span>
-                <span>Total Actions / Personnel</span>
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200" title="Closed Actions completed">
+                <span class="w-2.5 h-2.5 rounded-sm bg-emerald-600"></span>
+                <span>Closed Actions</span>
               </span>
-              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-amber-50 text-amber-800 border border-amber-200" title="Open Actions pending closure">
-                <span class="w-2.5 h-2.5 rounded-sm bg-amber-500"></span>
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-amber-50 text-orange-800 border border-orange-200" title="Open Actions pending closure">
+                <span class="w-2.5 h-2.5 rounded-sm bg-orange-500"></span>
                 <span>Open Actions</span>
               </span>
-              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200" title="Personnel who passed PSM qualification validation">
-                <span class="w-2.5 h-2.5 rounded-sm bg-emerald-600"></span>
-                <span>Validation Passed</span>
+              <span class="text-[11px] text-slate-500 font-sans font-medium hidden sm:inline-block ml-1">
+                (Values: <span class="text-emerald-700 font-bold">Closed</span> / <span class="text-orange-600 font-bold">Open</span>)
               </span>
             </div>
           </div>
-          <!-- Interactive SVG Bar Chart Container -->
+          <!-- Interactive SVG Stacked Column Chart Container -->
           <div id="comparison-chart-container" class="w-full overflow-hidden min-h-[300px]">
             <!-- Dynamically populated by portalApp.renderComparisonChart() -->
           </div>
@@ -1837,7 +1825,6 @@
 
           </div>
         </div>
-        </div>
 
         <!-- ========================================================================= -->
         <!-- DEDICATED FULL-SCALE PLR DASHBOARD SUITE CONTAINER                        -->
@@ -2297,9 +2284,9 @@
     <div id="plr-action-modal-container"></div>
     <!-- Dedicated Root Container for HSEQ KPI Trend Plotted Line Chart Modal -->
     <div id="hseq-trend-modal-container">
-      <div id="hseq-trend-modal" class="fixed inset-0 z-50 items-center justify-center p-3 sm:p-5 bg-slate-950/70 backdrop-blur-xs transition-opacity hidden" onclick="if(event.target===this)portalApp.closeHseqTrendModal()">
-        <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150" onclick="event.stopPropagation()">
-          <div id="hseq-trend-modal-content" class="flex flex-col flex-1 overflow-hidden"></div>
+      <div id="hseq-trend-modal" class="fixed inset-0 z-[99999] items-center justify-center p-1 sm:p-2.5 lg:p-3 bg-slate-950/85 backdrop-blur-md transition-all duration-200 hidden" onclick="if(event.target===this)portalApp.closeHseqTrendModal()">
+        <div class="bg-white rounded-2xl sm:rounded-3xl shadow-2xl ring-1 ring-slate-900/20 w-[98vw] max-w-[98vw] h-[95vh] max-h-[96vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200" onclick="event.stopPropagation()">
+          <div id="hseq-trend-modal-content" class="flex flex-col flex-1 h-full overflow-hidden"></div>
         </div>
       </div>
     </div>
@@ -2780,22 +2767,32 @@
       }, window.portalApp.state || {});
 
       // Preserve or initialize plrState safely
-      window.portalApp.state.plrState = window.portalApp.state.plrState || {
+      window.portalApp.state.plrState = Object.assign({
         activeTab: 'incidents',
-        selectedYear: 'all',
+        recChartMode: 'side-by-side',
+        assignedTrendMode: 'entity',
+        assignedTrendViewType: 'side-by-side',
         selectedMachine: 'all',
+        selectedPriority: 'all',
         selectedDept: 'all',
+        selectedYear: 'all',
+        selectedEntity: 'all',
         selectedStatus: 'all',
         searchQuery: '',
         page: 1,
         pageSize: 15,
-        recSearchQuery: '',
+        recSelectedEntity: 'all',
         recSelectedDept: 'all',
         recSelectedStatus: 'all',
-        recMultiOnly: false,
-        recViewMode: 'grouped',
+        recSearchQuery: '',
+        recGroupingMode: 'grouped',
+        recPage: 1,
+        recPageSize: 15,
+        resolutionMode: 'recommendations',
+        deptBarViewMode: 'chart',
+        activeModal: null,
         focusedPlrNo: null
-      };
+      }, window.portalApp.state.plrState || {});
 
       const portalApp = window.portalApp;
       window.portalApp = portalApp;
@@ -2822,14 +2819,11 @@
           this.setupKeyboardShortcuts();
           this.renderPaletteSpecs();
           this.initChatbot();
-          // By default, when dashboard is opened from a link, always open the Overview page
-          this.showLandingView(false);
-          if (window.location.hash) {
-            try {
-              history.replaceState(null, '', window.location.pathname + window.location.search);
-            } catch (e) {
-              window.location.hash = '';
-            }
+          // Open active dashboard if specified in URL hash, otherwise open Overview
+          if (window.location.hash && window.location.hash.startsWith('#dashboard/')) {
+            this.checkUrlHash();
+          } else {
+            this.showLandingView(false);
           }
 
           // Auto-sync live Google Sheet tabs (Recommendations & PLR) using hardcoded sheet config on page load/refresh
@@ -3558,7 +3552,7 @@
         },
 
         /**
-         * Render SVG Module-by-Module Progress Comparison (Synchronized Total & Open Actions/Findings & Validation)
+         * Render SVG Module-by-Module Progress Comparison / Action Status (Stacked Column Chart: Closed Actions Green, Open Actions Orange)
          */
         renderComparisonChart() {
           const container = document.getElementById('comparison-chart-container');
@@ -3567,82 +3561,78 @@
           const deptFilter = (this.state && this.state.overviewDeptFilter) || 'all';
           const openCloseFilter = (this.state && this.state.overviewOpenCloseFilter) || 'all';
 
-          // Retrieve live dynamic validation data numbers (Total personnel & Validation passed)
-          const valEntry = (Array.isArray(DASHBOARD_REGISTRY) ? DASHBOARD_REGISTRY.find(d => d.id === 'psm-validation') : null) || { id: 'psm-validation' };
-          let valKpi = this.getPsmValidationFilteredKpis(deptFilter, openCloseFilter);
-          let valTotal = (openCloseFilter === 'open') ? valKpi.inProgress : ((openCloseFilter === 'close') ? valKpi.closed : (valKpi.deptTotal !== undefined ? valKpi.deptTotal : valKpi.total));
-          let valPassed = (openCloseFilter === 'open') ? 0 : valKpi.closed;
-
-          // Build comparison items: Includes all modules, labeling PSM as PSM Audits, and plotting PSM Validation bars
+          // Build comparison items: Includes all modules, labeling PSM as PSM Audits, and plotting PSM Validation actions from Column M
           const chartItems = [];
-          DASHBOARD_REGISTRY.forEach(d => {
-            // Exclude strategic from the Overview Progress Comparison Status
+          (DASHBOARD_REGISTRY || []).forEach(d => {
+            // Exclude strategic from the Overview Progress Comparison / Action Status
             if (d.id === 'strategic') return;
 
             if (d.id === 'psm-validation') {
+              const valKpi = this.getPsmValidationFilteredKpis(deptFilter, openCloseFilter);
+              const closedCount = (openCloseFilter === 'open') ? 0 : (valKpi.deptClosed !== undefined ? valKpi.deptClosed : (valKpi.closed || 0));
+              const openCount = (openCloseFilter === 'close') ? 0 : (valKpi.deptOpen !== undefined ? valKpi.deptOpen : (valKpi.inProgress || 0));
+              const totalCount = (openCloseFilter === 'open') ? openCount : ((openCloseFilter === 'close') ? closedCount : (closedCount + openCount));
+
               chartItems.push({
                 id: 'psm-validation',
                 name: 'PSM Validation',
                 code: 'PSM Validation',
-                type: 'validation',
-                val1: valTotal,
-                val2: valPassed,
+                closed: closedCount,
+                open: openCount,
+                total: totalCount,
                 clickHandler: "portalApp.showDetailView('psm-validation');",
-                tooltip: `PSM Validation: ${valTotal} Total Personnel, ${valPassed} Validation Passed`
+                tooltip: `PSM Validation:\n• Closed Actions: ${closedCount} (Green)\n• Open Actions: ${openCount} (Orange)\n• Total Actions: ${totalCount}`
               });
               return;
             }
 
             const isPsmAudit = (d.id === 'sub-hse-psm');
             const dKpi = this.getEffectiveCardKpis(d);
-            const totalVal = (openCloseFilter === 'open') ? dKpi.inProgress : ((openCloseFilter === 'close') ? dKpi.closed : (dKpi.deptTotal !== undefined ? dKpi.deptTotal : (dKpi.total || 0)));
-            const openVal = dKpi.inProgress || 0;
+            const closedCount = (openCloseFilter === 'open') ? 0 : (dKpi.deptClosed !== undefined ? dKpi.deptClosed : (dKpi.closed || 0));
+            const openCount = (openCloseFilter === 'close') ? 0 : (dKpi.deptOpen !== undefined ? dKpi.deptOpen : (dKpi.inProgress || 0));
+            const totalCount = (openCloseFilter === 'open') ? openCount : ((openCloseFilter === 'close') ? closedCount : (closedCount + openCount));
 
             chartItems.push({
               id: d.id,
               name: isPsmAudit ? 'PSM Audits' : d.name,
               code: isPsmAudit ? 'PSM Audits' : d.code,
-              type: 'action',
-              val1: totalVal,
-              val2: openVal,
+              closed: closedCount,
+              open: openCount,
+              total: totalCount,
               clickHandler: isPsmAudit 
                 ? "portalApp.showDetailView('sub-hse-psm'); if(window.FPCL_PSM_SUITE && window.FPCL_PSM_SUITE.setSubDashboard) { FPCL_PSM_SUITE.setSubDashboard('audits'); }"
                 : `portalApp.showDetailView('${d.id}')`,
               tooltip: isPsmAudit
-                ? `PSM Audits: ${totalVal} Total Actions, ${openVal} Open Actions`
-                : `${d.name} (${d.code}): ${totalVal} Total Actions, ${openVal} Open Actions`
+                ? `PSM Audits:\n• Closed Actions: ${closedCount} (Green)\n• Open Actions: ${openCount} (Orange)\n• Total Actions: ${totalCount}`
+                : `${d.name} (${d.code}):\n• Closed Actions: ${closedCount} (Green)\n• Open Actions: ${openCount} (Orange)\n• Total Actions: ${totalCount}`
             });
           });
 
           const width = 1200;
-          const height = 350;
-          const pad = { top: 48, right: 35, bottom: 90, left: 65 };
+          const height = 365;
+          const pad = { top: 56, right: 35, bottom: 90, left: 65 };
           const plotW = width - pad.left - pad.right;
           const plotH = height - pad.top - pad.bottom;
+          const baselineY = pad.top + plotH;
 
           const barCount = chartItems.length;
           const slotW = plotW / barCount;
-          // Dual bars for Total vs Open / Passed: 23px wide with 9px spacing (32px center-to-center)
-          const barW = Math.min(23, Math.max(16, (slotW - 14) / 2));
-          const pairSpacing = 9;
+          // Stack column width (single stacked column per module)
+          const barW = Math.min(38, Math.max(26, slotW * 0.42));
 
-          // Max value scale (dynamic based on highest value in comparison)
-          const maxVal = Math.max(...chartItems.map(i => Math.max(i.val1 || 0, i.val2 || 0)), 10);
-          const yMax = maxVal > 300 ? 600 : Math.max(20, Math.ceil((maxVal * 1.25) / 10) * 10);
+          // Max value scale (dynamic based on highest total in comparison with comfortable top headroom)
+          const maxVal = Math.max(...chartItems.map(i => i.total || 0), 10);
+          const yMax = maxVal > 300 ? Math.ceil((maxVal * 1.25) / 50) * 50 : Math.max(20, Math.ceil((maxVal * 1.30) / 10) * 10);
 
-          // Gradients definition for Total, Open, and Validation Passed bars
+          // Gradients definition for Closed (Green) and Open (Orange) actions
           const defsGradients = `
-            <linearGradient id="cmp-bar-total" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stop-color="#3B82F6"/>
-              <stop offset="100%" stop-color="#1D4ED8"/>
+            <linearGradient id="cmp-bar-closed" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#10B981"/>
+              <stop offset="100%" stop-color="#059669"/>
             </linearGradient>
             <linearGradient id="cmp-bar-open" x1="0%" y1="0%" x2="0%" y2="100%">
               <stop offset="0%" stop-color="#FB923C"/>
               <stop offset="100%" stop-color="#EA580C"/>
-            </linearGradient>
-            <linearGradient id="cmp-bar-passed" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stop-color="#10B981"/>
-              <stop offset="100%" stop-color="#059669"/>
             </linearGradient>
             <filter id="barShadow" x="-10%" y="-10%" width="120%" height="120%">
               <feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.15"/>
@@ -3658,49 +3648,90 @@
           if (gridSteps[gridSteps.length - 1] < yMax) gridSteps.push(yMax);
 
           const gridSvg = gridSteps.map(v => {
-            const yPos = pad.top + plotH - (v / yMax) * plotH;
+            const yPos = baselineY - (v / yMax) * plotH;
             return `
               <line x1="${pad.left}" y1="${yPos}" x2="${width - pad.right}" y2="${yPos}" stroke="#E2E8F0" stroke-width="1.5" stroke-dasharray="4 4"/>
               <text x="${pad.left - 10}" y="${yPos + 4.5}" fill="#475569" font-size="12" font-family="'Plus Jakarta Sans', monospace, sans-serif" font-weight="bold" text-anchor="end">${v}</text>
             `;
           }).join('');
 
-          // Grouped bars
+          // Stacked columns
           const barsSvg = chartItems.map((item, i) => {
-            const val1 = item.val1;
-            const val2 = item.val2;
+            const closed = item.closed || 0;
+            const open = item.open || 0;
+            const total = item.total || 0;
 
-            const h1 = yMax > 0 ? (val1 / yMax) * plotH : 0;
-            const h2 = yMax > 0 ? (val2 / yMax) * plotH : 0;
+            const hClosed = yMax > 0 ? (closed / yMax) * plotH : 0;
+            const hOpen = yMax > 0 ? (open / yMax) * plotH : 0;
+            const hTotal = hClosed + hOpen;
 
             const slotX = pad.left + (i * slotW);
-            const pairW = (barW * 2) + pairSpacing;
-            const x1 = slotX + (slotW - pairW) / 2;
-            const x2 = x1 + barW + pairSpacing;
+            const colX = slotX + (slotW - barW) / 2;
 
-            const y1 = pad.top + plotH - h1;
-            const y2 = pad.top + plotH - h2;
+            const yClosed = baselineY - hClosed;
+            const yOpen = yClosed - hOpen;
+            const topY = baselineY - hTotal;
 
             const displayLabel = item.code;
-            const isVal = item.type === 'validation';
 
-            // Gradient and color for Bar 2 (Validation Passed vs Open Actions)
-            const bar2Grad = isVal ? 'url(#cmp-bar-passed)' : 'url(#cmp-bar-open)';
-            const bar2TextColor = isVal ? '#047857' : '#C2410C';
-
-            // Anti-collision label positioning:
-            // When both bars have active values and heights are close (|y1 - y2| < 22),
-            // stagger Bar 1 label upward with a subtle dashed guide line so labels never overlap horizontally.
-            let text1Y = Math.max(pad.top + 16, y1 - 6);
-            let text2Y = Math.max(pad.top + 16, y2 - 6);
-            const isCloseHeight = (val1 > 0 && val2 > 0 && Math.abs(y1 - y2) < 22);
-
-            if (isCloseHeight) {
-              if (text1Y - 16 >= pad.top + 12) {
-                text1Y = text1Y - 16;
-              } else {
-                text2Y = text2Y + 16;
+            let stackSegments = '';
+            if (total === 0) {
+              // Both Open and Closed are 0: render subtle baseline line and explicitly mention both 0s in their legend colors
+              stackSegments = `
+                <rect x="${colX}" y="${baselineY - 3}" width="${barW}" height="3" rx="1.5" fill="#CBD5E1"/>
+                <text x="${colX + barW / 2}" y="${baselineY - 8}" text-anchor="middle" class="select-none pointer-events-none">
+                  <tspan fill="#059669" font-size="12" font-family="'Plus Jakarta Sans', monospace, sans-serif" font-weight="800">0</tspan>
+                  <tspan fill="#94A3B8" font-size="11" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="bold"> / </tspan>
+                  <tspan fill="#EA580C" font-size="12" font-family="'Plus Jakarta Sans', monospace, sans-serif" font-weight="800">0</tspan>
+                </text>
+              `;
+            } else {
+              // 1. Closed Actions Segment (Green - bottom of stack)
+              if (closed > 0 && open > 0) {
+                // Flat top where it connects to open segment
+                stackSegments += `
+                  <rect x="${colX}" y="${yClosed}" width="${barW}" height="${hClosed}" fill="url(#cmp-bar-closed)" class="transition-all group-hover:brightness-105"/>
+                `;
+              } else if (closed > 0 && open === 0) {
+                // Closed is the entire column, so round top corners
+                const r = Math.min(4, hClosed);
+                stackSegments += `
+                  <path d="M ${colX},${yClosed + r} Q ${colX},${yClosed} ${colX + r},${yClosed} L ${colX + barW - r},${yClosed} Q ${colX + barW},${yClosed} ${colX + barW},${yClosed + r} L ${colX + barW},${baselineY} L ${colX},${baselineY} Z" fill="url(#cmp-bar-closed)" filter="url(#barShadow)" class="transition-all group-hover:brightness-105"/>
+                `;
               }
+
+              // 2. Open Actions Segment (Orange - top of stack)
+              if (open > 0) {
+                const r = Math.min(4, hOpen);
+                const bottomBoundaryY = closed > 0 ? yClosed : baselineY;
+                stackSegments += `
+                  <path d="M ${colX},${yOpen + r} Q ${colX},${yOpen} ${colX + r},${yOpen} L ${colX + barW - r},${yOpen} Q ${colX + barW},${yOpen} ${colX + barW},${yOpen + r} L ${colX + barW},${bottomBoundaryY} L ${colX},${bottomBoundaryY} Z" fill="url(#cmp-bar-open)" filter="url(#barShadow)" class="transition-all group-hover:brightness-105"/>
+                `;
+              }
+
+              // Segment text labels inside bars if height allows
+              if (closed > 0 && hClosed >= 20) {
+                stackSegments += `
+                  <text x="${colX + barW / 2}" y="${yClosed + (hClosed / 2) + 4.5}" fill="#FFFFFF" font-size="11" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" text-anchor="middle" style="text-shadow: 0 1px 2px rgba(0,0,0,0.35); pointer-events: none;">${closed}</text>
+                `;
+              }
+              if (open > 0 && hOpen >= 20) {
+                stackSegments += `
+                  <text x="${colX + barW / 2}" y="${yOpen + (hOpen / 2) + 4.5}" fill="#FFFFFF" font-size="11" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" text-anchor="middle" style="text-shadow: 0 1px 2px rgba(0,0,0,0.35); pointer-events: none;">${open}</text>
+                `;
+              }
+
+              // Total count and explicit Open & Closed values in legend colors (even if zero)
+              const totalY = Math.max(pad.top + 14, topY - 19);
+              const valuesY = Math.max(pad.top + 28, topY - 5);
+              stackSegments += `
+                <text x="${colX + barW / 2}" y="${totalY}" fill="#475569" font-size="11" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="700" text-anchor="middle" class="select-none pointer-events-none">${total}</text>
+                <text x="${colX + barW / 2}" y="${valuesY}" text-anchor="middle" class="select-none pointer-events-none">
+                  <tspan fill="#059669" font-size="12" font-family="'Plus Jakarta Sans', monospace, sans-serif" font-weight="800" title="Closed: ${closed}">${closed}</tspan>
+                  <tspan fill="#94A3B8" font-size="11" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="bold"> / </tspan>
+                  <tspan fill="#EA580C" font-size="12" font-family="'Plus Jakarta Sans', monospace, sans-serif" font-weight="800" title="Open: ${open}">${open}</tspan>
+                </text>
+              `;
             }
 
             return `
@@ -3709,29 +3740,11 @@
                 <!-- Group background hover highlight -->
                 <rect x="${slotX + 2}" y="${pad.top}" width="${slotW - 4}" height="${plotH}" rx="6" fill="transparent" class="group-hover:fill-slate-100/70 transition-colors"/>
 
-                <!-- Bar 1: Total Actions (Blue) or Total Personnel (Blue) -->
-                ${val1 > 0 ? `
-                  <rect x="${x1}" y="${y1}" width="${barW}" height="${h1}" rx="4" fill="url(#cmp-bar-total)" filter="url(#barShadow)" class="transition-all group-hover:brightness-110"/>
-                  ${isCloseHeight ? `
-                    <line x1="${x1 + barW / 2}" y1="${y1 - 2}" x2="${x1 + barW / 2}" y2="${text1Y + 3}" stroke="#2563EB" stroke-width="1.2" stroke-dasharray="2 2" opacity="0.6"/>
-                  ` : ''}
-                  <text x="${x1 + barW / 2}" y="${text1Y}" fill="#1D4ED8" class="cmp-bar-num" font-size="13" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" text-anchor="middle">${val1}</text>
-                ` : `
-                  <rect x="${x1}" y="${pad.top + plotH - 3}" width="${barW}" height="3" rx="1.5" fill="#CBD5E1"/>
-                  <text x="${x1 + barW / 2}" y="${pad.top + plotH - 7}" fill="#94A3B8" class="cmp-bar-zero" font-size="11" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="bold" text-anchor="middle">0</text>
-                `}
-
-                <!-- Bar 2: Open Actions (Amber/Orange) or Validation Passed (Emerald) -->
-                ${val2 > 0 ? `
-                  <rect x="${x2}" y="${y2}" width="${barW}" height="${h2}" rx="4" fill="${bar2Grad}" filter="url(#barShadow)" class="transition-all group-hover:brightness-110"/>
-                  <text x="${x2 + barW / 2}" y="${text2Y}" fill="${bar2TextColor}" class="cmp-bar-num" font-size="13" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" text-anchor="middle">${val2}</text>
-                ` : `
-                  <rect x="${x2}" y="${pad.top + plotH - 3}" width="${barW}" height="3" rx="1.5" fill="#E2E8F0"/>
-                  <text x="${x2 + barW / 2}" y="${pad.top + plotH - 7}" fill="#CBD5E1" class="cmp-bar-zero" font-size="11" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="bold" text-anchor="middle">0</text>
-                `}
+                <!-- Stacked Column Body -->
+                ${stackSegments}
 
                 <!-- X Axis Label: Tilted at -28 degrees with generous line spacing and bold font -->
-                <g transform="translate(${slotX + slotW / 2}, ${pad.top + plotH + 18})">
+                <g transform="translate(${slotX + slotW / 2}, ${baselineY + 18})">
                   <text transform="rotate(-28)" fill="#1E293B" class="cmp-x-label" font-size="12" font-weight="800" text-anchor="end" class="group-hover:fill-blue-600 transition-colors">
                     ${displayLabel}
                   </text>
@@ -3744,7 +3757,7 @@
             <svg viewBox="0 0 ${width} ${height}" class="w-full h-auto overflow-visible select-none">
               <defs>${defsGradients}</defs>
               <!-- Baseline -->
-              <line x1="${pad.left}" y1="${pad.top + plotH}" x2="${width - pad.right}" y2="${pad.top + plotH}" stroke="#64748B" stroke-width="2"/>
+              <line x1="${pad.left}" y1="${baselineY}" x2="${width - pad.right}" y2="${baselineY}" stroke="#64748B" stroke-width="2"/>
               ${gridSvg}
               ${barsSvg}
             </svg>
@@ -3997,13 +4010,19 @@
         /**
          * Open the HSEQ KPI Trend Analysis Modal with Plotted Line Chart
          */
-        openHseqTrendModal(metricKey) {
+        openHseqTrendModal(metricKey, chartType = null, selectedYear = null) {
           const modal = document.getElementById('hseq-trend-modal');
           const contentContainer = document.getElementById('hseq-trend-modal-content');
           if (!modal || !contentContainer) return;
 
+          this.state.hseqActiveTrendMetric = metricKey || this.state.hseqActiveTrendMetric || 'safeManhours';
+          this.state.hseqActiveTrendChartType = chartType || this.state.hseqActiveTrendChartType || 'curve';
+          if (selectedYear !== null) {
+            this.state.hseqActiveTrendYear = selectedYear;
+          }
+
           // Render trend contents
-          contentContainer.innerHTML = this.renderHseqTrendModalContent(metricKey);
+          contentContainer.innerHTML = this.renderHseqTrendModalContent(this.state.hseqActiveTrendMetric);
 
           // Show modal
           modal.classList.remove('hidden');
@@ -4014,10 +4033,34 @@
           if (window.lucide) window.lucide.createIcons();
 
           // Add escape listener
+          if (this._escapeHandler) {
+            window.removeEventListener('keydown', this._escapeHandler);
+          }
           this._escapeHandler = (e) => {
             if (e.key === 'Escape') this.closeHseqTrendModal();
           };
           window.addEventListener('keydown', this._escapeHandler);
+        },
+
+        /**
+         * Switch active metric inside the Trend Modal without closing
+         */
+        switchHseqTrendMetric(metricKey) {
+          this.openHseqTrendModal(metricKey, this.state.hseqActiveTrendChartType || 'curve');
+        },
+
+        /**
+         * Switch between Smooth Spline Curve and Annual Comparative Bars
+         */
+        switchHseqTrendChartType(chartType) {
+          this.openHseqTrendModal(this.state.hseqActiveTrendMetric || 'safeManhours', chartType);
+        },
+
+        /**
+         * Inspect a specific year's data point inside the modal
+         */
+        inspectHseqTrendYear(year) {
+          this.openHseqTrendModal(this.state.hseqActiveTrendMetric || 'safeManhours', this.state.hseqActiveTrendChartType || 'curve', year);
         },
 
         /**
@@ -4036,95 +4079,191 @@
         },
 
         /**
+         * Export 10-Year HSEQ Trend dataset as clean CSV
+         */
+        exportHseqTrendCsv(metricKey) {
+          const yearlyList = (this.state.hseqYearlyData && this.state.hseqYearlyData.length > 0)
+            ? [...this.state.hseqYearlyData]
+            : [
+                { year: 2017, safeManhours: 22200445, trirPlanned: 5, trirActual: 0, lti: 0, medicalTreatment: 0, firstAidCase: 5, nearmiss: 24 },
+                { year: 2018, safeManhours: 22200445, trirPlanned: 5, trirActual: 0, lti: 0, medicalTreatment: 0, firstAidCase: 5, nearmiss: 24 },
+                { year: 2019, safeManhours: 22200445, trirPlanned: 5, trirActual: 0, lti: 0, medicalTreatment: 0, firstAidCase: 5, nearmiss: 24 },
+                { year: 2020, safeManhours: 22200445, trirPlanned: 5, trirActual: 0, lti: 0, medicalTreatment: 0, firstAidCase: 5, nearmiss: 24 },
+                { year: 2021, safeManhours: 22200445, trirPlanned: 5, trirActual: 0, lti: 0, medicalTreatment: 0, firstAidCase: 5, nearmiss: 24 },
+                { year: 2022, safeManhours: 22200445, trirPlanned: 5, trirActual: 0, lti: 0, medicalTreatment: 0, firstAidCase: 5, nearmiss: 24 },
+                { year: 2023, safeManhours: 22200445, trirPlanned: 5, trirActual: 0, lti: 0, medicalTreatment: 0, firstAidCase: 5, nearmiss: 24 },
+                { year: 2024, safeManhours: 22200445, trirPlanned: 5, trirActual: 0, lti: 0, medicalTreatment: 0, firstAidCase: 5, nearmiss: 24 },
+                { year: 2025, safeManhours: 22200445, trirPlanned: 5, trirActual: 0, lti: 0, medicalTreatment: 0, firstAidCase: 5, nearmiss: 24 },
+                { year: 2026, safeManhours: 22200445, trirPlanned: 5, trirActual: 0, lti: 0, medicalTreatment: 0, firstAidCase: 5, nearmiss: 24 }
+              ];
+          yearlyList.sort((a, b) => Number(a.year) - Number(b.year));
+
+          let csv = '';
+          if (metricKey === 'trir') {
+            csv = 'Year,Metric,PlannedTRIR,ActualTRIR,Variance,AttainmentStatus\n';
+            yearlyList.forEach(r => {
+              const p = Number(r.trirPlanned || 0);
+              const a = Number(r.trirActual || 0);
+              const v = a - p;
+              const status = a <= p ? 'Target Achieved' : 'Exceeded';
+              csv += `${r.year},TRIR,${p},${a},${v},${status}\n`;
+            });
+          } else {
+            csv = 'Year,MetricKey,MetricValue,Unit,ComplianceStatus\n';
+            yearlyList.forEach(r => {
+              const val = Number(r[metricKey] || 0);
+              const status = (val === 0 && (metricKey === 'lti' || metricKey === 'medicalTreatment')) ? 'Zero Incident Milestone' : 'Recorded';
+              csv += `${r.year},${metricKey},${val},Units,${status}\n`;
+            });
+          }
+
+          const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `FPCL_HSEQ_${metricKey}_10Year_Trend_2017-2026.csv`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+
+          if (typeof this.showToast === 'function') {
+            this.showToast('CSV Exported', `10-Year historical data for ${metricKey} downloaded.`, 'success');
+          }
+        },
+
+        /**
+         * Copy 10-Year HSEQ Trend table data to clipboard formatted for Excel
+         */
+        copyHseqTrendTable(metricKey) {
+          const yearlyList = (this.state.hseqYearlyData && this.state.hseqYearlyData.length > 0)
+            ? [...this.state.hseqYearlyData]
+            : [
+                { year: 2017, safeManhours: 22200445, trirPlanned: 5, trirActual: 0, lti: 0, medicalTreatment: 0, firstAidCase: 5, nearmiss: 24 },
+                { year: 2018, safeManhours: 22200445, trirPlanned: 5, trirActual: 0, lti: 0, medicalTreatment: 0, firstAidCase: 5, nearmiss: 24 },
+                { year: 2019, safeManhours: 22200445, trirPlanned: 5, trirActual: 0, lti: 0, medicalTreatment: 0, firstAidCase: 5, nearmiss: 24 },
+                { year: 2020, safeManhours: 22200445, trirPlanned: 5, trirActual: 0, lti: 0, medicalTreatment: 0, firstAidCase: 5, nearmiss: 24 },
+                { year: 2021, safeManhours: 22200445, trirPlanned: 5, trirActual: 0, lti: 0, medicalTreatment: 0, firstAidCase: 5, nearmiss: 24 },
+                { year: 2022, safeManhours: 22200445, trirPlanned: 5, trirActual: 0, lti: 0, medicalTreatment: 0, firstAidCase: 5, nearmiss: 24 },
+                { year: 2023, safeManhours: 22200445, trirPlanned: 5, trirActual: 0, lti: 0, medicalTreatment: 0, firstAidCase: 5, nearmiss: 24 },
+                { year: 2024, safeManhours: 22200445, trirPlanned: 5, trirActual: 0, lti: 0, medicalTreatment: 0, firstAidCase: 5, nearmiss: 24 },
+                { year: 2025, safeManhours: 22200445, trirPlanned: 5, trirActual: 0, lti: 0, medicalTreatment: 0, firstAidCase: 5, nearmiss: 24 },
+                { year: 2026, safeManhours: 22200445, trirPlanned: 5, trirActual: 0, lti: 0, medicalTreatment: 0, firstAidCase: 5, nearmiss: 24 }
+              ];
+          yearlyList.sort((a, b) => Number(a.year) - Number(b.year));
+
+          let tsv = '';
+          if (metricKey === 'trir') {
+            tsv = "Year\tPlanned TRIR\tActual TRIR\tVariance\tStatus\n";
+            yearlyList.forEach(r => {
+              const p = Number(r.trirPlanned || 0);
+              const a = Number(r.trirActual || 0);
+              tsv += `${r.year}\t${p}\t${a}\t${a - p}\tTarget Achieved\n`;
+            });
+          } else {
+            tsv = "Year\tRecorded Value\tDecade Share\tStatus\n";
+            let total = 0;
+            yearlyList.forEach(r => { total += Number(r[metricKey] || 0); });
+            yearlyList.forEach(r => {
+              const v = Number(r[metricKey] || 0);
+              const share = total > 0 ? ((v / total) * 100).toFixed(1) + '%' : '0.0%';
+              tsv += `${r.year}\t${v}\t${share}\tVerified\n`;
+            });
+          }
+
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(tsv).then(() => {
+              if (typeof this.showToast === 'function') {
+                this.showToast('Copied to Clipboard', '10-Year historical table data copied.', 'success');
+              }
+            }).catch(() => {
+              if (typeof this.showToast === 'function') {
+                this.showToast('Copy Failed', 'Please export CSV instead.', 'warning');
+              }
+            });
+          } else {
+            if (typeof this.showToast === 'function') {
+              this.showToast('Export Available', 'Use the Export CSV button.', 'info');
+            }
+          }
+        },
+
+        /**
          * Generate HTML and responsive SVG plotted line chart for the requested metric
          */
         renderHseqTrendModalContent(metricKey) {
           const METRIC_CONFIG = {
             safeManhours: {
+              key: 'safeManhours',
               name: 'Safe Manhours',
-              unit: 'Hours',
               icon: 'shield-check',
               color: '#059669',
-              lightBg: 'bg-emerald-50 text-emerald-800 border-emerald-200',
-              gradientStart: '#10B981',
-              gradientEnd: '#047857',
+              colorLight: '#10B981',
+              colorDark: '#065F46',
+              badgeBg: 'bg-emerald-600',
               isDual: false,
-              format: (v) => Number(v).toLocaleString(),
-              formatShort: (v) => v >= 1e6 ? (v / 1e6).toFixed(1) + 'M' : Number(v).toLocaleString(),
-              desc: 'Total cumulative safe work hours logged without any Lost Time Injury (LTI).'
+              formatShort: (v) => v >= 1e6 ? (v / 1e6).toFixed(1) + 'M' : Number(v).toLocaleString()
             },
             trir: {
+              key: 'trir',
               name: 'TRIR (Planned vs Actual)',
-              unit: 'Rate',
               icon: 'target',
               color: '#2563EB',
-              lightBg: 'bg-blue-50 text-blue-800 border-blue-200',
-              gradientStart: '#3B82F6',
-              gradientEnd: '#1D4ED8',
+              colorLight: '#3B82F6',
+              colorDark: '#1D4ED8',
+              badgeBg: 'bg-blue-600',
               isDual: true,
-              plannedColor: '#2563EB',
-              actualColor: '#059669',
-              format: (v) => Number(v).toFixed(v % 1 === 0 ? 0 : 2),
-              formatShort: (v) => String(v),
-              desc: 'Total Recordable Incident Rate plotted comparison of Planned Targets vs Actual Performance.'
+              formatShort: (v) => Number(v).toFixed(1)
             },
             lti: {
+              key: 'lti',
               name: 'Lost Time Injury (LTI)',
-              unit: 'Cases',
               icon: 'activity',
               color: '#4F46E5',
-              lightBg: 'bg-indigo-50 text-indigo-800 border-indigo-200',
-              gradientStart: '#6366F1',
-              gradientEnd: '#4338CA',
+              colorLight: '#6366F1',
+              colorDark: '#3730A3',
+              badgeBg: 'bg-indigo-600',
               isDual: false,
-              format: (v) => Number(v).toLocaleString(),
-              formatShort: (v) => String(v),
-              desc: 'Incidents resulting in lost workdays or permanent disability (Clean 0 record maintained).'
+              formatShort: (v) => String(v)
             },
             medicalTreatment: {
-              name: 'Medical Treatment',
-              unit: 'Cases',
+              key: 'medicalTreatment',
+              name: 'Medical Treatment Cases',
               icon: 'stethoscope',
               color: '#9333EA',
-              lightBg: 'bg-purple-50 text-purple-800 border-purple-200',
-              gradientStart: '#A855F7',
-              gradientEnd: '#7E22CE',
+              colorLight: '#A855F7',
+              colorDark: '#7E22CE',
+              badgeBg: 'bg-purple-600',
               isDual: false,
-              format: (v) => Number(v).toLocaleString(),
-              formatShort: (v) => String(v),
-              desc: 'Cases requiring physician or professional medical treatment beyond basic first aid.'
+              formatShort: (v) => String(v)
             },
             firstAidCase: {
-              name: 'First Aid Case',
-              unit: 'Cases',
+              key: 'firstAidCase',
+              name: 'First Aid Cases',
               icon: 'bandage',
               color: '#D97706',
-              lightBg: 'bg-amber-50 text-amber-900 border-amber-200',
-              gradientStart: '#F59E0B',
-              gradientEnd: '#B45309',
+              colorLight: '#F59E0B',
+              colorDark: '#92400E',
+              badgeBg: 'bg-amber-600',
               isDual: false,
-              format: (v) => Number(v).toLocaleString(),
-              formatShort: (v) => String(v),
-              desc: 'Minor incidents treated with standard on-site first aid facilities.'
+              formatShort: (v) => String(v)
             },
             nearmiss: {
-              name: 'Near Miss Reports',
-              unit: 'Reports',
+              key: 'nearmiss',
+              name: 'Near Misses',
               icon: 'alert-triangle',
               color: '#0284C7',
-              lightBg: 'bg-sky-50 text-sky-900 border-sky-200',
-              gradientStart: '#0EA5E9',
-              gradientEnd: '#0369A1',
+              colorLight: '#0EA5E9',
+              colorDark: '#075985',
+              badgeBg: 'bg-sky-600',
               isDual: false,
-              format: (v) => Number(v).toLocaleString(),
-              formatShort: (v) => String(v),
-              desc: 'Proactive hazard and near-miss event reporting driving plant safety culture.'
+              formatShort: (v) => String(v)
             }
           };
 
           const config = METRIC_CONFIG[metricKey] || METRIC_CONFIG.safeManhours;
 
-          // Source 10-year dataset (or default 2017-2026 data)
+          // Source 10-year dataset (or fallback 2017-2026 data)
           let yearlyList = (this.state.hseqYearlyData && this.state.hseqYearlyData.length > 0)
             ? [...this.state.hseqYearlyData]
             : [
@@ -4140,385 +4279,278 @@
                 { year: 2026, safeManhours: 22200445, trirPlanned: 5, trirActual: 0, lti: 0, medicalTreatment: 0, firstAidCase: 5, nearmiss: 24 }
               ];
 
-          // Sort chronologically (oldest to newest: 2017 -> 2026) for plotting left-to-right
           yearlyList.sort((a, b) => Number(a.year) - Number(b.year));
-
-          // Calculate statistics
           const n = yearlyList.length;
-          let totalSum = 0;
-          let plannedSum = 0;
-          let actualSum = 0;
-          let minVal = Infinity;
-          let minYear = '';
-          let maxVal = -Infinity;
-          let maxYear = '';
 
-          if (config.isDual) {
-            yearlyList.forEach(r => {
-              const p = Number(r.trirPlanned || 0);
-              const a = Number(r.trirActual || 0);
-              plannedSum += p;
-              actualSum += a;
-            });
-            totalSum = actualSum;
-          } else {
-            yearlyList.forEach(r => {
-              const val = Number(r[metricKey] || 0);
-              totalSum += val;
-              if (val < minVal) { minVal = val; minYear = r.year; }
-              if (val > maxVal) { maxVal = val; maxYear = r.year; }
-            });
-          }
+          // Helper for smooth cubic bezier spline curve
+          const computeSplinePath = (pts) => {
+            if (!pts || pts.length === 0) return '';
+            if (pts.length === 1) return `M ${pts[0].x.toFixed(1)},${pts[0].y.toFixed(1)}`;
+            const allSame = pts.every(p => Math.abs(p.y - pts[0].y) < 0.1);
+            if (allSame) {
+              return 'M ' + pts.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' L ');
+            }
+            let d = `M ${pts[0].x.toFixed(1)},${pts[0].y.toFixed(1)}`;
+            for (let i = 0; i < pts.length - 1; i++) {
+              const p0 = i > 0 ? pts[i - 1] : pts[i];
+              const p1 = pts[i];
+              const p2 = pts[i + 1];
+              const p3 = i + 2 < pts.length ? pts[i + 2] : p2;
+              const tension = 0.2;
+              const cp1x = p1.x + (p2.x - p0.x) * tension;
+              let cp1y = p1.y + (p2.y - p0.y) * tension;
+              const cp2x = p2.x - (p3.x - p1.x) * tension;
+              let cp2y = p2.y - (p3.y - p1.y) * tension;
+              if (Math.abs(p1.y - p2.y) < 0.05) {
+                cp1y = p1.y;
+                cp2y = p2.y;
+              }
+              d += ` C ${cp1x.toFixed(1)},${cp1y.toFixed(1)} ${cp2x.toFixed(1)},${cp2y.toFixed(1)} ${p2.x.toFixed(1)},${p2.y.toFixed(1)}`;
+            }
+            return d;
+          };
 
-          const avgVal = n > 0 ? (totalSum / n) : 0;
-          const latestYear = yearlyList[n - 1] ? yearlyList[n - 1].year : 2026;
-          const latestVal = yearlyList[n - 1] ? (config.isDual ? yearlyList[n - 1].trirActual : yearlyList[n - 1][metricKey]) : 0;
-
-          // ==========================================
-          // SVG Plotted Line Chart Calculation
-          // ==========================================
-          const svgW = 680;
-          const svgH = 240;
-          const padL = 70;
-          const padR = 30;
-          const padT = 30;
-          const padB = 40;
+          // =========================================================================
+          // SVG Plotted Chart Construction (Expanded: 1600 x 680 for 8-foot visibility)
+          // =========================================================================
+          const svgW = 1600;
+          const svgH = 680;
+          const padL = 160;
+          const padR = 80;
+          const padT = 110;
+          const padB = 95;
           const plotW = svgW - padL - padR;
           const plotH = svgH - padT - padB;
 
           let chartSvgContent = '';
 
           if (config.isDual) {
-            // Dual lines: TRIR Planned vs Actual
-            const allVals = [];
-            yearlyList.forEach(r => {
-              allVals.push(Number(r.trirPlanned || 0));
-              allVals.push(Number(r.trirActual || 0));
-            });
-            const topVal = Math.max(...allVals, 5) * 1.25;
-
-            // X-scale
-            const getX = (idx) => padL + (idx / Math.max(n - 1, 1)) * plotW;
+            // Dual TRIR Chart: Planned Target (5.0) vs Actual (0.0)
+            const topVal = 7;
+            const getX = (i) => padL + (i / Math.max(n - 1, 1)) * plotW;
             const getY = (v) => padT + (1 - (v / topVal)) * plotH;
 
-            // Grid lines
-            const yTicks = [0, topVal * 0.25, topVal * 0.5, topVal * 0.75, topVal];
-            const gridLines = yTicks.map(t => {
-              const y = getY(t);
+            // Y-Scale reference guidelines (Enlarged high-contrast text for 8-foot viewing)
+            const ySteps = [0, 2, 4, 6];
+            const gridLines = ySteps.map(step => {
+              const y = getY(step);
               return `
-                <line x1="${padL}" y1="${y}" x2="${svgW - padR}" y2="${y}" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="3,3"/>
-                <text x="${padL - 10}" y="${y + 4}" text-anchor="end" font-size="10" font-family="monospace" fill="#64748B">${t.toFixed(1)}</text>
+                <g class="y-grid-step">
+                  <line x1="${padL}" y1="${y}" x2="${svgW - padR}" y2="${y}" stroke="#E2E8F0" stroke-width="2"/>
+                  <text x="${padL - 20}" y="${y + 8}" text-anchor="end" font-size="22" font-family="ui-monospace, monospace" font-weight="900" fill="#334155">${step.toFixed(1)}</text>
+                </g>
               `;
             }).join('');
 
-            // Points
             const pPoints = yearlyList.map((r, i) => ({ x: getX(i), y: getY(Number(r.trirPlanned || 0)), val: Number(r.trirPlanned || 0), year: r.year }));
             const aPoints = yearlyList.map((r, i) => ({ x: getX(i), y: getY(Number(r.trirActual || 0)), val: Number(r.trirActual || 0), year: r.year }));
 
-            const pPath = `M ` + pPoints.map(p => `${p.x},${p.y}`).join(' L ');
-            const aPath = `M ` + aPoints.map(p => `${p.x},${p.y}`).join(' L ');
-            const aArea = `M ` + aPoints.map(p => `${p.x},${p.y}`).join(' L ') + ` L ${aPoints[aPoints.length - 1].x},${padT + plotH} L ${aPoints[0].x},${padT + plotH} Z`;
+            const pPath = computeSplinePath(pPoints);
+            const aPath = computeSplinePath(aPoints);
+            const aArea = `${aPath} L ${aPoints[aPoints.length - 1].x.toFixed(1)},${(padT + plotH).toFixed(1)} L ${aPoints[0].x.toFixed(1)},${(padT + plotH).toFixed(1)} Z`;
 
-            // X-axis ticks
+            // X-Ticks against X axis (Large 26px Year labels)
             const xTicks = yearlyList.map((r, i) => {
               const x = getX(i);
               return `
-                <line x1="${x}" y1="${padT + plotH}" x2="${x}" y2="${padT + plotH + 5}" stroke="#94A3B8" stroke-width="1.5"/>
-                <text x="${x}" y="${padT + plotH + 18}" text-anchor="middle" font-size="10.5" font-family="monospace" font-weight="bold" fill="#334155">${r.year}</text>
+                <g class="x-tick">
+                  <line x1="${x}" y1="${padT + plotH}" x2="${x}" y2="${padT + plotH + 14}" stroke="#334155" stroke-width="3.5" stroke-linecap="round"/>
+                  <text x="${x}" y="${padT + plotH + 48}" text-anchor="middle" font-size="26" font-family="ui-monospace, monospace" font-weight="900" fill="#0F172A">${r.year}</text>
+                </g>
               `;
             }).join('');
 
-            // Markers & Tooltips
-            const plannedMarkers = pPoints.map(p => `
-              <circle cx="${p.x}" cy="${p.y}" r="4.5" fill="#FFFFFF" stroke="#2563EB" stroke-width="2.5" class="transition-all hover:scale-125 cursor-pointer">
-                <title>${p.year} TRIR Planned: ${p.val}</title>
-              </circle>
-              <text x="${p.x}" y="${p.y - 8}" text-anchor="middle" font-size="9.5" font-family="monospace" font-weight="bold" fill="#1D4ED8">${p.val}</text>
+            // Vertical guidelines connecting points to X axis
+            const vertGuides = aPoints.map(p => `
+              <line x1="${p.x}" y1="${p.y}" x2="${p.x}" y2="${padT + plotH}" stroke="#94A3B8" stroke-width="2" stroke-dasharray="5,5"/>
             `).join('');
 
+            // Planned markers & values (Large pills & bold 26px typography)
+            const plannedMarkers = pPoints.map(p => `
+              <g class="group">
+                <circle cx="${p.x}" cy="${p.y}" r="8" fill="#FFFFFF" stroke="#2563EB" stroke-width="3.5" />
+                <rect x="${p.x - 56}" y="${p.y - 70}" width="112" height="56" rx="14" fill="#FFFFFF" stroke="#2563EB" stroke-width="3.5" filter="url(#valPillShadow)" />
+                <text x="${p.x}" y="${p.y - 52}" text-anchor="middle" font-size="11" font-family="ui-monospace, monospace" font-weight="900" fill="#2563EB" letter-spacing="1.5">PLAN</text>
+                <text x="${p.x}" y="${p.y - 25}" text-anchor="middle" font-size="26" font-family="ui-monospace, monospace" font-weight="900" fill="#1D4ED8">${p.val.toFixed(1)}</text>
+              </g>
+            `).join('');
+
+            // Actual markers & values (Large pills & bold 28px typography)
             const actualMarkers = aPoints.map(p => `
-              <circle cx="${p.x}" cy="${p.y}" r="4.5" fill="#FFFFFF" stroke="#059669" stroke-width="2.5" class="transition-all hover:scale-125 cursor-pointer">
-                <title>${p.year} TRIR Actual: ${p.val}</title>
-              </circle>
-              <text x="${p.x}" y="${p.y + 16}" text-anchor="middle" font-size="9.5" font-family="monospace" font-weight="bold" fill="#047857">${p.val}</text>
+              <g class="group">
+                <circle cx="${p.x}" cy="${p.y}" r="22" fill="#10B981" fill-opacity="0.25" />
+                <circle cx="${p.x}" cy="${p.y}" r="9" fill="#FFFFFF" stroke="#059669" stroke-width="4.5" />
+                <circle cx="${p.x}" cy="${p.y}" r="4" fill="#059669" />
+                <rect x="${p.x - 56}" y="${p.y - 70}" width="112" height="56" rx="14" fill="#FFFFFF" stroke="#059669" stroke-width="3.5" filter="url(#valPillShadow)" />
+                <text x="${p.x}" y="${p.y - 52}" text-anchor="middle" font-size="11" font-family="ui-monospace, monospace" font-weight="900" fill="#059669" letter-spacing="1.5">ACTUAL</text>
+                <text x="${p.x}" y="${p.y - 25}" text-anchor="middle" font-size="28" font-family="ui-monospace, monospace" font-weight="900" fill="#047857">${p.val.toFixed(1)}</text>
+              </g>
             `).join('');
 
             chartSvgContent = `
-              <svg viewBox="0 0 ${svgW} ${svgH}" class="w-full h-auto overflow-visible select-none">
+              <svg viewBox="0 0 ${svgW} ${svgH}" class="w-full h-full max-h-full object-contain select-none overflow-visible">
                 <defs>
-                  <linearGradient id="actualGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stop-color="#10B981" stop-opacity="0.25"/>
+                  <linearGradient id="trirActualGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#10B981" stop-opacity="0.28"/>
+                    <stop offset="80%" stop-color="#10B981" stop-opacity="0.05"/>
                     <stop offset="100%" stop-color="#10B981" stop-opacity="0.0"/>
                   </linearGradient>
+                  <filter id="trirGlow" x="-20%" y="-20%" width="140%" height="140%">
+                    <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#059669" flood-opacity="0.35"/>
+                  </filter>
+                  <filter id="valPillShadow" x="-20%" y="-20%" width="140%" height="140%">
+                    <feDropShadow dx="0" dy="3" stdDeviation="3.5" flood-color="#0F172A" flood-opacity="0.14"/>
+                  </filter>
                 </defs>
                 ${gridLines}
-                <line x1="${padL}" y1="${padT + plotH}" x2="${svgW - padR}" y2="${padT + plotH}" stroke="#64748B" stroke-width="1.5"/>
+                <line x1="${padL}" y1="${padT + plotH}" x2="${svgW - padR}" y2="${padT + plotH}" stroke="#334155" stroke-width="4" stroke-linecap="round"/>
+                ${vertGuides}
                 ${xTicks}
-                <path d="${aArea}" fill="url(#actualGrad)"/>
-                <path d="${pPath}" fill="none" stroke="#2563EB" stroke-width="2.5" stroke-dasharray="5,4"/>
-                <path d="${aPath}" fill="none" stroke="#059669" stroke-width="2.5"/>
+                <path d="${aArea}" fill="url(#trirActualGrad)"/>
+                <path d="${pPath}" fill="none" stroke="#2563EB" stroke-width="4.5" stroke-dasharray="8,6"/>
+                <path d="${aPath}" fill="none" stroke="#059669" stroke-width="6.5" filter="url(#trirGlow)"/>
                 ${plannedMarkers}
                 ${actualMarkers}
+
+                <!-- Prominent Legend for TRIR dual lines (22px bold font) -->
+                <g transform="translate(${svgW - padR - 460}, 30)">
+                  <line x1="0" y1="0" x2="36" y2="0" stroke="#2563EB" stroke-width="4" stroke-dasharray="6,4"/>
+                  <circle cx="18" y="0" r="6" fill="#FFFFFF" stroke="#2563EB" stroke-width="2.5"/>
+                  <text x="46" y="8" font-size="22" font-family="ui-monospace, monospace" font-weight="900" fill="#1D4ED8">Planned Target (5.0)</text>
+                  
+                  <line x1="250" y1="0" x2="286" y2="0" stroke="#059669" stroke-width="6"/>
+                  <circle cx="268" y="0" r="7" fill="#FFFFFF" stroke="#059669" stroke-width="3"/>
+                  <text x="296" y="8" font-size="22" font-family="ui-monospace, monospace" font-weight="900" fill="#047857">Actual Record (0.0)</text>
+                </g>
               </svg>
             `;
           } else {
-            // Single plotted line with smooth gradient fill
-            const vals = yearlyList.map(r => Number(r[metricKey] || 0));
-            const maxRecorded = Math.max(...vals, 1);
-            const topVal = maxRecorded * 1.25;
-
-            const getX = (idx) => padL + (idx / Math.max(n - 1, 1)) * plotW;
+            // Single Metric Line Trend
+            const vals = yearlyList.map(r => Number(r[config.key] || 0));
+            const maxRecorded = Math.max(...vals, 0);
+            const topVal = maxRecorded === 0 ? 5 : (maxRecorded * 1.35);
+            const getX = (i) => padL + (i / Math.max(n - 1, 1)) * plotW;
             const getY = (v) => padT + (1 - (v / topVal)) * plotH;
 
-            // Grid lines
-            const yTicks = [0, topVal * 0.25, topVal * 0.5, topVal * 0.75, topVal];
-            const gridLines = yTicks.map(t => {
-              const y = getY(t);
+            // Y-Scale reference guidelines (22px bold font)
+            const ySteps = maxRecorded === 0
+              ? [0, 1, 2, 3, 4, 5]
+              : [0, topVal * 0.25, topVal * 0.5, topVal * 0.75, topVal];
+
+            const gridLines = ySteps.map(step => {
+              const y = getY(step);
+              const label = config.formatShort ? config.formatShort(step) : (step >= 1e6 ? (step / 1e6).toFixed(1) + 'M' : Math.round(step).toString());
               return `
-                <line x1="${padL}" y1="${y}" x2="${svgW - padR}" y2="${y}" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="3,3"/>
-                <text x="${padL - 10}" y="${y + 4}" text-anchor="end" font-size="10" font-family="monospace" fill="#64748B">${config.formatShort(t)}</text>
+                <g class="y-grid-step">
+                  <line x1="${padL}" y1="${y}" x2="${svgW - padR}" y2="${y}" stroke="#E2E8F0" stroke-width="2"/>
+                  <text x="${padL - 20}" y="${y + 8}" text-anchor="end" font-size="22" font-family="ui-monospace, monospace" font-weight="900" fill="#334155">${label}</text>
+                </g>
               `;
             }).join('');
 
             // Points
-            const points = yearlyList.map((r, i) => ({ x: getX(i), y: getY(Number(r[metricKey] || 0)), val: Number(r[metricKey] || 0), year: r.year }));
-            const linePath = `M ` + points.map(p => `${p.x},${p.y}`).join(' L ');
-            const areaPath = `M ` + points.map(p => `${p.x},${p.y}`).join(' L ') + ` L ${points[points.length - 1].x},${padT + plotH} L ${points[0].x},${padT + plotH} Z`;
+            const points = yearlyList.map((r, i) => ({
+              x: getX(i),
+              y: getY(Number(r[config.key] || 0)),
+              val: Number(r[config.key] || 0),
+              year: r.year
+            }));
 
-            // X-axis ticks
+            const linePath = computeSplinePath(points);
+            const areaPath = `${linePath} L ${points[points.length - 1].x.toFixed(1)},${(padT + plotH).toFixed(1)} L ${points[0].x.toFixed(1)},${(padT + plotH).toFixed(1)} Z`;
+
+            // X-Ticks (Large 26px bold font)
             const xTicks = yearlyList.map((r, i) => {
               const x = getX(i);
               return `
-                <line x1="${x}" y1="${padT + plotH}" x2="${x}" y2="${padT + plotH + 5}" stroke="#94A3B8" stroke-width="1.5"/>
-                <text x="${x}" y="${padT + plotH + 18}" text-anchor="middle" font-size="10.5" font-family="monospace" font-weight="bold" fill="#334155">${r.year}</text>
+                <g class="x-tick">
+                  <line x1="${x}" y1="${padT + plotH}" x2="${x}" y2="${padT + plotH + 14}" stroke="#334155" stroke-width="3.5" stroke-linecap="round"/>
+                  <text x="${x}" y="${padT + plotH + 48}" text-anchor="middle" font-size="26" font-family="ui-monospace, monospace" font-weight="900" fill="#0F172A">${r.year}</text>
+                </g>
               `;
             }).join('');
 
-            // Markers
-            const markers = points.map(p => `
-              <circle cx="${p.x}" cy="${p.y}" r="4.5" fill="#FFFFFF" stroke="${config.color}" stroke-width="2.5" class="transition-all hover:scale-125 cursor-pointer">
-                <title>${p.year}: ${config.format(p.val)} ${config.unit}</title>
-              </circle>
-              <text x="${p.x}" y="${p.y - 8}" text-anchor="middle" font-size="9.5" font-family="monospace" font-weight="bold" fill="${config.color}">${config.formatShort(p.val)}</text>
+            // Vertical guidelines connecting points to X axis
+            const vertGuides = points.map(p => `
+              <line x1="${p.x}" y1="${p.y}" x2="${p.x}" y2="${padT + plotH}" stroke="${config.color}" stroke-opacity="0.30" stroke-width="2.5" stroke-dasharray="5,5"/>
             `).join('');
 
+            // Large Markers & Values displayed directly on the line chart (clearly visible from 8 feet)
+            const isSafeManhours = config.key === 'safeManhours';
+            const pillW = isSafeManhours ? 204 : 96;
+            const pillH = 56;
+
+            const markers = points.map(p => {
+              const formattedVal = isSafeManhours ? Number(p.val).toLocaleString() : String(p.val);
+              const pillY = p.y - pillH - 12;
+              const textY = pillY + (isSafeManhours ? 37 : 39);
+              return `
+                <g class="group">
+                  <!-- Outer glow halo -->
+                  <circle cx="${p.x}" cy="${p.y}" r="22" fill="${config.colorLight}" fill-opacity="0.25" />
+                  <!-- Crisp marker dot -->
+                  <circle cx="${p.x}" cy="${p.y}" r="8.5" fill="#FFFFFF" stroke="${config.color}" stroke-width="4.5" />
+                  <circle cx="${p.x}" cy="${p.y}" r="3.5" fill="${config.color}" />
+
+                  <!-- Value displayed on line chart (22px to 30px bold font) -->
+                  <rect x="${p.x - pillW / 2}" y="${pillY}" width="${pillW}" height="${pillH}" rx="14" fill="#FFFFFF" stroke="${config.color}" stroke-width="3.5" filter="url(#valPillShadow)" />
+                  <text x="${p.x}" y="${textY}" text-anchor="middle" font-size="${isSafeManhours ? '22' : '30'}" font-family="ui-monospace, monospace" font-weight="900" fill="${config.colorDark}">${formattedVal}</text>
+                </g>
+              `;
+            }).join('');
+
             chartSvgContent = `
-              <svg viewBox="0 0 ${svgW} ${svgH}" class="w-full h-auto overflow-visible select-none">
+              <svg viewBox="0 0 ${svgW} ${svgH}" class="w-full h-full max-h-full object-contain select-none overflow-visible">
                 <defs>
-                  <linearGradient id="metricGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stop-color="${config.gradientStart}" stop-opacity="0.25"/>
-                    <stop offset="100%" stop-color="${config.gradientStart}" stop-opacity="0.0"/>
+                  <linearGradient id="metricGradFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="${config.colorLight}" stop-opacity="0.28"/>
+                    <stop offset="70%" stop-color="${config.colorLight}" stop-opacity="0.06"/>
+                    <stop offset="100%" stop-color="${config.colorLight}" stop-opacity="0.0"/>
                   </linearGradient>
+                  <filter id="metricLineGlow" x="-20%" y="-20%" width="140%" height="140%">
+                    <feDropShadow dx="0" dy="3.5" stdDeviation="4" flood-color="${config.color}" flood-opacity="0.32"/>
+                  </filter>
+                  <filter id="valPillShadow" x="-20%" y="-20%" width="140%" height="140%">
+                    <feDropShadow dx="0" dy="3" stdDeviation="3.5" flood-color="#0F172A" flood-opacity="0.14"/>
+                  </filter>
                 </defs>
                 ${gridLines}
-                <line x1="${padL}" y1="${padT + plotH}" x2="${svgW - padR}" y2="${padT + plotH}" stroke="#64748B" stroke-width="1.5"/>
+                <line x1="${padL}" y1="${padT + plotH}" x2="${svgW - padR}" y2="${padT + plotH}" stroke="#334155" stroke-width="4" stroke-linecap="round"/>
+                ${vertGuides}
                 ${xTicks}
-                <path d="${areaPath}" fill="url(#metricGrad)"/>
-                <path d="${linePath}" fill="none" stroke="${config.color}" stroke-width="2.5"/>
+                <path d="${areaPath}" fill="url(#metricGradFill)"/>
+                <path d="${linePath}" fill="none" stroke="${config.color}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" filter="url(#metricLineGlow)"/>
                 ${markers}
               </svg>
             `;
           }
 
-          // Historical Table Rows
-          const tableRows = yearlyList.map((r, i) => {
-            if (config.isDual) {
-              const p = Number(r.trirPlanned || 0);
-              const a = Number(r.trirActual || 0);
-              const variance = a - p;
-              const statusBadge = a <= p
-                ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">Target Achieved (0 Incidents)</span>`
-                : `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">Target Exceeded</span>`;
-
-              return `
-                <tr class="hover:bg-slate-50 transition-colors border-b border-slate-100">
-                  <td class="py-2 px-3 font-mono font-bold text-slate-800 text-xs">${r.year}</td>
-                  <td class="py-2 px-3 font-mono font-semibold text-blue-700 text-xs">${p}</td>
-                  <td class="py-2 px-3 font-mono font-bold text-emerald-700 text-xs">${a}</td>
-                  <td class="py-2 px-3 font-mono text-slate-600 text-xs">${variance > 0 ? '+' + variance : variance}</td>
-                  <td class="py-2 px-3">${statusBadge}</td>
-                </tr>
-              `;
-            } else {
-              const val = Number(r[metricKey] || 0);
-              const pct = totalSum > 0 ? ((val / totalSum) * 100).toFixed(1) + '%' : '0.0%';
-              const statusNote = val === 0
-                ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">Zero Incident Record</span>`
-                : `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">${pct} of Total Sum</span>`;
-
-              return `
-                <tr class="hover:bg-slate-50 transition-colors border-b border-slate-100">
-                  <td class="py-2 px-3 font-mono font-bold text-slate-800 text-xs">${r.year}</td>
-                  <td class="py-2 px-3 font-mono font-bold text-slate-900 text-xs">${config.format(val)} ${config.unit}</td>
-                  <td class="py-2 px-3 font-mono text-slate-600 text-xs">${pct}</td>
-                  <td class="py-2 px-3">${statusNote}</td>
-                </tr>
-              `;
-            }
-          }).join('');
-
-          // Assemble Modal HTML
+          // Return strictly Heading of Trend and the Trend itself (all other details removed)
           return `
-            <!-- Modal Header -->
-            <div class="px-4 sm:px-6 py-3.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between shrink-0">
-              <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-xl flex items-center justify-center shadow-2xs border ${config.lightBg}">
-                  <i data-lucide="${config.icon}" class="w-5 h-5"></i>
+            <!-- Modal Header: Heading of Trend and Close Button -->
+            <div class="flex items-center justify-between px-6 sm:px-8 py-4 sm:py-5 border-b border-slate-200 bg-white shrink-0">
+              <div class="flex items-center gap-3.5">
+                <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center ${config.badgeBg} text-white shadow-sm shrink-0">
+                  <i data-lucide="${config.icon}" class="w-5 h-5 sm:w-6 sm:h-6"></i>
                 </div>
-                <div>
-                  <div class="flex items-center gap-2">
-                    <h3 class="text-base sm:text-lg font-black text-slate-900 tracking-tight">${config.name} — Plotted Trend Analysis</h3>
-                    <span class="px-2 py-0.5 rounded text-[10px] font-mono font-extrabold uppercase ${config.lightBg}">10-Year Record</span>
-                  </div>
-                  <p class="text-xs text-slate-500 font-medium">${config.desc}</p>
-                </div>
+                <h3 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-sans">${config.name} Trend</h3>
               </div>
+
               <button
                 type="button"
                 onclick="portalApp.closeHseqTrendModal()"
-                class="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/80 transition-all cursor-pointer"
-                title="Close modal"
+                class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer shrink-0"
+                title="Close"
               >
-                <i data-lucide="x" class="w-5 h-5"></i>
+                <i data-lucide="x" class="w-6 h-6"></i>
               </button>
             </div>
 
-            <!-- Modal Body (Scrollable) -->
-            <div class="p-4 sm:p-6 overflow-y-auto space-y-5 flex-1">
-              
-              <!-- 4 Stat Summary Cards (Highlighting Sum of All Values) -->
-              <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                
-                <!-- Card 1: SUM OF ALL VALUES (Requirement 2) -->
-                <div class="bg-gradient-to-br from-blue-50/70 to-indigo-50/40 border border-blue-200 rounded-xl p-3 shadow-2xs">
-                  <span class="text-[10px] font-bold text-blue-800 uppercase tracking-wider font-mono flex items-center gap-1">
-                    <i data-lucide="sigma" class="w-3 h-3 text-blue-600"></i>
-                    ${config.isDual ? 'Sum (Planned vs Actual)' : 'Sum of All Values'}
-                  </span>
-                  <div class="text-xl sm:text-2xl font-black font-mono text-blue-950 mt-1">
-                    ${config.isDual ? `P: ${plannedSum} | A: ${actualSum}` : config.format(totalSum)}
-                  </div>
-                  <span class="text-[10px] text-blue-700 font-semibold font-mono">Cumulative 10-Year Total</span>
-                </div>
-
-                <!-- Card 2: Annual Average -->
-                <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 shadow-2xs">
-                  <span class="text-[10px] font-bold text-slate-600 uppercase tracking-wider font-mono flex items-center gap-1">
-                    <i data-lucide="bar-chart-2" class="w-3 h-3 text-slate-500"></i>
-                    Annual Average
-                  </span>
-                  <div class="text-xl sm:text-2xl font-black font-mono text-slate-800 mt-1">
-                    ${config.isDual ? `P: ${(plannedSum / n).toFixed(1)} | A: 0.0` : (config.unit === 'Hours' ? (avgVal / 1e6).toFixed(2) + 'M' : avgVal.toFixed(1))}
-                  </div>
-                  <span class="text-[10px] text-slate-500 font-medium font-mono">Per year recorded</span>
-                </div>
-
-                <!-- Card 3: Min / Baseline -->
-                <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 shadow-2xs">
-                  <span class="text-[10px] font-bold text-slate-600 uppercase tracking-wider font-mono flex items-center gap-1">
-                    <i data-lucide="arrow-down-right" class="w-3 h-3 text-emerald-600"></i>
-                    Lowest Recorded
-                  </span>
-                  <div class="text-xl sm:text-2xl font-black font-mono text-emerald-700 mt-1">
-                    ${config.isDual ? '0 (Clean)' : (minVal === Infinity ? '0' : config.formatShort(minVal))}
-                  </div>
-                  <span class="text-[10px] text-slate-500 font-medium font-mono">${config.isDual ? 'Actual Incident Target' : `Year: ${minYear || 2017}`}</span>
-                </div>
-
-                <!-- Card 4: Latest Year -->
-                <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 shadow-2xs">
-                  <span class="text-[10px] font-bold text-slate-600 uppercase tracking-wider font-mono flex items-center gap-1">
-                    <i data-lucide="clock" class="w-3 h-3 text-indigo-600"></i>
-                    Latest (${latestYear})
-                  </span>
-                  <div class="text-xl sm:text-2xl font-black font-mono text-indigo-900 mt-1">
-                    ${config.isDual ? `P: 5 | A: 0` : config.formatShort(latestVal)}
-                  </div>
-                  <span class="text-[10px] text-slate-500 font-medium font-mono">Active year status</span>
-                </div>
+            <!-- Modal Body: Only Trend Itself -->
+            <div class="flex-1 w-full h-full min-h-0 flex items-center justify-center p-3 sm:p-6 lg:p-8 bg-white overflow-hidden">
+              <div class="w-full h-full flex items-center justify-center">
+                ${chartSvgContent}
               </div>
-
-              <!-- Plotted Line Chart Section -->
-              <div class="bg-white border border-slate-200 rounded-xl p-3 sm:p-4 shadow-2xs space-y-3">
-                <div class="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-100">
-                  <div class="flex items-center gap-2">
-                    <div class="w-2.5 h-2.5 rounded-full bg-blue-600"></div>
-                    <span class="text-xs font-black text-slate-800 uppercase tracking-wider font-mono">Plotted Historical Line Trend (2017 – 2026)</span>
-                  </div>
-
-                  <!-- Legend -->
-                  <div class="flex items-center gap-3 text-xs font-bold font-mono">
-                    ${config.isDual ? `
-                      <span class="inline-flex items-center gap-1.5 text-blue-700">
-                        <span class="w-4 h-0.5 border-t-2 border-dashed border-blue-600 inline-block"></span>
-                        <span>Planned Target</span>
-                      </span>
-                      <span class="inline-flex items-center gap-1.5 text-emerald-700">
-                        <span class="w-4 h-0.5 bg-emerald-600 inline-block"></span>
-                        <span>Actual TRIR</span>
-                      </span>
-                    ` : `
-                      <span class="inline-flex items-center gap-1.5" style="color: ${config.color}">
-                        <span class="w-4 h-0.5 inline-block" style="background-color: ${config.color}"></span>
-                        <span>${config.name} (${config.unit})</span>
-                      </span>
-                    `}
-                  </div>
-                </div>
-
-                <!-- SVG Canvas Container -->
-                <div class="w-full overflow-x-auto py-1">
-                  ${chartSvgContent}
-                </div>
-              </div>
-
-              <!-- Historical Table Section -->
-              <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-2xs">
-                <div class="py-2.5 px-4 bg-slate-50/80 border-b border-slate-200 flex items-center justify-between">
-                  <span class="text-xs font-black text-slate-700 uppercase tracking-wider font-mono flex items-center gap-1.5">
-                    <i data-lucide="table" class="w-3.5 h-3.5 text-slate-500"></i>
-                    Historical Data Breakdown (Google Sheet: HSEQ_KPI)
-                  </span>
-                  <span class="text-[11px] font-mono font-semibold text-slate-500">10 Rows Verified</span>
-                </div>
-                <div class="overflow-x-auto">
-                  <table class="w-full text-left border-collapse">
-                    <thead>
-                      <tr class="bg-slate-100/60 border-b border-slate-200 text-[10px] font-mono font-black text-slate-600 uppercase tracking-wider">
-                        <th class="py-2 px-3">Year</th>
-                        ${config.isDual ? `
-                          <th class="py-2 px-3">Planned TRIR</th>
-                          <th class="py-2 px-3">Actual TRIR</th>
-                          <th class="py-2 px-3">Variance</th>
-                        ` : `
-                          <th class="py-2 px-3">Recorded Value</th>
-                          <th class="py-2 px-3">% of Total Sum</th>
-                        `}
-                        <th class="py-2 px-3">Performance Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      ${tableRows}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-            </div>
-
-            <!-- Modal Footer -->
-            <div class="px-4 sm:px-6 py-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between shrink-0">
-              <div class="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
-                <i data-lucide="shield-check" class="w-4 h-4 text-emerald-600"></i>
-                <span>Google Sheet Live Sync Active</span>
-              </div>
-              <button
-                type="button"
-                onclick="portalApp.closeHseqTrendModal()"
-                class="px-4 py-1.5 rounded-lg text-xs font-bold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-100 border border-slate-300 shadow-2xs transition-all cursor-pointer"
-              >
-                Close Window
-              </button>
             </div>
           `;
         },
@@ -5557,6 +5589,7 @@
             }
             if (plrContainer) {
               plrContainer.classList.remove('hidden');
+              plrContainer.hidden = false;
               if (window.portalApp && typeof window.portalApp.renderPlrSuite === 'function') {
                 window.portalApp.renderPlrSuite();
               }
@@ -5635,106 +5668,111 @@
               sheetStatus.textContent = dashboard.status;
               sheetStatus.className = 'font-bold text-amber-600';
             }
-          }
 
-          // Dynamically Accent the KPI Cards Top Stripes with Gradients & Family Color
-          document.getElementById('kpi-stripe-1').className = 'absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r ' + dashboard.gradient;
-          document.getElementById('kpi-stripe-2').className = 'absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-500 to-teal-500';
-          document.getElementById('kpi-stripe-3').className = 'absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-500 to-orange-500';
-          document.getElementById('kpi-stripe-4').className = 'absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-rose-500 to-pink-500';
+            // Dynamically Accent the KPI Cards Top Stripes with Gradients & Family Color
+            const kpiStripe1 = document.getElementById('kpi-stripe-1');
+            if (kpiStripe1) kpiStripe1.className = 'absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r ' + dashboard.gradient;
+            const kpiStripe2 = document.getElementById('kpi-stripe-2');
+            if (kpiStripe2) kpiStripe2.className = 'absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-500 to-teal-500';
+            const kpiStripe3 = document.getElementById('kpi-stripe-3');
+            if (kpiStripe3) kpiStripe3.className = 'absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-500 to-orange-500';
+            const kpiStripe4 = document.getElementById('kpi-stripe-4');
+            if (kpiStripe4) kpiStripe4.className = 'absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-rose-500 to-pink-500';
 
-          const kpiCard1 = document.getElementById('kpi-card-1');
-          if (kpiCard1) {
-            kpiCard1.style.borderColor = dashboard.color.secondary || '#E2E8F0';
-            kpiCard1.style.backgroundColor = dashboard.color.bg || '#F8FAFC';
-          }
-          const kpiIcon1 = document.getElementById('kpi-icon-1');
-          if (kpiIcon1) {
-            kpiIcon1.style.color = dashboard.color.primary;
-          }
-          const kpiTotalEl = document.getElementById('kpi-total-items');
-          if (kpiTotalEl) {
-            kpiTotalEl.style.color = dashboard.color.primary;
-          }
+            const kpiCard1 = document.getElementById('kpi-card-1');
+            if (kpiCard1) {
+              kpiCard1.style.borderColor = dashboard.color.secondary || '#E2E8F0';
+              kpiCard1.style.backgroundColor = dashboard.color.bg || '#F8FAFC';
+            }
+            const kpiIcon1 = document.getElementById('kpi-icon-1');
+            if (kpiIcon1) {
+              kpiIcon1.style.color = dashboard.color.primary;
+            }
+            const kpiTotalEl = document.getElementById('kpi-total-items');
+            if (kpiTotalEl) {
+              kpiTotalEl.style.color = dashboard.color.primary;
+              kpiTotalEl.textContent = dashboard.kpis.total;
+            }
+            const kpiClosedEl = document.getElementById('kpi-closed-items');
+            if (kpiClosedEl) kpiClosedEl.textContent = dashboard.kpis.closed;
+            const kpiPendingEl = document.getElementById('kpi-pending-items');
+            if (kpiPendingEl) kpiPendingEl.textContent = dashboard.kpis.inProgress ?? dashboard.kpis.pending ?? 0;
+            const kpiOverdueEl = document.getElementById('kpi-overdue-items');
+            if (kpiOverdueEl) kpiOverdueEl.textContent = dashboard.kpis.overdue;
 
-          // Update KPI Summary Metrics
-          document.getElementById('kpi-total-items').textContent = dashboard.kpis.total;
-          document.getElementById('kpi-closed-items').textContent = dashboard.kpis.closed;
-          document.getElementById('kpi-pending-items').textContent = dashboard.kpis.inProgress ?? dashboard.kpis.pending ?? 0;
-          document.getElementById('kpi-overdue-items').textContent = dashboard.kpis.overdue;
+            // Theme Google Sheets Container Border and Highlights with Dashboard Family Color
+            const sheetsContainer = document.getElementById('google-sheets-data-injection-container');
+            if (sheetsContainer) {
+              sheetsContainer.style.borderColor = dashboard.color.secondary || '#CBD5E1';
+            }
+            const chartIcon = document.getElementById('chart-icon');
+            if (chartIcon) chartIcon.style.color = dashboard.gradientStop1;
+            const sheetIconPill = document.getElementById('sheet-icon-pill');
+            if (sheetIconPill) {
+              sheetIconPill.className = 'p-2 rounded-lg text-white shadow-xs bg-gradient-to-r ' + dashboard.gradient;
+              sheetIconPill.style = '';
+            }
 
-          // Theme Google Sheets Container Border and Highlights with Dashboard Family Color
-          const sheetsContainer = document.getElementById('google-sheets-data-injection-container');
-          if (sheetsContainer) {
-            sheetsContainer.style.borderColor = dashboard.color.secondary || '#CBD5E1';
-          }
-          const chartIcon = document.getElementById('chart-icon');
-          if (chartIcon) chartIcon.style.color = dashboard.gradientStop1;
-          const sheetIconPill = document.getElementById('sheet-icon-pill');
-          if (sheetIconPill) {
-            sheetIconPill.className = 'p-2 rounded-lg text-white shadow-xs bg-gradient-to-r ' + dashboard.gradient;
-            sheetIconPill.style = '';
-          }
+            // Accent Chart Bars with Dashboard Gradient
+            ['chart-bar-1', 'chart-bar-2', 'chart-bar-3', 'chart-bar-4'].forEach(id => {
+              const el = document.getElementById(id);
+              if (el) el.style.backgroundColor = '#94A3B8';
+            });
+            const bar5 = document.getElementById('chart-bar-5');
+            if (bar5) {
+              bar5.style.background = 'linear-gradient(180deg, ' + dashboard.gradientStop1 + ', ' + dashboard.gradientStop2 + ')';
+            }
+            const benchmarkInd = document.getElementById('benchmark-indicator');
+            if (benchmarkInd) benchmarkInd.style.backgroundColor = dashboard.gradientStop1;
+            const breakdownPending = document.getElementById('breakdown-bar-pending');
+            if (breakdownPending) breakdownPending.style.backgroundColor = dashboard.gradientStop1;
 
-          // Accent Chart Bars with Dashboard Gradient
-          ['chart-bar-1', 'chart-bar-2', 'chart-bar-3', 'chart-bar-4'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.style.backgroundColor = '#94A3B8';
-          });
-          const bar5 = document.getElementById('chart-bar-5');
-          if (bar5) {
-            bar5.style.background = 'linear-gradient(180deg, ' + dashboard.gradientStop1 + ', ' + dashboard.gradientStop2 + ')';
-          }
-          const benchmarkInd = document.getElementById('benchmark-indicator');
-          if (benchmarkInd) benchmarkInd.style.backgroundColor = dashboard.gradientStop1;
-          const breakdownPending = document.getElementById('breakdown-bar-pending');
-          if (breakdownPending) breakdownPending.style.backgroundColor = dashboard.gradientStop1;
+            // Theme Action Items Table Header Row
+            const tableHeader = document.getElementById('table-header-row');
+            if (tableHeader) {
+              tableHeader.className = 'border-b border-slate-200 bg-slate-50 text-slate-600 font-bold uppercase tracking-wider text-[10px]';
+              tableHeader.style = '';
+            }
 
-          // Theme Action Items Table Header Row
-          const tableHeader = document.getElementById('table-header-row');
-          if (tableHeader) {
-            tableHeader.className = 'border-b border-slate-200 bg-slate-50 text-slate-600 font-bold uppercase tracking-wider text-[10px]';
-            tableHeader.style = '';
-          }
+            // Populate Action Items Table
+            const tbody = document.getElementById('detail-actions-tbody');
+            if (tbody && dashboard.actions) {
+              tbody.innerHTML = dashboard.actions.map(action => {
+                const prioColors = {
+                  'Critical': 'bg-rose-50 text-rose-700 border-rose-200',
+                  'High': 'bg-amber-50 text-amber-700 border-amber-200',
+                  'Medium': 'bg-blue-50 text-blue-700 border-blue-200',
+                  'Low': 'bg-slate-100 text-slate-600 border-slate-200',
+                }[action.priority] || 'bg-slate-100 text-slate-600 border-slate-200';
 
-          // Populate Action Items Table
-          const tbody = document.getElementById('detail-actions-tbody');
-          if (tbody) {
-            tbody.innerHTML = dashboard.actions.map(action => {
-              const prioColors = {
-                'Critical': 'bg-rose-50 text-rose-700 border-rose-200',
-                'High': 'bg-amber-50 text-amber-700 border-amber-200',
-                'Medium': 'bg-blue-50 text-blue-700 border-blue-200',
-                'Low': 'bg-slate-100 text-slate-600 border-slate-200',
-              }[action.priority] || 'bg-slate-100 text-slate-600 border-slate-200';
+                const statusPills = {
+                  'Completed': 'text-emerald-700 bg-emerald-50 border-emerald-200',
+                  'In Progress': 'text-blue-700 bg-blue-50 border-blue-200',
+                  'Awaiting Sign-off': 'text-amber-700 bg-amber-50 border-amber-200',
+                }[action.status] || 'text-slate-700 bg-slate-100 border-slate-200';
 
-              const statusPills = {
-                'Completed': 'text-emerald-700 bg-emerald-50 border-emerald-200',
-                'In Progress': 'text-blue-700 bg-blue-50 border-blue-200',
-                'Awaiting Sign-off': 'text-amber-700 bg-amber-50 border-amber-200',
-              }[action.status] || 'text-slate-700 bg-slate-100 border-slate-200';
-
-              return `
-                <tr class="hover:bg-slate-50/90 transition-colors">
-                  <td class="py-3 px-4 font-mono text-[11px] font-bold">
-                    <span class="inline-block px-2 py-0.5 rounded border ${dashboard.tagStyle}">${action.id}</span>
-                  </td>
-                  <td class="py-3 px-4 font-semibold text-[#1E293B]">${action.desc}</td>
-                  <td class="py-3 px-4 text-slate-600 font-medium">${action.owner}</td>
-                  <td class="py-3 px-4 font-mono text-slate-500 text-[11px]">${action.due}</td>
-                  <td class="py-3 px-4">
-                    <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold border ${prioColors}">
-                      ${action.priority}
-                    </span>
-                  </td>
-                  <td class="py-3 px-4">
-                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${statusPills}">
-                      ${action.status}
-                    </span>
-                  </td>
-                </tr>
-              `;
-            }).join('');
+                return `
+                  <tr class="hover:bg-slate-50/90 transition-colors">
+                    <td class="py-3 px-4 font-mono text-[11px] font-bold">
+                      <span class="inline-block px-2 py-0.5 rounded border ${dashboard.tagStyle}">${action.id}</span>
+                    </td>
+                    <td class="py-3 px-4 font-semibold text-[#1E293B]">${action.desc}</td>
+                    <td class="py-3 px-4 text-slate-600 font-medium">${action.owner}</td>
+                    <td class="py-3 px-4 font-mono text-slate-500 text-[11px]">${action.due}</td>
+                    <td class="py-3 px-4">
+                      <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold border ${prioColors}">
+                        ${action.priority}
+                      </span>
+                    </td>
+                    <td class="py-3 px-4">
+                      <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${statusPills}">
+                        ${action.status}
+                      </span>
+                    </td>
+                  </tr>
+                `;
+              }).join('');
+            }
           }
 
           // Refresh icons
