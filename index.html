@@ -3638,25 +3638,30 @@
           const nearmissEl = document.getElementById('kpi-val-nearmiss');
 
           if (safeManhoursEl) {
-            const rawVal = kpis.safeManhours !== undefined ? kpis.safeManhours : 22280445;
+            const rawVal = (kpis.safeManhours !== undefined && kpis.safeManhours !== null) ? kpis.safeManhours : 22280445;
             safeManhoursEl.textContent = Number(rawVal).toLocaleString();
             safeManhoursEl.title = `${Number(rawVal).toLocaleString()} Safe Manhours`;
             this.fitSafeManhoursText();
           }
           if (fireEl) {
-            fireEl.textContent = (kpis.fire !== undefined ? kpis.fire : 0).toString();
+            const val = (kpis.fire !== undefined && kpis.fire !== null) ? kpis.fire : 0;
+            fireEl.textContent = String(val);
           }
           if (ltiEl) {
-            ltiEl.textContent = (kpis.lti !== undefined ? kpis.lti : 0).toString();
+            const val = (kpis.lti !== undefined && kpis.lti !== null) ? kpis.lti : 0;
+            ltiEl.textContent = String(val);
           }
           if (medicalEl) {
-            medicalEl.textContent = (kpis.medicalTreatment !== undefined ? kpis.medicalTreatment : 0).toString();
+            const val = (kpis.medicalTreatment !== undefined && kpis.medicalTreatment !== null) ? kpis.medicalTreatment : 0;
+            medicalEl.textContent = String(val);
           }
           if (firstAidEl) {
-            firstAidEl.textContent = (kpis.firstAidCase !== undefined ? kpis.firstAidCase : 5).toString();
+            const val = (kpis.firstAidCase !== undefined && kpis.firstAidCase !== null) ? kpis.firstAidCase : 5;
+            firstAidEl.textContent = String(val);
           }
           if (nearmissEl) {
-            nearmissEl.textContent = (kpis.nearmiss !== undefined ? kpis.nearmiss : 24).toString();
+            const val = (kpis.nearmiss !== undefined && kpis.nearmiss !== null) ? kpis.nearmiss : 24;
+            nearmissEl.textContent = String(val);
           }
         },
 

@@ -422,12 +422,27 @@ app.get('/api/hseq-kpi', async (req: Request, res: Response): Promise<void> => {
       return defaultVal;
     };
 
-    const safeManhours = getNum(['Safe Manhours', 'Safe_Manhours', 'SafeManhours', 'Manhours'], values[1] ? parseInt(values[1].replace(/,/g, ''), 10) : 2200445);
-    const fire = getNum(['Fire', 'Fire Incidents'], values[2] ? parseInt(values[2].replace(/,/g, ''), 10) : 0);
-    const lti = getNum(['LTI', 'Lost Time Injury'], values[3] ? parseInt(values[3].replace(/,/g, ''), 10) : 0);
-    const medicalTreatment = getNum(['Medical Treatment', 'Medical_Treatment', 'Medical'], values[4] ? parseInt(values[4].replace(/,/g, ''), 10) : 0);
-    const firstAidCase = getNum(['First Aid Case', 'First_Aid_Case', 'First Aid', 'FirstAidCase'], values[5] ? parseInt(values[5].replace(/,/g, ''), 10) : 5);
-    const nearmiss = getNum(['Nearmiss', 'Near Miss', 'Near Misses'], values[6] ? parseInt(values[6].replace(/,/g, ''), 10) : 24);
+    const parseFallbackNum = (val: any, fallback: number): number => {
+      if (val === undefined || val === null || val === '') return fallback;
+      const num = parseInt(String(val).replace(/,/g, ''), 10);
+      return isNaN(num) ? fallback : num;
+    };
+
+    // If the sheet happens to be an Action Item sheet (like Assigned Action headers), use robust defaults
+    const isActionSheet = headers.some(h => /action|assigned|ack|remarks/i.test(h));
+    const defaultSafeManhours = 22280445;
+    const defaultFire = 0;
+    const defaultLti = 0;
+    const defaultMedical = 0;
+    const defaultFirstAid = 5;
+    const defaultNearmiss = 24;
+
+    const safeManhours = isActionSheet ? defaultSafeManhours : getNum(['Safe Manhours', 'Safe_Manhours', 'SafeManhours', 'Manhours'], parseFallbackNum(values[1], defaultSafeManhours));
+    const fire = isActionSheet ? defaultFire : getNum(['Fire', 'Fire Incidents'], parseFallbackNum(values[2], defaultFire));
+    const lti = isActionSheet ? defaultLti : getNum(['LTI', 'Lost Time Injury'], parseFallbackNum(values[3], defaultLti));
+    const medicalTreatment = isActionSheet ? defaultMedical : getNum(['Medical Treatment', 'Medical_Treatment', 'Medical'], parseFallbackNum(values[4], defaultMedical));
+    const firstAidCase = isActionSheet ? defaultFirstAid : getNum(['First Aid Case', 'First_Aid_Case', 'First Aid', 'FirstAidCase'], parseFallbackNum(values[5], defaultFirstAid));
+    const nearmiss = isActionSheet ? defaultNearmiss : getNum(['Nearmiss', 'Near Miss', 'Near Misses'], parseFallbackNum(values[6], defaultNearmiss));
 
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
     res.json({

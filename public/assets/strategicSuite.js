@@ -251,6 +251,44 @@
         actions = JSON.parse(JSON.stringify(config.actions));
       }
 
+      // Normalize actions to ensure all Excel sheet fields are consistently populated like Admin & Security
+      actions = actions.map((a, idx) => {
+        const raw = a.rawColumns || {};
+        const sNo = raw['S_No'] || raw['S.No'] || raw['s_no'] || raw['Sr'] || raw['sno'] || a.sNo || (a.id ? String(a.id).replace(/^[A-Za-z]+-0*/i, '') : '') || String(idx + 1);
+        const actionTitle = raw['Assigned Action'] || raw['Action'] || raw['action'] || a.title || a.action || a.desc || '';
+        const actionCat = raw['Action category'] || raw['Category'] || raw['category'] || a.category || (a.priority === 'High' ? 'ECM' : 'ACM');
+        const assignedTo = raw['Assigned to'] || raw['Assignee'] || raw['assigned'] || a.assignedTo || 'Operations Team';
+        const targetDate = raw['Target date'] || raw['Due Date'] || raw['due date'] || a.dueDate || '30/09/2026';
+        const rawStat = String(raw['Status detail'] || raw['Status'] || a.status || 'Open');
+        const isClosed = a.status === 'Closed' || a.status === 'Completed' || /close|done|complete|resolved/i.test(rawStat);
+        const statusDetail = isClosed ? 'Closed' : 'Open';
+        const remarks = raw['Remarks'] || raw['Remark'] || raw['remarks'] || a.remarks || '';
+        const ackBy = raw['Ack by'] || raw['Ack By'] || raw['ack by'] || a.ackBy || 'M.Afzal';
+
+        const standardizedRaw = {
+          'S_No': sNo,
+          'Assigned Action': actionTitle,
+          'Action category': actionCat,
+          'Assigned to': assignedTo,
+          'Target date': targetDate,
+          'Status detail': statusDetail,
+          'Remarks': remarks,
+          'Ack by': ackBy,
+          ...raw
+        };
+
+        return {
+          ...a,
+          id: a.id || `${config.code || 'ACT'}-${String(idx + 1).padStart(2, '0')}`,
+          title: actionTitle,
+          status: statusDetail,
+          dueDate: targetDate,
+          remarks: remarks,
+          rawColumns: standardizedRaw,
+          columnHeaders: ['S_No', 'Assigned Action', 'Action category', 'Assigned to', 'Target date', 'Status detail', 'Remarks', 'Ack by']
+        };
+      });
+
       const total = actions.length;
       const closed = actions.filter(a => a.status === 'Closed' || a.status === 'Completed').length;
       const open = actions.filter(a => a.status !== 'Closed' && a.status !== 'Completed').length;
@@ -1000,18 +1038,32 @@
       const statusF = this.state.masterFilterStatus || 'all';
       const q = (this.state.masterFilterSearch || '').trim();
 
-      const headers = ['Sr #', 'Department', 'Department Code', 'Action ID', 'Action Description', 'Due Date', 'Status', 'Closure Date', 'Remarks'];
-      const rows = data.map((d, i) => [
-        i + 1,
-        `"${String(d.department || '').replace(/"/g, '""')}"`,
-        `"${String(d.code || '').replace(/"/g, '""')}"`,
-        `"${String(d.id || '').replace(/"/g, '""')}"`,
-        `"${String(d.title || d.action || d.desc || '').replace(/"/g, '""')}"`,
-        `"${String(d.dueDate || '').replace(/"/g, '""')}"`,
-        `"${String(d.status || '').replace(/"/g, '""')}"`,
-        `"${String(d.closureDate || '').replace(/"/g, '""')}"`,
-        `"${String(d.remarks || '').replace(/"/g, '""')}"`
-      ]);
+      const headers = ['S_No', 'Department', 'Assigned Action', 'Action category', 'Assigned to', 'Target date', 'Status detail', 'Remarks', 'Ack by'];
+      const rows = data.map((d, i) => {
+        const raw = d.rawColumns || {};
+        const sNo = raw['S_No'] || raw['S.No'] || raw['s_no'] || raw['Sr'] || raw['sno'] || d.sNo || (d.id ? String(d.id).replace(/^[A-Za-z]+-0*/i, '') : '') || String(i + 1);
+        const dept = d.department || d.code || '';
+        const actionTitle = raw['Assigned Action'] || raw['Action'] || raw['action'] || d.title || d.action || d.desc || '';
+        const actionCat = raw['Action category'] || raw['Category'] || raw['category'] || d.category || (d.priority === 'High' ? 'ECM' : 'ACM');
+        const assignedTo = raw['Assigned to'] || raw['Assignee'] || raw['assigned'] || d.assignedTo || 'Operations Team';
+        const targetDate = raw['Target date'] || raw['Due Date'] || raw['due date'] || d.dueDate || '';
+        const isClosed = d.status === 'Closed' || d.status === 'Completed' || /close|done|complete|resolved/i.test(String(raw['Status detail'] || raw['Status'] || d.status || ''));
+        const statusDetail = isClosed ? 'Closed' : 'Open';
+        const remarks = raw['Remarks'] || raw['Remark'] || raw['remarks'] || d.remarks || '';
+        const ackBy = raw['Ack by'] || raw['Ack By'] || raw['ack by'] || d.ackBy || 'M.Afzal';
+
+        return [
+          sNo,
+          `"${String(dept).replace(/"/g, '""')}"`,
+          `"${String(actionTitle).replace(/"/g, '""')}"`,
+          `"${String(actionCat).replace(/"/g, '""')}"`,
+          `"${String(assignedTo).replace(/"/g, '""')}"`,
+          `"${String(targetDate).replace(/"/g, '""')}"`,
+          `"${String(statusDetail).replace(/"/g, '""')}"`,
+          `"${String(remarks).replace(/"/g, '""')}"`,
+          `"${String(ackBy).replace(/"/g, '""')}"`
+        ];
+      });
 
       const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\r\n');
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -1791,8 +1843,54 @@
               </div>
             </div>
 
-            <!-- All Departments Stacked Bar Chart: 2 Balanced Columns, Thick Bars, Large Bold Text, Non-Scrollable -->
+            <!-- All Departments Stacked Bar Chart: Enterprise Total Sum Rollup + 2 Balanced Columns -->
             <div class="rounded-xl border border-slate-200/80 bg-slate-50/50 p-3 sm:p-4 select-none">
+              <!-- Enterprise Total Stacked Bar (Sum of All Remaining Tiles) -->
+              <div class="mb-4 p-3.5 bg-white rounded-xl border-2 border-purple-200 shadow-2xs">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2.5">
+                  <div class="flex items-center gap-2">
+                    <span class="px-2.5 py-0.5 rounded-full bg-purple-700 text-white font-extrabold text-[10.5px] uppercase tracking-wide shadow-2xs">COO ROLLUP SUM</span>
+                    <span class="text-xs sm:text-sm font-black text-slate-900">Overall Enterprise Action Status (Sum of All ${allTiles.length} Department Dashboards)</span>
+                  </div>
+                  <div class="flex items-center gap-2 text-xs font-bold">
+                    <span class="text-rose-700 font-mono">Open: ${openActions}</span>
+                    <span class="text-slate-300">|</span>
+                    <span class="text-emerald-700 font-mono">Closed: ${closedActions}</span>
+                    <span class="text-slate-300">|</span>
+                    <span class="text-purple-900 font-mono">Total: ${totalActions}</span>
+                    <span class="px-2 py-0.5 rounded-md bg-purple-100 text-purple-800 text-[11px] font-black">${overallRate}% Closed</span>
+                  </div>
+                </div>
+                <div class="w-full bg-slate-50/90 rounded-lg p-2 flex justify-center">
+                  ${this.renderActionStatusTrendsSvg([{
+                    id: 'enterprise-total-sum',
+                    name: 'All Departments Sum',
+                    code: 'TOTAL',
+                    open: openActions,
+                    closed: closedActions,
+                    total: totalActions,
+                    rate: overallRate,
+                    isActive: true
+                  }], {
+                    width: 760,
+                    padLeft: 195,
+                    padRight: 60,
+                    padTop: 16,
+                    padBottom: 30,
+                    rowHeight: 64,
+                    barHeight: 40,
+                    barFontSize: 22,
+                    labelFontSize: 16,
+                    gridFontSize: 13,
+                    totalFontSize: 20,
+                    maxVal: totalActions > 0 ? totalActions : 1,
+                    activeTileId: 'enterprise-total-sum',
+                    interactive: false,
+                    centerAlign: true
+                  })}
+                </div>
+              </div>
+
               ${(() => {
                 const bossRows = allTiles.map(t => {
                   const actions = (t.actions || (this.state?.tileActions?.[t.id]) || []);
@@ -1853,7 +1951,7 @@
             </div>
           </div>
 
-          <!-- EXECUTIVE TABLE WITH DARK NAVY & GOLD HEADER -->
+          <!-- EXECUTIVE TABLE WITH DARK NAVY & GOLD HEADER (MATCHING EXCEL SHEET COLUMNS LIKE ADMIN & SECURITY) -->
           <div id="strategic-master-table" class="bg-white border-2 border-slate-200 rounded-2xl shadow-xs overflow-hidden">
             <div class="px-4 py-3 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white border-b-2 border-amber-400 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div class="flex items-center gap-2.5">
@@ -1879,39 +1977,65 @@
             </div>
 
             <div class="overflow-x-auto">
-              <table class="w-full text-left text-xs border-collapse">
+              <table class="w-full text-left text-xs sm:text-sm border-collapse">
                 <thead>
-                  <tr class="bg-slate-100/90 border-b border-slate-200 text-slate-700 font-bold text-[11px]">
-                    <th class="py-2.5 px-3.5 w-20">ID</th>
-                    <th class="py-2.5 px-3.5 w-40">Department</th>
-                    <th class="py-2.5 px-3.5 min-w-[260px]">Action Item</th>
-                    <th class="py-2.5 px-3.5 w-28">Due Date</th>
-                    <th class="py-2.5 px-3.5 w-24">Status</th>
-                    <th class="py-2.5 px-3.5 min-w-[160px]">Remarks</th>
+                  <tr class="bg-slate-100/90 border-b border-slate-200 text-slate-700 font-bold text-xs sm:text-sm">
+                    <th class="py-3 px-3.5 whitespace-nowrap">S_No</th>
+                    <th class="py-3 px-3.5 whitespace-nowrap">Department</th>
+                    <th class="py-3 px-3.5 min-w-[240px]">Assigned Action</th>
+                    <th class="py-3 px-3.5 whitespace-nowrap">Action category</th>
+                    <th class="py-3 px-3.5 whitespace-nowrap">Assigned to</th>
+                    <th class="py-3 px-3.5 whitespace-nowrap">Target date</th>
+                    <th class="py-3 px-3.5 whitespace-nowrap">Status detail</th>
+                    <th class="py-3 px-3.5 min-w-[140px]">Remarks</th>
+                    <th class="py-3 px-3.5 whitespace-nowrap">Ack by</th>
                   </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100 text-xs">
+                <tbody class="divide-y divide-slate-100 text-xs sm:text-sm">
                   ${pagedActions.length === 0 ? `
                     <tr>
-                      <td colspan="6" class="py-8 text-center text-slate-400">
+                      <td colspan="9" class="py-10 text-center text-slate-400 font-medium text-sm">
                         No actions match the active filters.
                       </td>
                     </tr>
-                  ` : pagedActions.map(a => {
-                    const isClosed = a.status === 'Closed' || a.status === 'Completed';
+                  ` : pagedActions.map((a, idx) => {
+                    const raw = a.rawColumns || {};
+                    const sNo = raw['S_No'] || raw['S.No'] || raw['s_no'] || raw['Sr'] || raw['sno'] || a.sNo || (a.id ? String(a.id).replace(/^[A-Za-z]+-0*/i, '') : '') || String(startIdx + idx + 1);
+                    const deptName = a.department || a.code || 'Operations';
+                    const actionTitle = raw['Assigned Action'] || raw['Action'] || raw['action'] || a.title || a.action || a.desc || '-';
+                    const actionCat = raw['Action category'] || raw['Category'] || raw['category'] || a.category || (a.priority === 'High' ? 'ECM' : 'ACM');
+                    const assignedTo = raw['Assigned to'] || raw['Assignee'] || raw['assigned'] || a.assignedTo || 'Operations Team';
+                    const targetDate = raw['Target date'] || raw['Due Date'] || raw['due date'] || a.dueDate || '-';
+                    const isClosed = a.status === 'Closed' || a.status === 'Completed' || /close|done|complete|resolved/i.test(String(raw['Status detail'] || raw['Status'] || a.status || ''));
+                    const statusDetail = isClosed ? 'Closed' : 'Open';
+                    const remarks = raw['Remarks'] || raw['Remark'] || raw['remarks'] || a.remarks || '-';
+                    const ackBy = raw['Ack by'] || raw['Ack By'] || raw['ack by'] || a.ackBy || 'M.Afzal';
+
                     return `
-                      <tr class="hover:bg-slate-50/70 transition-colors">
-                        <td class="py-2.5 px-3.5 font-mono font-bold text-slate-700">${a.id}</td>
-                        <td class="py-2.5 px-3.5 font-semibold text-slate-800">${a.department}</td>
-                        <td class="py-2.5 px-3.5 text-slate-900 font-medium">${a.title}</td>
-                        <td class="py-2.5 px-3.5 text-slate-600">${a.dueDate || '-'}</td>
-                        <td class="py-2.5 px-3.5">
-                          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${isClosed ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-rose-50 text-rose-800 border border-rose-200'}">
-                            <span class="w-1.5 h-1.5 rounded-full ${isClosed ? 'bg-emerald-500' : 'bg-rose-500'}"></span>
-                            ${a.status || (isClosed ? 'Closed' : 'Open')}
+                      <tr class="hover:bg-slate-50/80 transition-colors">
+                        <td class="py-3 px-3.5 font-mono font-bold text-slate-800 text-xs sm:text-sm whitespace-nowrap">${sNo}</td>
+                        <td class="py-3 px-3.5 whitespace-nowrap">
+                          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-purple-50 text-purple-900 border border-purple-200">
+                            <span class="w-1.5 h-1.5 rounded-full bg-purple-600"></span>
+                            ${deptName}
                           </span>
                         </td>
-                        <td class="py-2.5 px-3.5 text-slate-500">${a.remarks || '-'}</td>
+                        <td class="py-3 px-3.5 text-slate-900 font-medium min-w-[240px]">${actionTitle}</td>
+                        <td class="py-3 px-3.5 whitespace-nowrap">
+                          <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200/60">
+                            ${actionCat}
+                          </span>
+                        </td>
+                        <td class="py-3 px-3.5 text-slate-700 font-medium whitespace-nowrap">${assignedTo}</td>
+                        <td class="py-3 px-3.5 text-slate-600 font-mono text-xs whitespace-nowrap">${targetDate}</td>
+                        <td class="py-3 px-3.5 whitespace-nowrap">
+                          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${isClosed ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-rose-50 text-rose-800 border border-rose-200'}">
+                            <span class="w-1.5 h-1.5 rounded-full ${isClosed ? 'bg-emerald-500' : 'bg-rose-500'}"></span>
+                            ${statusDetail}
+                          </span>
+                        </td>
+                        <td class="py-3 px-3.5 text-slate-600 min-w-[140px]">${remarks}</td>
+                        <td class="py-3 px-3.5 text-slate-600 font-medium whitespace-nowrap">${ackBy}</td>
                       </tr>
                     `;
                   }).join('')}
@@ -2409,24 +2533,14 @@
       // Note: COO dashboard has its own dedicated master rollup views, while employee dashboards share the Asset Integrity design.
       const isConnected = this.isSheetConnected(tile.id);
 
-      // Determine dynamic columns to show from Excel / Google Sheet data
+      // Determine dynamic columns to show from Excel / Google Sheet data (standardized across all tiles like Admin & Security)
+      const STANDARD_EXCEL_COLUMNS = ['S_No', 'Assigned Action', 'Action category', 'Assigned to', 'Target date', 'Status detail', 'Remarks', 'Ack by'];
       let displayColumns = [];
       const firstWithHeaders = allActions.find(a => Array.isArray(a.columnHeaders) && a.columnHeaders.length > 0);
       if (firstWithHeaders && firstWithHeaders.columnHeaders.length > 0) {
         displayColumns = [...firstWithHeaders.columnHeaders];
       } else {
-        // Collect unique keys from rawColumns or fallback to standard columns
-        const colSet = new Set();
-        for (const a of allActions) {
-          if (a.rawColumns && typeof a.rawColumns === 'object') {
-            Object.keys(a.rawColumns).forEach(k => colSet.add(k));
-          }
-        }
-        if (colSet.size > 0) {
-          displayColumns = Array.from(colSet);
-        } else {
-          displayColumns = ['ID', 'Action Description', 'Due Date', 'Status', 'Remarks'];
-        }
+        displayColumns = [...STANDARD_EXCEL_COLUMNS];
       }
 
       return `
@@ -2681,22 +2795,48 @@
                             `;
                           }
 
-                          // Special styling for ID column
-                          if (/id|code|action\s*#|action#|sr/i.test(colLower)) {
+                          // S_No / ID column
+                          if (/id|code|action\s*#|action#|sr|s_no|s\.no|sno/i.test(colLower)) {
                             return `
                               <td class="py-3 px-3.5 font-mono font-bold text-slate-800 text-xs sm:text-sm whitespace-nowrap">${val || '-'}</td>
                             `;
                           }
 
-                          // Special styling for Description column
+                          // Action category badge
+                          if (/category/i.test(colLower)) {
+                            return `
+                              <td class="py-3 px-3.5 whitespace-nowrap">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200/60">
+                                  ${val || '-'}
+                                </span>
+                              </td>
+                            `;
+                          }
+
+                          // Assigned Action Description column
                           if (/action|task|title|desc|description/i.test(colLower)) {
                             return `
                               <td class="py-3 px-3.5 text-slate-900 font-medium min-w-[240px]">${val || '-'}</td>
                             `;
                           }
 
+                          // Target date / Due date
+                          if (/due|target|deadline|date/i.test(colLower)) {
+                            return `
+                              <td class="py-3 px-3.5 text-slate-600 font-mono text-xs whitespace-nowrap">${val || '-'}</td>
+                            `;
+                          }
+
+                          // Assigned to / Ack by
+                          if (/assign|ack/i.test(colLower)) {
+                            return `
+                              <td class="py-3 px-3.5 text-slate-700 font-medium whitespace-nowrap">${val || '-'}</td>
+                            `;
+                          }
+
+                          // Remarks / default
                           return `
-                            <td class="py-3 px-3.5 text-slate-600 whitespace-nowrap">${val || '-'}</td>
+                            <td class="py-3 px-3.5 text-slate-600 min-w-[140px]">${val || '-'}</td>
                           `;
                         }).join('')}
                       </tr>

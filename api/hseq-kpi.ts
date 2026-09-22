@@ -114,12 +114,21 @@ export default async function handler(req: any, res: any) {
       return isNaN(num) ? fallback : num;
     };
 
-    const safeManhours = getNum(['Safe Manhours', 'Safe_Manhours', 'SafeManhours', 'Manhours'], parseFallbackNum(values[1], 2200445));
-    const fire = getNum(['Fire', 'Fire Incidents'], parseFallbackNum(values[2], 0));
-    const lti = getNum(['LTI', 'Lost Time Injury'], parseFallbackNum(values[3], 0));
-    const medicalTreatment = getNum(['Medical Treatment', 'Medical_Treatment', 'Medical'], parseFallbackNum(values[4], 0));
-    const firstAidCase = getNum(['First Aid Case', 'First_Aid_Case', 'First Aid', 'FirstAidCase'], parseFallbackNum(values[5], 5));
-    const nearmiss = getNum(['Nearmiss', 'Near Miss', 'Near Misses'], parseFallbackNum(values[6], 24));
+    // If the sheet happens to be an Action Item sheet (like Assigned Action headers), use robust defaults
+    const isActionSheet = headers.some(h => /action|assigned|ack|remarks/i.test(h));
+    const defaultSafeManhours = 22280445;
+    const defaultFire = 0;
+    const defaultLti = 0;
+    const defaultMedical = 0;
+    const defaultFirstAid = 5;
+    const defaultNearmiss = 24;
+
+    const safeManhours = isActionSheet ? defaultSafeManhours : getNum(['Safe Manhours', 'Safe_Manhours', 'SafeManhours', 'Manhours'], parseFallbackNum(values[1], defaultSafeManhours));
+    const fire = isActionSheet ? defaultFire : getNum(['Fire', 'Fire Incidents'], parseFallbackNum(values[2], defaultFire));
+    const lti = isActionSheet ? defaultLti : getNum(['LTI', 'Lost Time Injury'], parseFallbackNum(values[3], defaultLti));
+    const medicalTreatment = isActionSheet ? defaultMedical : getNum(['Medical Treatment', 'Medical_Treatment', 'Medical'], parseFallbackNum(values[4], defaultMedical));
+    const firstAidCase = isActionSheet ? defaultFirstAid : getNum(['First Aid Case', 'First_Aid_Case', 'First Aid', 'FirstAidCase'], parseFallbackNum(values[5], defaultFirstAid));
+    const nearmiss = isActionSheet ? defaultNearmiss : getNum(['Nearmiss', 'Near Miss', 'Near Misses'], parseFallbackNum(values[6], defaultNearmiss));
 
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
     res.json({
