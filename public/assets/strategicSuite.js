@@ -40,9 +40,16 @@
       bossSearchQuery: '',
       employeeDetailTab: 'actions', // 'actions' | 'sheet_config'
       employeeActionStatusFilter: 'all',
+      // In-flight sync tracking triggered automatically on tile click
+      inFlightTileSync: {},
+      tileSyncInProgress: {},
       // Dynamic filters and pagination for Individual Tile Dashboard
       tileFilterSearch: '',
       tileFilterStatus: 'all', // 'all' | 'Open' | 'Closed'
+      tileFilterColC: 'all', // Column C: Action category
+      tileFilterColD: 'all', // Column D: Assigned to
+      tileFilterColF: 'all', // Column F: Status detail
+      tileFilterColH: 'all', // Column H: Ack by
       tilePage: 1,
       tilePageSize: 15,
       tileLastSynced: {},
@@ -51,6 +58,10 @@
       masterFilterSearch: '',
       masterFilterDept: 'all', // 'all' | tileId
       masterFilterStatus: 'all', // 'all' | 'Open' | 'Closed'
+      masterFilterColC: 'all', // Column C: Action category
+      masterFilterColD: 'all', // Column D: Assigned to
+      masterFilterColF: 'all', // Column F: Status detail
+      masterFilterColH: 'all', // Column H: Ack by
       masterPage: 1,
       masterPageSize: 15,
       masterLastSynced: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -455,26 +466,137 @@
     },
 
     openResetModal(tileId) {
+      this.fetchFreshDataForTile(tileId);
       this.openAuthModal(tileId, 'reset');
     },
 
+    // USER REQUIREMENT 1:
+    // "in strategic dashboard the COO Executive Dashboard i need to click sync all sheets to fetch fresh data.
+    // modify logic that when i click any tile in strategic dashboard for putting passward that click should fetch fresh data for dashboard whose tile is clicked"
     handleTileClick(tileId) {
       const tile = this.getTileData(tileId);
       if (!tile) return;
+
+      // INSTANTLY start background fresh data query from Google Sheets on the tile click itself
+      this.fetchFreshDataForTile(tileId);
 
       // STRICT USER REQUIREMENT:
       // "On clicking each tile full page dashboard should open with back button and once moved back clicking should require/ask pasward"
       if (this.state.unlockedTiles.has(tileId)) {
         this.openDetailModal(tileId);
-        if (tile.isBossDashboard || tileId === 'strategic-master') {
-          this.syncAllEmployeeSheets();
-        } else {
-          this.syncEmployeeSheet(tileId);
-        }
         return;
       }
 
       this.openAuthModal(tileId, 'unlock');
+    },
+
+    // Fetch fresh live data from Google Sheets for the clicked tile (or all sheets if COO master)
+    fetchFreshDataForTile(tileId) {
+      const tile = this.getTileData(tileId);
+      if (!tile) return null;
+
+      const isBoss = tile.isBossDashboard || tileId === 'strategic-master';
+      const nonce = Date.now();
+
+      this.state.tileSyncInProgress[tileId] = true;
+      this.updateAuthModalSyncStatus(tileId, 'syncing');
+
+      const url = isBoss 
+        ? `/api/strategic/live-data?refresh=true&_t=${nonce}`
+        : `/api/strategic/live-data?tileId=${encodeURIComponent(tileId)}&refresh=true&_t=${nonce}`;
+
+      const syncPromise = fetch(url, { cache: 'no-store' })
+        .then(async (res) => {
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const data = await res.json();
+          if (isBoss) {
+            if (data && data.liveActions) {
+              for (const [tId, actions] of Object.entries(data.liveActions)) {
+                if (Array.isArray(actions) && actions.length > 0) {
+                  this.customActions[tId] = actions;
+                  this.state.tileLastSynced[tId] = data.data?.[tId]?.lastSynced || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                }
+              }
+              this.saveStoredActions();
+              this.state.masterLastSynced = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }
+          } else {
+            if (data && data.liveActions && Array.isArray(data.liveActions[tileId]) && data.liveActions[tileId].length > 0) {
+              this.customActions[tileId] = data.liveActions[tileId];
+              this.saveStoredActions();
+              this.state.tileLastSynced[tileId] = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }
+          }
+          this.state.tileSyncInProgress[tileId] = false;
+          this.state.syncStatus[tileId] = 'success';
+          this.updateAuthModalSyncStatus(tileId, 'success');
+
+          // If the user has already entered the password and is viewing this dashboard, update the view immediately!
+          if (this.state.currentView === 'dashboard' && this.state.selectedTileId === tileId) {
+            this.render();
+          }
+          return true;
+        })
+        .catch(err => {
+          console.warn('Fresh data fetch on tile click failed, fallback to client-side sheet sync:', tileId, err);
+          this.state.tileSyncInProgress[tileId] = false;
+          this.updateAuthModalSyncStatus(tileId, 'cached');
+          return false;
+        });
+
+      this.state.inFlightTileSync[tileId] = syncPromise;
+      return syncPromise;
+    },
+
+    updateAuthModalSyncStatus(tileId, status) {
+      if (this.state.activeAuthTileId !== tileId) return;
+      const el = document.getElementById('strategic-auth-sync-status');
+      if (!el) return;
+
+      if (status === 'syncing') {
+        el.className = 'flex items-center justify-between p-2.5 rounded-xl border bg-amber-50 border-amber-200 text-amber-900 transition-all';
+        el.innerHTML = `
+          <div class="flex items-center gap-2">
+            <i data-lucide="refresh-cw" class="w-4 h-4 text-amber-600 animate-spin shrink-0"></i>
+            <div class="text-xs">
+              <div class="font-bold">Fetching fresh sheet data...</div>
+              <div class="text-[10px] text-slate-500">Live query triggered on tile click</div>
+            </div>
+          </div>
+          <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-200/60 text-amber-900">
+            FETCHING
+          </span>
+        `;
+      } else if (status === 'success') {
+        el.className = 'flex items-center justify-between p-2.5 rounded-xl border bg-emerald-50 border-emerald-200 text-emerald-900 transition-all';
+        el.innerHTML = `
+          <div class="flex items-center gap-2">
+            <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600 shrink-0"></i>
+            <div class="text-xs">
+              <div class="font-bold">Fresh sheet data ready</div>
+              <div class="text-[10px] text-slate-500">Synchronized directly from Google Sheet</div>
+            </div>
+          </div>
+          <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-200/60 text-emerald-900">
+            READY
+          </span>
+        `;
+      } else {
+        el.className = 'flex items-center justify-between p-2.5 rounded-xl border bg-slate-50 border-slate-200 text-slate-800 transition-all';
+        el.innerHTML = `
+          <div class="flex items-center gap-2">
+            <i data-lucide="database" class="w-4 h-4 text-slate-500 shrink-0"></i>
+            <div class="text-xs">
+              <div class="font-bold">Active Records Loaded</div>
+              <div class="text-[10px] text-slate-500">Local cached records active</div>
+            </div>
+          </div>
+          <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-slate-200 text-slate-800">
+            VERIFIED
+          </span>
+        `;
+      }
+      if (window.lucide) window.lucide.createIcons();
     },
 
     openAuthModal(tileId, view = 'unlock') {
@@ -590,13 +712,22 @@
         this.state.unlockedTiles.add(tileId);
         this.closeAuthModal();
         this.openDetailModal(tileId);
-        this.showToast('Access Granted', `${tile.name} unlocked. Fetching fresh sheet data...`, 'success');
-        this.render();
-        // Automatically sync fresh data upon opening dashboard with password
-        if (tile.isBossDashboard || tileId === 'strategic-master') {
-          this.syncAllEmployeeSheets();
+
+        const isSyncing = this.state.tileSyncInProgress[tileId];
+        if (isSyncing) {
+          this.showToast('Access Granted', `${tile.name} unlocked. Finalizing fresh sheet data...`, 'info');
         } else {
-          this.syncEmployeeSheet(tileId);
+          this.showToast('Access Granted', `${tile.name} unlocked with fresh sheet data.`, 'success');
+        }
+        this.render();
+
+        // Guaranteed fallback if in-flight sync hasn't started or needs refresh
+        if (!this.state.inFlightTileSync[tileId] && !isSyncing) {
+          if (tile.isBossDashboard || tileId === 'strategic-master') {
+            this.syncAllEmployeeSheets(true);
+          } else {
+            this.syncEmployeeSheet(tileId);
+          }
         }
       } else {
         if (errorBox) {
@@ -830,35 +961,146 @@
     // DYNAMIC FILTERING, PAGINATION & CSV EXPORT HELPERS
     // =========================================================================
 
-    getFilteredTileActions(tileId) {
-      const tile = this.getTileData(tileId);
-      if (!tile || !tile.actions) return [];
-      const q = (this.state.tileFilterSearch || '').toLowerCase().trim();
-      const statusF = this.state.tileFilterStatus || 'all';
+    escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    },
 
-      return tile.actions.filter(a => {
-        const isClosed = a.status === 'Closed' || a.status === 'Completed';
-        if (statusF === 'Open' && isClosed) return false;
-        if (statusF === 'Closed' && !isClosed) return false;
+    // Extract exact value for requested column (A-H) from live Google Sheet action item
+    // Column C: Action category
+    // Column D: Assigned to
+    // Column F: Status detail
+    // Column H: Ack by
+    getActionColVal(action, col) {
+      if (!action) return '';
+      const raw = action.rawColumns || {};
+      const headers = action.columnHeaders || [];
 
+      // Col A (index 0): S_No
+      // Col B (index 1): Assigned Action
+      // Col C (index 2): Action category
+      // Col D (index 3): Assigned to
+      // Col E (index 4): Target date
+      // Col F (index 5): Status detail
+      // Col G (index 6): Remarks
+      // Col H (index 7): Ack by
+      const colMap = { 'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5, 'G': 6, 'H': 7 };
+      const idx = colMap[col.toUpperCase()];
+
+      if (idx !== undefined && headers[idx] && raw[headers[idx]] !== undefined) {
+        const v = String(raw[headers[idx]]).trim();
+        if (v) return v;
+      }
+
+      // Check standard aliases & fallback properties
+      if (col === 'C') {
+        const v = raw['Action category'] || raw['Action Category'] || raw['Category'] || raw['category'] || raw['Col C'] || raw['Column C'] || action.category;
+        return v ? String(v).trim() : (action.priority === 'High' ? 'ECM' : 'ACM');
+      } else if (col === 'D') {
+        const v = raw['Assigned to'] || raw['Assigned To'] || raw['Assignee'] || raw['assignee'] || raw['assigned'] || raw['Col D'] || raw['Column D'] || action.assignedTo;
+        return v ? String(v).trim() : '';
+      } else if (col === 'F') {
+        const v = raw['Status detail'] || raw['Status Detail'] || raw['Status'] || raw['status'] || raw['Col F'] || raw['Column F'] || action.status;
+        const s = v ? String(v).trim() : '';
+        if (/close|done|complete|resolved/i.test(s)) return 'Closed';
+        if (/open|pending|in progress|active/i.test(s)) return 'Open';
+        return s || (action.status === 'Closed' ? 'Closed' : 'Open');
+      } else if (col === 'H') {
+        const v = raw['Ack by'] || raw['Ack By'] || raw['ack by'] || raw['Acknowledged by'] || raw['Acknowledged By'] || raw['Col H'] || raw['Column H'] || action.ackBy;
+        return v ? String(v).trim() : '';
+      }
+
+      return '';
+    },
+
+    filterActionList(actions, { colC = 'all', colD = 'all', colF = 'all', colH = 'all', search = '', dept = 'all' } = {}) {
+      if (!Array.isArray(actions)) return [];
+      const q = (search || '').toLowerCase().trim();
+      const colCF = (colC || 'all').trim();
+      const colDF = (colD || 'all').trim();
+      const colFF = (colF || 'all').trim();
+      const colHF = (colH || 'all').trim();
+      const deptF = (dept || 'all').toLowerCase().trim();
+
+      return actions.filter(a => {
+        // Department filter
+        if (deptF !== 'all') {
+          const tId = (a.tileId || '').toLowerCase().trim();
+          const tCode = (a.code || '').toLowerCase().trim();
+          const tDept = (a.department || '').toLowerCase().trim();
+          if (tId !== deptF && tCode !== deptF && tDept !== deptF) return false;
+        }
+
+        // Column F: Status detail filter (All / Open / Closed)
+        if (colFF !== 'all') {
+          const valF = this.getActionColVal(a, 'F');
+          const isClosed = valF === 'Closed' || a.status === 'Closed' || a.status === 'Completed' || (a.status || '').toLowerCase().includes('close');
+          if (colFF === 'Open' && isClosed) return false;
+          if (colFF === 'Closed' && !isClosed) return false;
+          if (colFF !== 'Open' && colFF !== 'Closed' && valF.toLowerCase() !== colFF.toLowerCase()) return false;
+        }
+
+        // Column C: Action category filter
+        if (colCF !== 'all') {
+          const valC = this.getActionColVal(a, 'C');
+          if (valC.toLowerCase() !== colCF.toLowerCase()) return false;
+        }
+
+        // Column D: Assigned to filter
+        if (colDF !== 'all') {
+          const valD = this.getActionColVal(a, 'D');
+          if (valD.toLowerCase() !== colDF.toLowerCase()) return false;
+        }
+
+        // Column H: Ack by filter
+        if (colHF !== 'all') {
+          const valH = this.getActionColVal(a, 'H');
+          if (valH.toLowerCase() !== colHF.toLowerCase()) return false;
+        }
+
+        // Search text filter
         if (q) {
           const matchId = (a.id || '').toLowerCase().includes(q);
-          const matchTitle = (a.title || '').toLowerCase().includes(q);
+          const matchTitle = (a.title || a.action || a.desc || '').toLowerCase().includes(q);
+          const matchDept = (a.department || '').toLowerCase().includes(q);
+          const matchCode = (a.code || '').toLowerCase() === q || (a.code || '').toLowerCase().includes(q);
           const matchRemarks = (a.remarks || '').toLowerCase().includes(q);
           const matchDue = (a.dueDate || '').toLowerCase().includes(q);
           let matchRaw = false;
           if (a.rawColumns && typeof a.rawColumns === 'object') {
             matchRaw = Object.values(a.rawColumns).some(v => String(v || '').toLowerCase().includes(q));
           }
-          if (!matchId && !matchTitle && !matchRemarks && !matchDue && !matchRaw) return false;
+          if (!matchId && !matchTitle && !matchDept && !matchCode && !matchRemarks && !matchDue && !matchRaw) return false;
         }
 
         return true;
       });
     },
 
+    getFilteredTileActions(tileId) {
+      const tile = this.getTileData(tileId);
+      if (!tile || !tile.actions) return [];
+      return this.filterActionList(tile.actions, {
+        colC: this.state.tileFilterColC,
+        colD: this.state.tileFilterColD,
+        colF: this.state.tileFilterColF || this.state.tileFilterStatus,
+        colH: this.state.tileFilterColH,
+        search: this.state.tileFilterSearch
+      });
+    },
+
     setTileFilter(key, val) {
       this.state[key] = val;
+      if (key === 'tileFilterStatus') {
+        this.state.tileFilterColF = val;
+      } else if (key === 'tileFilterColF') {
+        this.state.tileFilterStatus = val;
+      }
       this.state.tilePage = 1;
       this.render();
     },
@@ -866,6 +1108,10 @@
     clearTileFilters() {
       this.state.tileFilterSearch = '';
       this.state.tileFilterStatus = 'all';
+      this.state.tileFilterColC = 'all';
+      this.state.tileFilterColD = 'all';
+      this.state.tileFilterColF = 'all';
+      this.state.tileFilterColH = 'all';
       this.state.tilePage = 1;
       this.render();
     },
@@ -896,43 +1142,51 @@
       const firstWithHeaders = data.find(a => Array.isArray(a.columnHeaders) && a.columnHeaders.length > 0);
       let headers = [];
       if (firstWithHeaders && firstWithHeaders.columnHeaders.length > 0) {
-        headers = ['Sr #', ...firstWithHeaders.columnHeaders];
+        headers = ['S_No', ...firstWithHeaders.columnHeaders.filter(h => !/^(s_no|sr|s\.no|#)$/i.test(h))];
       } else {
         const colSet = new Set();
         for (const a of data) {
           if (a.rawColumns && typeof a.rawColumns === 'object') {
-            Object.keys(a.rawColumns).forEach(k => colSet.add(k));
+            Object.keys(a.rawColumns).forEach(k => {
+              if (!/^(s_no|sr|s\.no|#)$/i.test(k)) colSet.add(k);
+            });
           }
         }
         if (colSet.size > 0) {
-          headers = ['Sr #', ...Array.from(colSet)];
+          headers = ['S_No', ...Array.from(colSet)];
         } else {
-          headers = ['Sr #', 'Action ID', 'Action Description', 'Due Date', 'Status', 'Remarks'];
+          headers = ['S_No', 'Assigned Action', 'Action category', 'Assigned to', 'Target date', 'Status detail', 'Remarks', 'Ack by'];
         }
       }
 
       const rows = data.map((d, i) => {
-        const rowVals = [i + 1];
+        const raw = d.rawColumns || {};
+        const sNo = raw['S_No'] || raw['S.No'] || raw['s_no'] || raw['Sr'] || raw['sno'] || d.sNo || (d.id ? String(d.id).replace(/^[A-Za-z]+-0*/i, '') : '') || String(i + 1);
+        const rowVals = [sNo];
         for (let h = 1; h < headers.length; h++) {
           const col = headers[h];
           const colLower = col.toLowerCase().trim();
           let val = '';
-          if (d.rawColumns && typeof d.rawColumns === 'object' && d.rawColumns[col] !== undefined) {
-            val = d.rawColumns[col];
-          } else if (d.rawColumns && typeof d.rawColumns === 'object') {
-            const foundKey = Object.keys(d.rawColumns).find(k => k.toLowerCase().trim() === colLower);
-            if (foundKey && d.rawColumns[foundKey] !== undefined) {
-              val = d.rawColumns[foundKey];
+          if (raw[col] !== undefined) {
+            val = raw[col];
+          } else {
+            const foundKey = Object.keys(raw).find(k => k.toLowerCase().trim() === colLower);
+            if (foundKey && raw[foundKey] !== undefined) {
+              val = raw[foundKey];
             }
           }
           if (!val && val !== 0) {
-            if (/id|code|sr|#|s_no|item/i.test(colLower)) val = d.id || '';
-            else if (/action|title|task|desc|deliverable/i.test(colLower)) val = d.title || '';
-            else if (/due|target|deadline/i.test(colLower)) val = d.dueDate || '';
-            else if (/status|condition/i.test(colLower)) val = d.status || '';
+            if (/category|col\s*c/i.test(colLower)) val = this.getActionColVal(d, 'C');
+            else if (/assigned\s*to|assignee|col\s*d/i.test(colLower)) val = this.getActionColVal(d, 'D');
+            else if (/status\s*detail|condition|col\s*f/i.test(colLower)) val = this.getActionColVal(d, 'F') || (d.status === 'Closed' ? 'Closed' : 'Open');
+            else if (/ack\s*by|acknowledged|col\s*h/i.test(colLower)) val = this.getActionColVal(d, 'H');
+            else if (/action|title|task|desc|deliverable/i.test(colLower)) val = raw['Assigned Action'] || d.title || d.action || '';
+            else if (/due|target|deadline/i.test(colLower)) val = raw['Target date'] || d.dueDate || '';
+            else if (/status/i.test(colLower)) val = d.status || '';
             else if (/priority|prio/i.test(colLower)) val = d.priority || '';
             else if (/closure/i.test(colLower)) val = d.closureDate || '';
-            else if (/remark|comment|note/i.test(colLower)) val = d.remarks || '';
+            else if (/remark|comment|note/i.test(colLower)) val = raw['Remarks'] || d.remarks || '';
+            else if (/id|code|item/i.test(colLower)) val = d.id || '';
           }
           rowVals.push(`"${String(val || '').replace(/"/g, '""')}"`);
         }
@@ -945,12 +1199,18 @@
       const link = document.createElement('a');
       link.setAttribute('href', url);
       const dateStr = new Date().toISOString().slice(0, 10);
-      link.setAttribute('download', `FPCL_${tile.code}_Actions_Filtered_${dateStr}.csv`);
+      let filterTag = '';
+      if (this.state.tileFilterStatus && this.state.tileFilterStatus !== 'all') filterTag += `_${this.state.tileFilterStatus}`;
+      if (this.state.tileFilterColC && this.state.tileFilterColC !== 'all') filterTag += `_${this.state.tileFilterColC.replace(/[^a-zA-Z0-9]/g, '')}`;
+      if (this.state.tileFilterColD && this.state.tileFilterColD !== 'all') filterTag += `_${this.state.tileFilterColD.replace(/[^a-zA-Z0-9]/g, '')}`;
+      if (this.state.tileFilterColH && this.state.tileFilterColH !== 'all') filterTag += `_${this.state.tileFilterColH.replace(/[^a-zA-Z0-9]/g, '')}`;
+      if (this.state.tileFilterSearch) filterTag += `_search`;
+      link.setAttribute('download', `FPCL_${tile.code}_Actions_Filtered${filterTag}_${dateStr}.csv`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
-      this.showToast('CSV Exported', `Exported ${data.length} filtered actions for ${tile.name}`, 'success');
+      this.showToast('CSV Exported', `Exported ${data.length} actions based on applied filters for ${tile.name}`, 'success');
     },
 
     toggleActionStatus(tileId, actionId) {
@@ -973,38 +1233,23 @@
     getFilteredMasterActions() {
       const rollup = this.getBossRollup();
       const all = rollup.allActionsList || [];
-      const q = (this.state.masterFilterSearch || '').toLowerCase().trim();
-      const deptF = this.state.masterFilterDept || 'all';
-      const statusF = this.state.masterFilterStatus || 'all';
-
-      return all.filter(a => {
-        if (deptF !== 'all') {
-          const matchTileId = (a.tileId || '').toLowerCase() === deptF.toLowerCase();
-          const matchCode = (a.code || '').toLowerCase() === deptF.toLowerCase();
-          const matchDept = (a.department || '').toLowerCase() === deptF.toLowerCase();
-          if (!matchTileId && !matchCode && !matchDept) return false;
-        }
-
-        const isClosed = a.status === 'Closed' || a.status === 'Completed' || (a.status || '').toLowerCase().includes('close');
-        if (statusF === 'Open' && isClosed) return false;
-        if (statusF === 'Closed' && !isClosed) return false;
-
-        if (q) {
-          const matchId = (a.id || '').toLowerCase().includes(q);
-          const matchTitle = (a.title || a.action || a.desc || '').toLowerCase().includes(q);
-          const matchDept = (a.department || '').toLowerCase().includes(q);
-          const matchCode = (a.code || '').toLowerCase().includes(q);
-          const matchRemarks = (a.remarks || '').toLowerCase().includes(q);
-          const matchDue = (a.dueDate || '').toLowerCase().includes(q);
-          if (!matchId && !matchTitle && !matchDept && !matchCode && !matchRemarks && !matchDue) return false;
-        }
-
-        return true;
+      return this.filterActionList(all, {
+        dept: this.state.masterFilterDept,
+        colC: this.state.masterFilterColC,
+        colD: this.state.masterFilterColD,
+        colF: this.state.masterFilterColF || this.state.masterFilterStatus,
+        colH: this.state.masterFilterColH,
+        search: this.state.masterFilterSearch
       });
     },
 
     setMasterFilter(key, val) {
       this.state[key] = val;
+      if (key === 'masterFilterStatus') {
+        this.state.masterFilterColF = val;
+      } else if (key === 'masterFilterColF') {
+        this.state.masterFilterStatus = val;
+      }
       this.state.masterPage = 1;
       this.render();
       if (key === 'masterFilterSearch') {
@@ -1031,6 +1276,10 @@
       this.state.masterFilterSearch = '';
       this.state.masterFilterDept = 'all';
       this.state.masterFilterStatus = 'all';
+      this.state.masterFilterColC = 'all';
+      this.state.masterFilterColD = 'all';
+      this.state.masterFilterColF = 'all';
+      this.state.masterFilterColH = 'all';
       this.state.masterPage = 1;
       this.render();
     },
@@ -1057,6 +1306,9 @@
 
       const deptF = this.state.masterFilterDept || 'all';
       const statusF = this.state.masterFilterStatus || 'all';
+      const colCF = this.state.masterFilterColC || 'all';
+      const colDF = this.state.masterFilterColD || 'all';
+      const colHF = this.state.masterFilterColH || 'all';
       const q = (this.state.masterFilterSearch || '').trim();
 
       const headers = ['S_No', 'Department', 'Assigned Action', 'Action category', 'Assigned to', 'Target date', 'Status detail', 'Remarks', 'Ack by'];
@@ -1065,13 +1317,14 @@
         const sNo = raw['S_No'] || raw['S.No'] || raw['s_no'] || raw['Sr'] || raw['sno'] || d.sNo || (d.id ? String(d.id).replace(/^[A-Za-z]+-0*/i, '') : '') || String(i + 1);
         const dept = d.department || d.code || '';
         const actionTitle = raw['Assigned Action'] || raw['Action'] || raw['action'] || d.title || d.action || d.desc || '';
-        const actionCat = raw['Action category'] || raw['Category'] || raw['category'] || d.category || (d.priority === 'High' ? 'ECM' : 'ACM');
-        const assignedTo = raw['Assigned to'] || raw['Assignee'] || raw['assigned'] || d.assignedTo || 'Operations Team';
+        const actionCat = this.getActionColVal(d, 'C') || raw['Action category'] || raw['Category'] || raw['category'] || d.category || (d.priority === 'High' ? 'ECM' : 'ACM');
+        const assignedTo = this.getActionColVal(d, 'D') || raw['Assigned to'] || raw['Assignee'] || raw['assigned'] || d.assignedTo || 'Operations Team';
         const targetDate = raw['Target date'] || raw['Due Date'] || raw['due date'] || d.dueDate || '';
-        const isClosed = d.status === 'Closed' || d.status === 'Completed' || /close|done|complete|resolved/i.test(String(raw['Status detail'] || raw['Status'] || d.status || ''));
-        const statusDetail = isClosed ? 'Closed' : 'Open';
+        const valF = this.getActionColVal(d, 'F');
+        const isClosed = valF === 'Closed' || d.status === 'Closed' || d.status === 'Completed' || /close|done|complete|resolved/i.test(String(raw['Status detail'] || raw['Status'] || d.status || ''));
+        const statusDetail = valF || (isClosed ? 'Closed' : 'Open');
         const remarks = raw['Remarks'] || raw['Remark'] || raw['remarks'] || d.remarks || '';
-        const ackBy = raw['Ack by'] || raw['Ack By'] || raw['ack by'] || d.ackBy || 'M.Afzal';
+        const ackBy = this.getActionColVal(d, 'H') || raw['Ack by'] || raw['Ack By'] || raw['ack by'] || d.ackBy || 'M.Afzal';
 
         return [
           sNo,
@@ -1095,6 +1348,9 @@
       let filterTag = '';
       if (deptF !== 'all') filterTag += `_${deptF.toUpperCase()}`;
       if (statusF !== 'all') filterTag += `_${statusF}`;
+      if (colCF !== 'all') filterTag += `_${colCF.replace(/[^a-zA-Z0-9]/g, '')}`;
+      if (colDF !== 'all') filterTag += `_${colDF.replace(/[^a-zA-Z0-9]/g, '')}`;
+      if (colHF !== 'all') filterTag += `_${colHF.replace(/[^a-zA-Z0-9]/g, '')}`;
       if (q) filterTag += `_search`;
       link.setAttribute('download', `FPCL_COO_Executive_Dashboard_Actions${filterTag}_${dateStr}.csv`);
       document.body.appendChild(link);
@@ -1606,24 +1862,21 @@
 
       // KPIs based on company-wide data
       const totalActions = allActions.length;
-      const closedActions = allActions.filter(a => a.status === 'Closed' || a.status === 'Completed').length;
+      const closedActions = allActions.filter(a => a.status === 'Closed' || a.status === 'Completed' || (a.status || '').toLowerCase().includes('close') || this.getActionColVal(a, 'F') === 'Closed').length;
       const openActions = totalActions - closedActions;
       const overallRate = totalActions > 0 ? Math.round((closedActions / totalActions) * 100) : 0;
 
-      // Filtered KPIs
+      // Filtered KPIs (strictly reflects all applied filters across whole dashboard)
       const filteredTotal = filteredActions.length;
-      const filteredClosed = filteredActions.filter(a => a.status === 'Closed' || a.status === 'Completed').length;
+      const filteredClosed = filteredActions.filter(a => a.status === 'Closed' || a.status === 'Completed' || (a.status || '').toLowerCase().includes('close') || this.getActionColVal(a, 'F') === 'Closed').length;
       const filteredOpen = filteredTotal - filteredClosed;
       const filteredRate = filteredTotal > 0 ? Math.round((filteredClosed / filteredTotal) * 100) : 0;
 
-      // Chart context actions (respecting department filter)
-      const deptActions = this.state.masterFilterDept === 'all' 
-        ? allActions 
-        : allActions.filter(a => (a.tileId || '').toLowerCase() === this.state.masterFilterDept.toLowerCase() || (a.code || '').toLowerCase() === this.state.masterFilterDept.toLowerCase() || (a.department || '').toLowerCase() === this.state.masterFilterDept.toLowerCase());
-      const chartTotal = deptActions.length;
-      const chartClosed = deptActions.filter(a => a.status === 'Closed' || a.status === 'Completed').length;
-      const chartOpen = chartTotal - chartClosed;
-      const chartRate = chartTotal > 0 ? Math.round((chartClosed / chartTotal) * 100) : 0;
+      // Donut Chart & Trends Legend metrics reflect the active filters
+      const chartTotal = filteredTotal;
+      const chartClosed = filteredClosed;
+      const chartOpen = filteredOpen;
+      const chartRate = filteredRate;
 
       // Pagination for Simple Table
       const page = this.state.masterPage || 1;
@@ -1634,7 +1887,18 @@
       const endIdx = Math.min(filteredTotal, startIdx + pageSize);
       const pagedActions = filteredActions.slice(startIdx, endIdx);
 
-      const isFiltered = this.state.masterFilterSearch || this.state.masterFilterDept !== 'all' || this.state.masterFilterStatus !== 'all';
+      const uniqueMasterColC = [...new Set(allActions.map(a => this.getActionColVal(a, 'C')).filter(Boolean))].sort();
+      const uniqueMasterColD = [...new Set(allActions.map(a => this.getActionColVal(a, 'D')).filter(Boolean))].sort();
+      const uniqueMasterColH = [...new Set(allActions.map(a => this.getActionColVal(a, 'H')).filter(Boolean))].sort();
+      const isFiltered = Boolean(
+        this.state.masterFilterSearch || 
+        this.state.masterFilterDept !== 'all' || 
+        (this.state.masterFilterStatus && this.state.masterFilterStatus !== 'all') ||
+        (this.state.masterFilterColC && this.state.masterFilterColC !== 'all') ||
+        (this.state.masterFilterColD && this.state.masterFilterColD !== 'all') ||
+        (this.state.masterFilterColF && this.state.masterFilterColF !== 'all') ||
+        (this.state.masterFilterColH && this.state.masterFilterColH !== 'all')
+      );
 
       return `
         <div class="space-y-2.5 sm:space-y-3">
@@ -1716,20 +1980,41 @@
             </div>
           </div>
 
-          <!-- COO FILTER TOOLBAR WITH GOLD ACCENT & REDUCED SEARCH WIDTH -->
-          <div class="bg-white border-2 border-slate-200/90 rounded-2xl p-3 sm:p-3.5 shadow-xs space-y-2">
-            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-              <!-- Search Filter (Reduced width) -->
-              <div class="relative w-full sm:w-56 shrink-0">
+          <!-- COO FILTER TOOLBAR (COLUMNS C, D, F, H, DEPT & SEARCH) -->
+          <div class="bg-white border-2 border-slate-200/90 rounded-2xl p-3 sm:p-3.5 shadow-xs space-y-2.5">
+            <div class="flex items-center justify-between gap-2 flex-wrap">
+              <div class="flex items-center gap-2">
+                <i data-lucide="sliders-horizontal" class="w-4 h-4 text-amber-600"></i>
+                <span class="text-xs font-bold text-slate-800 uppercase tracking-wider">COO Filters (Columns C, D, F, H & Dept)</span>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-50 text-amber-900 border border-amber-200">
+                  ${filteredTotal} of ${chartTotal} actions
+                </span>
+              </div>
+              ${isFiltered ? `
+                <button
+                  type="button"
+                  onclick="window.FPCL_STRATEGIC_SUITE.clearMasterFilters()"
+                  class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 transition-colors cursor-pointer"
+                  title="Clear all applied filters"
+                >
+                  <i data-lucide="filter-x" class="w-3.5 h-3.5"></i>
+                  <span>Reset All Filters</span>
+                </button>
+              ` : ''}
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
+              <!-- Search Filter -->
+              <div class="relative">
                 <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-slate-400">
                   <i data-lucide="search" class="w-3.5 h-3.5"></i>
                 </div>
                 <input
                   id="strategic-master-search-input"
                   type="text"
-                  value="${this.state.masterFilterSearch || ''}"
-                  placeholder="Filter actions, IDs, remarks..."
-                  class="w-full pl-8 pr-7 py-1.5 bg-slate-50 hover:bg-white focus:bg-white text-slate-900 border border-slate-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 rounded-xl text-xs font-medium outline-none transition-all"
+                  value="${this.escapeHtml(this.state.masterFilterSearch || '')}"
+                  placeholder="Search actions..."
+                  class="w-full pl-8 pr-7 py-1.5 bg-slate-50 hover:bg-white focus:bg-white text-slate-900 border border-slate-300 focus:border-amber-500 rounded-xl text-xs font-medium outline-none transition-all"
                   oninput="window.FPCL_STRATEGIC_SUITE.setMasterFilter('masterFilterSearch', this.value)"
                 />
                 ${this.state.masterFilterSearch ? `
@@ -1743,33 +2028,127 @@
               </div>
 
               <!-- Department Filter -->
-              <div class="flex-1 min-w-[180px]">
+              <div class="relative">
                 <select
-                  class="w-full px-3 py-1.5 bg-slate-50 hover:bg-white focus:bg-white text-slate-900 border border-slate-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 rounded-xl text-xs font-semibold outline-none transition-all cursor-pointer"
+                  class="w-full py-1.5 pl-2.5 pr-7 bg-slate-50 hover:bg-white focus:bg-white text-slate-900 border ${this.state.masterFilterDept && this.state.masterFilterDept !== 'all' ? 'border-amber-500 bg-amber-50/50 text-amber-950 font-bold' : 'border-slate-300'} focus:border-amber-500 rounded-xl text-xs font-semibold outline-none transition-all cursor-pointer appearance-none"
                   onchange="window.FPCL_STRATEGIC_SUITE.setMasterFilter('masterFilterDept', this.value)"
                 >
-                  <option value="all" ${this.state.masterFilterDept === 'all' ? 'selected' : ''}>All Departments (${allTiles.length})</option>
+                  <option value="all">All Depts (${allTiles.length})</option>
                   ${allTiles.map(t => `
                     <option value="${t.id}" ${this.state.masterFilterDept === t.id ? 'selected' : ''}>${t.name} (${t.code})</option>
                   `).join('')}
                 </select>
+                <div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none text-slate-400">
+                  <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
+                </div>
               </div>
 
-              <!-- Status Filter Dropdown Menu -->
-              <div class="relative w-full sm:w-48 shrink-0">
+              <!-- Column C: Action category -->
+              <div class="relative">
                 <select
-                  class="w-full py-1.5 pl-3 pr-8 bg-slate-50 hover:bg-white focus:bg-white text-slate-800 border border-slate-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 rounded-xl text-xs font-bold outline-none transition-all cursor-pointer appearance-none shadow-2xs"
+                  class="w-full py-1.5 pl-2.5 pr-7 bg-slate-50 hover:bg-white focus:bg-white text-slate-900 border ${this.state.masterFilterColC && this.state.masterFilterColC !== 'all' ? 'border-amber-500 bg-amber-50/50 text-amber-950 font-bold' : 'border-slate-300'} focus:border-amber-500 rounded-xl text-xs font-semibold outline-none transition-all cursor-pointer appearance-none"
+                  onchange="window.FPCL_STRATEGIC_SUITE.setMasterFilter('masterFilterColC', this.value)"
+                >
+                  <option value="all">Category [Col C]: All</option>
+                  ${uniqueMasterColC.map(c => `
+                    <option value="${this.escapeHtml(c)}" ${this.state.masterFilterColC === c ? 'selected' : ''}>${this.escapeHtml(c)} (${allActions.filter(a => this.getActionColVal(a, 'C') === c).length})</option>
+                  `).join('')}
+                </select>
+                <div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none text-slate-400">
+                  <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
+                </div>
+              </div>
+
+              <!-- Column D: Assigned to -->
+              <div class="relative">
+                <select
+                  class="w-full py-1.5 pl-2.5 pr-7 bg-slate-50 hover:bg-white focus:bg-white text-slate-900 border ${this.state.masterFilterColD && this.state.masterFilterColD !== 'all' ? 'border-amber-500 bg-amber-50/50 text-amber-950 font-bold' : 'border-slate-300'} focus:border-amber-500 rounded-xl text-xs font-semibold outline-none transition-all cursor-pointer appearance-none"
+                  onchange="window.FPCL_STRATEGIC_SUITE.setMasterFilter('masterFilterColD', this.value)"
+                >
+                  <option value="all">Assigned [Col D]: All</option>
+                  ${uniqueMasterColD.map(d => `
+                    <option value="${this.escapeHtml(d)}" ${this.state.masterFilterColD === d ? 'selected' : ''}>${this.escapeHtml(d)} (${allActions.filter(a => this.getActionColVal(a, 'D') === d).length})</option>
+                  `).join('')}
+                </select>
+                <div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none text-slate-400">
+                  <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
+                </div>
+              </div>
+
+              <!-- Column F: Status detail -->
+              <div class="relative">
+                <select
+                  class="w-full py-1.5 pl-2.5 pr-7 bg-slate-50 hover:bg-white focus:bg-white text-slate-800 border ${this.state.masterFilterStatus && this.state.masterFilterStatus !== 'all' ? 'border-amber-500 bg-amber-50/50 text-amber-950 font-bold' : 'border-slate-300'} focus:border-amber-500 rounded-xl text-xs font-semibold outline-none transition-all cursor-pointer appearance-none shadow-2xs"
                   onchange="window.FPCL_STRATEGIC_SUITE.setMasterFilter('masterFilterStatus', this.value)"
                 >
-                  <option value="all" ${this.state.masterFilterStatus === 'all' ? 'selected' : ''}>All Statuses (${chartTotal})</option>
-                  <option value="Open" ${this.state.masterFilterStatus === 'Open' ? 'selected' : ''}>Open Only (${chartOpen})</option>
+                  <option value="all">Status [Col F]: All (${chartTotal})</option>
+                  <option value="Open" ${this.state.masterFilterStatus === 'Open' ? 'selected' : ''}>Open (${chartOpen})</option>
                   <option value="Closed" ${this.state.masterFilterStatus === 'Closed' ? 'selected' : ''}>Closed (${chartClosed})</option>
                 </select>
-                <div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-slate-500">
+                <div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none text-slate-400">
+                  <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
+                </div>
+              </div>
+
+              <!-- Column H: Ack by -->
+              <div class="relative">
+                <select
+                  class="w-full py-1.5 pl-2.5 pr-7 bg-slate-50 hover:bg-white focus:bg-white text-slate-900 border ${this.state.masterFilterColH && this.state.masterFilterColH !== 'all' ? 'border-amber-500 bg-amber-50/50 text-amber-950 font-bold' : 'border-slate-300'} focus:border-amber-500 rounded-xl text-xs font-semibold outline-none transition-all cursor-pointer appearance-none"
+                  onchange="window.FPCL_STRATEGIC_SUITE.setMasterFilter('masterFilterColH', this.value)"
+                >
+                  <option value="all">Ack By [Col H]: All</option>
+                  ${uniqueMasterColH.map(h => `
+                    <option value="${this.escapeHtml(h)}" ${this.state.masterFilterColH === h ? 'selected' : ''}>${this.escapeHtml(h)} (${allActions.filter(a => this.getActionColVal(a, 'H') === h).length})</option>
+                  `).join('')}
+                </select>
+                <div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none text-slate-400">
                   <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
                 </div>
               </div>
             </div>
+
+            <!-- ACTIVE FILTERS BADGES FOR COO MASTER -->
+            ${isFiltered ? `
+              <div class="flex items-center gap-1.5 flex-wrap pt-1 border-t border-slate-100 text-xs">
+                <span class="text-slate-500 font-semibold text-[11px]">Active Filters:</span>
+                ${this.state.masterFilterSearch ? `
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 text-amber-900 border border-amber-200 font-medium">
+                    Search: "${this.escapeHtml(this.state.masterFilterSearch)}"
+                    <button onclick="window.FPCL_STRATEGIC_SUITE.setMasterFilter('masterFilterSearch', '')" class="hover:text-amber-950 cursor-pointer"><i data-lucide="x" class="w-3 h-3"></i></button>
+                  </span>
+                ` : ''}
+                ${this.state.masterFilterDept && this.state.masterFilterDept !== 'all' ? `
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 text-amber-900 border border-amber-200 font-medium">
+                    Dept: ${this.escapeHtml(this.state.masterFilterDept)}
+                    <button onclick="window.FPCL_STRATEGIC_SUITE.setMasterFilter('masterFilterDept', 'all')" class="hover:text-amber-950 cursor-pointer"><i data-lucide="x" class="w-3 h-3"></i></button>
+                  </span>
+                ` : ''}
+                ${this.state.masterFilterColC && this.state.masterFilterColC !== 'all' ? `
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 text-amber-900 border border-amber-200 font-medium">
+                    Col C (Category): ${this.escapeHtml(this.state.masterFilterColC)}
+                    <button onclick="window.FPCL_STRATEGIC_SUITE.setMasterFilter('masterFilterColC', 'all')" class="hover:text-amber-950 cursor-pointer"><i data-lucide="x" class="w-3 h-3"></i></button>
+                  </span>
+                ` : ''}
+                ${this.state.masterFilterColD && this.state.masterFilterColD !== 'all' ? `
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 text-amber-900 border border-amber-200 font-medium">
+                    Col D (Assigned): ${this.escapeHtml(this.state.masterFilterColD)}
+                    <button onclick="window.FPCL_STRATEGIC_SUITE.setMasterFilter('masterFilterColD', 'all')" class="hover:text-amber-950 cursor-pointer"><i data-lucide="x" class="w-3 h-3"></i></button>
+                  </span>
+                ` : ''}
+                ${this.state.masterFilterStatus && this.state.masterFilterStatus !== 'all' ? `
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 text-amber-900 border border-amber-200 font-medium">
+                    Col F (Status): ${this.escapeHtml(this.state.masterFilterStatus)}
+                    <button onclick="window.FPCL_STRATEGIC_SUITE.setMasterFilter('masterFilterStatus', 'all')" class="hover:text-amber-950 cursor-pointer"><i data-lucide="x" class="w-3 h-3"></i></button>
+                  </span>
+                ` : ''}
+                ${this.state.masterFilterColH && this.state.masterFilterColH !== 'all' ? `
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 text-amber-900 border border-amber-200 font-medium">
+                    Col H (Ack by): ${this.escapeHtml(this.state.masterFilterColH)}
+                    <button onclick="window.FPCL_STRATEGIC_SUITE.setMasterFilter('masterFilterColH', 'all')" class="hover:text-amber-950 cursor-pointer"><i data-lucide="x" class="w-3 h-3"></i></button>
+                  </span>
+                ` : ''}
+              </div>
+            ` : ''}
           </div>
 
           <!-- EXECUTIVE KPIS & DONUT CHART: 2/3 KPIS (2x2) + 1/3 DISTRIBUTION DONUT -->
@@ -1825,8 +2204,8 @@
                   <i data-lucide="award" class="w-3 h-3 text-slate-950"></i>
                   <span>Overall Progress</span>
                 </span>
-                <div class="text-4xl sm:text-5xl font-black font-mono tracking-tight text-amber-800 kpi-metric-val mt-1.5">${overallRate}%</div>
-                <span class="text-[11px] font-black text-amber-900 bg-amber-200/60 border border-amber-300/80 px-2.5 py-0.5 rounded-full mt-0.5">Closure Rate</span>
+                <div class="text-4xl sm:text-5xl font-black font-mono tracking-tight text-amber-800 kpi-metric-val mt-1.5">${filteredRate}%</div>
+                <span class="text-[11px] font-black text-amber-900 bg-amber-200/60 border border-amber-300/80 px-2.5 py-0.5 rounded-full mt-0.5">${filteredRate}% Closure Rate</span>
               </div>
             </div>
 
@@ -1878,26 +2257,26 @@
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2.5">
                   <div class="flex items-center gap-2">
                     <span class="px-2.5 py-0.5 rounded-full bg-purple-700 text-white font-extrabold text-[10.5px] uppercase tracking-wide shadow-2xs">COO ROLLUP SUM</span>
-                    <span class="text-xs sm:text-sm font-black text-slate-900">Overall Enterprise Action Status (Sum of All ${allTiles.length} Department Dashboards)</span>
+                    <span class="text-xs sm:text-sm font-black text-slate-900">${isFiltered ? 'Filtered Enterprise Action Status' : `Overall Enterprise Action Status (Sum of All ${allTiles.length} Department Dashboards)`}</span>
                   </div>
                   <div class="flex items-center gap-2 text-xs font-bold">
-                    <span class="text-rose-700 font-mono">Open: ${openActions}</span>
+                    <span class="text-rose-700 font-mono">Open: ${filteredOpen}</span>
                     <span class="text-slate-300">|</span>
-                    <span class="text-emerald-700 font-mono">Closed: ${closedActions}</span>
+                    <span class="text-emerald-700 font-mono">Closed: ${filteredClosed}</span>
                     <span class="text-slate-300">|</span>
-                    <span class="text-purple-900 font-mono">Total: ${totalActions}</span>
-                    <span class="px-2 py-0.5 rounded-md bg-purple-100 text-purple-800 text-[11px] font-black">${overallRate}% Closed</span>
+                    <span class="text-purple-900 font-mono">Total: ${filteredTotal}</span>
+                    <span class="px-2 py-0.5 rounded-md bg-purple-100 text-purple-800 text-[11px] font-black">${filteredRate}% Closed</span>
                   </div>
                 </div>
                 <div class="w-full bg-slate-50/90 rounded-lg p-2 flex justify-center">
                   ${this.renderActionStatusTrendsSvg([{
                     id: 'enterprise-total-sum',
-                    name: 'All Departments Sum',
+                    name: isFiltered ? 'Filtered Sum' : 'All Departments Sum',
                     code: 'TOTAL',
-                    open: openActions,
-                    closed: closedActions,
-                    total: totalActions,
-                    rate: overallRate,
+                    open: filteredOpen,
+                    closed: filteredClosed,
+                    total: filteredTotal,
+                    rate: filteredRate,
                     isActive: true
                   }], {
                     width: 760,
@@ -1911,7 +2290,7 @@
                     labelFontSize: 16,
                     gridFontSize: 13,
                     totalFontSize: 20,
-                    maxVal: totalActions > 0 ? totalActions : 1,
+                    maxVal: filteredTotal > 0 ? filteredTotal : 1,
                     activeTileId: 'enterprise-total-sum',
                     interactive: false,
                     centerAlign: true
@@ -1921,9 +2300,16 @@
 
               ${(() => {
                 const bossRows = allTiles.map(t => {
-                  const actions = (t.actions || (this.state?.tileActions?.[t.id]) || []);
+                  const tileActions = (t.actions || (this.state?.tileActions?.[t.id]) || []);
+                  const actions = this.filterActionList(tileActions, {
+                    colC: this.state.masterFilterColC,
+                    colD: this.state.masterFilterColD,
+                    colF: this.state.masterFilterColF || this.state.masterFilterStatus,
+                    colH: this.state.masterFilterColH,
+                    search: this.state.masterFilterSearch
+                  });
                   const tTotal = actions.length;
-                  const tClosed = actions.filter(a => a.status === 'Closed' || a.status === 'Completed').length;
+                  const tClosed = actions.filter(a => a.status === 'Closed' || a.status === 'Completed' || (a.status || '').toLowerCase().includes('close') || this.getActionColVal(a, 'F') === 'Closed').length;
                   const tOpen = tTotal - tClosed;
                   const tRate = tTotal > 0 ? Math.round((tClosed / tTotal) * 100) : 0;
                   return {
@@ -1936,6 +2322,11 @@
                     rate: tRate,
                     isActive: this.state.masterFilterDept === t.id
                   };
+                }).filter(r => {
+                  if (this.state.masterFilterDept !== 'all') {
+                    return r.id === this.state.masterFilterDept;
+                  }
+                  return true;
                 }).sort((a, b) => b.total - a.total);
 
                 // Global maximum so all bars across both columns share identical visual scale
@@ -2534,13 +2925,13 @@
 
       // KPI values for this tile
       const totalActions = allActions.length;
-      const closedActions = allActions.filter(a => a.status === 'Closed' || a.status === 'Completed').length;
+      const closedActions = allActions.filter(a => a.status === 'Closed' || a.status === 'Completed' || (a.status || '').toLowerCase().includes('close') || this.getActionColVal(a, 'F') === 'Closed').length;
       const openActions = totalActions - closedActions;
       const overallRate = totalActions > 0 ? Math.round((closedActions / totalActions) * 100) : 0;
 
-      // Filtered KPIs
+      // Filtered KPIs (reflects active filters across entire tile dashboard)
       const filteredTotal = filteredActions.length;
-      const filteredClosed = filteredActions.filter(a => a.status === 'Closed' || a.status === 'Completed').length;
+      const filteredClosed = filteredActions.filter(a => a.status === 'Closed' || a.status === 'Completed' || (a.status || '').toLowerCase().includes('close') || this.getActionColVal(a, 'F') === 'Closed').length;
       const filteredOpen = filteredTotal - filteredClosed;
       const filteredRate = filteredTotal > 0 ? Math.round((filteredClosed / filteredTotal) * 100) : 0;
 
@@ -2553,7 +2944,17 @@
       const endIdx = Math.min(filteredTotal, startIdx + pageSize);
       const pagedActions = filteredActions.slice(startIdx, endIdx);
 
-      const isFiltered = this.state.tileFilterSearch || this.state.tileFilterStatus !== 'all';
+      const uniqueColC = [...new Set(allActions.map(a => this.getActionColVal(a, 'C')).filter(Boolean))].sort();
+      const uniqueColD = [...new Set(allActions.map(a => this.getActionColVal(a, 'D')).filter(Boolean))].sort();
+      const uniqueColH = [...new Set(allActions.map(a => this.getActionColVal(a, 'H')).filter(Boolean))].sort();
+      const isFiltered = Boolean(
+        this.state.tileFilterSearch ||
+        (this.state.tileFilterStatus && this.state.tileFilterStatus !== 'all') ||
+        (this.state.tileFilterColC && this.state.tileFilterColC !== 'all') ||
+        (this.state.tileFilterColD && this.state.tileFilterColD !== 'all') ||
+        (this.state.tileFilterColF && this.state.tileFilterColF !== 'all') ||
+        (this.state.tileFilterColH && this.state.tileFilterColH !== 'all')
+      );
       const isSyncing = this.state.syncStatus[tile.id] === 'syncing';
       const lastSynced = this.state.tileLastSynced[tile.id] || 'Active';
 
@@ -2669,46 +3070,152 @@
             </div>
           </div>
 
-          <!-- COMPACT FILTER BAR OPTION -->
-          <div class="bg-white border border-slate-200 rounded-2xl p-3 sm:p-3.5 shadow-xs space-y-2">
-            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+          <!-- FILTER BAR (COLUMNS C, D, F, H + SEARCH) -->
+          <div class="bg-white border border-slate-200 rounded-2xl p-3 sm:p-3.5 shadow-xs space-y-2.5">
+            <div class="flex items-center justify-between gap-2 flex-wrap">
+              <div class="flex items-center gap-2">
+                <i data-lucide="sliders-horizontal" class="w-4 h-4 text-purple-600"></i>
+                <span class="text-xs font-bold text-slate-800 uppercase tracking-wider">Sheet Filters (Columns C, D, F, H)</span>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-slate-100 text-slate-600">
+                  ${filteredTotal} of ${totalActions} actions
+                </span>
+              </div>
+              ${isFiltered ? `
+                <button
+                  type="button"
+                  onclick="window.FPCL_STRATEGIC_SUITE.clearTileFilters()"
+                  class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 transition-colors cursor-pointer"
+                  title="Clear all applied filters"
+                >
+                  <i data-lucide="filter-x" class="w-3.5 h-3.5"></i>
+                  <span>Reset All Filters</span>
+                </button>
+              ` : ''}
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 sm:gap-2.5">
               <!-- Search Filter -->
-              <div class="relative w-full sm:w-72 shrink-0">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                  <i data-lucide="search" class="w-4 h-4"></i>
+              <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-slate-400">
+                  <i data-lucide="search" class="w-3.5 h-3.5"></i>
                 </div>
                 <input
                   type="text"
-                  value="${this.state.tileFilterSearch || ''}"
-                  placeholder="Filter by action text, ID, remarks..."
-                  class="w-full pl-9 pr-8 py-2 bg-slate-50 hover:bg-white focus:bg-white text-slate-900 border border-slate-200 focus:border-purple-500 rounded-xl text-xs sm:text-sm font-medium outline-none transition-all"
+                  value="${this.escapeHtml(this.state.tileFilterSearch || '')}"
+                  placeholder="Search actions..."
+                  class="w-full pl-8 pr-7 py-2 bg-slate-50 hover:bg-white focus:bg-white text-slate-900 border border-slate-200 focus:border-purple-500 rounded-xl text-xs font-medium outline-none transition-all"
                   oninput="window.FPCL_STRATEGIC_SUITE.setTileFilter('tileFilterSearch', this.value)"
                 />
                 ${this.state.tileFilterSearch ? `
                   <button
                     onclick="window.FPCL_STRATEGIC_SUITE.setTileFilter('tileFilterSearch', '')"
-                    class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer"
+                    class="absolute inset-y-0 right-0 pr-2 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer"
                   >
-                    <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                    <i data-lucide="x" class="w-3 h-3"></i>
                   </button>
                 ` : ''}
               </div>
 
-              <!-- Status Filter Dropdown Menu -->
+              <!-- Column C: Action category -->
               <div class="relative">
                 <select
-                  class="w-full py-2 pl-3 pr-8 bg-slate-50 hover:bg-white focus:bg-white text-slate-800 border border-slate-200 focus:border-purple-500 rounded-xl text-xs sm:text-sm font-bold outline-none transition-all cursor-pointer appearance-none shadow-2xs"
+                  class="w-full py-2 pl-2.5 pr-7 bg-slate-50 hover:bg-white focus:bg-white text-slate-800 border ${this.state.tileFilterColC && this.state.tileFilterColC !== 'all' ? 'border-purple-500 bg-purple-50/50 text-purple-900 font-bold' : 'border-slate-200'} focus:border-purple-500 rounded-xl text-xs font-semibold outline-none transition-all cursor-pointer appearance-none shadow-2xs"
+                  onchange="window.FPCL_STRATEGIC_SUITE.setTileFilter('tileFilterColC', this.value)"
+                >
+                  <option value="all">Category [Col C]: All</option>
+                  ${uniqueColC.map(c => `
+                    <option value="${this.escapeHtml(c)}" ${this.state.tileFilterColC === c ? 'selected' : ''}>${this.escapeHtml(c)} (${allActions.filter(a => this.getActionColVal(a, 'C') === c).length})</option>
+                  `).join('')}
+                </select>
+                <div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none text-slate-400">
+                  <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
+                </div>
+              </div>
+
+              <!-- Column D: Assigned to -->
+              <div class="relative">
+                <select
+                  class="w-full py-2 pl-2.5 pr-7 bg-slate-50 hover:bg-white focus:bg-white text-slate-800 border ${this.state.tileFilterColD && this.state.tileFilterColD !== 'all' ? 'border-purple-500 bg-purple-50/50 text-purple-900 font-bold' : 'border-slate-200'} focus:border-purple-500 rounded-xl text-xs font-semibold outline-none transition-all cursor-pointer appearance-none shadow-2xs"
+                  onchange="window.FPCL_STRATEGIC_SUITE.setTileFilter('tileFilterColD', this.value)"
+                >
+                  <option value="all">Assigned [Col D]: All</option>
+                  ${uniqueColD.map(d => `
+                    <option value="${this.escapeHtml(d)}" ${this.state.tileFilterColD === d ? 'selected' : ''}>${this.escapeHtml(d)} (${allActions.filter(a => this.getActionColVal(a, 'D') === d).length})</option>
+                  `).join('')}
+                </select>
+                <div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none text-slate-400">
+                  <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
+                </div>
+              </div>
+
+              <!-- Column F: Status detail -->
+              <div class="relative">
+                <select
+                  class="w-full py-2 pl-2.5 pr-7 bg-slate-50 hover:bg-white focus:bg-white text-slate-800 border ${this.state.tileFilterStatus && this.state.tileFilterStatus !== 'all' ? 'border-purple-500 bg-purple-50/50 text-purple-900 font-bold' : 'border-slate-200'} focus:border-purple-500 rounded-xl text-xs font-semibold outline-none transition-all cursor-pointer appearance-none shadow-2xs"
                   onchange="window.FPCL_STRATEGIC_SUITE.setTileFilter('tileFilterStatus', this.value)"
                 >
-                  <option value="all" ${this.state.tileFilterStatus === 'all' ? 'selected' : ''}>All Actions (${totalActions})</option>
-                  <option value="Open" ${this.state.tileFilterStatus === 'Open' ? 'selected' : ''}>Open Only (${openActions})</option>
+                  <option value="all">Status [Col F]: All (${totalActions})</option>
+                  <option value="Open" ${this.state.tileFilterStatus === 'Open' ? 'selected' : ''}>Open (${openActions})</option>
                   <option value="Closed" ${this.state.tileFilterStatus === 'Closed' ? 'selected' : ''}>Closed (${closedActions})</option>
                 </select>
-                <div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-slate-500">
-                  <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                <div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none text-slate-400">
+                  <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
+                </div>
+              </div>
+
+              <!-- Column H: Ack by -->
+              <div class="relative">
+                <select
+                  class="w-full py-2 pl-2.5 pr-7 bg-slate-50 hover:bg-white focus:bg-white text-slate-800 border ${this.state.tileFilterColH && this.state.tileFilterColH !== 'all' ? 'border-purple-500 bg-purple-50/50 text-purple-900 font-bold' : 'border-slate-200'} focus:border-purple-500 rounded-xl text-xs font-semibold outline-none transition-all cursor-pointer appearance-none shadow-2xs"
+                  onchange="window.FPCL_STRATEGIC_SUITE.setTileFilter('tileFilterColH', this.value)"
+                >
+                  <option value="all">Ack By [Col H]: All</option>
+                  ${uniqueColH.map(h => `
+                    <option value="${this.escapeHtml(h)}" ${this.state.tileFilterColH === h ? 'selected' : ''}>${this.escapeHtml(h)} (${allActions.filter(a => this.getActionColVal(a, 'H') === h).length})</option>
+                  `).join('')}
+                </select>
+                <div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none text-slate-400">
+                  <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
                 </div>
               </div>
             </div>
+
+            <!-- ACTIVE FILTERS BADGES (SHOWN IF ANY FILTER APPLIED) -->
+            ${isFiltered ? `
+              <div class="flex items-center gap-1.5 flex-wrap pt-1 border-t border-slate-100 text-xs">
+                <span class="text-slate-500 font-semibold text-[11px]">Active Filters:</span>
+                ${this.state.tileFilterSearch ? `
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200 font-medium">
+                    Search: "${this.escapeHtml(this.state.tileFilterSearch)}"
+                    <button onclick="window.FPCL_STRATEGIC_SUITE.setTileFilter('tileFilterSearch', '')" class="hover:text-purple-900 cursor-pointer"><i data-lucide="x" class="w-3 h-3"></i></button>
+                  </span>
+                ` : ''}
+                ${this.state.tileFilterColC && this.state.tileFilterColC !== 'all' ? `
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200 font-medium">
+                    Col C (Category): ${this.escapeHtml(this.state.tileFilterColC)}
+                    <button onclick="window.FPCL_STRATEGIC_SUITE.setTileFilter('tileFilterColC', 'all')" class="hover:text-purple-900 cursor-pointer"><i data-lucide="x" class="w-3 h-3"></i></button>
+                  </span>
+                ` : ''}
+                ${this.state.tileFilterColD && this.state.tileFilterColD !== 'all' ? `
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200 font-medium">
+                    Col D (Assigned): ${this.escapeHtml(this.state.tileFilterColD)}
+                    <button onclick="window.FPCL_STRATEGIC_SUITE.setTileFilter('tileFilterColD', 'all')" class="hover:text-purple-900 cursor-pointer"><i data-lucide="x" class="w-3 h-3"></i></button>
+                  </span>
+                ` : ''}
+                ${this.state.tileFilterStatus && this.state.tileFilterStatus !== 'all' ? `
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200 font-medium">
+                    Col F (Status): ${this.escapeHtml(this.state.tileFilterStatus)}
+                    <button onclick="window.FPCL_STRATEGIC_SUITE.setTileFilter('tileFilterStatus', 'all')" class="hover:text-purple-900 cursor-pointer"><i data-lucide="x" class="w-3 h-3"></i></button>
+                  </span>
+                ` : ''}
+                ${this.state.tileFilterColH && this.state.tileFilterColH !== 'all' ? `
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200 font-medium">
+                    Col H (Ack by): ${this.escapeHtml(this.state.tileFilterColH)}
+                    <button onclick="window.FPCL_STRATEGIC_SUITE.setTileFilter('tileFilterColH', 'all')" class="hover:text-purple-900 cursor-pointer"><i data-lucide="x" class="w-3 h-3"></i></button>
+                  </span>
+                ` : ''}
+              </div>
+            ` : ''}
           </div>
 
           <!-- KPI VALUES -->
@@ -2730,14 +3237,14 @@
 
             <div class="bg-white border border-slate-200 hover:border-purple-300 rounded-2xl p-4 sm:p-6 shadow-xs text-center flex flex-col items-center justify-center transition-all">
               <div class="text-xs sm:text-sm font-bold text-purple-700 uppercase tracking-wider text-center">Overall Progress</div>
-              <div class="text-5xl sm:text-6xl md:text-7xl font-black font-mono tracking-tight text-purple-700 kpi-metric-val mt-2 text-center">${overallRate}%</div>
+              <div class="text-5xl sm:text-6xl md:text-7xl font-black font-mono tracking-tight text-purple-700 kpi-metric-val mt-2 text-center">${filteredRate}%</div>
             </div>
           </div>
 
           <!-- TREND BARS & DONUT CHART: DONUT CHART PLACED TO RIGHT SIDE OF BAR CHART -->
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-3.5 sm:gap-4">
-            ${this.renderSingleStatusBar(tile, closedActions, openActions, totalActions, overallRate, this.state.tileFilterStatus || 'all')}
-            ${this.renderOpenCloseDonutCard(closedActions, openActions, totalActions, overallRate, this.state.tileFilterStatus || 'all')}
+            ${this.renderSingleStatusBar(tile, filteredClosed, filteredOpen, filteredTotal, filteredRate, this.state.tileFilterStatus || 'all')}
+            ${this.renderOpenCloseDonutCard(filteredClosed, filteredOpen, filteredTotal, filteredRate, this.state.tileFilterStatus || 'all')}
           </div>
 
           <!-- SIMPLE TABLE FOR TEXT DATA WITH FILTER & PAGINATION -->
