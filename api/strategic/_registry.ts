@@ -22,9 +22,9 @@ export const STRATEGIC_TILE_REGISTRY: Record<string, StrategicTileConfig> = {
   'strategic-master': {
     envKeys: ['STRATEGIC_SHEET_URL', 'STRATEGIC_MASTER_SHEET_URL'],
     code: 'STRAT',
-    defaultTab: 'Master',
+    defaultTab: 'ExecutiveRollup',
     name: 'Strategic Master (COO)',
-    fallbackUrl: 'https://docs.google.com/spreadsheets/d/1KH1GCJCdJTyh90SBRoeJFEDQAJLae26eltNQ0aCQ61U/edit?usp=sharing'
+    fallbackUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSjecapStvtMhaYILR7NX-jRI5vcXVVCq7sIaBQmeDoBgqWnBZQPJcGDeN88VETinBOHibJ2BT1H_UX/pub?output=csv'
   },
   'admin-security': {
     envKeys: [
@@ -52,128 +52,182 @@ export const STRATEGIC_TILE_REGISTRY: Record<string, StrategicTileConfig> = {
     code: 'AI',
     defaultTab: 'Asset_Integrity_Actions',
     name: 'Asset Integrity',
-    fallbackUrl: 'https://docs.google.com/spreadsheets/d/1vxDXXQjzTpvNeGoUHEvj9_rORoWylvrsThMt-6vc2Bg/edit?usp=sharing'
+    fallbackUrl: 'https://docs.google.com/spreadsheets/d/1PjzKXj1CK3L9wFVlPnijxWJrPqtlCNo8oPI0KJz9gIA/edit?usp=sharing'
   },
   'business-development': {
     envKeys: ['BUSINESS_DEVELOPMENT_SHEET_URL'],
     code: 'BD',
     defaultTab: 'Business_Development_Actions',
     name: 'Business Development',
-    fallbackUrl: 'https://docs.google.com/spreadsheets/d/1XsdYp191m4-VpCAfbVZPxjy0_xrVM1JTzES64_U-U74/edit?usp=sharing'
+    fallbackUrl: 'https://docs.google.com/spreadsheets/d/1PjzKXj1CK3L9wFVlPnijxWJrPqtlCNo8oPI0KJz9gIA/edit?usp=sharing'
   },
   'civil': {
     envKeys: ['CIVIL_SHEET_URL'],
     code: 'CIV',
     defaultTab: 'Civil_Actions',
     name: 'Civil',
-    fallbackUrl: 'https://docs.google.com/spreadsheets/d/1bFVVWi02R7aZsHvJYnT0byJBKlDNj0yzCdlmBCjAYw0/edit?usp=sharing'
+    fallbackUrl: 'https://docs.google.com/spreadsheets/d/1PjzKXj1CK3L9wFVlPnijxWJrPqtlCNo8oPI0KJz9gIA/edit?usp=sharing'
   },
   'ei': {
     envKeys: ['EI_SHEET_URL'],
     code: 'EI',
     defaultTab: 'EI_Actions',
     name: 'E&I',
-    fallbackUrl: 'https://docs.google.com/spreadsheets/d/1ezANcvjy6i9FT5zlnDXfSDYoRagXf5anOWkmd58ubBk/edit?usp=sharing'
+    fallbackUrl: 'https://docs.google.com/spreadsheets/d/1PjzKXj1CK3L9wFVlPnijxWJrPqtlCNo8oPI0KJz9gIA/edit?usp=sharing'
   },
   'finance': {
     envKeys: ['FINANCE_SHEET_URL'],
     code: 'FIN',
     defaultTab: 'Finance_Actions',
     name: 'Finance',
-    fallbackUrl: 'https://docs.google.com/spreadsheets/d/1MLpsQu1vTCd2sSrD1ohhfXnX_Hy_x-Sz2kF_0D1JgFY/edit?usp=sharing'
+    fallbackUrl: 'https://docs.google.com/spreadsheets/d/1PjzKXj1CK3L9wFVlPnijxWJrPqtlCNo8oPI0KJz9gIA/edit?usp=sharing'
   },
   'hseq': {
     envKeys: ['HSEQ_SHEET_URL', 'HSEQ_KPI'],
     code: 'HSEQ',
-    defaultTab: 'HSEQ_KPI',
+    defaultTab: 'HSEQ_Actions',
     name: 'HSEQ',
-    fallbackUrl: 'https://docs.google.com/spreadsheets/d/1vONI5RrPT6Txbh8Bk1qY6NfqifL80KkcNFz9AGugXTM/edit?usp=sharing'
+    fallbackUrl: 'https://docs.google.com/spreadsheets/d/1PjzKXj1CK3L9wFVlPnijxWJrPqtlCNo8oPI0KJz9gIA/edit?usp=sharing'
   },
   'hcm': {
     envKeys: ['HCM_SHEET_URL'],
     code: 'HCM',
     defaultTab: 'HCM_Actions',
     name: 'HCM',
-    fallbackUrl: 'https://docs.google.com/spreadsheets/d/1xKwA57kCMxhzbHDNVTcWjqCL5pJ1IVQa-qHXhjbtDpk/edit?usp=sharing'
+    fallbackUrl: 'https://docs.google.com/spreadsheets/d/1PjzKXj1CK3L9wFVlPnijxWJrPqtlCNo8oPI0KJz9gIA/edit?usp=sharing'
   },
   'ims': {
     envKeys: ['IMS_SHEET_URL'],
     code: 'IMS',
     defaultTab: 'IMS_Actions',
     name: 'IMS',
-    fallbackUrl: 'https://docs.google.com/spreadsheets/d/1D--kKCyl8yYrCaRdB1vyIa-iJu18cCIR4CTFugOrq6c/edit?usp=sharing'
+    fallbackUrl: 'https://docs.google.com/spreadsheets/d/1PjzKXj1CK3L9wFVlPnijxWJrPqtlCNo8oPI0KJz9gIA/edit?usp=sharing'
   },
   'it': {
     envKeys: ['IT_SHEET_URL'],
     code: 'IT',
     defaultTab: 'IT_Actions',
     name: 'IT',
-    fallbackUrl: 'https://docs.google.com/spreadsheets/d/1N4K479JVc_oRusNHoFJX22x-kxjQWUQaZDgrBSBelwo/edit?usp=sharing'
+    fallbackUrl: 'https://docs.google.com/spreadsheets/d/1PjzKXj1CK3L9wFVlPnijxWJrPqtlCNo8oPI0KJz9gIA/edit?usp=sharing'
   },
   'inspection': {
     envKeys: ['INSPECTION_SHEET_URL'],
     code: 'INSP',
     defaultTab: 'Inspection_Actions',
     name: 'Inspection',
-    fallbackUrl: 'https://docs.google.com/spreadsheets/d/1LR1vJcthPaVR8WjCLfo4-SS6dAcAUX1z5Z8Of-m5l7Y/edit?usp=sharing'
+    fallbackUrl: 'https://docs.google.com/spreadsheets/d/1PjzKXj1CK3L9wFVlPnijxWJrPqtlCNo8oPI0KJz9gIA/edit?usp=sharing'
   },
   'ld': {
     envKeys: ['LD_SHEET_URL'],
     code: 'LD',
     defaultTab: 'LD_Actions',
     name: 'L&D',
-    fallbackUrl: 'https://docs.google.com/spreadsheets/d/1oZq8N-awSwOkmtrgfRDKCM8TDsAhvX8vLO9U25jVewg/edit?usp=sharing'
+    fallbackUrl: 'https://docs.google.com/spreadsheets/d/1PjzKXj1CK3L9wFVlPnijxWJrPqtlCNo8oPI0KJz9gIA/edit?usp=sharing'
   },
   'machinery': {
     envKeys: ['MACHINERY_SHEET_URL'],
     code: 'MACH',
     defaultTab: 'Machinery_Actions',
     name: 'Machinery',
-    fallbackUrl: 'https://docs.google.com/spreadsheets/d/1b18LKPiJqaTwIifGslJX0WGmqvPKiwpUrVShI74Yve0/edit?usp=sharing'
+    fallbackUrl: 'https://docs.google.com/spreadsheets/d/1PjzKXj1CK3L9wFVlPnijxWJrPqtlCNo8oPI0KJz9gIA/edit?usp=sharing'
   },
   'mechanical': {
     envKeys: ['MECHANICAL_SHEET_URL'],
     code: 'MECH',
     defaultTab: 'Mechanical_Actions',
     name: 'Mechanical',
-    fallbackUrl: 'https://docs.google.com/spreadsheets/d/1nPuaAebKnA4kqGPDkgl5c5QyfW713WuxPef_HhjpyMI/edit?usp=sharing'
+    fallbackUrl: 'https://docs.google.com/spreadsheets/d/1PjzKXj1CK3L9wFVlPnijxWJrPqtlCNo8oPI0KJz9gIA/edit?usp=sharing'
   },
   'operations': {
     envKeys: ['OPERATIONS_SHEET_URL'],
     code: 'OPS',
     defaultTab: 'Operations_Actions',
     name: 'Operations',
-    fallbackUrl: 'https://docs.google.com/spreadsheets/d/1tMeqrJHHmoq5gJ8GWCB2KGZKAh_IyQy1XRqCd4eEsiI/edit?usp=sharing'
+    fallbackUrl: 'https://docs.google.com/spreadsheets/d/1PjzKXj1CK3L9wFVlPnijxWJrPqtlCNo8oPI0KJz9gIA/edit?usp=sharing'
   },
   'reliability': {
     envKeys: ['RELIABILITY_SHEET_URL'],
     code: 'REL',
     defaultTab: 'Reliability_Actions',
     name: 'Reliability',
-    fallbackUrl: 'https://docs.google.com/spreadsheets/d/1mZroS28hlyA1jZyEx0vKacAhmXeT4Wx49nJHyhI4fyQ/edit?usp=sharing'
+    fallbackUrl: 'https://docs.google.com/spreadsheets/d/1PjzKXj1CK3L9wFVlPnijxWJrPqtlCNo8oPI0KJz9gIA/edit?usp=sharing'
   },
   'scm': {
     envKeys: ['SCM_SHEET_URL', 'STRATEGIC_SCM_SHEET_URL', 'GOOGLE_SHEET_SCM', 'SCM_URL', 'SCM'],
     code: 'SCM',
-    defaultTab: 'SCM',
+    defaultTab: 'SCM_Actions',
     name: 'SCM',
-    fallbackUrl: 'https://docs.google.com/spreadsheets/d/1KH1GCJCdJTyh90SBRoeJFEDQAJLae26eltNQ0aCQ61U/edit?usp=sharing'
+    fallbackUrl: 'https://docs.google.com/spreadsheets/d/1PjzKXj1CK3L9wFVlPnijxWJrPqtlCNo8oPI0KJz9gIA/edit?usp=sharing'
   },
   'projects': {
     envKeys: ['PROJECTS_SHEET_URL'],
     code: 'PRJ',
     defaultTab: 'Projects_Actions',
     name: 'Projects',
-    fallbackUrl: 'https://docs.google.com/spreadsheets/d/1ZOdVX4SE7SsXbtIYleueczP8b-Uw_DMA4ofrbuLURN8/edit?usp=sharing'
+    fallbackUrl: 'https://docs.google.com/spreadsheets/d/1PjzKXj1CK3L9wFVlPnijxWJrPqtlCNo8oPI0KJz9gIA/edit?usp=sharing'
   },
   'process': {
     envKeys: ['PROCESS_SHEET_URL'],
     code: 'PROC',
     defaultTab: 'Process_Actions',
     name: 'Process',
-    fallbackUrl: 'https://docs.google.com/spreadsheets/d/1GK1KgRBWplWo3dmMwcb9NnwV8RflhSzJSslcj6h-wWE/edit?usp=sharing'
+    fallbackUrl: 'https://docs.google.com/spreadsheets/d/1PjzKXj1CK3L9wFVlPnijxWJrPqtlCNo8oPI0KJz9gIA/edit?usp=sharing'
   }
 };
+
+export function getCandidateTabsForTile(tileId: string, sheetUrl?: string): string[] {
+  const normalizedId = tileId === 'admin_security' || tileId === 'Admin_&_Security' ? 'admin-security' : tileId;
+  const reg = STRATEGIC_TILE_REGISTRY[normalizedId];
+  const candidateTabs: string[] = [];
+
+  if (sheetUrl) {
+    const urlSheetMatch = sheetUrl.match(/[?&]sheet=([^&#]+)/);
+    if (urlSheetMatch) {
+      try {
+        const decoded = decodeURIComponent(urlSheetMatch[1]);
+        if (decoded && !candidateTabs.includes(decoded)) candidateTabs.push(decoded);
+      } catch (e) {}
+    }
+  }
+
+  if (reg) {
+    if (reg.defaultTab && !candidateTabs.includes(reg.defaultTab)) candidateTabs.push(reg.defaultTab);
+
+    const rawName = reg.name || '';
+    const nameUnderscore = rawName.replace(/[\s&]+/g, '_');
+    const nameNoSpecial = rawName.replace(/[^a-zA-Z0-9]/g, '');
+
+    const tabCandidates = [
+      `${nameUnderscore}_Actions`,
+      `${rawName}_Actions`,
+      `${reg.code}_Actions`,
+      `${reg.code}_Action`,
+      rawName,
+      nameUnderscore,
+      nameNoSpecial,
+      reg.code,
+      ...(reg.envKeys || [])
+    ];
+
+    for (const t of tabCandidates) {
+      if (t && !candidateTabs.includes(t)) candidateTabs.push(t);
+    }
+  }
+
+  if (normalizedId === 'admin-security') {
+    ['Admin_Security_Actions', 'Admin_&_Security', 'Admin & Security', 'Admin_Security', 'Admin and Security', 'Admin', 'Security'].forEach(t => {
+      if (!candidateTabs.includes(t)) candidateTabs.push(t);
+    });
+  } else if (normalizedId === 'scm') {
+    ['SCM_Actions', 'SCM', 'SCM Actions', 'Supply Chain', 'Procurement'].forEach(t => {
+      if (!candidateTabs.includes(t)) candidateTabs.push(t);
+    });
+  }
+
+  if (!candidateTabs.includes('Sheet1')) candidateTabs.push('Sheet1');
+
+  return candidateTabs;
+}
 
 export function getSheetUrlForTile(tileId: string): string {
   const normalizedId = tileId === 'admin_security' || tileId === 'Admin_&_Security' ? 'admin-security' : tileId;

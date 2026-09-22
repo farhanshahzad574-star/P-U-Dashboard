@@ -9,6 +9,8 @@
 (function () {
   'use strict';
 
+  const SHARED_STRATEGIC_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1PjzKXj1CK3L9wFVlPnijxWJrPqtlCNo8oPI0KJz9gIA/edit?usp=sharing';
+
   const STRATEGIC_EMPLOYEES_CONFIG = [
     {
       id: 'strategic-master',
@@ -20,7 +22,7 @@
       employeeName: '',
       employeeRole: '',
       employeeEmail: '',
-      sheetUrl: 'https://docs.google.com/spreadsheets/d/1KH1GCJCdJTyh90SBRoeJFEDQAJLae26eltNQ0aCQ61U/edit?usp=sharing',
+      sheetUrl: SHARED_STRATEGIC_SHEET_URL,
       sheetTab: 'ExecutiveRollup',
       gid: '0',
       theme: {
@@ -44,7 +46,7 @@
       employeeName: '',
       employeeRole: '',
       employeeEmail: '',
-      sheetUrl: 'https://docs.google.com/spreadsheets/d/1PjzKXj1CK3L9wFVlPnijxWJrPqtlCNo8oPI0KJz9gIA/edit?usp=sharing',
+      sheetUrl: SHARED_STRATEGIC_SHEET_URL,
       sheetTab: 'Admin_Security_Actions',
       gid: '0',
       theme: {
@@ -74,7 +76,7 @@
       employeeName: '',
       employeeRole: '',
       employeeEmail: '',
-      sheetUrl: 'https://docs.google.com/spreadsheets/d/1vxDXXQjzTpvNeGoUHEvj9_rORoWylvrsThMt-6vc2Bg/edit?usp=sharing',
+      sheetUrl: SHARED_STRATEGIC_SHEET_URL,
       sheetTab: 'Asset_Integrity_Actions',
       gid: '1',
       theme: {
@@ -104,7 +106,7 @@
       employeeName: '',
       employeeRole: '',
       employeeEmail: '',
-      sheetUrl: 'https://docs.google.com/spreadsheets/d/1XsdYp191m4-VpCAfbVZPxjy0_xrVM1JTzES64_U-U74/edit?usp=sharing',
+      sheetUrl: SHARED_STRATEGIC_SHEET_URL,
       sheetTab: 'Business_Development_Actions',
       gid: '2',
       theme: {
@@ -133,7 +135,7 @@
       employeeName: '',
       employeeRole: '',
       employeeEmail: '',
-      sheetUrl: 'https://docs.google.com/spreadsheets/d/1bFVVWi02R7aZsHvJYnT0byJBKlDNj0yzCdlmBCjAYw0/edit?usp=sharing',
+      sheetUrl: SHARED_STRATEGIC_SHEET_URL,
       sheetTab: 'Civil_Actions',
       gid: '3',
       theme: {
@@ -162,7 +164,7 @@
       employeeName: '',
       employeeRole: '',
       employeeEmail: '',
-      sheetUrl: 'https://docs.google.com/spreadsheets/d/1ezANcvjy6i9FT5zlnDXfSDYoRagXf5anOWkmd58ubBk/edit?usp=sharing',
+      sheetUrl: SHARED_STRATEGIC_SHEET_URL,
       sheetTab: 'EI_Actions',
       gid: '4',
       theme: {
@@ -192,7 +194,7 @@
       employeeName: '',
       employeeRole: '',
       employeeEmail: '',
-      sheetUrl: 'https://docs.google.com/spreadsheets/d/1MLpsQu1vTCd2sSrD1ohhfXnX_Hy_x-Sz2kF_0D1JgFY/edit?usp=sharing',
+      sheetUrl: SHARED_STRATEGIC_SHEET_URL,
       sheetTab: 'Finance_Actions',
       gid: '5',
       theme: {
@@ -221,7 +223,7 @@
       employeeName: '',
       employeeRole: '',
       employeeEmail: '',
-      sheetUrl: 'https://docs.google.com/spreadsheets/d/1vONI5RrPT6Txbh8Bk1qY6NfqifL80KkcNFz9AGugXTM/edit?usp=sharing',
+      sheetUrl: SHARED_STRATEGIC_SHEET_URL,
       sheetTab: 'HSEQ_Actions',
       gid: '6',
       theme: {
@@ -251,7 +253,7 @@
       employeeName: '',
       employeeRole: '',
       employeeEmail: '',
-      sheetUrl: 'https://docs.google.com/spreadsheets/d/1xKwA57kCMxhzbHDNVTcWjqCL5pJ1IVQa-qHXhjbtDpk/edit?usp=sharing',
+      sheetUrl: SHARED_STRATEGIC_SHEET_URL,
       sheetTab: 'HCM_Actions',
       gid: '7',
       theme: {
@@ -281,7 +283,7 @@
       employeeName: '',
       employeeRole: '',
       employeeEmail: '',
-      sheetUrl: 'https://docs.google.com/spreadsheets/d/1D--kKCyl8yYrCaRdB1vyIa-iJu18cCIR4CTFugOrq6c/edit?usp=sharing',
+      sheetUrl: SHARED_STRATEGIC_SHEET_URL,
       sheetTab: 'IMS_Actions',
       gid: '8',
       theme: {
@@ -310,7 +312,7 @@
       employeeName: '',
       employeeRole: '',
       employeeEmail: '',
-      sheetUrl: 'https://docs.google.com/spreadsheets/d/1N4K479JVc_oRusNHoFJX22x-kxjQWUQaZDgrBSBelwo/edit?usp=sharing',
+      sheetUrl: SHARED_STRATEGIC_SHEET_URL,
       sheetTab: 'IT_Actions',
       gid: '9',
       theme: {
@@ -340,7 +342,7 @@
       employeeName: '',
       employeeRole: '',
       employeeEmail: '',
-      sheetUrl: 'https://docs.google.com/spreadsheets/d/1LR1vJcthPaVR8WjCLfo4-SS6dAcAUX1z5Z8Of-m5l7Y/edit?usp=sharing',
+      sheetUrl: SHARED_STRATEGIC_SHEET_URL,
       sheetTab: 'Inspection_Actions',
       gid: '10',
       theme: {
@@ -370,7 +372,7 @@
       employeeName: '',
       employeeRole: '',
       employeeEmail: '',
-      sheetUrl: 'https://docs.google.com/spreadsheets/d/1oZq8N-awSwOkmtrgfRDKCM8TDsAhvX8vLO9U25jVewg/edit?usp=sharing',
+      sheetUrl: SHARED_STRATEGIC_SHEET_URL,
       sheetTab: 'LD_Actions',
       gid: '11',
       theme: {
@@ -400,7 +402,7 @@
       employeeName: '',
       employeeRole: '',
       employeeEmail: '',
-      sheetUrl: 'https://docs.google.com/spreadsheets/d/1b18LKPiJqaTwIifGslJX0WGmqvPKiwpUrVShI74Yve0/edit?usp=sharing',
+      sheetUrl: SHARED_STRATEGIC_SHEET_URL,
       sheetTab: 'Machinery_Actions',
       gid: '12',
       theme: {
@@ -430,7 +432,7 @@
       employeeName: '',
       employeeRole: '',
       employeeEmail: '',
-      sheetUrl: 'https://docs.google.com/spreadsheets/d/1nPuaAebKnA4kqGPDkgl5c5QyfW713WuxPef_HhjpyMI/edit?usp=sharing',
+      sheetUrl: SHARED_STRATEGIC_SHEET_URL,
       sheetTab: 'Mechanical_Actions',
       gid: '13',
       theme: {
@@ -460,7 +462,7 @@
       employeeName: '',
       employeeRole: '',
       employeeEmail: '',
-      sheetUrl: 'https://docs.google.com/spreadsheets/d/1tMeqrJHHmoq5gJ8GWCB2KGZKAh_IyQy1XRqCd4eEsiI/edit?usp=sharing',
+      sheetUrl: SHARED_STRATEGIC_SHEET_URL,
       sheetTab: 'Operations_Actions',
       gid: '14',
       theme: {
@@ -490,7 +492,7 @@
       employeeName: '',
       employeeRole: '',
       employeeEmail: '',
-      sheetUrl: 'https://docs.google.com/spreadsheets/d/1mZroS28hlyA1jZyEx0vKacAhmXeT4Wx49nJHyhI4fyQ/edit?usp=sharing',
+      sheetUrl: SHARED_STRATEGIC_SHEET_URL,
       sheetTab: 'Reliability_Actions',
       gid: '15',
       theme: {
@@ -520,7 +522,7 @@
       employeeName: '',
       employeeRole: '',
       employeeEmail: '',
-      sheetUrl: 'https://docs.google.com/spreadsheets/d/1KH1GCJCdJTyh90SBRoeJFEDQAJLae26eltNQ0aCQ61U/edit?usp=sharing',
+      sheetUrl: SHARED_STRATEGIC_SHEET_URL,
       sheetTab: 'SCM',
       gid: '0',
       theme: {
@@ -550,7 +552,7 @@
       employeeName: '',
       employeeRole: '',
       employeeEmail: '',
-      sheetUrl: 'https://docs.google.com/spreadsheets/d/1ZOdVX4SE7SsXbtIYleueczP8b-Uw_DMA4ofrbuLURN8/edit?usp=sharing',
+      sheetUrl: SHARED_STRATEGIC_SHEET_URL,
       sheetTab: 'Projects_Actions',
       gid: '17',
       theme: {
@@ -580,7 +582,7 @@
       employeeName: '',
       employeeRole: '',
       employeeEmail: '',
-      sheetUrl: 'https://docs.google.com/spreadsheets/d/1GK1KgRBWplWo3dmMwcb9NnwV8RflhSzJSslcj6h-wWE/edit?usp=sharing',
+      sheetUrl: SHARED_STRATEGIC_SHEET_URL,
       sheetTab: 'Process_Actions',
       gid: '18',
       theme: {

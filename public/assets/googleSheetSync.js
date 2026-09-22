@@ -136,10 +136,10 @@
       };
 
       let gvizUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=responseHandler:${callbackName}`;
-      if (gid !== null && gid !== undefined && gid !== '') {
-        gvizUrl += `&gid=${gid}`;
-      } else if (sheetTab) {
+      if (sheetTab) {
         gvizUrl += `&sheet=${encodeURIComponent(sheetTab)}`;
+      } else if (gid !== null && gid !== undefined && gid !== '' && gid !== '0') {
+        gvizUrl += `&gid=${gid}`;
       }
 
       // Absolute cache-busting timestamp + random token guarantees immediate reflection of edits
@@ -207,16 +207,20 @@
       const directCandidates = [];
 
       if (spreadsheetId) {
-        if (gid !== null && gid !== undefined && gid !== '') {
-          directCandidates.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&gid=${gid}`);
-        } else if (sheetTab) {
+        if (sheetTab) {
           directCandidates.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetTab)}`);
+        }
+        if (gid !== null && gid !== undefined && gid !== '' && gid !== '0') {
+          directCandidates.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&gid=${gid}`);
         }
       }
 
       let rawCandidate = targetUrl;
       if (rawCandidate.includes('/edit')) {
-        rawCandidate = rawCandidate.split('/edit')[0] + (gid ? `/export?format=csv&gid=${gid}` : '/export?format=csv');
+        if (sheetTab) {
+          directCandidates.push(rawCandidate.split('/edit')[0] + `/export?format=csv&sheet=${encodeURIComponent(sheetTab)}`);
+        }
+        rawCandidate = rawCandidate.split('/edit')[0] + (gid && gid !== '0' ? `/export?format=csv&gid=${gid}` : '/export?format=csv');
       }
       directCandidates.push(rawCandidate);
 

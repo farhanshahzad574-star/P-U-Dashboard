@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 export const fetchCache = 'force-no-store';
 
-import { getSheetUrlForTile, STRATEGIC_TILE_REGISTRY } from '../strategic/_registry.ts';
+import { getSheetUrlForTile, STRATEGIC_TILE_REGISTRY, getCandidateTabsForTile } from '../strategic/_registry.ts';
 
 function convertGvizTableToCsv(table: any): string {
   if (!table || !Array.isArray(table.cols)) return '';
@@ -134,9 +134,21 @@ export default async function handler(req: any, res: any) {
     const gidMatch = trimmedUrl.match(/[#?&]gid=([0-9]+)/);
     const gid = customGid || (gidMatch ? gidMatch[1] : null);
 
-    const candidateTabs: string[] = [sheetTab];
+    const rawTileId = (body.tileId || query.tileId || '').toLowerCase();
+    const normalizedTileId = rawTileId === 'admin_security' || rawTileId === 'admin & security' ? 'admin-security' : rawTileId;
+
+    const candidateTabs: string[] = [];
+    if (sheetTab) candidateTabs.push(sheetTab);
+
+    if (normalizedTileId) {
+      const tileTabs = getCandidateTabsForTile(normalizedTileId, url);
+      tileTabs.forEach(t => {
+        if (!candidateTabs.includes(t)) candidateTabs.push(t);
+      });
+    }
+
     const sLower = (sheetTab || '').toLowerCase();
-    if (sLower === 'scm' || sLower.includes('scm')) {
+    if (sLower === 'scm' || sLower.includes('scm') || normalizedTileId === 'scm') {
       const extraScmTabs = ['SCM', 'SCM_Actions', 'SCM Actions', 'Supply Chain', 'Procurement', 'Sheet1'];
       extraScmTabs.forEach(t => {
         if (!candidateTabs.includes(t)) candidateTabs.push(t);
@@ -156,32 +168,32 @@ export default async function handler(req: any, res: any) {
     const candidateUrls: string[] = [];
 
     if (isPublished) {
-      if (gid) {
-        candidateUrls.push(`${pubBase}?output=csv&gid=${gid}`);
-      }
       for (const tab of candidateTabs) {
         candidateUrls.push(`${pubBase}?output=csv&sheet=${encodeURIComponent(tab)}`);
+      }
+      if (gid && gid !== '0') {
+        candidateUrls.push(`${pubBase}?output=csv&gid=${gid}`);
       }
       candidateUrls.push(`${pubBase}?output=csv`);
       if (trimmedUrl.includes('output=csv') || trimmedUrl.includes('format=csv') || trimmedUrl.includes('/pub?')) {
         candidateUrls.push(trimmedUrl);
       }
     } else {
-      // Prioritize gviz/tq out:csv directly - avoids Google 302 redirects on Vercel IPs
-      if (gid) {
-        candidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&gid=${gid}`);
-      }
+      // Prioritize gviz/tq out:csv directly with specific tabs - avoids Google 302 redirects on Vercel IPs
       for (const tab of candidateTabs) {
         candidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tab)}`);
+      }
+      if (gid && gid !== '0') {
+        candidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&gid=${gid}`);
       }
       if (trimmedUrl.includes('gviz/tq')) {
         candidateUrls.push(trimmedUrl);
       }
-      if (gid) {
-        candidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&gid=${gid}`);
-      }
       for (const tab of candidateTabs) {
         candidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&sheet=${encodeURIComponent(tab)}`);
+      }
+      if (gid && gid !== '0') {
+        candidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&gid=${gid}`);
       }
       if (trimmedUrl.includes('output=csv') || trimmedUrl.includes('format=csv')) {
         candidateUrls.push(trimmedUrl);

@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 export const fetchCache = 'force-no-store';
 
-import { STRATEGIC_TILE_REGISTRY, getSheetUrlForTile, parseCsvToStrategicActions } from './_registry.ts';
+import { STRATEGIC_TILE_REGISTRY, getSheetUrlForTile, getCandidateTabsForTile, parseCsvToStrategicActions } from './_registry.ts';
 import type { StrategicActionItem } from './_registry.ts';
 
 // In-memory cache across warm serverless invocations
@@ -43,7 +43,7 @@ export default async function handler(req: any, res: any) {
   const now = Date.now();
   const CACHE_TTL_MS = 20000; // 20 seconds cache
 
-  // Serve from cache if fresh and matching request
+  // Serve from cache only if not force-refreshing and still fresh
   if (!forceRefresh && (now - strategicLiveCache.timestamp) < CACHE_TTL_MS && Object.keys(strategicLiveCache.data).length > 0) {
     if (tileIdQuery && strategicLiveCache.data[tileIdQuery]) {
       res.status(200).json({
@@ -78,49 +78,59 @@ export default async function handler(req: any, res: any) {
     const sheetUrl = getSheetUrlForTile(tid);
     if (!sheetUrl) return null;
 
-    const spreadsheetMatch = sheetUrl.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
-    if (!spreadsheetMatch) return null;
-    const spreadsheetId = spreadsheetMatch[1];
-    const gidMatch = sheetUrl.match(/[#?&]gid=([0-9]+)/);
-    const gid = gidMatch ? gidMatch[1] : null;
-
-    const candidateTabs = [reg.defaultTab];
-    if (tid === 'admin-security') {
-      const extraAdminTabs = ['Admin_Security_Actions', 'Admin_&_Security', 'Admin & Security', 'Admin_Security', 'Admin and Security', 'Admin', 'Security', 'Sheet1'];
-      for (const t of extraAdminTabs) {
-        if (!candidateTabs.includes(t)) candidateTabs.push(t);
-      }
-    } else if (tid === 'scm') {
-      const extraScmTabs = ['SCM', 'SCM_Actions', 'SCM Actions', 'Supply Chain', 'Procurement', 'Sheet1'];
-      for (const t of extraScmTabs) {
-        if (!candidateTabs.includes(t)) candidateTabs.push(t);
-      }
-    }
-
     const candidateUrls: string[] = [];
-    if (gid) {
-      candidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&gid=${gid}`);
-      candidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&gid=${gid}`);
+
+    // Direct URL if already formatted as CSV or published export
+    if (sheetUrl.includes('output=csv') || sheetUrl.includes('format=csv')) {
+      candidateUrls.push(sheetUrl);
     }
-    for (const tab of candidateTabs) {
-      candidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tab)}`);
-      candidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&sheet=${encodeURIComponent(tab)}`);
+
+    const spreadsheetMatch = sheetUrl.match(/\/spreadsheets\/d\/(?:e\/)?([a-zA-Z0-9-_]+)/);
+    if (spreadsheetMatch) {
+      const spreadsheetId = spreadsheetMatch[1];
+      const gidMatch = sheetUrl.match(/[#?&]gid=([0-9]+)/);
+      const gid = gidMatch ? gidMatch[1] : null;
+
+      const candidateTabs = getCandidateTabsForTile(tid, sheetUrl);
+
+      // Prioritize tab names first (vital for multi-tab shared sheets)
+      for (const tab of candidateTabs) {
+        candidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tab)}`);
+        candidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&sheet=${encodeURIComponent(tab)}`);
+      }
+
+      // If specific non-zero GID was provided
+      if (gid && gid !== '0') {
+        candidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&gid=${gid}`);
+        candidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&gid=${gid}`);
+      }
+
+      // Generic spreadsheet fallback
+      candidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv`);
+      candidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv`);
+      if (gid === '0') {
+        candidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&gid=0`);
+      }
+    } else {
+      candidateUrls.push(sheetUrl);
     }
-    candidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv`);
-    candidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv`);
 
     let csvText = '';
     for (const url of candidateUrls) {
       try {
-        const resp = await fetch(url, {
+        const sep = url.includes('?') ? '&' : '?';
+        const cacheBusted = `${url}${sep}_t=${now}`;
+        const resp = await fetch(cacheBusted, {
           headers: {
             'User-Agent': 'Mozilla/5.0 (Strategic-Dashboard-Sync/2.0)',
-            'Accept': 'text/csv, text/plain, */*'
+            'Accept': 'text/csv, text/plain, */*',
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache'
           }
         });
         if (resp.ok) {
           const body = await resp.text();
-          if (body && !body.includes('<!DOCTYPE html') && body.length > 10) {
+          if (body && !body.includes('<!DOCTYPE html') && body.length > 20) {
             csvText = body;
             break;
           }

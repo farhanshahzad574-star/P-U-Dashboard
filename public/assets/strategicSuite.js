@@ -466,6 +466,11 @@
       // "On clicking each tile full page dashboard should open with back button and once moved back clicking should require/ask pasward"
       if (this.state.unlockedTiles.has(tileId)) {
         this.openDetailModal(tileId);
+        if (tile.isBossDashboard || tileId === 'strategic-master') {
+          this.syncAllEmployeeSheets();
+        } else {
+          this.syncEmployeeSheet(tileId);
+        }
         return;
       }
 
@@ -530,8 +535,13 @@
         this.state.unlockedTiles.add(tileId);
         this.closeAuthModal();
         this.openDetailModal(tileId);
-        this.showToast('Password Reset', `${tile.name} opened with initial password.`, 'success');
+        this.showToast('Password Reset', `${tile.name} opened with initial password. Fetching fresh data...`, 'success');
         this.render();
+        if (tile.isBossDashboard || tileId === 'strategic-master') {
+          this.syncAllEmployeeSheets();
+        } else {
+          this.syncEmployeeSheet(tileId);
+        }
       } else {
         if (errorBox) {
           errorBox.innerHTML = `
@@ -580,8 +590,14 @@
         this.state.unlockedTiles.add(tileId);
         this.closeAuthModal();
         this.openDetailModal(tileId);
-        this.showToast('Access Granted', `${tile.name} unlocked successfully.`, 'success');
+        this.showToast('Access Granted', `${tile.name} unlocked. Fetching fresh sheet data...`, 'success');
         this.render();
+        // Automatically sync fresh data upon opening dashboard with password
+        if (tile.isBossDashboard || tileId === 'strategic-master') {
+          this.syncAllEmployeeSheets();
+        } else {
+          this.syncEmployeeSheet(tileId);
+        }
       } else {
         if (errorBox) {
           errorBox.innerHTML = `
@@ -641,10 +657,15 @@
 
       this.setTilePassword(tileId, newVal);
       this.state.unlockedTiles.add(tileId);
-      this.showToast('Password Updated', `Password successfully updated for ${tile.name}.`, 'success');
+      this.showToast('Password Updated', `Password successfully updated for ${tile.name}. Fetching fresh data...`, 'success');
       this.closeAuthModal();
       this.openDetailModal(tileId);
       this.render();
+      if (tile.isBossDashboard || tileId === 'strategic-master') {
+        this.syncAllEmployeeSheets();
+      } else {
+        this.syncEmployeeSheet(tileId);
+      }
     },
 
     lockAllTiles() {
@@ -1288,14 +1309,20 @@
       const tile = this.getTileData(tileId);
       if (!tile) return;
 
+      // Delegate boss / executive rollup to syncAllEmployeeSheets
+      if (tile.isBossDashboard || tileId === 'strategic-master') {
+        return this.syncAllEmployeeSheets();
+      }
+
       this.state.syncStatus[tileId] = 'syncing';
       this.render();
 
       let syncedSuccessfully = false;
 
-      // 1. Try server live-data endpoint first (fast, bypasses CORS, handles multiple tab aliases)
+      // 1. Try server live-data endpoint first (fast, bypasses CORS, handles multiple tab aliases, cache-busting)
       try {
-        const res = await fetch(`/api/strategic/live-data?tileId=${encodeURIComponent(tileId)}&refresh=true`, { cache: 'no-store' });
+        const nonce = Date.now();
+        const res = await fetch(`/api/strategic/live-data?tileId=${encodeURIComponent(tileId)}&refresh=true&_t=${nonce}`, { cache: 'no-store' });
         if (res.ok) {
           const data = await res.json();
           if (data && data.liveActions && Array.isArray(data.liveActions[tileId]) && data.liveActions[tileId].length > 0) {
@@ -1318,7 +1345,7 @@
           let csvText = '';
           if (window.FPCL_SHEET_SYNC && typeof window.FPCL_SHEET_SYNC.fetchGoogleSheetData === 'function') {
             csvText = await window.FPCL_SHEET_SYNC.fetchGoogleSheetData(tile.sheetUrl, {
-              sheetTab: tile.name || tile.sheetTab || 'Sheet1',
+              sheetTab: tile.sheetTab || tile.name || 'Sheet1',
               gid: tile.gid || '0'
             });
           }
@@ -1351,14 +1378,15 @@
     async syncAllEmployeeSheets() {
       if (this.state.isSyncingAll) return;
       this.state.isSyncingAll = true;
-      this.showToast('Syncing All Sheets', 'Connecting to all Google Sheets and picking live data...', 'info');
+      this.showToast('Syncing All Sheets', 'Connecting to Google Sheets and picking fresh live data...', 'info');
       this.render();
 
       let successCount = 0;
 
-      // 1. Try parallel server live sync (fetches all connected sheets simultaneously in ~1-2s)
+      // 1. Try parallel server live sync (fetches all connected sheets simultaneously with cache-busting)
       try {
-        const res = await fetch('/api/strategic/live-data?refresh=true', { cache: 'no-store' });
+        const nonce = Date.now();
+        const res = await fetch(`/api/strategic/live-data?refresh=true&_t=${nonce}`, { cache: 'no-store' });
         if (res.ok) {
           const data = await res.json();
           if (data && data.liveActions) {
@@ -1383,7 +1411,7 @@
             try {
               if (window.FPCL_SHEET_SYNC && typeof window.FPCL_SHEET_SYNC.fetchGoogleSheetData === 'function') {
                 const csvText = await window.FPCL_SHEET_SYNC.fetchGoogleSheetData(tile.sheetUrl, {
-                  sheetTab: tile.name || tile.sheetTab || 'Sheet1',
+                  sheetTab: tile.sheetTab || tile.name || 'Sheet1',
                   gid: tile.gid || '0'
                 });
                 if (csvText && csvText.length > 30) {
@@ -1405,7 +1433,7 @@
       this.saveStoredActions();
       this.state.isSyncingAll = false;
       this.state.masterLastSynced = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      this.showToast('All Sheets Synced', `Successfully picked live data from ${successCount} Google Sheets!`, 'success');
+      this.showToast('All Sheets Synced', `Successfully refreshed live data from ${successCount} Google Sheets!`, 'success');
       this.render();
     },
 
