@@ -112,7 +112,9 @@
   function getPlrState() {
     if (!window.portalApp) window.portalApp = {};
     if (!window.portalApp.state) window.portalApp.state = {};
-    window.portalApp.state.plrState = Object.assign(getDefaultPlrState(), window.portalApp.state.plrState || {});
+    if (!window.portalApp.state.plrState) {
+      window.portalApp.state.plrState = getDefaultPlrState();
+    }
     return window.portalApp.state.plrState;
   }
 
@@ -1323,9 +1325,6 @@
   portalApp.renderPlrSuite = function () {
     const container = document.getElementById('plr-specialized-container');
     if (!container) return;
-    container.classList.remove('hidden');
-    container.hidden = false;
-    container.style.display = 'block';
 
     // Hide description below upper Plant Loss Recommendations title
     const descEl = document.getElementById('detail-description');

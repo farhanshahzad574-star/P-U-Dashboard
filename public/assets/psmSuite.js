@@ -799,7 +799,7 @@
       if (syncIcon) syncIcon.classList.add('animate-spin');
 
       try {
-        const res = await fetch('/api/sheets/fetch?sheetTab=' + encodeURIComponent('PSM Validation'), { cache: 'no-store' });
+        const res = await fetch('/api/sheets/fetch?sheetTab=validation', { cache: 'no-store' });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
 

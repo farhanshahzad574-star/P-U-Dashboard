@@ -651,7 +651,7 @@ app.all('/api/sheets/fetch', async (req: Request, res: Response): Promise<void> 
         if (!candidateTabs.includes(t)) candidateTabs.push(t);
       });
     } else if (sLower.includes('validation') || sLower.includes('valid')) {
-      const extraValTabs = ['PSM Validation', 'PSM_Validation', 'Validation', 'Sheet1', 'Data'];
+      const extraValTabs = ['Validation', 'PSM Validation', 'PSM_Validation', 'Sheet1', 'Data'];
       extraValTabs.forEach(t => {
         if (!candidateTabs.includes(t)) candidateTabs.push(t);
       });

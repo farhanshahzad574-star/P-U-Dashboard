@@ -54,40 +54,10 @@ window.parseValidationCSV = function(csvText) {
   
   if (rows.length <= 1) return [];
   
-  // Header row detection for Column M (0-indexed 12) or open/close header
-  const headerRow = rows[0] || [];
-  let colMIndex = 12; // Column M is index 12 in standard sheets
-  for (let c = 0; c < headerRow.length; c++) {
-    const h = String(headerRow[c] || '').toLowerCase().trim();
-    if ((h.includes('open') && h.includes('close')) || h === 'open/close' || h === 'open_close' || h === 'open / close' || h === 'action status') {
-      colMIndex = c;
-      break;
-    }
-  }
-
   const records = [];
   for (let i = 1; i < rows.length; i++) {
     const r = rows[i];
     if (!r || r.length < 2 || !r[1]) continue;
-    
-    // Column M extraction (Open / Close action status)
-    const rawColM = (r[colMIndex] !== undefined && r[colMIndex] !== null) ? String(r[colMIndex]).trim() : '';
-    const passFail = String(r[8] || '').trim();
-    
-    let openCloseVal = 'Close';
-    if (rawColM) {
-      const lowerM = rawColM.toLowerCase();
-      if (lowerM.includes('close') || lowerM === 'closed' || lowerM === 'done' || lowerM === 'pass' || lowerM === 'c') {
-        openCloseVal = 'Close';
-      } else if (lowerM.includes('open') || lowerM === 'pending' || lowerM === 'in progress' || lowerM === 'fail' || lowerM === 'o') {
-        openCloseVal = 'Open';
-      } else {
-        openCloseVal = passFail.toLowerCase() === 'pass' ? 'Close' : 'Open';
-      }
-    } else {
-      openCloseVal = passFail.toLowerCase() === 'pass' ? 'Close' : 'Open';
-    }
-
     records.push({
       sr: parseInt(r[0], 10) || i,
       pNo: String(r[1] || '').trim(),
@@ -97,11 +67,11 @@ window.parseValidationCSV = function(csvText) {
       department: String(r[5] || '').trim(),
       cadre: String(r[6] || '').trim(),
       training: String(r[7] || '').trim(),
-      status: passFail,
+      status: String(r[8] || '').trim(),
       module: String(r[9] || '').trim(),
       endUserRemarks: String(r[10] || '').trim(),
       safetyRemarks: String(r[11] || '').trim(),
-      openClose: openCloseVal
+      openClose: String(r[12] || (String(r[8] || '').trim().toLowerCase() === 'pass' ? 'Close' : 'Open')).trim()
     });
   }
   return records;
