@@ -92,6 +92,9 @@
     <!-- Strategic Dashboard Suite & Departmental Tiles -->
     <script src="/assets/strategicEmployeesData.js?v=20260920c"></script>
     <script src="/assets/strategicSuite.js?v=20260920c"></script>
+    <!-- IMS Audits Dataset & Specialized Executive Suite -->
+    <script src="/assets/imsData.js?v=20260923e"></script>
+    <script src="/assets/imsSuite.js?v=20260923e"></script>
 
     <style>
       /* Base font legibility: standard across devices, calibrated for wall displays */
@@ -1881,6 +1884,13 @@
           <!-- Populated dynamically via FPCL_STRATEGIC_SUITE.render() -->
         </div>
 
+        <!-- ========================================================================= -->
+        <!-- DEDICATED FULL-SCALE IMS AUDITS DASHBOARD SUITE CONTAINER                 -->
+        <!-- ========================================================================= -->
+        <div id="ims-specialized-container" class="hidden space-y-6">
+          <!-- Populated dynamically via FPCL_IMS_SUITE.render() -->
+        </div>
+
       </section>
 
     </main>
@@ -2488,26 +2498,26 @@
           name: 'IMS Audits',
           code: 'IMS Audits',
           icon: 'clipboard-check',
-          status: 'Awaiting Data',
-          hasSheetLink: false,
+          status: 'Active',
+          hasSheetLink: true,
           category: 'Executive & Governance',
           department: 'IMS & Compliance',
-          cadence: 'Quarterly / Annual Audits',
+          cadence: 'Internal Audit Sep 2026',
           description: 'Integrated Management System (IMS) internal & external audits tracking, ISO standards compliance (ISO 9001, 14001, 45001), NCR tracking and corrective actions.',
           color: {
             bg: '#EEF2FF',
-            primary: '#4338CA',
-            secondary: '#818CF8',
+            primary: '#1D4ED8',
+            secondary: '#60A5FA',
             text: '#1E1B4B'
           },
-          gradient: 'from-blue-600 via-indigo-600 to-violet-600',
+          gradient: 'from-blue-600 via-indigo-600 to-cyan-500',
           gradientStop1: '#2563EB',
-          gradientStop2: '#4F46E5',
+          gradientStop2: '#06B6D4',
           tagStyle: 'bg-indigo-50 text-indigo-700 border-indigo-200',
-          kpis: { total: 0, closed: 0, inProgress: 0, overdue: 0, compliance: '0.0%' },
-          punchList: { open: 0, closed: 0, total: 0, rate: '0.0%' },
-          dataReadiness: { master: '0%', signoff: '0%' },
-          statusComment: 'Data will be provided later.',
+          kpis: { total: 69, closed: 46, inProgress: 23, overdue: 0, compliance: '66.7%' },
+          punchList: { open: 23, closed: 46, total: 69, rate: '66.7%' },
+          dataReadiness: { master: '100%', signoff: '100%' },
+          statusComment: '69 audit observations tracked across 18 Departments (46 Closed, 23 Open, 66.7% Closure Rate).',
           actions: []
         },
         {
@@ -3210,6 +3220,65 @@
         },
 
         /**
+         * IMS Audits: Column F (dept) for department search, Column H (status) for open/close
+         */
+        getImsAuditFilteredKpis(deptFilter, openCloseFilter) {
+          let raw = [];
+          if (Array.isArray(window.FPCL_IMS_DATA) && window.FPCL_IMS_DATA.length > 0) {
+            raw = window.FPCL_IMS_DATA;
+          } else if (Array.isArray(window.FPCL_IMS_INITIAL_DATA)) {
+            raw = window.FPCL_IMS_INITIAL_DATA;
+          }
+
+          const deptRows = raw.filter(r => this.isDeptMatch(r.dept, deptFilter));
+          const deptTotal = deptRows.length;
+          const deptClosed = deptRows.filter(r => (r.status || '').toLowerCase().includes('close')).length;
+          const deptOpen = deptTotal - deptClosed;
+          const deptRate = deptTotal > 0 ? ((deptClosed / deptTotal) * 100).toFixed(1) + '%' : '0.0%';
+
+          if (openCloseFilter === 'open') {
+            return {
+              total: deptOpen,
+              closed: 0,
+              inProgress: deptOpen,
+              overdue: 0,
+              compliance: deptOpen + ' Open',
+              deptTotal,
+              deptClosed,
+              deptOpen,
+              deptRate,
+              mode: 'open'
+            };
+          } else if (openCloseFilter === 'close') {
+            return {
+              total: deptClosed,
+              closed: deptClosed,
+              inProgress: 0,
+              overdue: 0,
+              compliance: deptClosed + ' Closed',
+              deptTotal,
+              deptClosed,
+              deptOpen,
+              deptRate,
+              mode: 'close'
+            };
+          } else {
+            return {
+              total: deptTotal,
+              closed: deptClosed,
+              inProgress: deptOpen,
+              overdue: 0,
+              compliance: deptRate,
+              deptTotal,
+              deptClosed,
+              deptOpen,
+              deptRate,
+              mode: 'all'
+            };
+          }
+        },
+
+        /**
          * Get live filtered KPIs for any summary dashboard card based on overview filters
          */
         getEffectiveCardKpis(item) {
@@ -3226,6 +3295,9 @@
           }
           if (item.id === 'plr') {
             return this.getPlrFilteredKpis(deptFilter, openCloseFilter);
+          }
+          if (item.id === 'ims-audits') {
+            return this.getImsAuditFilteredKpis(deptFilter, openCloseFilter);
           }
 
           if (deptFilter === 'all' && openCloseFilter === 'all') {
@@ -5413,6 +5485,7 @@
           const plrContainer = document.getElementById('plr-specialized-container');
           const psmContainer = document.getElementById('psm-specialized-container');
           const strategicContainer = document.getElementById('strategic-specialized-container');
+          const imsContainer = document.getElementById('ims-specialized-container');
 
           if (dashboardId === 'strategic') {
             if (headerCard) { headerCard.classList.add('hidden'); headerCard.hidden = true; }
@@ -5422,6 +5495,7 @@
             if (stdContainer) { stdContainer.classList.add('hidden'); stdContainer.hidden = true; }
             if (plrContainer) { plrContainer.classList.add('hidden'); plrContainer.hidden = true; }
             if (psmContainer) { psmContainer.classList.add('hidden'); psmContainer.hidden = true; }
+            if (imsContainer) { imsContainer.classList.add('hidden'); imsContainer.hidden = true; }
             if (strategicContainer) {
               strategicContainer.classList.remove('hidden');
               strategicContainer.hidden = false;
@@ -5437,6 +5511,7 @@
             if (connCard) connCard.classList.add('hidden');
             if (stdContainer) { stdContainer.classList.add('hidden'); stdContainer.hidden = true; }
             if (psmContainer) { psmContainer.classList.add('hidden'); psmContainer.hidden = true; }
+            if (imsContainer) { imsContainer.classList.add('hidden'); imsContainer.hidden = true; }
             if (strategicContainer) {
               strategicContainer.classList.add('hidden');
               strategicContainer.hidden = true;
@@ -5462,6 +5537,7 @@
             if (psmActions) { psmActions.classList.remove('hidden'); psmActions.hidden = false; }
             if (stdContainer) { stdContainer.classList.add('hidden'); stdContainer.hidden = true; }
             if (plrContainer) { plrContainer.classList.add('hidden'); plrContainer.hidden = true; }
+            if (imsContainer) { imsContainer.classList.add('hidden'); imsContainer.hidden = true; }
             if (strategicContainer) {
               strategicContainer.classList.add('hidden');
               strategicContainer.hidden = true;
@@ -5507,10 +5583,42 @@
                 sheetKeyEl.title = 'Live Google Sheets: PSM Audit Phase 1 June 2026 (1bFBRGKqIfO8Pn7qPSTU0pbdTB87ezDyXvVDnCbTGrx4)';
               }
             }
+          } else if (dashboardId === 'ims-audits') {
+            if (headerCard) { headerCard.classList.add('hidden'); headerCard.hidden = true; }
+            if (connCard) { connCard.classList.add('hidden'); connCard.hidden = true; }
+            const psmActions = document.getElementById('detail-psm-actions');
+            if (psmActions) { psmActions.classList.add('hidden'); psmActions.hidden = true; }
+            if (stdContainer) { stdContainer.classList.add('hidden'); stdContainer.hidden = true; }
+            if (plrContainer) { plrContainer.classList.add('hidden'); plrContainer.hidden = true; }
+            if (psmContainer) { psmContainer.classList.add('hidden'); psmContainer.hidden = true; }
+            if (strategicContainer) {
+              strategicContainer.classList.add('hidden');
+              strategicContainer.hidden = true;
+              strategicContainer.style.marginTop = '';
+            }
+            if (imsContainer) {
+              imsContainer.classList.remove('hidden');
+              imsContainer.hidden = false;
+              if (window.FPCL_IMS_SUITE) {
+                if (typeof window.FPCL_IMS_SUITE.render === 'function') {
+                  window.FPCL_IMS_SUITE.render();
+                }
+                if (typeof window.FPCL_IMS_SUITE.syncLiveFeed === 'function') {
+                  window.FPCL_IMS_SUITE.syncLiveFeed({ silent: true });
+                }
+              }
+            }
+            const breadcrumbActive = document.getElementById('breadcrumb-active-name');
+            if (breadcrumbActive) breadcrumbActive.textContent = 'IMS Audits';
+            if (sheetKeyEl) {
+              sheetKeyEl.textContent = 'IMS Audits • 69 Observations (46 Closed, 23 Open)';
+              sheetKeyEl.title = 'Live Google Sheets: IMS_Audit (1amCHA8y_tqgR8dCJgXjjAXgUH5TESAXx8QZycRRHTi0)';
+            }
           } else {
             if (headerCard) { headerCard.classList.remove('hidden'); headerCard.hidden = false; }
             if (plrContainer) { plrContainer.classList.add('hidden'); plrContainer.hidden = true; }
             if (psmContainer) { psmContainer.classList.add('hidden'); psmContainer.hidden = true; }
+            if (imsContainer) { imsContainer.classList.add('hidden'); imsContainer.hidden = true; }
             if (strategicContainer) {
               strategicContainer.classList.add('hidden');
               strategicContainer.hidden = true;
@@ -5683,6 +5791,11 @@
             strategicContainer.classList.add('hidden');
             strategicContainer.hidden = true;
             strategicContainer.style.marginTop = '';
+          }
+          const imsContainer = document.getElementById('ims-specialized-container');
+          if (imsContainer) {
+            imsContainer.classList.add('hidden');
+            imsContainer.hidden = true;
           }
           if (window.FPCL_STRATEGIC_SUITE && window.FPCL_STRATEGIC_SUITE.state) {
             window.FPCL_STRATEGIC_SUITE.state.currentView = 'grid';
