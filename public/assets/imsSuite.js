@@ -826,7 +826,7 @@
 
             <!-- The Horizontal Stacked Bar Chart Container -->
             <div class="space-y-1 overflow-x-auto pt-2 pb-2">
-              <div class="min-w-[700px] space-y-1">
+              <div class="w-full max-w-full space-y-1">
                 
                 ${deptSummary.list.map(row => {
                   const totalWidthPct = Math.min(100, Math.max(1, (row.total / scaleMax) * 100));
@@ -835,22 +835,22 @@
                   const isSelected = s.deptFilter === row.dept;
 
                   return `
-                    <!-- Spacious 68px Row -->
-                    <div class="flex items-center gap-4 h-[68px] px-2 rounded-xl transition-colors ${isSelected ? 'bg-blue-50/70 ring-1 ring-blue-300' : 'hover:bg-slate-50/70'}">
+                    <!-- Spacious 68px Row (Responsive for mobile) -->
+                    <div class="flex items-center gap-2 sm:gap-4 h-12 sm:h-[68px] px-1 sm:px-2 rounded-xl transition-colors ${isSelected ? 'bg-blue-50/70 ring-1 ring-blue-300' : 'hover:bg-slate-50/70'}">
                       
-                      <!-- Department Label: 19px Extra-Bold Font -->
-                      <div class="w-44 sm:w-52 text-right shrink-0">
+                      <!-- Department Label: Responsive font and width -->
+                      <div class="w-24 sm:w-52 text-right shrink-0">
                         <button
                           onclick="FPCL_IMS_SUITE.setDeptFilter('${isSelected ? 'all' : row.dept}')"
-                          class="text-[19px] font-extrabold text-slate-800 hover:text-teal-700 truncate block w-full text-right transition-colors"
+                          class="text-xs sm:text-[19px] font-extrabold text-slate-800 hover:text-teal-700 truncate block w-full text-right transition-colors"
                           title="Filter by ${row.dept}"
                         >
                           ${row.dept}
                         </button>
                       </div>
 
-                      <!-- Bar Track: Height expanded to 44px with background track -->
-                      <div class="flex-1 relative h-[44px] bg-[#F1F5F9] rounded-lg overflow-hidden flex items-center border border-slate-200/70">
+                      <!-- Bar Track: Height responsive with background track -->
+                      <div class="flex-1 relative h-7 sm:h-[44px] bg-[#F1F5F9] rounded-lg overflow-hidden flex items-center border border-slate-200/70">
                         
                         <!-- Subtle Vertical Dashed Grid Guide Lines -->
                         ${scaleTicks.slice(1, -1).map(tick => {
@@ -868,8 +868,8 @@
                               style="width: ${openOfActivePct}%;"
                               title="${row.dept}: ${row.open} Open"
                             >
-                              <!-- Inside Bar: 22px Bold Monospace with Contrast Shadow -->
-                              <span style="font-size: 22px; font-weight: 900; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; text-shadow: 0 1px 3px rgba(0,0,0,0.5);">
+                              <!-- Inside Bar: Responsive Bold Monospace with Contrast Shadow -->
+                              <span class="text-xs sm:text-[22px] font-black font-mono leading-none" style="text-shadow: 0 1px 3px rgba(0,0,0,0.5);">
                                 ${row.open}
                               </span>
                             </div>
@@ -882,8 +882,8 @@
                               style="width: ${closeOfActivePct}%;"
                               title="${row.dept}: ${row.close} Closed"
                             >
-                              <!-- Inside Bar: 22px Bold Monospace with Contrast Shadow -->
-                              <span style="font-size: 22px; font-weight: 900; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; text-shadow: 0 1px 3px rgba(0,0,0,0.5);">
+                              <!-- Inside Bar: Responsive Bold Monospace with Contrast Shadow -->
+                              <span class="text-xs sm:text-[22px] font-black font-mono leading-none" style="text-shadow: 0 1px 3px rgba(0,0,0,0.5);">
                                 ${row.close}
                               </span>
                             </div>
@@ -893,13 +893,13 @@
                       </div>
 
                       <!-- Total & Closure Rate Values at the End of Each Bar -->
-                      <div class="w-36 sm:w-40 flex items-baseline gap-2 shrink-0">
-                        <!-- Total count: 26px Extra-Bold -->
-                        <span style="font-size: 26px; font-weight: 900;" class="text-slate-900 leading-none">
+                      <div class="w-20 sm:w-40 flex items-baseline gap-1 sm:gap-2 shrink-0">
+                        <!-- Total count: Responsive Extra-Bold -->
+                        <span class="text-sm sm:text-[26px] font-black text-slate-900 leading-none">
                           ${row.total}
                         </span>
-                        <!-- Closure Rate: 20px Extra-Bold in Cyan/Teal -->
-                        <span style="font-size: 20px; font-weight: 800;" class="text-[#0D9488] leading-none">
+                        <!-- Closure Rate: Responsive Extra-Bold in Cyan/Teal -->
+                        <span class="text-[11px] sm:text-[20px] font-extrabold text-[#0D9488] leading-none">
                           (${row.rate}%)
                         </span>
                       </div>
@@ -908,10 +908,10 @@
                   `;
                 }).join('')}
 
-                <!-- Scale Axis Ticks: 18px Bold Monospace -->
-                <div class="flex items-center gap-4 pt-3 border-t border-slate-200 mt-2">
-                  <div class="w-44 sm:w-52 shrink-0 text-right">
-                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Observations Scale</span>
+                <!-- Scale Axis Ticks: Responsive Bold Monospace -->
+                <div class="flex items-center gap-2 sm:gap-4 pt-3 border-t border-slate-200 mt-2">
+                  <div class="w-24 sm:w-52 shrink-0 text-right">
+                    <span class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider">Observations Scale</span>
                   </div>
                   <div class="flex-1 relative h-7 flex items-center">
                     ${scaleTicks.map(tick => {
@@ -924,15 +924,15 @@
                           style="left: ${tickPct}%; transform: ${isFirst ? 'translateX(0)' : (isLast ? 'translateX(-100%)' : 'translateX(-50%)')};"
                         >
                           <div class="w-0.5 h-2 bg-slate-300"></div>
-                          <!-- 18px Bold Monospace Ticks -->
-                          <span style="font-size: 18px; font-weight: 700; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;" class="text-slate-400">
+                          <!-- Responsive Bold Monospace Ticks -->
+                          <span class="text-[10px] sm:text-[18px] font-bold font-mono text-slate-400">
                             ${tick}
                           </span>
                         </div>
                       `;
                     }).join('')}
                   </div>
-                  <div class="w-36 sm:w-40 shrink-0"></div>
+                  <div class="w-20 sm:w-40 shrink-0"></div>
                 </div>
 
               </div>

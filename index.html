@@ -88,13 +88,16 @@
     <!-- Sub HSE - PSM (Process Safety Management) Dataset & Specialized Visualization Suite -->
     <script src="/assets/psmData.js?v=20260916b"></script>
     <script src="/assets/psmValidationData.js?v=20260919a"></script>
-    <script src="/assets/psmSuite.js?v=20260923c"></script>
+    <script src="/assets/psmSuite.js?v=20260923e"></script>
     <!-- Strategic Dashboard Suite & Departmental Tiles -->
     <script src="/assets/strategicEmployeesData.js?v=20260920c"></script>
     <script src="/assets/strategicSuite.js?v=20260920c"></script>
     <!-- IMS Audits Dataset & Specialized Executive Suite -->
     <script src="/assets/imsData.js?v=20260923e"></script>
-    <script src="/assets/imsSuite.js?v=20260923e"></script>
+    <script src="/assets/imsSuite.js?v=20260923f"></script>
+    <!-- PSSR (Pre-Startup Safety Review) Dataset & Specialized Executive Suite -->
+    <script src="/assets/pssrData.js?v=20260923b"></script>
+    <script src="/assets/pssrSuite.js?v=20260923b"></script>
 
     <style>
       /* Base font legibility: standard across devices, calibrated for wall displays */
@@ -1891,6 +1894,13 @@
           <!-- Populated dynamically via FPCL_IMS_SUITE.render() -->
         </div>
 
+        <!-- ========================================================================= -->
+        <!-- DEDICATED FULL-SCALE PSSR EXECUTIVE BI SUITE CONTAINER                    -->
+        <!-- ========================================================================= -->
+        <div id="pssr-specialized-container" class="hidden space-y-6">
+          <!-- Populated dynamically via FPCL_PSSR_SUITE.render() -->
+        </div>
+
       </section>
 
     </main>
@@ -2687,26 +2697,26 @@
           name: 'PSSR',
           code: 'PSSR',
           icon: 'check-circle-2',
-          status: 'Awaiting Sheet Link',
-          hasSheetLink: false,
+          status: 'Active',
+          hasSheetLink: true,
           category: 'Process Safety & Quality',
           department: 'Pre-Startup Safety Review Committee',
-          cadence: 'Project & Turnaround Milestones',
+          cadence: 'Live Google Sheet Sync',
           description: 'Pre-Startup Safety Reviews: punch-list tracking, field verification of construction punch items prior to hazardous fluid commissioning.',
           color: {
-            bg: '#F5F7E9',
-            primary: '#7F9A3E',
-            secondary: '#B4C77E',
+            bg: '#F0FDFA',
+            primary: '#0D9488',
+            secondary: '#14B8A6',
             text: '#2B2E33'
           },
-          gradient: 'from-lime-500 via-emerald-500 to-teal-600',
-          gradientStop1: '#65A30D',
+          gradient: 'from-emerald-500 via-teal-600 to-indigo-600',
+          gradientStop1: '#10B981',
           gradientStop2: '#0D9488',
-          tagStyle: 'bg-lime-50 text-lime-800 border-lime-200',
-          kpis: { total: 0, closed: 0, inProgress: 0, overdue: 0, compliance: '0.0%' },
-          punchList: { open: 0, closed: 0, total: 0, rate: '0.0%' },
-          dataReadiness: { master: '0%', signoff: '0%' },
-          statusComment: 'Awaiting Google Sheet connection.',
+          tagStyle: 'bg-teal-50 text-teal-800 border-teal-200',
+          kpis: { total: 31, closed: 23, inProgress: 8, overdue: 0, compliance: '74.2%' },
+          punchList: { open: 8, closed: 23, total: 31, rate: '74.2%' },
+          dataReadiness: { master: '100%', signoff: '100%' },
+          statusComment: 'Live synchronized with Google Sheet tab PSSR (1PjGP79SLOhTJwFv4tPyRJeX07XEW5e9OBFWQ4aUefyY).',
           actions: []
         },
         {
@@ -3279,6 +3289,68 @@
         },
 
         /**
+         * PSSR: Column M (responsibility) for department search, Column O (status) for open/close
+         */
+        getPssrFilteredKpis(deptFilter, openCloseFilter) {
+          let raw = [];
+          if (Array.isArray(window.FPCL_PSSR_DATA) && window.FPCL_PSSR_DATA.length > 0) {
+            raw = window.FPCL_PSSR_DATA;
+          } else if (Array.isArray(window.FPCL_PSSR_INITIAL_DATA)) {
+            raw = window.FPCL_PSSR_INITIAL_DATA;
+          }
+
+          const deptRows = raw.filter(r => this.isDeptMatch(r.responsibility, deptFilter));
+          const deptTotal = deptRows.length;
+          const deptClosed = deptRows.filter(r => {
+            const st = (r.status || '').toLowerCase().trim();
+            return st === 'close' || st === 'closed';
+          }).length;
+          const deptOpen = deptTotal - deptClosed;
+          const deptRate = deptTotal > 0 ? ((deptClosed / deptTotal) * 100).toFixed(1) + '%' : '0.0%';
+
+          if (openCloseFilter === 'open') {
+            return {
+              total: deptOpen,
+              closed: 0,
+              inProgress: deptOpen,
+              overdue: 0,
+              compliance: deptOpen + ' Open',
+              deptTotal,
+              deptClosed,
+              deptOpen,
+              deptRate,
+              mode: 'open'
+            };
+          } else if (openCloseFilter === 'close') {
+            return {
+              total: deptClosed,
+              closed: deptClosed,
+              inProgress: 0,
+              overdue: 0,
+              compliance: deptClosed + ' Closed',
+              deptTotal,
+              deptClosed,
+              deptOpen,
+              deptRate,
+              mode: 'close'
+            };
+          } else {
+            return {
+              total: deptTotal,
+              closed: deptClosed,
+              inProgress: deptOpen,
+              overdue: 0,
+              compliance: deptRate,
+              deptTotal,
+              deptClosed,
+              deptOpen,
+              deptRate,
+              mode: 'all'
+            };
+          }
+        },
+
+        /**
          * Get live filtered KPIs for any summary dashboard card based on overview filters
          */
         getEffectiveCardKpis(item) {
@@ -3298,6 +3370,9 @@
           }
           if (item.id === 'ims-audits') {
             return this.getImsAuditFilteredKpis(deptFilter, openCloseFilter);
+          }
+          if (item.id === 'pssr') {
+            return this.getPssrFilteredKpis(deptFilter, openCloseFilter);
           }
 
           if (deptFilter === 'all' && openCloseFilter === 'all') {
@@ -3869,38 +3944,16 @@
                   <!-- Top Segment: Open Actions / Validation Pending -->
                   <rect x="${colX}" y="${yOpen}" width="${colW}" height="${openH}" rx="3" fill="${openFill}" filter="url(#colShadow)" class="transition-all group-hover:brightness-105"/>
                 `;
-
-                // Inside segment number labels when tall enough
-                if (closedH >= 20) {
-                  columnContent += `
-                    <text x="${centerX}" y="${yClosed + closedH / 2 + 4.5}" fill="#FFFFFF" class="cmp-col-seg" font-size="11" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" text-anchor="middle" pointer-events="none">${closedVal}</text>
-                  `;
-                }
-                if (openH >= 20) {
-                  columnContent += `
-                    <text x="${centerX}" y="${yOpen + openH / 2 + 4.5}" fill="#FFFFFF" class="cmp-col-seg" font-size="11" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" text-anchor="middle" pointer-events="none">${openVal}</text>
-                  `;
-                }
               } else if (closedH > 0) {
                 // Only closed/passed segment
                 columnContent = `
                   <rect x="${colX}" y="${yClosed}" width="${colW}" height="${closedH}" rx="5" fill="${closedFill}" filter="url(#colShadow)" class="transition-all group-hover:brightness-105"/>
                 `;
-                if (closedH >= 20) {
-                  columnContent += `
-                    <text x="${centerX}" y="${yClosed + closedH / 2 + 4.5}" fill="#FFFFFF" class="cmp-col-seg" font-size="11" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" text-anchor="middle" pointer-events="none">${closedVal}</text>
-                  `;
-                }
               } else if (openH > 0) {
                 // Only open segment
                 columnContent = `
                   <rect x="${colX}" y="${yOpen}" width="${colW}" height="${openH}" rx="5" fill="${openFill}" filter="url(#colShadow)" class="transition-all group-hover:brightness-105"/>
                 `;
-                if (openH >= 20) {
-                  columnContent += `
-                    <text x="${centerX}" y="${yOpen + openH / 2 + 4.5}" fill="#FFFFFF" class="cmp-col-seg" font-size="11" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" text-anchor="middle" pointer-events="none">${openVal}</text>
-                  `;
-                }
               }
 
               // Professional KPI badge directly atop the column
@@ -5515,6 +5568,7 @@
           const psmContainer = document.getElementById('psm-specialized-container');
           const strategicContainer = document.getElementById('strategic-specialized-container');
           const imsContainer = document.getElementById('ims-specialized-container');
+          const pssrContainer = document.getElementById('pssr-specialized-container');
 
           if (dashboardId === 'strategic') {
             if (headerCard) { headerCard.classList.add('hidden'); headerCard.hidden = true; }
@@ -5525,6 +5579,7 @@
             if (plrContainer) { plrContainer.classList.add('hidden'); plrContainer.hidden = true; }
             if (psmContainer) { psmContainer.classList.add('hidden'); psmContainer.hidden = true; }
             if (imsContainer) { imsContainer.classList.add('hidden'); imsContainer.hidden = true; }
+            if (pssrContainer) { pssrContainer.classList.add('hidden'); pssrContainer.hidden = true; }
             if (strategicContainer) {
               strategicContainer.classList.remove('hidden');
               strategicContainer.hidden = false;
@@ -5541,6 +5596,7 @@
             if (stdContainer) { stdContainer.classList.add('hidden'); stdContainer.hidden = true; }
             if (psmContainer) { psmContainer.classList.add('hidden'); psmContainer.hidden = true; }
             if (imsContainer) { imsContainer.classList.add('hidden'); imsContainer.hidden = true; }
+            if (pssrContainer) { pssrContainer.classList.add('hidden'); pssrContainer.hidden = true; }
             if (strategicContainer) {
               strategicContainer.classList.add('hidden');
               strategicContainer.hidden = true;
@@ -5567,6 +5623,7 @@
             if (stdContainer) { stdContainer.classList.add('hidden'); stdContainer.hidden = true; }
             if (plrContainer) { plrContainer.classList.add('hidden'); plrContainer.hidden = true; }
             if (imsContainer) { imsContainer.classList.add('hidden'); imsContainer.hidden = true; }
+            if (pssrContainer) { pssrContainer.classList.add('hidden'); pssrContainer.hidden = true; }
             if (strategicContainer) {
               strategicContainer.classList.add('hidden');
               strategicContainer.hidden = true;
@@ -5620,6 +5677,7 @@
             if (stdContainer) { stdContainer.classList.add('hidden'); stdContainer.hidden = true; }
             if (plrContainer) { plrContainer.classList.add('hidden'); plrContainer.hidden = true; }
             if (psmContainer) { psmContainer.classList.add('hidden'); psmContainer.hidden = true; }
+            if (pssrContainer) { pssrContainer.classList.add('hidden'); pssrContainer.hidden = true; }
             if (strategicContainer) {
               strategicContainer.classList.add('hidden');
               strategicContainer.hidden = true;
@@ -5643,11 +5701,47 @@
               sheetKeyEl.textContent = 'IMS Audits • 69 Observations (46 Closed, 23 Open)';
               sheetKeyEl.title = 'Live Google Sheets: IMS_Audit (1amCHA8y_tqgR8dCJgXjjAXgUH5TESAXx8QZycRRHTi0)';
             }
+          } else if (dashboardId === 'pssr') {
+            if (headerCard) { headerCard.classList.add('hidden'); headerCard.hidden = true; }
+            if (connCard) { connCard.classList.add('hidden'); connCard.hidden = true; }
+            const psmActions = document.getElementById('detail-psm-actions');
+            if (psmActions) { psmActions.classList.add('hidden'); psmActions.hidden = true; }
+            if (stdContainer) { stdContainer.classList.add('hidden'); stdContainer.hidden = true; }
+            if (plrContainer) { plrContainer.classList.add('hidden'); plrContainer.hidden = true; }
+            if (psmContainer) { psmContainer.classList.add('hidden'); psmContainer.hidden = true; }
+            if (strategicContainer) {
+              strategicContainer.classList.add('hidden');
+              strategicContainer.hidden = true;
+              strategicContainer.style.marginTop = '';
+            }
+            if (imsContainer) {
+              imsContainer.classList.add('hidden');
+              imsContainer.hidden = true;
+            }
+            if (pssrContainer) {
+              pssrContainer.classList.remove('hidden');
+              pssrContainer.hidden = false;
+              if (window.FPCL_PSSR_SUITE) {
+                if (typeof window.FPCL_PSSR_SUITE.render === 'function') {
+                  window.FPCL_PSSR_SUITE.render();
+                }
+                if (typeof window.FPCL_PSSR_SUITE.syncLiveFeed === 'function') {
+                  window.FPCL_PSSR_SUITE.syncLiveFeed({ silent: true });
+                }
+              }
+            }
+            const breadcrumbActive = document.getElementById('breadcrumb-active-name');
+            if (breadcrumbActive) breadcrumbActive.textContent = 'Pre-Startup Safety Review (PSSR)';
+            if (sheetKeyEl) {
+              sheetKeyEl.textContent = 'PSSR Dashboard • Live Synchronized (1PjGP79SLOhTJwFv4tPyRJeX07XEW5e9OBFWQ4aUefyY)';
+              sheetKeyEl.title = 'Live Google Sheets: PSSR Tab (1PjGP79SLOhTJwFv4tPyRJeX07XEW5e9OBFWQ4aUefyY)';
+            }
           } else {
             if (headerCard) { headerCard.classList.remove('hidden'); headerCard.hidden = false; }
             if (plrContainer) { plrContainer.classList.add('hidden'); plrContainer.hidden = true; }
             if (psmContainer) { psmContainer.classList.add('hidden'); psmContainer.hidden = true; }
             if (imsContainer) { imsContainer.classList.add('hidden'); imsContainer.hidden = true; }
+            if (pssrContainer) { pssrContainer.classList.add('hidden'); pssrContainer.hidden = true; }
             if (strategicContainer) {
               strategicContainer.classList.add('hidden');
               strategicContainer.hidden = true;
@@ -5825,6 +5919,11 @@
           if (imsContainer) {
             imsContainer.classList.add('hidden');
             imsContainer.hidden = true;
+          }
+          const pssrContainer = document.getElementById('pssr-specialized-container');
+          if (pssrContainer) {
+            pssrContainer.classList.add('hidden');
+            pssrContainer.hidden = true;
           }
           if (window.FPCL_STRATEGIC_SUITE && window.FPCL_STRATEGIC_SUITE.state) {
             window.FPCL_STRATEGIC_SUITE.state.currentView = 'grid';

@@ -2554,7 +2554,7 @@
 
       return `
         <div class="w-full overflow-x-auto select-none">
-          <svg viewBox="0 0 ${w} ${h}" class="w-full min-w-[700px] h-auto overflow-hidden">
+          <svg viewBox="0 0 ${w} ${h}" class="w-full max-w-full h-auto overflow-hidden">
             ${gridSvg}
             ${barsSvg}
           </svg>
@@ -3064,7 +3064,7 @@
 
       return `
         <div class="w-full overflow-x-auto select-none">
-          <svg viewBox="0 0 ${w} ${h}" class="w-full min-w-[700px] h-auto overflow-hidden">
+          <svg viewBox="0 0 ${w} ${h}" class="w-full max-w-full h-auto overflow-hidden">
             ${gridSvg}
             ${barsSvg}
           </svg>
@@ -3207,7 +3207,7 @@
 
       return `
         <div class="w-full overflow-x-auto select-none">
-          <svg viewBox="0 0 ${w} ${h}" class="w-full min-w-[700px] h-auto overflow-hidden">
+          <svg viewBox="0 0 ${w} ${h}" class="w-full max-w-full h-auto overflow-hidden">
             ${gridSvg}
             ${barsSvg}
           </svg>

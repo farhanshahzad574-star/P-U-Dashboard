@@ -100,6 +100,8 @@ export default async function handler(req: any, res: any) {
         url = process.env.PLR_STATUS_SHEET_URL;
       } else if (sLower.includes('ims') || (normalizedTileId && normalizedTileId.includes('ims'))) {
         url = process.env.IMS_AUDIT_SHEET_URL || process.env.IMS_SHEET_URL || process.env.GOOGLE_SHEET_IMS || 'https://docs.google.com/spreadsheets/d/1amCHA8y_tqgR8dCJgXjjAXgUH5TESAXx8QZycRRHTi0/export?format=csv&sheet=IMS_Audit';
+      } else if (sLower.includes('pssr') || normalizedTileId.includes('pssr')) {
+        url = process.env.PSSR_SHEET_URL || process.env.GOOGLE_SHEET_PSSR || (process.env.PSSR_SHEET_ID ? `https://docs.google.com/spreadsheets/d/${process.env.PSSR_SHEET_ID}/export?format=csv&sheet=PSSR` : 'https://docs.google.com/spreadsheets/d/1PjGP79SLOhTJwFv4tPyRJeX07XEW5e9OBFWQ4aUefyY/export?format=csv&sheet=PSSR');
       } else if (sLower.includes('psm') && process.env.PSM_SHEET_URL) {
         url = process.env.PSM_SHEET_URL;
       } else if (process.env.RECOMMENDATIONS_SHEET_URL) {
@@ -168,6 +170,11 @@ export default async function handler(req: any, res: any) {
     } else if (sLower.includes('ims')) {
       const extraImsTabs = ['IMS_Audit', 'IMS Audit', 'IMS_Audits', 'IMS Audits', 'IMS', 'Sheet1'];
       extraImsTabs.forEach(t => {
+        if (!candidateTabs.includes(t)) candidateTabs.push(t);
+      });
+    } else if (sLower.includes('pssr') || (normalizedTileId && normalizedTileId.includes('pssr'))) {
+      const extraPssrTabs = ['PSSR', 'pssr', 'Sheet1'];
+      extraPssrTabs.forEach(t => {
         if (!candidateTabs.includes(t)) candidateTabs.push(t);
       });
     }
