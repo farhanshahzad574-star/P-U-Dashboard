@@ -406,6 +406,16 @@
         .donut-legend-label {
           font-size: 0.78rem !important;
         }
+        .cmp-col-total {
+          font-size: 13px !important;
+          font-weight: 900 !important;
+          font-family: 'Plus Jakarta Sans', system-ui, sans-serif !important;
+        }
+        .cmp-col-seg {
+          font-size: 11px !important;
+          font-weight: 800 !important;
+          font-family: 'Plus Jakarta Sans', system-ui, sans-serif !important;
+        }
         .cmp-bar-num {
           font-size: 12px !important;
           font-weight: 800 !important;
@@ -585,6 +595,16 @@
           font-size: 2.1rem !important;
           font-weight: 900 !important;
           line-height: 1 !important;
+        }
+        .cmp-col-total {
+          font-size: 14px !important;
+          font-weight: 900 !important;
+          font-family: 'Plus Jakarta Sans', system-ui, sans-serif !important;
+        }
+        .cmp-col-seg {
+          font-size: 12px !important;
+          font-weight: 800 !important;
+          font-family: 'Plus Jakarta Sans', system-ui, sans-serif !important;
         }
         .cmp-bar-num {
           font-size: 13px !important;
@@ -1224,7 +1244,7 @@
         </div>
 
         <!-- ========================================================================= -->
-        <!-- PROGRESS COMPARISON STATUS (Expanded Full-Width Bar Chart)                -->
+        <!-- PROGRESS COMPARISON STATUS (Stacked Column Chart)                         -->
         <!-- ========================================================================= -->
         <div class="bg-gradient-to-b from-white to-slate-50/90 border border-slate-200/90 rounded-2xl p-5 sm:p-6 shadow-xs space-y-3">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-2.5 border-b border-slate-100 gap-2">
@@ -1232,11 +1252,14 @@
               <h3 class="text-sm sm:text-base font-black text-[#1E293B] tracking-wide flex items-center gap-2">
                 <span class="text-lg">📊</span> PROGRESS COMPARISON STATUS
               </h3>
+              <p class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider font-mono mt-0.5">
+                Stacked Column Chart • Closed vs Open Actions &amp; Personnel Validation
+              </p>
             </div>
             <div class="flex flex-wrap items-center gap-2 text-xs font-mono font-bold">
-              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-blue-50 text-blue-700 border border-blue-200" title="Total Actions / Total Personnel">
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-blue-50 text-blue-700 border border-blue-200" title="Closed Actions completed">
                 <span class="w-2.5 h-2.5 rounded-sm bg-blue-600"></span>
-                <span>Total Actions / Personnel</span>
+                <span>Closed Actions</span>
               </span>
               <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-amber-50 text-amber-800 border border-amber-200" title="Open Actions pending closure">
                 <span class="w-2.5 h-2.5 rounded-sm bg-amber-500"></span>
@@ -1245,6 +1268,10 @@
               <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200" title="Personnel who passed PSM qualification validation">
                 <span class="w-2.5 h-2.5 rounded-sm bg-emerald-600"></span>
                 <span>Validation Passed</span>
+              </span>
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 text-slate-700 border border-slate-300" title="Total actions or personnel (displayed at top of each column)">
+                <span class="w-2.5 h-2.5 rounded-sm bg-slate-800"></span>
+                <span>Total (Column Top)</span>
               </span>
             </div>
           </div>
@@ -3528,7 +3555,8 @@
         },
 
         /**
-         * Render SVG Module-by-Module Progress Comparison (Synchronized Total & Open Actions/Findings & Validation)
+         * Render SVG Module-by-Module Progress Comparison as a Stacked Column Chart
+         * (Closed Actions / Validation Passed stacked with Open Actions / Pending)
          */
         renderComparisonChart() {
           const container = document.getElementById('comparison-chart-container');
@@ -3538,12 +3566,19 @@
           const openCloseFilter = (this.state && this.state.overviewOpenCloseFilter) || 'all';
 
           // Retrieve live dynamic validation data numbers (Total personnel & Validation passed)
-          const valEntry = (Array.isArray(DASHBOARD_REGISTRY) ? DASHBOARD_REGISTRY.find(d => d.id === 'psm-validation') : null) || { id: 'psm-validation' };
-          let valKpi = this.getPsmValidationFilteredKpis(deptFilter, openCloseFilter);
-          let valTotal = (openCloseFilter === 'open') ? valKpi.inProgress : ((openCloseFilter === 'close') ? valKpi.closed : (valKpi.deptTotal !== undefined ? valKpi.deptTotal : valKpi.total));
-          let valPassed = (openCloseFilter === 'open') ? 0 : valKpi.closed;
+          const valKpi = this.getPsmValidationFilteredKpis(deptFilter, openCloseFilter);
+          let valPassed = (openCloseFilter === 'open') ? 0 : (valKpi.closed || 0);
+          let valPending = (openCloseFilter === 'close') ? 0 : (valKpi.inProgress ?? valKpi.deptOpen ?? 0);
+          let valTotal = (openCloseFilter === 'open') 
+            ? valPending 
+            : ((openCloseFilter === 'close') 
+              ? valPassed 
+              : (valKpi.deptTotal !== undefined ? valKpi.deptTotal : (valKpi.total || (valPassed + valPending))));
+          if (valTotal < valPassed + valPending) {
+            valTotal = valPassed + valPending;
+          }
 
-          // Build comparison items: Includes all modules, labeling PSM as PSM Audits, and plotting PSM Validation bars
+          // Build comparison items: Includes all modules, labeling PSM as PSM Audits, and plotting PSM Validation stacked columns
           const chartItems = [];
           DASHBOARD_REGISTRY.forEach(d => {
             // Exclude strategic from the Overview Progress Comparison Status
@@ -3555,53 +3590,82 @@
                 name: 'PSM Validation',
                 code: 'PSM Validation',
                 type: 'validation',
-                val1: valTotal,
-                val2: valPassed,
+                closed: valPassed,
+                open: valPending,
+                total: valTotal,
                 clickHandler: "portalApp.showDetailView('psm-validation');",
-                tooltip: `PSM Validation: ${valTotal} Total Personnel, ${valPassed} Validation Passed`
+                tooltip: `PSM Validation:\n• Total Personnel: ${valTotal}\n• Passed: ${valPassed}\n• Pending: ${valPending}\nClick to view PSM Validation Dashboard`
               });
               return;
             }
 
             const isPsmAudit = (d.id === 'sub-hse-psm');
             const dKpi = this.getEffectiveCardKpis(d);
-            const totalVal = (openCloseFilter === 'open') ? dKpi.inProgress : ((openCloseFilter === 'close') ? dKpi.closed : (dKpi.deptTotal !== undefined ? dKpi.deptTotal : (dKpi.total || 0)));
-            const openVal = dKpi.inProgress || 0;
+
+            let closedVal = (openCloseFilter === 'open') ? 0 : (dKpi.closed || 0);
+            let openVal = (openCloseFilter === 'close') ? 0 : (dKpi.inProgress ?? dKpi.deptOpen ?? dKpi.pending ?? 0);
+            let totalVal = (openCloseFilter === 'open') 
+              ? openVal 
+              : ((openCloseFilter === 'close') 
+                ? closedVal 
+                : (dKpi.deptTotal !== undefined ? dKpi.deptTotal : (dKpi.total || (closedVal + openVal))));
+
+            if (totalVal < closedVal + openVal) {
+              totalVal = closedVal + openVal;
+            }
 
             chartItems.push({
               id: d.id,
               name: isPsmAudit ? 'PSM Audits' : d.name,
               code: isPsmAudit ? 'PSM Audits' : d.code,
               type: 'action',
-              val1: totalVal,
-              val2: openVal,
+              closed: closedVal,
+              open: openVal,
+              total: totalVal,
               clickHandler: isPsmAudit 
                 ? "portalApp.showDetailView('sub-hse-psm'); if(window.FPCL_PSM_SUITE && window.FPCL_PSM_SUITE.setSubDashboard) { FPCL_PSM_SUITE.setSubDashboard('audits'); }"
                 : `portalApp.showDetailView('${d.id}')`,
               tooltip: isPsmAudit
-                ? `PSM Audits: ${totalVal} Total Actions, ${openVal} Open Actions`
-                : `${d.name} (${d.code}): ${totalVal} Total Actions, ${openVal} Open Actions`
+                ? `PSM Audits:\n• Total Actions: ${totalVal}\n• Closed: ${closedVal}\n• Open: ${openVal}\nClick to view PSM Audits Dashboard`
+                : `${d.name} (${d.code}):\n• Total Actions: ${totalVal}\n• Closed: ${closedVal}\n• Open: ${openVal}\nClick to view Dashboard`
             });
           });
 
           const width = 1200;
-          const height = 350;
-          const pad = { top: 48, right: 35, bottom: 90, left: 65 };
+          const height = 360;
+          const pad = { top: 52, right: 35, bottom: 95, left: 65 };
           const plotW = width - pad.left - pad.right;
           const plotH = height - pad.top - pad.bottom;
+          const baseY = pad.top + plotH;
 
           const barCount = chartItems.length;
           const slotW = plotW / barCount;
-          // Dual bars for Total vs Open / Passed: 23px wide with 9px spacing (32px center-to-center)
-          const barW = Math.min(23, Math.max(16, (slotW - 14) / 2));
-          const pairSpacing = 9;
+          // Single stacked column per module: width calibrated for high visibility and clear separation
+          const colW = Math.min(38, Math.max(24, Math.round(slotW * 0.46)));
 
-          // Max value scale (dynamic based on highest value in comparison)
-          const maxVal = Math.max(...chartItems.map(i => Math.max(i.val1 || 0, i.val2 || 0)), 10);
+          // Max value scale (dynamic based on highest total value in comparison)
+          const maxVal = Math.max(...chartItems.map(i => i.total), 10);
           const yMax = maxVal > 300 ? 600 : Math.max(20, Math.ceil((maxVal * 1.25) / 10) * 10);
 
-          // Gradients definition for Total, Open, and Validation Passed bars
+          // Gradients definition for Closed, Open, and Validation Passed/Pending stacked segments
           const defsGradients = `
+            <linearGradient id="cmp-col-closed" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#3B82F6"/>
+              <stop offset="100%" stop-color="#1D4ED8"/>
+            </linearGradient>
+            <linearGradient id="cmp-col-open" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#FB923C"/>
+              <stop offset="100%" stop-color="#EA580C"/>
+            </linearGradient>
+            <linearGradient id="cmp-col-passed" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#10B981"/>
+              <stop offset="100%" stop-color="#059669"/>
+            </linearGradient>
+            <linearGradient id="cmp-col-pending" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#38BDF8"/>
+              <stop offset="100%" stop-color="#0284C7"/>
+            </linearGradient>
+            <!-- Backward compatibility aliases -->
             <linearGradient id="cmp-bar-total" x1="0%" y1="0%" x2="0%" y2="100%">
               <stop offset="0%" stop-color="#3B82F6"/>
               <stop offset="100%" stop-color="#1D4ED8"/>
@@ -3614,8 +3678,8 @@
               <stop offset="0%" stop-color="#10B981"/>
               <stop offset="100%" stop-color="#059669"/>
             </linearGradient>
-            <filter id="barShadow" x="-10%" y="-10%" width="120%" height="120%">
-              <feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.15"/>
+            <filter id="colShadow" x="-10%" y="-10%" width="120%" height="120%">
+              <feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.16"/>
             </filter>
           `;
 
@@ -3631,77 +3695,101 @@
             const yPos = pad.top + plotH - (v / yMax) * plotH;
             return `
               <line x1="${pad.left}" y1="${yPos}" x2="${width - pad.right}" y2="${yPos}" stroke="#E2E8F0" stroke-width="1.5" stroke-dasharray="4 4"/>
-              <text x="${pad.left - 10}" y="${yPos + 4.5}" fill="#475569" font-size="12" font-family="'Plus Jakarta Sans', monospace, sans-serif" font-weight="bold" text-anchor="end">${v}</text>
+              <text x="${pad.left - 12}" y="${yPos + 4.5}" fill="#64748B" font-size="12" font-family="'Plus Jakarta Sans', monospace, sans-serif" font-weight="bold" text-anchor="end">${v}</text>
             `;
           }).join('');
 
-          // Grouped bars
-          const barsSvg = chartItems.map((item, i) => {
-            const val1 = item.val1;
-            const val2 = item.val2;
+          // Stacked columns
+          const columnsSvg = chartItems.map((item, i) => {
+            const isVal = item.type === 'validation';
+            const closedVal = item.closed;
+            const openVal = item.open;
+            const totalVal = item.total;
 
-            const h1 = yMax > 0 ? (val1 / yMax) * plotH : 0;
-            const h2 = yMax > 0 ? (val2 / yMax) * plotH : 0;
+            const closedH = yMax > 0 ? (closedVal / yMax) * plotH : 0;
+            const openH = yMax > 0 ? (openVal / yMax) * plotH : 0;
+            const totalH = closedH + openH;
 
             const slotX = pad.left + (i * slotW);
-            const pairW = (barW * 2) + pairSpacing;
-            const x1 = slotX + (slotW - pairW) / 2;
-            const x2 = x1 + barW + pairSpacing;
+            const colX = slotX + (slotW - colW) / 2;
 
-            const y1 = pad.top + plotH - h1;
-            const y2 = pad.top + plotH - h2;
+            const yClosed = baseY - closedH;
+            const yOpen = baseY - totalH;
+
+            const closedFill = isVal ? 'url(#cmp-col-passed)' : 'url(#cmp-col-closed)';
+            const openFill = isVal ? 'url(#cmp-col-pending)' : 'url(#cmp-col-open)';
 
             const displayLabel = item.code;
-            const isVal = item.type === 'validation';
 
-            // Gradient and color for Bar 2 (Validation Passed vs Open Actions)
-            const bar2Grad = isVal ? 'url(#cmp-bar-passed)' : 'url(#cmp-bar-open)';
-            const bar2TextColor = isVal ? '#047857' : '#C2410C';
+            let columnContent = '';
 
-            // Anti-collision label positioning:
-            // When both bars have active values and heights are close (|y1 - y2| < 22),
-            // stagger Bar 1 label upward with a subtle dashed guide line so labels never overlap horizontally.
-            let text1Y = Math.max(pad.top + 16, y1 - 6);
-            let text2Y = Math.max(pad.top + 16, y2 - 6);
-            const isCloseHeight = (val1 > 0 && val2 > 0 && Math.abs(y1 - y2) < 22);
+            if (totalVal === 0) {
+              // Subtle zero indicator at baseline
+              columnContent = `
+                <rect x="${colX + colW * 0.15}" y="${baseY - 3}" width="${colW * 0.7}" height="3" rx="1.5" fill="#CBD5E1"/>
+                <text x="${colX + colW / 2}" y="${baseY - 7}" fill="#94A3B8" class="cmp-bar-zero" font-size="11" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="bold" text-anchor="middle">0</text>
+              `;
+            } else {
+              // Stacked Column Construction
+              if (closedH > 0 && openH > 0) {
+                // Dual Stack: Closed/Passed at bottom, Open/Pending on top
+                columnContent = `
+                  <!-- Bottom Segment: Closed Actions / Validation Passed -->
+                  <rect x="${colX}" y="${yClosed}" width="${colW}" height="${closedH}" rx="3" fill="${closedFill}" filter="url(#colShadow)" class="transition-all group-hover:brightness-105"/>
+                  <!-- Segment Boundary Line -->
+                  <line x1="${colX}" y1="${yClosed}" x2="${colX + colW}" y2="${yClosed}" stroke="#FFFFFF" stroke-width="1.5" stroke-opacity="0.85"/>
+                  <!-- Top Segment: Open Actions / Validation Pending -->
+                  <rect x="${colX}" y="${yOpen}" width="${colW}" height="${openH}" rx="3" fill="${openFill}" filter="url(#colShadow)" class="transition-all group-hover:brightness-105"/>
+                `;
 
-            if (isCloseHeight) {
-              if (text1Y - 16 >= pad.top + 12) {
-                text1Y = text1Y - 16;
-              } else {
-                text2Y = text2Y + 16;
+                // Inside segment number labels when tall enough
+                if (closedH >= 20) {
+                  columnContent += `
+                    <text x="${colX + colW / 2}" y="${yClosed + closedH / 2 + 4.5}" fill="#FFFFFF" class="cmp-col-seg" font-size="11" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" text-anchor="middle" pointer-events="none">${closedVal}</text>
+                  `;
+                }
+                if (openH >= 20) {
+                  columnContent += `
+                    <text x="${colX + colW / 2}" y="${yOpen + openH / 2 + 4.5}" fill="#FFFFFF" class="cmp-col-seg" font-size="11" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" text-anchor="middle" pointer-events="none">${openVal}</text>
+                  `;
+                }
+              } else if (closedH > 0) {
+                // Only closed/passed segment
+                columnContent = `
+                  <rect x="${colX}" y="${yClosed}" width="${colW}" height="${closedH}" rx="5" fill="${closedFill}" filter="url(#colShadow)" class="transition-all group-hover:brightness-105"/>
+                `;
+                if (closedH >= 20) {
+                  columnContent += `
+                    <text x="${colX + colW / 2}" y="${yClosed + closedH / 2 + 4.5}" fill="#FFFFFF" class="cmp-col-seg" font-size="11" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" text-anchor="middle" pointer-events="none">${closedVal}</text>
+                  `;
+                }
+              } else if (openH > 0) {
+                // Only open segment
+                columnContent = `
+                  <rect x="${colX}" y="${yOpen}" width="${colW}" height="${openH}" rx="5" fill="${openFill}" filter="url(#colShadow)" class="transition-all group-hover:brightness-105"/>
+                `;
+                if (openH >= 20) {
+                  columnContent += `
+                    <text x="${colX + colW / 2}" y="${yOpen + openH / 2 + 4.5}" fill="#FFFFFF" class="cmp-col-seg" font-size="11" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" text-anchor="middle" pointer-events="none">${openVal}</text>
+                  `;
+                }
               }
+
+              // Bold Total Value directly atop the column
+              const totalY = Math.max(pad.top + 14, yOpen - 8);
+              columnContent += `
+                <text x="${colX + colW / 2}" y="${totalY}" fill="#0F172A" class="cmp-col-total" font-size="13" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="900" text-anchor="middle">${totalVal}</text>
+              `;
             }
 
             return `
               <g class="cursor-pointer group" onclick="${item.clickHandler}">
                 <title>${item.tooltip}</title>
                 <!-- Group background hover highlight -->
-                <rect x="${slotX + 2}" y="${pad.top}" width="${slotW - 4}" height="${plotH}" rx="6" fill="transparent" class="group-hover:fill-slate-100/70 transition-colors"/>
-
-                <!-- Bar 1: Total Actions (Blue) or Total Personnel (Blue) -->
-                ${val1 > 0 ? `
-                  <rect x="${x1}" y="${y1}" width="${barW}" height="${h1}" rx="4" fill="url(#cmp-bar-total)" filter="url(#barShadow)" class="transition-all group-hover:brightness-110"/>
-                  ${isCloseHeight ? `
-                    <line x1="${x1 + barW / 2}" y1="${y1 - 2}" x2="${x1 + barW / 2}" y2="${text1Y + 3}" stroke="#2563EB" stroke-width="1.2" stroke-dasharray="2 2" opacity="0.6"/>
-                  ` : ''}
-                  <text x="${x1 + barW / 2}" y="${text1Y}" fill="#1D4ED8" class="cmp-bar-num" font-size="13" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" text-anchor="middle">${val1}</text>
-                ` : `
-                  <rect x="${x1}" y="${pad.top + plotH - 3}" width="${barW}" height="3" rx="1.5" fill="#CBD5E1"/>
-                  <text x="${x1 + barW / 2}" y="${pad.top + plotH - 7}" fill="#94A3B8" class="cmp-bar-zero" font-size="11" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="bold" text-anchor="middle">0</text>
-                `}
-
-                <!-- Bar 2: Open Actions (Amber/Orange) or Validation Passed (Emerald) -->
-                ${val2 > 0 ? `
-                  <rect x="${x2}" y="${y2}" width="${barW}" height="${h2}" rx="4" fill="${bar2Grad}" filter="url(#barShadow)" class="transition-all group-hover:brightness-110"/>
-                  <text x="${x2 + barW / 2}" y="${text2Y}" fill="${bar2TextColor}" class="cmp-bar-num" font-size="13" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" text-anchor="middle">${val2}</text>
-                ` : `
-                  <rect x="${x2}" y="${pad.top + plotH - 3}" width="${barW}" height="3" rx="1.5" fill="#E2E8F0"/>
-                  <text x="${x2 + barW / 2}" y="${pad.top + plotH - 7}" fill="#CBD5E1" class="cmp-bar-zero" font-size="11" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="bold" text-anchor="middle">0</text>
-                `}
-
-                <!-- X Axis Label: Tilted at -28 degrees with generous line spacing and bold font -->
-                <g transform="translate(${slotX + slotW / 2}, ${pad.top + plotH + 18})">
+                <rect x="${slotX + 2}" y="${pad.top}" width="${slotW - 4}" height="${plotH}" rx="8" fill="transparent" class="group-hover:fill-slate-100/80 transition-colors"/>
+                ${columnContent}
+                <!-- X Axis Label: Tilted at -28 degrees with bold font -->
+                <g transform="translate(${slotX + slotW / 2}, ${baseY + 18})">
                   <text transform="rotate(-28)" fill="#1E293B" class="cmp-x-label" font-size="12" font-weight="800" text-anchor="end" class="group-hover:fill-blue-600 transition-colors">
                     ${displayLabel}
                   </text>
@@ -3714,9 +3802,9 @@
             <svg viewBox="0 0 ${width} ${height}" class="w-full h-auto overflow-visible select-none">
               <defs>${defsGradients}</defs>
               <!-- Baseline -->
-              <line x1="${pad.left}" y1="${pad.top + plotH}" x2="${width - pad.right}" y2="${pad.top + plotH}" stroke="#64748B" stroke-width="2"/>
+              <line x1="${pad.left}" y1="${baseY}" x2="${width - pad.right}" y2="${baseY}" stroke="#64748B" stroke-width="2"/>
               ${gridSvg}
-              ${barsSvg}
+              ${columnsSvg}
             </svg>
           `;
         },
