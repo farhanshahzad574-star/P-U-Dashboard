@@ -2000,7 +2000,7 @@
               </div>
 
               <!-- Horizontal SVG Bar Chart -->
-              <div id="psm-dept-bar-chart" class="w-full overflow-x-auto">
+              <div id="psm-dept-bar-chart" class="w-full">
                 ${this.renderDepartmentBarChart(deptList)}
               </div>
 
