@@ -1296,14 +1296,14 @@
                 <span class="w-2.5 h-2.5 rounded-sm bg-emerald-600"></span>
                 <span>Validation Passed</span>
               </span>
-              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 text-slate-700 border border-slate-300" title="Total actions or personnel (displayed at top of each column)">
-                <span class="w-2.5 h-2.5 rounded-sm bg-slate-800"></span>
-                <span>Total (Column Top)</span>
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 text-slate-800 border border-slate-300" title="Total, Open, and Closed KPI badges displayed above each bar">
+                <span class="w-2.5 h-2.5 rounded-sm bg-slate-900"></span>
+                <span>Total / Open / Closed KPIs (Above Bars)</span>
               </span>
             </div>
           </div>
           <!-- Interactive SVG Bar Chart Container -->
-          <div id="comparison-chart-container" class="w-full overflow-hidden min-h-[300px]">
+          <div id="comparison-chart-container" class="w-full overflow-hidden min-h-[320px]">
             <!-- Dynamically populated by portalApp.renderComparisonChart() -->
           </div>
         </div>
@@ -3728,8 +3728,8 @@
           });
 
           const width = 1200;
-          const height = 360;
-          const pad = { top: 52, right: 35, bottom: 95, left: 65 };
+          const height = 400;
+          const pad = { top: 78, right: 35, bottom: 95, left: 65 };
           const plotW = width - pad.left - pad.right;
           const plotH = height - pad.top - pad.bottom;
           const baseY = pad.top + plotH;
@@ -3739,9 +3739,9 @@
           // Single stacked column per module: width calibrated for high visibility and clear separation
           const colW = Math.min(38, Math.max(24, Math.round(slotW * 0.46)));
 
-          // Max value scale (dynamic based on highest total value in comparison)
+          // Max value scale (calibrated with ample headroom so badges above bars never clip)
           const maxVal = Math.max(...chartItems.map(i => i.total), 10);
-          const yMax = maxVal > 300 ? 600 : Math.max(20, Math.ceil((maxVal * 1.25) / 10) * 10);
+          const yMax = maxVal > 300 ? Math.ceil((maxVal * 1.34) / 50) * 50 : Math.max(20, Math.ceil((maxVal * 1.36) / 10) * 10);
 
           // Gradients definition for Closed, Open, and Validation Passed/Pending stacked segments
           const defsGradients = `
@@ -3808,6 +3808,7 @@
 
             const slotX = pad.left + (i * slotW);
             const colX = slotX + (slotW - colW) / 2;
+            const centerX = colX + (colW / 2);
 
             const yClosed = baseY - closedH;
             const yOpen = baseY - totalH;
@@ -3817,13 +3818,44 @@
 
             const displayLabel = item.code;
 
+            // Metric Callout Badge Geometry
+            const badgeW = 64;
+            const badgeH = 43;
+            const badgeX = centerX - (badgeW / 2);
+            const hasData = totalVal > 0;
+            const badgeY = (totalVal === 0) ? (baseY - badgeH - 9) : Math.max(pad.top + 6, yOpen - badgeH - 8);
+
+            const closedLabelColor = isVal ? '#047857' : '#1D4ED8';
+            const openLabelColor = '#C2410C';
+            const totalLabelColor = hasData ? '#0F172A' : '#64748B';
+            const badgeBg = hasData ? '#FFFFFF' : '#F8FAFC';
+            const badgeBorder = hasData ? '#CBD5E1' : '#E2E8F0';
+            const subOpenColor = hasData ? openLabelColor : '#94A3B8';
+            const subClosedColor = hasData ? closedLabelColor : '#94A3B8';
+
+            const kpiBadgeSvg = `
+              <!-- Professional KPI Callout Badge (Total, Open, Closed) Above Bar -->
+              <g class="transition-transform duration-200 group-hover:-translate-y-0.5" pointer-events="none">
+                <rect x="${badgeX}" y="${badgeY}" width="${badgeW}" height="${badgeH}" rx="6" fill="${badgeBg}" stroke="${badgeBorder}" stroke-width="${hasData ? '1.2' : '1'}" ${hasData ? 'filter="url(#colShadow)"' : ''} class="transition-colors group-hover:stroke-blue-500"/>
+                <!-- Callout pointer arrow -->
+                <polygon points="${centerX - 4},${badgeY + badgeH} ${centerX + 4},${badgeY + badgeH} ${centerX},${badgeY + badgeH + 4}" fill="${badgeBg}" stroke="${badgeBorder}" stroke-width="1"/>
+                <line x1="${centerX - 3.2}" y1="${badgeY + badgeH}" x2="${centerX + 3.2}" y2="${badgeY + badgeH}" stroke="${badgeBg}" stroke-width="1.5"/>
+                <!-- Total KPI Value -->
+                <text x="${centerX}" y="${badgeY + 12.5}" fill="${totalLabelColor}" font-size="10.5" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="900" text-anchor="middle">Total: ${totalVal}</text>
+                <!-- Open KPI Value -->
+                <text x="${centerX}" y="${badgeY + 25}" fill="${subOpenColor}" font-size="9.5" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" text-anchor="middle">Open: ${openVal}</text>
+                <!-- Closed KPI Value -->
+                <text x="${centerX}" y="${badgeY + 36.5}" fill="${subClosedColor}" font-size="9.5" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" text-anchor="middle">Closed: ${closedVal}</text>
+              </g>
+            `;
+
             let columnContent = '';
 
             if (totalVal === 0) {
-              // Subtle zero indicator at baseline
+              // Subtle zero indicator at baseline with KPI badge above
               columnContent = `
                 <rect x="${colX + colW * 0.15}" y="${baseY - 3}" width="${colW * 0.7}" height="3" rx="1.5" fill="#CBD5E1"/>
-                <text x="${colX + colW / 2}" y="${baseY - 7}" fill="#94A3B8" class="cmp-bar-zero" font-size="11" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="bold" text-anchor="middle">0</text>
+                ${kpiBadgeSvg}
               `;
             } else {
               // Stacked Column Construction
@@ -3841,12 +3873,12 @@
                 // Inside segment number labels when tall enough
                 if (closedH >= 20) {
                   columnContent += `
-                    <text x="${colX + colW / 2}" y="${yClosed + closedH / 2 + 4.5}" fill="#FFFFFF" class="cmp-col-seg" font-size="11" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" text-anchor="middle" pointer-events="none">${closedVal}</text>
+                    <text x="${centerX}" y="${yClosed + closedH / 2 + 4.5}" fill="#FFFFFF" class="cmp-col-seg" font-size="11" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" text-anchor="middle" pointer-events="none">${closedVal}</text>
                   `;
                 }
                 if (openH >= 20) {
                   columnContent += `
-                    <text x="${colX + colW / 2}" y="${yOpen + openH / 2 + 4.5}" fill="#FFFFFF" class="cmp-col-seg" font-size="11" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" text-anchor="middle" pointer-events="none">${openVal}</text>
+                    <text x="${centerX}" y="${yOpen + openH / 2 + 4.5}" fill="#FFFFFF" class="cmp-col-seg" font-size="11" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" text-anchor="middle" pointer-events="none">${openVal}</text>
                   `;
                 }
               } else if (closedH > 0) {
@@ -3856,7 +3888,7 @@
                 `;
                 if (closedH >= 20) {
                   columnContent += `
-                    <text x="${colX + colW / 2}" y="${yClosed + closedH / 2 + 4.5}" fill="#FFFFFF" class="cmp-col-seg" font-size="11" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" text-anchor="middle" pointer-events="none">${closedVal}</text>
+                    <text x="${centerX}" y="${yClosed + closedH / 2 + 4.5}" fill="#FFFFFF" class="cmp-col-seg" font-size="11" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" text-anchor="middle" pointer-events="none">${closedVal}</text>
                   `;
                 }
               } else if (openH > 0) {
@@ -3866,16 +3898,13 @@
                 `;
                 if (openH >= 20) {
                   columnContent += `
-                    <text x="${colX + colW / 2}" y="${yOpen + openH / 2 + 4.5}" fill="#FFFFFF" class="cmp-col-seg" font-size="11" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" text-anchor="middle" pointer-events="none">${openVal}</text>
+                    <text x="${centerX}" y="${yOpen + openH / 2 + 4.5}" fill="#FFFFFF" class="cmp-col-seg" font-size="11" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" text-anchor="middle" pointer-events="none">${openVal}</text>
                   `;
                 }
               }
 
-              // Bold Total Value directly atop the column
-              const totalY = Math.max(pad.top + 14, yOpen - 8);
-              columnContent += `
-                <text x="${colX + colW / 2}" y="${totalY}" fill="#0F172A" class="cmp-col-total" font-size="13" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="900" text-anchor="middle">${totalVal}</text>
-              `;
+              // Professional KPI badge directly atop the column
+              columnContent += kpiBadgeSvg;
             }
 
             return `
