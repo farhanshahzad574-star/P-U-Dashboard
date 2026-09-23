@@ -15,10 +15,14 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
-    let sheetUrl = (req.query?.url as string) || process.env.HSEQ_KPI || 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTyc0eRsaIpv3DWLdBbEplWo5FqrNwuCFpFrXM4_A6pRTkQgHz56DaN9FMV0cuCkQXnXfPDyKS_nsYC/pub?gid=553516171&single=true&output=csv';
+    let sheetUrl = (req.query?.url as string) || process.env.HSEQ_KPI || 'https://docs.google.com/spreadsheets/d/1bFBRGKqIfO8Pn7qPSTU0pbdTB87ezDyXvVDnCbTGrx4/gviz/tq?tqx=out:csv&sheet=HSEQ_KPI';
     sheetUrl = sheetUrl.trim();
 
-    const candidateUrls: string[] = [];
+    const candidateUrls: string[] = [
+      'https://docs.google.com/spreadsheets/d/1bFBRGKqIfO8Pn7qPSTU0pbdTB87ezDyXvVDnCbTGrx4/gviz/tq?tqx=out:csv&sheet=HSEQ_KPI',
+      'https://docs.google.com/spreadsheets/d/1bFBRGKqIfO8Pn7qPSTU0pbdTB87ezDyXvVDnCbTGrx4/export?format=csv&sheet=HSEQ_KPI',
+      sheetUrl
+    ];
     if (sheetUrl.includes('/pub') && sheetUrl.includes('output=csv')) {
       candidateUrls.push(sheetUrl);
     } else if (sheetUrl.includes('/pub')) {

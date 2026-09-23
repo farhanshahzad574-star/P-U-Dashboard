@@ -1418,13 +1418,13 @@
           <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
             
             <!-- Left 6 Cols: Department Training Compliance Matrix -->
-            <div class="lg:col-span-6 bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-4">
-              <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                <div class="space-y-0.5">
-                  <h4 class="text-sm font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
-                    <i data-lucide="bar-chart-3" class="w-4 h-4 text-teal-600"></i>
-                    <span>Department Training Compliance Matrix</span>
-                  </h4>
+            <div class="lg:col-span-6 bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-xs flex flex-col justify-between space-y-4">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                <div>
+                  <h3 class="text-lg font-black tracking-wider text-slate-900 flex items-center gap-2.5 uppercase">
+                    <i data-lucide="bar-chart-3" class="w-5 h-5 text-teal-600"></i>
+                    <span>DEPARTMENT TRAINING COMPLIANCE MATRIX</span>
+                  </h3>
                 </div>
               </div>
 
@@ -1432,22 +1432,82 @@
               <div id="psm-val-dept-bar-chart" class="w-full overflow-x-auto">
                 ${this.renderValidationDeptBarChart(deptBreakdown)}
               </div>
+
+              <!-- Enlarged Legends for Department Training Compliance Matrix -->
+              <div class="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-sm font-mono">
+                <div class="flex items-center flex-wrap gap-3">
+                  <button
+                    onclick="FPCL_PSM_SUITE.setValidationFilter('trainingFilter', FPCL_PSM_SUITE.state.validationState?.trainingFilter === 'Yes' ? 'all' : 'Yes')"
+                    class="inline-flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 font-black cursor-pointer hover:bg-emerald-100 transition-colors shadow-2xs text-sm"
+                    title="Click to filter Trained / Compliant personnel"
+                  >
+                    <span class="w-4 h-4 rounded bg-emerald-500"></span>
+                    <span>Trained (${deptBreakdown.reduce((acc, d) => acc + d.trained, 0)})</span>
+                  </button>
+                  <button
+                    onclick="FPCL_PSM_SUITE.setValidationFilter('trainingFilter', FPCL_PSM_SUITE.state.validationState?.trainingFilter === 'No' ? 'all' : 'No')"
+                    class="inline-flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 font-black cursor-pointer hover:bg-amber-100 transition-colors shadow-2xs text-sm"
+                    title="Click to filter Require Training / Open personnel"
+                  >
+                    <span class="w-4 h-4 rounded bg-amber-500"></span>
+                    <span>Require Training (${deptBreakdown.reduce((acc, d) => acc + d.untrained, 0)})</span>
+                  </button>
+                </div>
+                <div class="text-xs font-sans text-slate-400 font-semibold">
+                  Click any bar to filter department
+                </div>
+              </div>
             </div>
 
             <!-- Right 6 Cols: Module Validation Compliance Matrix (Pass / Fail Bar Chart) -->
-            <div class="lg:col-span-6 bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-4">
-              <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                <div class="space-y-0.5">
-                  <h4 class="text-sm font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
-                    <i data-lucide="shield-check" class="w-4 h-4 text-blue-600"></i>
-                    <span>Module Validation Compliance Matrix</span>
-                  </h4>
+            <div class="lg:col-span-6 bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-xs flex flex-col justify-between space-y-4">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                <div>
+                  <h3 class="text-lg font-black tracking-wider text-slate-900 flex items-center gap-2.5 uppercase">
+                    <i data-lucide="shield-check" class="w-5 h-5 text-blue-600"></i>
+                    <span>MODULE VALIDATION COMPLIANCE MATRIX</span>
+                  </h3>
                 </div>
               </div>
 
               <!-- Horizontal SVG Bar Chart (Module Validation Compliance Matrix) -->
               <div id="psm-val-module-bar-chart" class="w-full overflow-x-auto">
                 ${this.renderValidationModuleBarChart(moduleBreakdown)}
+              </div>
+
+              <!-- Enlarged Legends for Module Validation Compliance Matrix -->
+              <div class="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-sm font-mono">
+                <div class="flex items-center flex-wrap gap-3">
+                  <button
+                    onclick="FPCL_PSM_SUITE.setValidationFilter('statusFilter', FPCL_PSM_SUITE.state.validationState?.statusFilter === 'Pass' ? 'all' : 'Pass')"
+                    class="inline-flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 font-black cursor-pointer hover:bg-emerald-100 transition-colors shadow-2xs text-sm"
+                    title="Click to filter Passed records"
+                  >
+                    <span class="w-4 h-4 rounded bg-emerald-500"></span>
+                    <span>Passed (${moduleBreakdown.reduce((acc, m) => acc + m.passed, 0)})</span>
+                  </button>
+                  <button
+                    onclick="FPCL_PSM_SUITE.setValidationFilter('statusFilter', FPCL_PSM_SUITE.state.validationState?.statusFilter === 'Fail' ? 'all' : 'Fail')"
+                    class="inline-flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 font-black cursor-pointer hover:bg-rose-100 transition-colors shadow-2xs text-sm"
+                    title="Click to filter Failed records"
+                  >
+                    <span class="w-4 h-4 rounded bg-rose-500"></span>
+                    <span>Failed (${moduleBreakdown.reduce((acc, m) => acc + m.failed, 0)})</span>
+                  </button>
+                  ${moduleBreakdown.reduce((acc, m) => acc + m.pending, 0) > 0 ? `
+                  <button
+                    onclick="FPCL_PSM_SUITE.setValidationFilter('statusFilter', FPCL_PSM_SUITE.state.validationState?.statusFilter === 'Pending' ? 'all' : 'Pending')"
+                    class="inline-flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-slate-100 border border-slate-200 text-slate-800 font-black cursor-pointer hover:bg-slate-200 transition-colors shadow-2xs text-sm"
+                    title="Click to filter Pending records"
+                  >
+                    <span class="w-4 h-4 rounded bg-slate-400"></span>
+                    <span>Pending (${moduleBreakdown.reduce((acc, m) => acc + m.pending, 0)})</span>
+                  </button>
+                  ` : ''}
+                </div>
+                <div class="text-xs font-sans text-slate-400 font-semibold">
+                  Click any bar to filter module
+                </div>
               </div>
             </div>
 
@@ -1932,8 +1992,8 @@
             <div class="lg:col-span-6 bg-white border border-slate-200 rounded-2xl p-5 shadow-xs flex flex-col justify-between space-y-4">
               <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
                 <div>
-                  <h3 class="text-sm sm:text-base font-black tracking-wider text-slate-900 flex items-center gap-2 uppercase">
-                    <i data-lucide="bar-chart-3" class="w-4 h-4 text-teal-600"></i>
+                  <h3 class="text-base sm:text-lg font-black tracking-wider text-slate-900 flex items-center gap-2.5 uppercase">
+                    <i data-lucide="bar-chart-3" class="w-5 h-5 text-teal-600"></i>
                     <span>OPEN VS. CLOSED FINDINGS BY ACTION DEPARTMENT</span>
                   </h3>
                 </div>
@@ -1945,26 +2005,26 @@
               </div>
 
               <!-- Legends of Department Findings Trend Placed at Bottom -->
-              <div class="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs font-mono">
+              <div class="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-sm font-mono">
                 <div class="flex items-center gap-3">
                   <button
                     onclick="FPCL_PSM_SUITE.openDataModal({ title: 'All Open Findings by Department', badge: 'Active Open', subtitle: '${openCount} Open findings across all departments', filterStatus: 'Open' })"
-                    class="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 font-bold cursor-pointer hover:bg-rose-100 transition-colors shadow-2xs"
+                    class="inline-flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 font-black cursor-pointer hover:bg-rose-100 transition-colors shadow-2xs text-xs sm:text-sm"
                     title="Click to view all Open findings in pop-up window"
                   >
-                    <span class="w-2.5 h-2.5 rounded-sm bg-rose-500"></span>
+                    <span class="w-3.5 h-3.5 rounded bg-rose-500"></span>
                     <span>Open Findings (${openCount})</span>
                   </button>
                   <button
                     onclick="FPCL_PSM_SUITE.openDataModal({ title: 'All Closed Findings by Department', badge: 'Resolved', subtitle: '${closedCount} Closed findings across all departments', filterStatus: 'Close' })"
-                    class="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 font-bold cursor-pointer hover:bg-emerald-100 transition-colors shadow-2xs"
+                    class="inline-flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 font-black cursor-pointer hover:bg-emerald-100 transition-colors shadow-2xs text-xs sm:text-sm"
                     title="Click to view all Closed findings in pop-up window"
                   >
-                    <span class="w-2.5 h-2.5 rounded-sm bg-teal-500"></span>
+                    <span class="w-3.5 h-3.5 rounded bg-teal-500"></span>
                     <span>Closed Findings (${closedCount})</span>
                   </button>
                 </div>
-                <div class="text-[11px] font-sans text-slate-400 font-medium">
+                <div class="text-xs font-sans text-slate-400 font-semibold">
                   Click any bar to inspect department data
                 </div>
               </div>
@@ -2371,7 +2431,7 @@
       }
     },
 
-    // 960px Horizontal grouped/stacked bar chart for departments (PLR reference: 706px chart width, 15px bar height, 9.5px value font, 11px total font)
+    // 1000px High-Visibility Horizontal Bar Chart for departments (Engineered for 8-foot boardroom visibility)
     renderDepartmentBarChart(deptList) {
       if (!deptList || deptList.length === 0) {
         return `<div class="text-center py-8 text-xs text-slate-400">No data available</div>`;
@@ -2386,18 +2446,21 @@
         ticks.push(t);
       }
 
-      // Standard PLR Bar Chart Geometry: 960 width, 190 padLeft, 64 padRight => 706px chart width
-      const w = 960;
-      const padLeft = 190;
-      const padRight = 64;
-      const padTop = 32;
-      const padBottom = 38;
-      const rowH = 26;
+      // High-Visibility Geometry: 1000px width, 250 padLeft, 160 padRight, 44px bar thickness, 68px row height
+      const w = 1000;
+      const padLeft = 250;
+      const padRight = 160;
+      const padTop = 36;
+      const padBottom = 54;
+      const rowH = 68;
+      const barH = 44;
       const chartW = w - padLeft - padRight;
       const h = padTop + deptList.length * rowH + padBottom;
 
       const barsSvg = deptList.map((d, i) => {
         const y = padTop + i * rowH;
+        const barY = y + 12;
+        const centerY = barY + barH / 2;
         const totalW = (d.total / tickMax) * chartW;
         const openW = (d.open / tickMax) * chartW;
         const closeW = (d.close / tickMax) * chartW;
@@ -2414,24 +2477,24 @@
             <title>${d.name}: ${d.total} Total (${d.open} Open, ${d.close} Closed • ${d.closureRate}% Resolved) - Click to open data</title>
 
             <!-- Row hover highlight -->
-            <rect x="0" y="${y - 3}" width="${w}" height="${rowH}" fill="${isSelected ? '#F0FDFA' : 'transparent'}" class="group-hover:fill-teal-50/60 transition-colors rounded-lg"/>
+            <rect x="0" y="${y}" width="${w}" height="${rowH}" fill="${isSelected ? '#F0FDFA' : 'transparent'}" class="group-hover:fill-teal-50/60 transition-colors rounded-xl"/>
             
-            <!-- Department Label (11px, bold, matching PLR reference) -->
-            <text x="${padLeft - 14}" y="${y + 14}" fill="${isSelected ? '#0D9488' : '#1E293B'}" font-size="11" font-weight="${isSelected ? '900' : '700'}" font-family="'Plus Jakarta Sans', system-ui, sans-serif" text-anchor="end" class="transition-colors group-hover:fill-teal-700">
+            <!-- Department Label (19px Extra-Bold Font for 8-foot legibility) -->
+            <text x="${padLeft - 18}" y="${centerY}" fill="${isSelected ? '#0D9488' : '#0F172A'}" font-size="19" font-weight="${isSelected ? '900' : '800'}" font-family="'Plus Jakarta Sans', system-ui, sans-serif" text-anchor="end" dominant-baseline="central" class="transition-colors group-hover:fill-teal-700">
               ${d.name}
             </text>
 
-            <!-- Background Track -->
-            <rect x="${padLeft}" y="${y + 2}" width="${chartW}" height="15" rx="4" fill="#F1F5F9"/>
+            <!-- Background Track (Enlarged to 44px thickness with clear border) -->
+            <rect x="${padLeft}" y="${barY}" width="${chartW}" height="${barH}" rx="8" fill="#F1F5F9" stroke="#E2E8F0" stroke-width="1.5"/>
 
-            <!-- Open Findings Bar (Rose) -->
+            <!-- Open Findings Bar (Rose, massive 44px thickness with 22px bold value) -->
             ${d.open > 0 ? `
               <rect
                 x="${padLeft}"
-                y="${y + 2}"
+                y="${barY}"
                 width="${openW}"
-                height="15"
-                rx="${d.close > 0 ? '4 0 0 4' : '4'}"
+                height="${barH}"
+                rx="${d.close > 0 ? '8 0 0 8' : '8'}"
                 fill="#F43F5E"
                 class="transition-all opacity-95 group-hover:opacity-100 cursor-pointer"
                 onclick="event.stopPropagation(); FPCL_PSM_SUITE.openDataModal({ title: '${d.name.replace(/'/g, "\\'")} — Open Findings', badge: 'Active Open', subtitle: '${d.open} Open Findings Requiring Action', filterDept: '${d.name.replace(/'/g, "\\'")}', filterStatus: 'Open' })"
@@ -2441,19 +2504,21 @@
               >
                 <title>${d.name} Open: ${d.open} findings</title>
               </rect>
-              ${openW >= 14 ? `
-                <text x="${padLeft + openW / 2}" y="${y + 14.5}" fill="#ffffff" font-size="9.5" font-weight="900" font-family="monospace" text-anchor="middle" pointer-events="none">${d.open}</text>
-              ` : ''}
+              ${openW >= 36 ? `
+                <text x="${padLeft + openW / 2}" y="${centerY}" fill="#ffffff" font-size="22" font-weight="900" font-family="'JetBrains Mono', monospace" text-anchor="middle" dominant-baseline="central" pointer-events="none" style="filter: drop-shadow(0 1.5px 2px rgba(0,0,0,0.5))">${d.open}</text>
+              ` : (openW >= 16 ? `
+                <text x="${padLeft + openW / 2}" y="${centerY}" fill="#ffffff" font-size="16" font-weight="900" font-family="'JetBrains Mono', monospace" text-anchor="middle" dominant-baseline="central" pointer-events="none">${d.open}</text>
+              ` : '')}
             ` : ''}
 
-            <!-- Closed Findings Bar (Emerald) -->
+            <!-- Closed Findings Bar (Emerald, massive 44px thickness with 22px bold value) -->
             ${d.close > 0 ? `
               <rect
                 x="${padLeft + openW}"
-                y="${y + 2}"
+                y="${barY}"
                 width="${closeW}"
-                height="15"
-                rx="${d.open > 0 ? '0 4 4 0' : '4'}"
+                height="${barH}"
+                rx="${d.open > 0 ? '0 8 8 0' : '8'}"
                 fill="#10B981"
                 class="transition-all opacity-95 group-hover:opacity-100 cursor-pointer"
                 onclick="event.stopPropagation(); FPCL_PSM_SUITE.openDataModal({ title: '${d.name.replace(/'/g, "\\'")} — Closed Findings', badge: 'Resolved', subtitle: '${d.close} Closed & Verified Findings', filterDept: '${d.name.replace(/'/g, "\\'")}', filterStatus: 'Close' })"
@@ -2463,25 +2528,27 @@
               >
                 <title>${d.name} Closed: ${d.close} findings</title>
               </rect>
-              ${closeW >= 14 ? `
-                <text x="${padLeft + openW + closeW / 2}" y="${y + 14.5}" fill="#ffffff" font-size="9.5" font-weight="900" font-family="monospace" text-anchor="middle" pointer-events="none">${d.close}</text>
-              ` : ''}
+              ${closeW >= 36 ? `
+                <text x="${padLeft + openW + closeW / 2}" y="${centerY}" fill="#ffffff" font-size="22" font-weight="900" font-family="'JetBrains Mono', monospace" text-anchor="middle" dominant-baseline="central" pointer-events="none" style="filter: drop-shadow(0 1.5px 2px rgba(0,0,0,0.5))">${d.close}</text>
+              ` : (closeW >= 16 ? `
+                <text x="${padLeft + openW + closeW / 2}" y="${centerY}" fill="#ffffff" font-size="16" font-weight="900" font-family="'JetBrains Mono', monospace" text-anchor="middle" dominant-baseline="central" pointer-events="none">${d.close}</text>
+              ` : '')}
             ` : ''}
 
-            <!-- Total count & Resolution % at end of bar (11px, bold font, monospace) -->
-            <text x="${padLeft + chartW + 12}" y="${y + 14}" fill="#0F172A" font-size="11" font-weight="800" font-family="monospace">
-              ${d.total} <tspan fill="#0D9488" font-size="10" font-weight="700">(${d.closureRate}%)</tspan>
+            <!-- Total count & Resolution % at end of bar (Ultra-High-Visibility 26px bold values) -->
+            <text x="${padLeft + chartW + 18}" y="${centerY}" fill="#0F172A" font-size="26" font-weight="900" font-family="'JetBrains Mono', monospace" dominant-baseline="central">
+              ${d.total} <tspan fill="#0D9488" font-size="20" font-weight="800">(${d.closureRate}%)</tspan>
             </text>
           </g>
         `;
       }).join('');
 
-      // Grid line ticks (10px monospace, matching PLR reference)
+      // Grid line ticks (18px high-contrast monospace font)
       const gridSvg = ticks.map(t => {
         const x = padLeft + (t / tickMax) * chartW;
         return `
-          <line x1="${x}" y1="${padTop - 6}" x2="${x}" y2="${padTop + deptList.length * rowH + 4}" stroke="#E2E8F0" stroke-width="1.5" stroke-dasharray="3 3"/>
-          <text x="${x}" y="${padTop + deptList.length * rowH + 20}" fill="#64748B" font-size="10" font-weight="600" font-family="monospace" text-anchor="middle">${t}</text>
+          <line x1="${x}" y1="${padTop - 8}" x2="${x}" y2="${padTop + deptList.length * rowH + 8}" stroke="#CBD5E1" stroke-width="2" stroke-dasharray="4 4"/>
+          <text x="${x}" y="${padTop + deptList.length * rowH + 34}" fill="#334155" font-size="18" font-weight="800" font-family="'JetBrains Mono', monospace" text-anchor="middle">${t}</text>
         `;
       }).join('');
 
@@ -2658,8 +2725,8 @@
       let contentSvg = '';
 
       if (s.auditTrendViewType === 'side-by-side') {
-        const groupW = isPeriod ? Math.min(60, Math.max(32, step * 0.65)) : Math.min(42, Math.max(24, step * 0.7));
-        const gap = 3;
+        const groupW = isPeriod ? Math.min(84, Math.max(48, step * 0.85)) : Math.min(68, Math.max(40, step * 0.85));
+        const gap = 4;
         const subW = (groupW - gap) / 2;
 
         contentSvg = items.map((d, i) => {
@@ -2685,10 +2752,10 @@
           const openBarClickHandler = `event.stopPropagation(); FPCL_PSM_SUITE.openDataModal({ title: '${labelText} (Open)', badge: 'Active Open', subtitle: '${d.open} Open pending findings', ${isPeriod ? `filterAudit: '${escapedRaw}'` : `filterDept: '${escapedRaw}'`}, filterStatus: 'Open' })`;
 
           const resPct = d.total > 0 ? ((d.closed / d.total) * 100).toFixed(0) : 0;
-          const labelY = baseY + 14;
+          const labelY = baseY + 16;
 
-          const yClosedVal = d.closed > 0 ? yClosed - 6 : baseY - 6;
-          const yOpenVal = d.open > 0 ? yOpen - 6 : baseY - 6;
+          const yClosedVal = d.closed > 0 ? yClosed - 8 : baseY - 8;
+          const yOpenVal = d.open > 0 ? yOpen - 8 : baseY - 8;
           const highestValY = Math.min(yClosedVal, yOpenVal);
 
           return `
@@ -2706,7 +2773,7 @@
                   width="${subW}"
                   height="${Math.max(closedH, 3)}"
                   fill="#10B981"
-                  rx="3"
+                  rx="4"
                   class="transition-all group-hover:fill-[#059669] cursor-pointer"
                   onclick="${closedBarClickHandler}"
                 />
@@ -2722,7 +2789,7 @@
                   width="${subW}"
                   height="${Math.max(openH, 3)}"
                   fill="#F43F5E"
-                  rx="3"
+                  rx="4"
                   class="transition-all group-hover:fill-[#E11D48] cursor-pointer"
                   onclick="${openBarClickHandler}"
                 />
@@ -2730,34 +2797,34 @@
                 <rect x="${xOpen}" y="${baseY - 2}" width="${subW}" height="2" fill="#E2E8F0" rx="1"/>
               `}
 
-              <!-- Value for Closed Bar (Emerald - increased font size 11px) -->
+              <!-- Value for Closed Bar (Emerald - 16px bold) -->
               <text
                 x="${xClosed + subW / 2}"
                 y="${yClosedVal}"
                 fill="${d.closed > 0 ? '#047857' : '#94A3B8'}"
-                font-size="11"
+                font-size="16"
                 font-weight="900"
                 font-family="monospace"
                 text-anchor="middle"
               >${d.closed}</text>
 
-              <!-- Value for Open Bar (Rose - increased font size 11px) -->
+              <!-- Value for Open Bar (Rose - 16px bold) -->
               <text
                 x="${xOpen + subW / 2}"
                 y="${yOpenVal}"
                 fill="${d.open > 0 ? '#B91C1C' : '#94A3B8'}"
-                font-size="11"
+                font-size="16"
                 font-weight="900"
                 font-family="monospace"
                 text-anchor="middle"
               >${d.open}</text>
 
-              <!-- Total indicator above pair (increased font size 12px) -->
+              <!-- Total indicator above pair (18px extra bold) -->
               <text
                 x="${xCenter}"
-                y="${highestValY - 10}"
+                y="${highestValY - 12}"
                 fill="#0F172A"
-                font-size="12"
+                font-size="18"
                 font-weight="900"
                 font-family="monospace"
                 text-anchor="middle"
@@ -2766,12 +2833,12 @@
               <!-- Baseline tick mark -->
               <line x1="${xCenter}" y1="${baseY}" x2="${xCenter}" y2="${baseY + 6}" stroke="#94A3B8" stroke-width="1.5"/>
 
-              <!-- X Axis Label (Rotated 45 degrees, font size 11.5px bold) -->
+              <!-- X Axis Label (Rotated 45 degrees, font size 13px bold) -->
               <text
                 x="${xCenter}"
                 y="${labelY}"
                 fill="${isSelected ? '#0D9488' : '#334155'}"
-                font-size="11.5"
+                font-size="13"
                 font-weight="${isSelected ? '900' : '700'}"
                 font-family="'Plus Jakarta Sans', system-ui, sans-serif"
                 text-anchor="end"
@@ -2889,7 +2956,7 @@
       `;
     },
 
-    // Horizontal grouped/stacked bar chart for PSM Validation Departments (960px SVG layout)
+    // Horizontal grouped/stacked bar chart for PSM Validation Departments (Ultra-High-Visibility 1000px SVG layout)
     renderValidationDeptBarChart(deptBreakdown) {
       if (!deptBreakdown || deptBreakdown.length === 0) {
         return `<div class="text-center py-8 text-xs text-slate-400 font-medium">No department qualification records available</div>`;
@@ -2902,18 +2969,21 @@
         ticks.push(t);
       }
 
-      // Standard PLR Bar Chart Geometry: 960 width, 190 padLeft, 64 padRight => 706px chart width
-      const w = 960;
-      const padLeft = 190;
-      const padRight = 64;
-      const padTop = 32;
-      const padBottom = 38;
-      const rowH = 26;
+      // High-Visibility Geometry: 1000 width, 260 padLeft, 160 padRight, 44px bar thickness, 68px row height
+      const w = 1000;
+      const padLeft = 260;
+      const padRight = 160;
+      const padTop = 36;
+      const padBottom = 54;
+      const rowH = 68;
+      const barH = 44;
       const chartW = w - padLeft - padRight;
       const h = padTop + deptBreakdown.length * rowH + padBottom;
 
       const barsSvg = deptBreakdown.map((d, i) => {
         const y = padTop + i * rowH;
+        const barY = y + 12;
+        const centerY = barY + barH / 2;
         const totalW = (d.total / tickMax) * chartW;
         const trainedW = (d.trained / tickMax) * chartW;
         const untrainedW = (d.untrained / tickMax) * chartW;
@@ -2929,61 +2999,66 @@
             title="Click to filter by ${d.name} (${d.trained} Trained, ${d.untrained} Require Training)"
           >
             <!-- Row hover background -->
-            <rect x="0" y="${y - 3}" width="${w}" height="${rowH}" fill="${isSelected ? '#F0FDFA' : 'transparent'}" class="group-hover:fill-teal-50/60 transition-colors rounded-lg"/>
+            <rect x="0" y="${y}" width="${w}" height="${rowH}" fill="${isSelected ? '#F0FDFA' : 'transparent'}" class="group-hover:fill-teal-50/60 transition-colors rounded-xl"/>
             
-            <!-- Department Label (11px, bold, matching PLR reference) -->
-            <text x="${padLeft - 14}" y="${y + 14}" fill="${isSelected ? '#0D9488' : '#1E293B'}" font-size="11" font-weight="${isSelected ? '900' : '700'}" font-family="'Plus Jakarta Sans', system-ui, sans-serif" text-anchor="end" class="transition-colors group-hover:fill-teal-700">
+            <!-- Department Label (19px Extra-Bold Font) -->
+            <text x="${padLeft - 18}" y="${centerY}" fill="${isSelected ? '#0D9488' : '#0F172A'}" font-size="19" font-weight="${isSelected ? '900' : '800'}" font-family="'Plus Jakarta Sans', system-ui, sans-serif" text-anchor="end" dominant-baseline="central" class="transition-colors group-hover:fill-teal-700">
               ${d.name}
             </text>
 
-            <!-- Background Track -->
-            <rect x="${padLeft}" y="${y + 2}" width="${chartW}" height="15" rx="4" fill="#F1F5F9"/>
+            <!-- Background Track (Enlarged to 44px thickness with clear border) -->
+            <rect x="${padLeft}" y="${barY}" width="${chartW}" height="${barH}" rx="8" fill="#F1F5F9" stroke="#E2E8F0" stroke-width="1.5"/>
 
-            <!-- Trained Personnel Bar (Emerald) -->
+            <!-- Trained Personnel Bar (Emerald, massive 44px thickness with 22px bold value) -->
             ${d.trained > 0 ? `
               <rect
                 x="${padLeft}"
-                y="${y + 2}"
+                y="${barY}"
                 width="${trainedW}"
-                height="15"
-                rx="${d.untrained > 0 ? '4 0 0 4' : '4'}"
+                height="${barH}"
+                rx="${d.untrained > 0 ? '8 0 0 8' : '8'}"
                 fill="#10B981"
                 class="transition-all opacity-95 group-hover:opacity-100"
               />
-              ${trainedW >= 14 ? `
-                <text x="${padLeft + trainedW / 2}" y="${y + 14.5}" fill="#ffffff" font-size="9.5" font-weight="900" font-family="monospace" text-anchor="middle" pointer-events="none">${d.trained}</text>
-              ` : ''}
+              ${trainedW >= 36 ? `
+                <text x="${padLeft + trainedW / 2}" y="${centerY}" fill="#ffffff" font-size="22" font-weight="900" font-family="'JetBrains Mono', monospace" text-anchor="middle" dominant-baseline="central" pointer-events="none" style="filter: drop-shadow(0 1.5px 2px rgba(0,0,0,0.5))">${d.trained}</text>
+              ` : (trainedW >= 16 ? `
+                <text x="${padLeft + trainedW / 2}" y="${centerY}" fill="#ffffff" font-size="16" font-weight="900" font-family="'JetBrains Mono', monospace" text-anchor="middle" dominant-baseline="central" pointer-events="none">${d.trained}</text>
+              ` : '')}
             ` : ''}
 
-            <!-- Require Training / Untrained Bar (Amber) -->
+            <!-- Require Training / Untrained Bar (Amber, massive 44px thickness with 22px bold value) -->
             ${d.untrained > 0 ? `
               <rect
                 x="${padLeft + trainedW}"
-                y="${y + 2}"
+                y="${barY}"
                 width="${untrainedW}"
-                height="15"
-                rx="${d.trained > 0 ? '0 4 4 0' : '4'}"
+                height="${barH}"
+                rx="${d.trained > 0 ? '0 8 8 0' : '8'}"
                 fill="#F59E0B"
                 class="transition-all opacity-95 group-hover:opacity-100"
               />
-              ${untrainedW >= 14 ? `
-                <text x="${padLeft + trainedW + untrainedW / 2}" y="${y + 14.5}" fill="#ffffff" font-size="9.5" font-weight="900" font-family="monospace" text-anchor="middle" pointer-events="none">${d.untrained}</text>
-              ` : ''}
+              ${untrainedW >= 36 ? `
+                <text x="${padLeft + trainedW + untrainedW / 2}" y="${centerY}" fill="#ffffff" font-size="22" font-weight="900" font-family="'JetBrains Mono', monospace" text-anchor="middle" dominant-baseline="central" pointer-events="none" style="filter: drop-shadow(0 1.5px 2px rgba(0,0,0,0.5))">${d.untrained}</text>
+              ` : (untrainedW >= 16 ? `
+                <text x="${padLeft + trainedW + untrainedW / 2}" y="${centerY}" fill="#ffffff" font-size="16" font-weight="900" font-family="'JetBrains Mono', monospace" text-anchor="middle" dominant-baseline="central" pointer-events="none">${d.untrained}</text>
+              ` : '')}
             ` : ''}
 
-            <!-- Total count & Compliance % label (11px monospace, matching PLR reference) -->
-            <text x="${padLeft + chartW + 12}" y="${y + 14}" fill="#0F172A" font-size="11" font-weight="800" font-family="monospace">
-              ${d.total} <tspan fill="${d.compliance === 100 ? '#10B981' : '#F59E0B'}" font-size="10" font-weight="700">(${d.compliance}%)</tspan>
+            <!-- Total count & Compliance % label (Ultra-High-Visibility 26px bold values and 20px percentage) -->
+            <text x="${padLeft + chartW + 18}" y="${centerY}" fill="#0F172A" font-size="26" font-weight="900" font-family="'JetBrains Mono', monospace" dominant-baseline="central">
+              ${d.total} <tspan fill="${d.compliance === 100 ? '#10B981' : '#0D9488'}" font-size="20" font-weight="800">(${d.compliance}%)</tspan>
             </text>
           </g>
         `;
       }).join('');
 
+      // Grid line ticks (18px high-contrast monospace font)
       const gridSvg = ticks.map(t => {
         const x = padLeft + (t / tickMax) * chartW;
         return `
-          <line x1="${x}" y1="${padTop - 6}" x2="${x}" y2="${padTop + deptBreakdown.length * rowH + 4}" stroke="#E2E8F0" stroke-width="1.5" stroke-dasharray="3 3"/>
-          <text x="${x}" y="${padTop + deptBreakdown.length * rowH + 20}" fill="#64748B" font-size="10" font-weight="600" font-family="monospace" text-anchor="middle">${t}</text>
+          <line x1="${x}" y1="${padTop - 8}" x2="${x}" y2="${padTop + deptBreakdown.length * rowH + 8}" stroke="#CBD5E1" stroke-width="2" stroke-dasharray="4 4"/>
+          <text x="${x}" y="${padTop + deptBreakdown.length * rowH + 34}" fill="#334155" font-size="18" font-weight="800" font-family="'JetBrains Mono', monospace" text-anchor="middle">${t}</text>
         `;
       }).join('');
 
@@ -2997,7 +3072,7 @@
       `;
     },
 
-    // Interactive Module Validation Compliance Matrix (Pass / Fail Bar Chart)
+    // Interactive Module Validation Compliance Matrix (Pass / Fail Bar Chart - Ultra-High-Visibility 1000px SVG layout)
     renderValidationModuleBarChart(moduleBreakdown) {
       if (!moduleBreakdown || moduleBreakdown.length === 0) {
         return `
@@ -3019,18 +3094,21 @@
         ticks.push(t);
       }
 
-      // Standard PLR Bar Chart Geometry: 960 width, 190 padLeft, 64 padRight => 706px chart width
-      const w = 960;
-      const padLeft = 190;
-      const padRight = 64;
-      const padTop = 32;
-      const padBottom = 38;
-      const rowH = 26;
+      // High-Visibility Geometry: 1000 width, 260 padLeft, 160 padRight, 44px bar thickness, 68px row height
+      const w = 1000;
+      const padLeft = 260;
+      const padRight = 160;
+      const padTop = 36;
+      const padBottom = 54;
+      const rowH = 68;
+      const barH = 44;
       const chartW = w - padLeft - padRight;
       const h = padTop + moduleBreakdown.length * rowH + padBottom;
 
       const barsSvg = moduleBreakdown.map((m, index) => {
         const y = padTop + index * rowH;
+        const barY = y + 12;
+        const centerY = barY + barH / 2;
         const totalW = (m.total / tickMax) * chartW;
         const passedW = (m.passed / tickMax) * chartW;
         const failedW = (m.failed / tickMax) * chartW;
@@ -3046,77 +3124,84 @@
              title="Click to filter by ${m.name} (${m.passed} Passed, ${m.failed} Failed)">
             
             <!-- Row hover background -->
-            <rect x="0" y="${y - 3}" width="${w}" height="${rowH}" fill="${isSelected ? '#EFF6FF' : 'transparent'}" class="group-hover:fill-blue-50/60 transition-colors rounded-lg"/>
+            <rect x="0" y="${y}" width="${w}" height="${rowH}" fill="${isSelected ? '#EFF6FF' : 'transparent'}" class="group-hover:fill-blue-50/60 transition-colors rounded-xl"/>
 
-            <!-- Module Label (11px, bold, matching PLR reference) -->
-            <text x="${padLeft - 14}" y="${y + 14}" fill="${isSelected ? '#1D4ED8' : '#1E293B'}" font-size="11" font-weight="${isSelected ? '900' : '700'}" font-family="'Plus Jakarta Sans', system-ui, sans-serif" text-anchor="end" class="transition-colors group-hover:fill-blue-700">
-              ${m.name.length > 22 ? m.name.substring(0, 21) + '…' : m.name}
+            <!-- Module Label (19px Extra-Bold Font) -->
+            <text x="${padLeft - 18}" y="${centerY}" fill="${isSelected ? '#1D4ED8' : '#0F172A'}" font-size="19" font-weight="${isSelected ? '900' : '800'}" font-family="'Plus Jakarta Sans', system-ui, sans-serif" text-anchor="end" dominant-baseline="central" class="transition-colors group-hover:fill-blue-700">
+              ${m.name.length > 20 ? m.name.substring(0, 19) + '…' : m.name}
             </text>
 
-            <!-- Background track bar -->
-            <rect x="${padLeft}" y="${y + 2}" width="${chartW}" height="15" rx="4" fill="#F1F5F9"/>
+            <!-- Background track bar (Enlarged to 44px thickness) -->
+            <rect x="${padLeft}" y="${barY}" width="${chartW}" height="${barH}" rx="8" fill="#F1F5F9" stroke="#E2E8F0" stroke-width="1.5"/>
 
-            <!-- Passed Segment (Emerald) -->
+            <!-- Passed Segment (Emerald, 44px thickness with bold 22px value) -->
             ${m.passed > 0 ? `
               <rect
                 x="${padLeft}"
-                y="${y + 2}"
+                y="${barY}"
                 width="${passedW}"
-                height="15"
-                rx="${m.failed > 0 || m.pending > 0 ? '4 0 0 4' : '4'}"
+                height="${barH}"
+                rx="${m.failed > 0 || m.pending > 0 ? '8 0 0 8' : '8'}"
                 fill="#10B981"
                 class="transition-all opacity-95 group-hover:opacity-100"
               />
-              ${passedW >= 14 ? `
-                <text x="${padLeft + passedW / 2}" y="${y + 14.5}" fill="#ffffff" font-size="9.5" font-weight="900" font-family="monospace" text-anchor="middle" pointer-events="none">${m.passed}</text>
-              ` : ''}
+              ${passedW >= 36 ? `
+                <text x="${padLeft + passedW / 2}" y="${centerY}" fill="#ffffff" font-size="22" font-weight="900" font-family="'JetBrains Mono', monospace" text-anchor="middle" dominant-baseline="central" pointer-events="none" style="filter: drop-shadow(0 1.5px 2px rgba(0,0,0,0.5))">${m.passed}</text>
+              ` : (passedW >= 16 ? `
+                <text x="${padLeft + passedW / 2}" y="${centerY}" fill="#ffffff" font-size="16" font-weight="900" font-family="'JetBrains Mono', monospace" text-anchor="middle" dominant-baseline="central" pointer-events="none">${m.passed}</text>
+              ` : '')}
             ` : ''}
 
-            <!-- Failed Segment (Rose) -->
+            <!-- Failed Segment (Rose, 44px thickness with bold 22px value) -->
             ${m.failed > 0 ? `
               <rect
                 x="${padLeft + passedW}"
-                y="${y + 2}"
+                y="${barY}"
                 width="${failedW}"
-                height="15"
-                rx="${m.passed > 0 ? (m.pending > 0 ? '0' : '0 4 4 0') : (m.pending > 0 ? '4 0 0 4' : '4')}"
+                height="${barH}"
+                rx="${m.passed > 0 ? (m.pending > 0 ? '0' : '0 8 8 0') : (m.pending > 0 ? '8 0 0 8' : '8')}"
                 fill="#EF4444"
                 class="transition-all opacity-95 group-hover:opacity-100"
               />
-              ${failedW >= 14 ? `
-                <text x="${padLeft + passedW + failedW / 2}" y="${y + 14.5}" fill="#ffffff" font-size="9.5" font-weight="900" font-family="monospace" text-anchor="middle" pointer-events="none">${m.failed}</text>
-              ` : ''}
+              ${failedW >= 36 ? `
+                <text x="${padLeft + passedW + failedW / 2}" y="${centerY}" fill="#ffffff" font-size="22" font-weight="900" font-family="'JetBrains Mono', monospace" text-anchor="middle" dominant-baseline="central" pointer-events="none" style="filter: drop-shadow(0 1.5px 2px rgba(0,0,0,0.5))">${m.failed}</text>
+              ` : (failedW >= 16 ? `
+                <text x="${padLeft + passedW + failedW / 2}" y="${centerY}" fill="#ffffff" font-size="16" font-weight="900" font-family="'JetBrains Mono', monospace" text-anchor="middle" dominant-baseline="central" pointer-events="none">${m.failed}</text>
+              ` : '')}
             ` : ''}
 
-            <!-- Pending Segment (Slate) -->
+            <!-- Pending Segment (Slate, 44px thickness with bold 22px value) -->
             ${m.pending > 0 ? `
               <rect
                 x="${padLeft + passedW + failedW}"
-                y="${y + 2}"
+                y="${barY}"
                 width="${pendingW}"
-                height="15"
-                rx="${m.passed > 0 || m.failed > 0 ? '0 4 4 0' : '4'}"
+                height="${barH}"
+                rx="${m.passed > 0 || m.failed > 0 ? '0 8 8 0' : '8'}"
                 fill="#94A3B8"
                 class="transition-all opacity-95 group-hover:opacity-100"
               />
-              ${pendingW >= 14 ? `
-                <text x="${padLeft + passedW + failedW + pendingW / 2}" y="${y + 14.5}" fill="#ffffff" font-size="9.5" font-weight="900" font-family="monospace" text-anchor="middle" pointer-events="none">${m.pending}</text>
-              ` : ''}
+              ${pendingW >= 36 ? `
+                <text x="${padLeft + passedW + failedW + pendingW / 2}" y="${centerY}" fill="#ffffff" font-size="22" font-weight="900" font-family="'JetBrains Mono', monospace" text-anchor="middle" dominant-baseline="central" pointer-events="none" style="filter: drop-shadow(0 1.5px 2px rgba(0,0,0,0.5))">${m.pending}</text>
+              ` : (pendingW >= 16 ? `
+                <text x="${padLeft + passedW + failedW + pendingW / 2}" y="${centerY}" fill="#ffffff" font-size="16" font-weight="900" font-family="'JetBrains Mono', monospace" text-anchor="middle" dominant-baseline="central" pointer-events="none">${m.pending}</text>
+              ` : '')}
             ` : ''}
 
-            <!-- Total count & Pass Rate % label (11px monospace, matching PLR reference) -->
-            <text x="${padLeft + chartW + 12}" y="${y + 14}" fill="#0F172A" font-size="11" font-weight="800" font-family="monospace">
-              ${m.total} <tspan fill="${m.passRate === 100 ? '#10B981' : m.failed > 0 ? '#EF4444' : '#F59E0B'}" font-size="10" font-weight="700">(${m.passRate}% Pass)</tspan>
+            <!-- Total count & Pass/Closure Rate % label (26px extra-bold and 20px percentage) -->
+            <text x="${padLeft + chartW + 18}" y="${centerY}" fill="#0F172A" font-size="26" font-weight="900" font-family="'JetBrains Mono', monospace" dominant-baseline="central">
+              ${m.total} <tspan fill="${m.passRate === 100 ? '#10B981' : (m.failed > 0 ? '#EF4444' : '#0D9488')}" font-size="20" font-weight="800">(${m.passRate}%)</tspan>
             </text>
           </g>
         `;
       }).join('');
 
+      // Grid line ticks (18px high-contrast monospace font)
       const gridSvg = ticks.map(t => {
         const x = padLeft + (t / tickMax) * chartW;
         return `
-          <line x1="${x}" y1="${padTop - 6}" x2="${x}" y2="${padTop + moduleBreakdown.length * rowH + 4}" stroke="#E2E8F0" stroke-width="1.5" stroke-dasharray="3 3"/>
-          <text x="${x}" y="${padTop + moduleBreakdown.length * rowH + 20}" fill="#64748B" font-size="10" font-weight="600" font-family="monospace" text-anchor="middle">${t}</text>
+          <line x1="${x}" y1="${padTop - 8}" x2="${x}" y2="${padTop + moduleBreakdown.length * rowH + 8}" stroke="#CBD5E1" stroke-width="2" stroke-dasharray="4 4"/>
+          <text x="${x}" y="${padTop + moduleBreakdown.length * rowH + 34}" fill="#334155" font-size="18" font-weight="800" font-family="'JetBrains Mono', monospace" text-anchor="middle">${t}</text>
         `;
       }).join('');
 
