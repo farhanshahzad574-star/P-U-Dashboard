@@ -1283,7 +1283,7 @@
                 <span class="text-lg">📊</span> PROGRESS COMPARISON STATUS
               </h3>
               <p class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider font-mono mt-0.5">
-                Stacked Column Chart • Closed vs Open Actions &amp; Personnel Validation
+                Stacked Column Chart • Closed vs Open Actions &amp; PSM Validation (Secondary Axis in %)
               </p>
             </div>
             <div class="flex flex-wrap items-center gap-2 text-xs font-mono font-bold">
@@ -1295,9 +1295,9 @@
                 <span class="w-2.5 h-2.5 rounded-sm bg-amber-500"></span>
                 <span>Open Actions</span>
               </span>
-              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200" title="Personnel who passed PSM qualification validation">
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200" title="Personnel who passed PSM qualification validation (Plotted on Secondary Y-Axis in %)">
                 <span class="w-2.5 h-2.5 rounded-sm bg-emerald-600"></span>
-                <span>Validation Passed</span>
+                <span>Validation Passed (%)</span>
               </span>
               <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 text-slate-800 border border-slate-300" title="Total, Open, and Closed KPI badges displayed above each bar">
                 <span class="w-2.5 h-2.5 rounded-sm bg-slate-900"></span>
@@ -3727,7 +3727,9 @@
 
         /**
          * Render SVG Module-by-Module Progress Comparison as a Stacked Column Chart
-         * (Closed Actions / Validation Passed stacked with Open Actions / Pending)
+         * - Action modules (PLR, PSM Audits, etc.) plotted on Primary Y-Axis (Action counts)
+         * - PSM Validation plotted on Secondary Y-Axis in Percentage (0% - 100%)
+         * - Secondary Y-Axis is kept invisible as requested
          */
         renderComparisonChart() {
           const container = document.getElementById('comparison-chart-container');
@@ -3736,20 +3738,46 @@
           const deptFilter = (this.state && this.state.overviewDeptFilter) || 'all';
           const openCloseFilter = (this.state && this.state.overviewOpenCloseFilter) || 'all';
 
-          // Retrieve live dynamic validation data numbers (Total personnel & Validation passed)
-          const valKpi = this.getPsmValidationFilteredKpis(deptFilter, openCloseFilter);
-          let valPassed = (openCloseFilter === 'open') ? 0 : (valKpi.closed || 0);
-          let valPending = (openCloseFilter === 'close') ? 0 : (valKpi.inProgress ?? valKpi.deptOpen ?? 0);
-          let valTotal = (openCloseFilter === 'open') 
-            ? valPending 
-            : ((openCloseFilter === 'close') 
-              ? valPassed 
-              : (valKpi.deptTotal !== undefined ? valKpi.deptTotal : (valKpi.total || (valPassed + valPending))));
-          if (valTotal < valPassed + valPending) {
-            valTotal = valPassed + valPending;
+          // Retrieve live dynamic validation data numbers (Total personnel & Validation passed) from PSM Validation
+          let valTotal = 0;
+          let valPassed = 0;
+          let valPending = 0;
+
+          // Priority 1: Check raw validation array from PSM validation dashboard dataset
+          let rawVal = [];
+          if (Array.isArray(window.FPCL_PSM_VALIDATION_DATA) && window.FPCL_PSM_VALIDATION_DATA.length > 0) {
+            rawVal = window.FPCL_PSM_VALIDATION_DATA;
+          } else if (window.FPCL_PSM_SUITE && typeof window.FPCL_PSM_SUITE.getRawValidationData === 'function') {
+            rawVal = window.FPCL_PSM_SUITE.getRawValidationData() || [];
           }
 
-          // Build comparison items: Includes all modules, labeling PSM as PSM Audits, and plotting PSM Validation stacked columns
+          if (rawVal.length > 0) {
+            const deptMatched = rawVal.filter(r => (this.isDeptMatch ? this.isDeptMatch(r.department, deptFilter) : true));
+            valTotal = deptMatched.length;
+            valPassed = deptMatched.filter(r => (r.status || '').toLowerCase() === 'pass' || (r.openClose || '').toLowerCase().includes('close')).length;
+            valPending = deptMatched.filter(r => (r.status || '').toLowerCase() !== 'pass' && !(r.openClose || '').toLowerCase().includes('close')).length;
+          } else {
+            // Priority 2: Use getPsmValidationFilteredKpis
+            const valKpi = this.getPsmValidationFilteredKpis(deptFilter, openCloseFilter);
+            valTotal = (valKpi.deptTotal !== undefined && valKpi.deptTotal > 0) ? valKpi.deptTotal : (valKpi.total || 0);
+            valPassed = valKpi.deptClosed !== undefined ? valKpi.deptClosed : (valKpi.closed || 0);
+            valPending = valKpi.deptOpen !== undefined ? valKpi.deptOpen : (valKpi.inProgress || 0);
+            if (valTotal === 0 && (valPassed > 0 || valPending > 0)) {
+              valTotal = valPassed + valPending;
+            }
+          }
+
+          const valPassedPct = valTotal > 0 ? (valPassed / valTotal) * 100 : 0;
+          const valPendingPct = valTotal > 0 ? (valPending / valTotal) * 100 : 0;
+
+          // Filter-adjusted counts for PSM Validation
+          const effectiveValPassed = (openCloseFilter === 'open') ? 0 : valPassed;
+          const effectiveValPending = (openCloseFilter === 'close') ? 0 : valPending;
+          const effectiveValTotal = (openCloseFilter === 'open') 
+            ? effectiveValPending 
+            : ((openCloseFilter === 'close') ? effectiveValPassed : valTotal);
+
+          // Build comparison items: Includes all modules, labeling PSM as PSM Audits, and plotting PSM Validation on secondary axis
           const chartItems = [];
           DASHBOARD_REGISTRY.forEach(d => {
             // Exclude strategic from the Overview Progress Comparison Status
@@ -3759,13 +3787,18 @@
               chartItems.push({
                 id: 'psm-validation',
                 name: 'PSM Validation',
-                code: 'PSM Validation',
+                code: 'PSM Validation (%)',
                 type: 'validation',
-                closed: valPassed,
-                open: valPending,
-                total: valTotal,
+                closed: effectiveValPassed,
+                open: effectiveValPending,
+                total: effectiveValTotal,
+                totalPersonnel: valTotal,
+                passedPersonnel: valPassed,
+                pendingPersonnel: valPending,
+                passedPct: valPassedPct,
+                pendingPct: valPendingPct,
                 clickHandler: "portalApp.showDetailView('psm-validation');",
-                tooltip: `PSM Validation:\n• Total Personnel: ${valTotal}\n• Passed: ${valPassed}\n• Pending: ${valPending}\nClick to view PSM Validation Dashboard`
+                tooltip: `PSM Validation (Secondary Axis in %):\n• Qualification Rate: ${valPassedPct.toFixed(1)}%\n• Passed: ${valPassed} of ${valTotal} Personnel\n• Pending: ${valPending}\n• Total Personnel: ${valTotal}\nClick to view PSM Validation Dashboard`
               });
               return;
             }
@@ -3814,8 +3847,9 @@
           // Single stacked column per module: width calibrated for high visibility and clear separation
           const colW = Math.min(38, Math.max(24, Math.round(slotW * 0.46)));
 
-          // Max value scale (calibrated with ample headroom so badges above bars never clip)
-          const maxVal = Math.max(...chartItems.map(i => i.total), 10);
+          // Primary Y-Axis scale calculated ONLY from action modules (excluding PSM Validation on secondary axis)
+          const primaryItems = chartItems.filter(i => i.id !== 'psm-validation');
+          const maxVal = Math.max(...primaryItems.map(i => i.total), 10);
           const yMax = maxVal > 300 ? Math.ceil((maxVal * 1.34) / 50) * 50 : Math.max(20, Math.ceil((maxVal * 1.36) / 10) * 10);
 
           // Gradients definition for Closed, Open, and Validation Passed/Pending stacked segments
@@ -3854,7 +3888,7 @@
             </filter>
           `;
 
-          // Number grid lines dynamically calculated
+          // Number grid lines dynamically calculated (Primary Y-Axis: Action counts)
           const stepDelta = yMax <= 30 ? 5 : (yMax <= 80 ? 10 : (yMax <= 200 ? 25 : (yMax <= 400 ? 50 : 100)));
           const gridSteps = [];
           for (let v = 0; v <= yMax; v += stepDelta) {
@@ -3872,14 +3906,39 @@
 
           // Stacked columns
           const columnsSvg = chartItems.map((item, i) => {
-            const isVal = item.type === 'validation';
+            const isVal = item.type === 'validation' || item.id === 'psm-validation';
             const closedVal = item.closed;
             const openVal = item.open;
             const totalVal = item.total;
 
-            const closedH = yMax > 0 ? (closedVal / yMax) * plotH : 0;
-            const openH = yMax > 0 ? (openVal / yMax) * plotH : 0;
-            const totalH = closedH + openH;
+            let closedH = 0;
+            let openH = 0;
+            let totalH = 0;
+
+            let itemPassedPct = 0;
+            let itemPendingPct = 0;
+            let itemTotalPersonnel = 0;
+            let itemPassedPersonnel = 0;
+            let itemPendingPersonnel = 0;
+
+            if (isVal) {
+              // Plotted on Secondary Y-Axis in Percentage (0% - 100%)
+              itemTotalPersonnel = item.totalPersonnel || valTotal || 0;
+              itemPassedPersonnel = (openCloseFilter === 'open') ? 0 : (item.passedPersonnel !== undefined ? item.passedPersonnel : valPassed);
+              itemPendingPersonnel = (openCloseFilter === 'close') ? 0 : (item.pendingPersonnel !== undefined ? item.pendingPersonnel : valPending);
+
+              itemPassedPct = itemTotalPersonnel > 0 ? (itemPassedPersonnel / itemTotalPersonnel) * 100 : 0;
+              itemPendingPct = itemTotalPersonnel > 0 ? (itemPendingPersonnel / itemTotalPersonnel) * 100 : 0;
+
+              closedH = (itemPassedPct / 100) * plotH;
+              openH = (itemPendingPct / 100) * plotH;
+              totalH = closedH + openH;
+            } else {
+              // Plotted on Primary Y-Axis (Action counts)
+              closedH = yMax > 0 ? (closedVal / yMax) * plotH : 0;
+              openH = yMax > 0 ? (openVal / yMax) * plotH : 0;
+              totalH = closedH + openH;
+            }
 
             const slotX = pad.left + (i * slotW);
             const colX = slotX + (slotW - colW) / 2;
@@ -3894,11 +3953,11 @@
             const displayLabel = item.code;
 
             // Metric Callout Badge Geometry
-            const badgeW = 64;
+            const badgeW = isVal ? 76 : 64;
             const badgeH = 43;
             const badgeX = centerX - (badgeW / 2);
-            const hasData = totalVal > 0;
-            const badgeY = (totalVal === 0) ? (baseY - badgeH - 9) : Math.max(pad.top + 6, yOpen - badgeH - 8);
+            const hasData = isVal ? (itemTotalPersonnel > 0) : (totalVal > 0);
+            const badgeY = (hasData ? Math.max(10, yOpen - badgeH - 8) : (baseY - badgeH - 9));
 
             const closedLabelColor = isVal ? '#047857' : '#1D4ED8';
             const openLabelColor = '#C2410C';
@@ -3908,21 +3967,82 @@
             const subOpenColor = hasData ? openLabelColor : '#94A3B8';
             const subClosedColor = hasData ? closedLabelColor : '#94A3B8';
 
-            const kpiBadgeSvg = `
-              <!-- Professional KPI Callout Badge (Total, Open, Closed) Above Bar -->
-              <g class="transition-transform duration-200 group-hover:-translate-y-0.5" pointer-events="none">
-                <rect x="${badgeX}" y="${badgeY}" width="${badgeW}" height="${badgeH}" rx="6" fill="${badgeBg}" stroke="${badgeBorder}" stroke-width="${hasData ? '1.2' : '1'}" ${hasData ? 'filter="url(#colShadow)"' : ''} class="transition-colors group-hover:stroke-blue-500"/>
-                <!-- Callout pointer arrow -->
-                <polygon points="${centerX - 4},${badgeY + badgeH} ${centerX + 4},${badgeY + badgeH} ${centerX},${badgeY + badgeH + 4}" fill="${badgeBg}" stroke="${badgeBorder}" stroke-width="1"/>
-                <line x1="${centerX - 3.2}" y1="${badgeY + badgeH}" x2="${centerX + 3.2}" y2="${badgeY + badgeH}" stroke="${badgeBg}" stroke-width="1.5"/>
-                <!-- Total KPI Value -->
-                <text x="${centerX}" y="${badgeY + 12.5}" fill="${totalLabelColor}" font-size="10.5" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="900" text-anchor="middle">Total: ${totalVal}</text>
-                <!-- Open KPI Value -->
-                <text x="${centerX}" y="${badgeY + 25}" fill="${subOpenColor}" font-size="9.5" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" text-anchor="middle">Open: ${openVal}</text>
-                <!-- Closed KPI Value -->
-                <text x="${centerX}" y="${badgeY + 36.5}" fill="${subClosedColor}" font-size="9.5" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" text-anchor="middle">Closed: ${closedVal}</text>
-              </g>
-            `;
+            let kpiBadgeSvg = '';
+            if (isVal) {
+              const passedRateStr = itemPassedPct.toFixed(1) + '%';
+              const pendingRateStr = itemPendingPct.toFixed(1) + '%';
+
+              let line1 = `Passed: ${passedRateStr}`;
+              let line1Color = '#047857';
+              let line2 = `Total: ${itemTotalPersonnel} Pers.`;
+              let line2Color = '#0F172A';
+              let line3 = `Passed: ${itemPassedPersonnel}`;
+              let line3Color = '#059669';
+
+              if (openCloseFilter === 'open') {
+                line1 = `Pending: ${pendingRateStr}`;
+                line1Color = '#C2410C';
+                line2 = `Total: ${itemTotalPersonnel} Pers.`;
+                line2Color = '#0F172A';
+                line3 = `Pending: ${itemPendingPersonnel}`;
+                line3Color = '#EA580C';
+              } else if (openCloseFilter === 'close') {
+                line1 = `Passed: ${passedRateStr}`;
+                line1Color = '#047857';
+                line2 = `Total: ${itemTotalPersonnel} Pers.`;
+                line2Color = '#0F172A';
+                line3 = `Passed: ${itemPassedPersonnel}`;
+                line3Color = '#059669';
+              } else {
+                if (itemPendingPersonnel > 0) {
+                  line1 = `Passed: ${passedRateStr}`;
+                  line1Color = '#047857';
+                  line2 = `Passed: ${itemPassedPersonnel} / ${itemTotalPersonnel}`;
+                  line2Color = '#0F172A';
+                  line3 = `Pending: ${itemPendingPersonnel} (${pendingRateStr})`;
+                  line3Color = '#0284C7';
+                } else {
+                  line1 = `Passed: ${passedRateStr}`;
+                  line1Color = '#047857';
+                  line2 = `Total: ${itemTotalPersonnel} Pers.`;
+                  line2Color = '#0F172A';
+                  line3 = `Passed: ${itemPassedPersonnel}`;
+                  line3Color = '#059669';
+                }
+              }
+
+              kpiBadgeSvg = `
+                <!-- Professional KPI Callout Badge (PSM Validation on Secondary Axis in %) -->
+                <g class="transition-transform duration-200 group-hover:-translate-y-0.5" pointer-events="none">
+                  <rect x="${badgeX}" y="${badgeY}" width="${badgeW}" height="${badgeH}" rx="6" fill="${badgeBg}" stroke="${badgeBorder}" stroke-width="${hasData ? '1.2' : '1'}" ${hasData ? 'filter="url(#colShadow)"' : ''} class="transition-colors group-hover:stroke-emerald-500"/>
+                  <!-- Callout pointer arrow -->
+                  <polygon points="${centerX - 4},${badgeY + badgeH} ${centerX + 4},${badgeY + badgeH} ${centerX},${badgeY + badgeH + 4}" fill="${badgeBg}" stroke="${badgeBorder}" stroke-width="1"/>
+                  <line x1="${centerX - 3.2}" y1="${badgeY + badgeH}" x2="${centerX + 3.2}" y2="${badgeY + badgeH}" stroke="${badgeBg}" stroke-width="1.5"/>
+                  <!-- Validation Rate (%) -->
+                  <text x="${centerX}" y="${badgeY + 12.5}" fill="${line1Color}" font-size="10" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="900" text-anchor="middle">${line1}</text>
+                  <!-- Total / Ratio -->
+                  <text x="${centerX}" y="${badgeY + 24.5}" fill="${line2Color}" font-size="9" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" text-anchor="middle">${line2}</text>
+                  <!-- Count / Pending -->
+                  <text x="${centerX}" y="${badgeY + 36.5}" fill="${line3Color}" font-size="8.8" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" text-anchor="middle">${line3}</text>
+                </g>
+              `;
+            } else {
+              kpiBadgeSvg = `
+                <!-- Professional KPI Callout Badge (Total, Open, Closed) Above Bar -->
+                <g class="transition-transform duration-200 group-hover:-translate-y-0.5" pointer-events="none">
+                  <rect x="${badgeX}" y="${badgeY}" width="${badgeW}" height="${badgeH}" rx="6" fill="${badgeBg}" stroke="${badgeBorder}" stroke-width="${hasData ? '1.2' : '1'}" ${hasData ? 'filter="url(#colShadow)"' : ''} class="transition-colors group-hover:stroke-blue-500"/>
+                  <!-- Callout pointer arrow -->
+                  <polygon points="${centerX - 4},${badgeY + badgeH} ${centerX + 4},${badgeY + badgeH} ${centerX},${badgeY + badgeH + 4}" fill="${badgeBg}" stroke="${badgeBorder}" stroke-width="1"/>
+                  <line x1="${centerX - 3.2}" y1="${badgeY + badgeH}" x2="${centerX + 3.2}" y2="${badgeY + badgeH}" stroke="${badgeBg}" stroke-width="1.5"/>
+                  <!-- Total KPI Value -->
+                  <text x="${centerX}" y="${badgeY + 12.5}" fill="${totalLabelColor}" font-size="10.5" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="900" text-anchor="middle">Total: ${totalVal}</text>
+                  <!-- Open KPI Value -->
+                  <text x="${centerX}" y="${badgeY + 25}" fill="${subOpenColor}" font-size="9.5" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" text-anchor="middle">Open: ${openVal}</text>
+                  <!-- Closed KPI Value -->
+                  <text x="${centerX}" y="${badgeY + 36.5}" fill="${subClosedColor}" font-size="9.5" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" text-anchor="middle">Closed: ${closedVal}</text>
+                </g>
+              `;
+            }
 
             let columnContent = '';
 
@@ -3939,20 +4059,24 @@
                 columnContent = `
                   <!-- Bottom Segment: Closed Actions / Validation Passed -->
                   <rect x="${colX}" y="${yClosed}" width="${colW}" height="${closedH}" rx="3" fill="${closedFill}" filter="url(#colShadow)" class="transition-all group-hover:brightness-105"/>
+                  ${isVal && closedH >= 18 ? `<text x="${centerX}" y="${yClosed + closedH / 2 + 4}" fill="#FFFFFF" font-size="10" font-weight="900" text-anchor="middle" pointer-events="none" filter="drop-shadow(0 1px 2px rgba(0,0,0,0.45))">${itemPassedPct.toFixed(0)}%</text>` : ''}
                   <!-- Segment Boundary Line -->
                   <line x1="${colX}" y1="${yClosed}" x2="${colX + colW}" y2="${yClosed}" stroke="#FFFFFF" stroke-width="1.5" stroke-opacity="0.85"/>
                   <!-- Top Segment: Open Actions / Validation Pending -->
                   <rect x="${colX}" y="${yOpen}" width="${colW}" height="${openH}" rx="3" fill="${openFill}" filter="url(#colShadow)" class="transition-all group-hover:brightness-105"/>
+                  ${isVal && openH >= 18 ? `<text x="${centerX}" y="${yOpen + openH / 2 + 4}" fill="#FFFFFF" font-size="10" font-weight="900" text-anchor="middle" pointer-events="none" filter="drop-shadow(0 1px 2px rgba(0,0,0,0.45))">${itemPendingPct.toFixed(0)}%</text>` : ''}
                 `;
               } else if (closedH > 0) {
                 // Only closed/passed segment
                 columnContent = `
                   <rect x="${colX}" y="${yClosed}" width="${colW}" height="${closedH}" rx="5" fill="${closedFill}" filter="url(#colShadow)" class="transition-all group-hover:brightness-105"/>
+                  ${isVal && closedH >= 18 ? `<text x="${centerX}" y="${yClosed + closedH / 2 + 4}" fill="#FFFFFF" font-size="10.5" font-weight="900" text-anchor="middle" pointer-events="none" filter="drop-shadow(0 1px 2px rgba(0,0,0,0.45))">${itemPassedPct.toFixed(0)}%</text>` : ''}
                 `;
               } else if (openH > 0) {
                 // Only open segment
                 columnContent = `
                   <rect x="${colX}" y="${yOpen}" width="${colW}" height="${openH}" rx="5" fill="${openFill}" filter="url(#colShadow)" class="transition-all group-hover:brightness-105"/>
+                  ${isVal && openH >= 18 ? `<text x="${centerX}" y="${yOpen + openH / 2 + 4}" fill="#FFFFFF" font-size="10.5" font-weight="900" text-anchor="middle" pointer-events="none" filter="drop-shadow(0 1px 2px rgba(0,0,0,0.45))">${itemPendingPct.toFixed(0)}%</text>` : ''}
                 `;
               }
 
@@ -3982,6 +4106,15 @@
               <!-- Baseline -->
               <line x1="${pad.left}" y1="${baseY}" x2="${width - pad.right}" y2="${baseY}" stroke="#64748B" stroke-width="2"/>
               ${gridSvg}
+              <!-- Secondary Y-Axis (PSM Validation in %: 0% - 100%) - Kept invisible as requested -->
+              <g id="secondary-y-axis" style="display:none;" opacity="0" visibility="hidden" aria-hidden="true" pointer-events="none">
+                <line x1="${width - pad.right}" y1="${pad.top}" x2="${width - pad.right}" y2="${baseY}" stroke="#CBD5E1" stroke-width="1.5"/>
+                <text x="${width - pad.right + 10}" y="${pad.top + 4}" fill="#64748B" font-size="11" font-weight="bold">100%</text>
+                <text x="${width - pad.right + 10}" y="${pad.top + plotH * 0.25 + 4}" fill="#64748B" font-size="11" font-weight="bold">75%</text>
+                <text x="${width - pad.right + 10}" y="${pad.top + plotH * 0.5 + 4}" fill="#64748B" font-size="11" font-weight="bold">50%</text>
+                <text x="${width - pad.right + 10}" y="${pad.top + plotH * 0.75 + 4}" fill="#64748B" font-size="11" font-weight="bold">25%</text>
+                <text x="${width - pad.right + 10}" y="${baseY + 4}" fill="#64748B" font-size="11" font-weight="bold">0%</text>
+              </g>
               ${columnsSvg}
             </svg>
           `;
