@@ -98,6 +98,8 @@
     <!-- PSSR (Pre-Startup Safety Review) Dataset & Specialized Executive Suite -->
     <script src="/assets/pssrData.js?v=20260923b"></script>
     <script src="/assets/pssrSuite.js?v=20260923b"></script>
+    <!-- CAPEX (Capital Expenditure) Specialized Executive Suite -->
+    <script src="/assets/capexSuite.js?v=20260924a"></script>
 
     <style>
       /* Base font legibility: standard across devices, calibrated for wall displays */
@@ -1901,6 +1903,13 @@
           <!-- Populated dynamically via FPCL_PSSR_SUITE.render() -->
         </div>
 
+        <!-- ========================================================================= -->
+        <!-- DEDICATED FULL-SCALE CAPEX EXECUTIVE BI SUITE CONTAINER                   -->
+        <!-- ========================================================================= -->
+        <div id="capex-specialized-container" class="hidden space-y-6">
+          <!-- Populated dynamically via FPCL_CAPEX_SUITE.render() -->
+        </div>
+
       </section>
 
     </main>
@@ -2717,6 +2726,33 @@
           punchList: { open: 8, closed: 23, total: 31, rate: '74.2%' },
           dataReadiness: { master: '100%', signoff: '100%' },
           statusComment: 'Live synchronized with Google Sheet tab PSSR (1PjGP79SLOhTJwFv4tPyRJeX07XEW5e9OBFWQ4aUefyY).',
+          actions: []
+        },
+        {
+          id: 'capex',
+          name: 'CAPEX',
+          code: 'CAPEX',
+          icon: 'circle-dollar-sign',
+          status: 'Active',
+          hasSheetLink: true,
+          category: 'Capital Expenditure & Projects',
+          department: 'Capital Projects & Engineering',
+          cadence: 'Live Sync / 2027 Portfolio',
+          description: 'FPCL Plant CapEx Portfolio (2027) • Total PKR 1,028 M (36 Projects), Major vs Minor allocations, Replacements vs New Installations, and MOC Compliance.',
+          color: {
+            bg: '#F7F8FA',
+            primary: '#0B1D3A',
+            secondary: '#D4AF37',
+            text: '#0B1D3A'
+          },
+          gradient: 'from-[#0B1D3A] to-[#0B1D3A]',
+          gradientStop1: '#0B1D3A',
+          gradientStop2: '#D4AF37',
+          tagStyle: 'bg-[#0B1D3A]/5 text-[#0B1D3A] border-[#D4AF37]/50',
+          kpis: { total: 36, closed: 12, inProgress: 24, overdue: 0, compliance: '97.0%' },
+          punchList: { open: 24, closed: 12, total: 36, rate: '97.0%' },
+          dataReadiness: { master: '100%', signoff: '100%' },
+          statusComment: 'Live synchronized with Google Sheet tab CAPEX (13ys4PbggcQq0H06Rh6cScAtdVnlrY-yyiWxA4e6dDzc).',
           actions: []
         },
         {
@@ -3780,8 +3816,8 @@
           // Build comparison items: Includes all modules, labeling PSM as PSM Audits, and plotting PSM Validation on secondary axis
           const chartItems = [];
           DASHBOARD_REGISTRY.forEach(d => {
-            // Exclude strategic from the Overview Progress Comparison Status
-            if (d.id === 'strategic') return;
+            // Exclude strategic and capex from the Overview Progress Comparison Status
+            if (d.id === 'strategic' || d.id === 'capex') return;
 
             if (d.id === 'psm-validation') {
               chartItems.push({
@@ -5702,6 +5738,7 @@
           const strategicContainer = document.getElementById('strategic-specialized-container');
           const imsContainer = document.getElementById('ims-specialized-container');
           const pssrContainer = document.getElementById('pssr-specialized-container');
+          const capexContainer = document.getElementById('capex-specialized-container');
 
           if (dashboardId === 'strategic') {
             if (headerCard) { headerCard.classList.add('hidden'); headerCard.hidden = true; }
@@ -5713,6 +5750,7 @@
             if (psmContainer) { psmContainer.classList.add('hidden'); psmContainer.hidden = true; }
             if (imsContainer) { imsContainer.classList.add('hidden'); imsContainer.hidden = true; }
             if (pssrContainer) { pssrContainer.classList.add('hidden'); pssrContainer.hidden = true; }
+            if (capexContainer) { capexContainer.classList.add('hidden'); capexContainer.hidden = true; }
             if (strategicContainer) {
               strategicContainer.classList.remove('hidden');
               strategicContainer.hidden = false;
@@ -5730,6 +5768,7 @@
             if (psmContainer) { psmContainer.classList.add('hidden'); psmContainer.hidden = true; }
             if (imsContainer) { imsContainer.classList.add('hidden'); imsContainer.hidden = true; }
             if (pssrContainer) { pssrContainer.classList.add('hidden'); pssrContainer.hidden = true; }
+            if (capexContainer) { capexContainer.classList.add('hidden'); capexContainer.hidden = true; }
             if (strategicContainer) {
               strategicContainer.classList.add('hidden');
               strategicContainer.hidden = true;
@@ -5757,6 +5796,7 @@
             if (plrContainer) { plrContainer.classList.add('hidden'); plrContainer.hidden = true; }
             if (imsContainer) { imsContainer.classList.add('hidden'); imsContainer.hidden = true; }
             if (pssrContainer) { pssrContainer.classList.add('hidden'); pssrContainer.hidden = true; }
+            if (capexContainer) { capexContainer.classList.add('hidden'); capexContainer.hidden = true; }
             if (strategicContainer) {
               strategicContainer.classList.add('hidden');
               strategicContainer.hidden = true;
@@ -5811,6 +5851,7 @@
             if (plrContainer) { plrContainer.classList.add('hidden'); plrContainer.hidden = true; }
             if (psmContainer) { psmContainer.classList.add('hidden'); psmContainer.hidden = true; }
             if (pssrContainer) { pssrContainer.classList.add('hidden'); pssrContainer.hidden = true; }
+            if (capexContainer) { capexContainer.classList.add('hidden'); capexContainer.hidden = true; }
             if (strategicContainer) {
               strategicContainer.classList.add('hidden');
               strategicContainer.hidden = true;
@@ -5842,6 +5883,7 @@
             if (stdContainer) { stdContainer.classList.add('hidden'); stdContainer.hidden = true; }
             if (plrContainer) { plrContainer.classList.add('hidden'); plrContainer.hidden = true; }
             if (psmContainer) { psmContainer.classList.add('hidden'); psmContainer.hidden = true; }
+            if (capexContainer) { capexContainer.classList.add('hidden'); capexContainer.hidden = true; }
             if (strategicContainer) {
               strategicContainer.classList.add('hidden');
               strategicContainer.hidden = true;
@@ -5869,12 +5911,47 @@
               sheetKeyEl.textContent = 'PSSR Dashboard • Live Synchronized (1PjGP79SLOhTJwFv4tPyRJeX07XEW5e9OBFWQ4aUefyY)';
               sheetKeyEl.title = 'Live Google Sheets: PSSR Tab (1PjGP79SLOhTJwFv4tPyRJeX07XEW5e9OBFWQ4aUefyY)';
             }
+          } else if (dashboardId === 'capex') {
+            if (headerCard) { headerCard.classList.add('hidden'); headerCard.hidden = true; }
+            if (connCard) { connCard.classList.add('hidden'); connCard.hidden = true; }
+            const psmActions = document.getElementById('detail-psm-actions');
+            if (psmActions) { psmActions.classList.add('hidden'); psmActions.hidden = true; }
+            if (stdContainer) { stdContainer.classList.add('hidden'); stdContainer.hidden = true; }
+            if (plrContainer) { plrContainer.classList.add('hidden'); plrContainer.hidden = true; }
+            if (psmContainer) { psmContainer.classList.add('hidden'); psmContainer.hidden = true; }
+            if (strategicContainer) {
+              strategicContainer.classList.add('hidden');
+              strategicContainer.hidden = true;
+              strategicContainer.style.marginTop = '';
+            }
+            if (imsContainer) {
+              imsContainer.classList.add('hidden');
+              imsContainer.hidden = true;
+            }
+            if (pssrContainer) {
+              pssrContainer.classList.add('hidden');
+              pssrContainer.hidden = true;
+            }
+            if (capexContainer) {
+              capexContainer.classList.remove('hidden');
+              capexContainer.hidden = false;
+              if (window.FPCL_CAPEX_SUITE && typeof window.FPCL_CAPEX_SUITE.render === 'function') {
+                window.FPCL_CAPEX_SUITE.render();
+              }
+            }
+            const breadcrumbActive = document.getElementById('breadcrumb-active-name');
+            if (breadcrumbActive) breadcrumbActive.textContent = 'Plant CapEx Portfolio (2027)';
+            if (sheetKeyEl) {
+              sheetKeyEl.textContent = 'CAPEX Dashboard • Live Synchronized (13ys4PbggcQq0H06Rh6cScAtdVnlrY-yyiWxA4e6dDzc)';
+              sheetKeyEl.title = 'Live Google Sheets: CAPEX Tab (13ys4PbggcQq0H06Rh6cScAtdVnlrY-yyiWxA4e6dDzc)';
+            }
           } else {
             if (headerCard) { headerCard.classList.remove('hidden'); headerCard.hidden = false; }
             if (plrContainer) { plrContainer.classList.add('hidden'); plrContainer.hidden = true; }
             if (psmContainer) { psmContainer.classList.add('hidden'); psmContainer.hidden = true; }
             if (imsContainer) { imsContainer.classList.add('hidden'); imsContainer.hidden = true; }
             if (pssrContainer) { pssrContainer.classList.add('hidden'); pssrContainer.hidden = true; }
+            if (capexContainer) { capexContainer.classList.add('hidden'); capexContainer.hidden = true; }
             if (strategicContainer) {
               strategicContainer.classList.add('hidden');
               strategicContainer.hidden = true;
@@ -6057,6 +6134,11 @@
           if (pssrContainer) {
             pssrContainer.classList.add('hidden');
             pssrContainer.hidden = true;
+          }
+          const capexContainer = document.getElementById('capex-specialized-container');
+          if (capexContainer) {
+            capexContainer.classList.add('hidden');
+            capexContainer.hidden = true;
           }
           if (window.FPCL_STRATEGIC_SUITE && window.FPCL_STRATEGIC_SUITE.state) {
             window.FPCL_STRATEGIC_SUITE.state.currentView = 'grid';

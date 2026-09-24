@@ -599,6 +599,8 @@ app.all('/api/sheets/fetch', async (req: Request, res: Response): Promise<void> 
         url = process.env.IMS_AUDIT_SHEET_URL || process.env.IMS_SHEET_URL || process.env.GOOGLE_SHEET_IMS || 'https://docs.google.com/spreadsheets/d/1amCHA8y_tqgR8dCJgXjjAXgUH5TESAXx8QZycRRHTi0/export?format=csv&sheet=IMS_Audit';
       } else if (sLower.includes('pssr') || tileId.includes('pssr')) {
         url = process.env.PSSR_SHEET_URL || process.env.GOOGLE_SHEET_PSSR || (process.env.PSSR_SHEET_ID ? `https://docs.google.com/spreadsheets/d/${process.env.PSSR_SHEET_ID}/export?format=csv&sheet=PSSR` : 'https://docs.google.com/spreadsheets/d/1PjGP79SLOhTJwFv4tPyRJeX07XEW5e9OBFWQ4aUefyY/export?format=csv&sheet=PSSR');
+      } else if (sLower.includes('capex') || tileId.includes('capex')) {
+        url = process.env.CAPEX || process.env.CAPEX_SHEET_URL || 'https://docs.google.com/spreadsheets/d/13ys4PbggcQq0H06Rh6cScAtdVnlrY-yyiWxA4e6dDzc/gviz/tq?tqx=out:csv&sheet=CAPEX';
       } else if (sLower.includes('psm') && process.env.PSM_SHEET_URL) {
         url = process.env.PSM_SHEET_URL;
       } else if (process.env.RECOMMENDATIONS_SHEET_URL) {
@@ -667,6 +669,11 @@ app.all('/api/sheets/fetch', async (req: Request, res: Response): Promise<void> 
     } else if (sLower.includes('pssr') || trimmedUrl.includes('1PjGP79SLOhTJwFv4tPyRJeX07XEW5e9OBFWQ4aUefyY')) {
       const extraPssrTabs = ['PSSR', 'pssr', 'Sheet1'];
       extraPssrTabs.forEach(t => {
+        if (!candidateTabs.includes(t)) candidateTabs.push(t);
+      });
+    } else if (sLower.includes('capex') || trimmedUrl.includes('13ys4PbggcQq0H06Rh6cScAtdVnlrY-yyiWxA4e6dDzc')) {
+      const extraCapexTabs = ['CAPEX', 'Capex', 'capex', 'Sheet1'];
+      extraCapexTabs.forEach(t => {
         if (!candidateTabs.includes(t)) candidateTabs.push(t);
       });
     }
