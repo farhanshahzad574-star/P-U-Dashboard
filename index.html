@@ -1278,7 +1278,7 @@
         <!-- ========================================================================= -->
         <!-- PROGRESS COMPARISON STATUS (Stacked Column Chart)                         -->
         <!-- ========================================================================= -->
-        <div class="bg-gradient-to-b from-white to-slate-50/90 border border-slate-200/90 rounded-2xl p-5 sm:p-6 shadow-xs space-y-3">
+        <div class="bg-gradient-to-b from-white to-slate-50/90 border border-slate-200/90 rounded-2xl p-4 sm:p-6 shadow-xs space-y-3">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-2.5 border-b border-slate-100 gap-2">
             <div>
               <h3 class="text-sm sm:text-base font-black text-[#1E293B] tracking-wide flex items-center gap-2">
@@ -1298,15 +1298,22 @@
                 <span class="w-2.5 h-2.5 rounded-sm bg-emerald-600"></span>
                 <span>Validation Passed (%)</span>
               </span>
-              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 text-slate-800 border border-slate-300" title="Total, Open, and Closed KPI badges displayed above each bar">
-                <span class="w-2.5 h-2.5 rounded-sm bg-slate-900"></span>
-                <span>Total / Open / Closed KPIs (Above Bars)</span>
-              </span>
             </div>
           </div>
-          <!-- Interactive SVG Bar Chart Container -->
-          <div id="comparison-chart-container" class="w-full overflow-hidden min-h-[320px]">
-            <!-- Dynamically populated by portalApp.renderComparisonChart() -->
+          <!-- Interactive SVG Bar Chart Container with Mobile Horizontal Touch Scroll -->
+          <div class="w-full">
+            <div id="comparison-chart-container" class="w-full overflow-x-auto pb-2 pt-1 min-h-[320px] touch-pan-x" style="-webkit-overflow-scrolling: touch;">
+              <!-- Dynamically populated by portalApp.renderComparisonChart() -->
+            </div>
+            <div class="sm:hidden flex items-center justify-between text-[11px] text-slate-500 font-medium px-1 pt-1.5 border-t border-slate-100/80">
+              <span class="inline-flex items-center gap-1.5 text-slate-500">
+                <svg class="w-3.5 h-3.5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                </svg>
+                Swipe horizontally to view all modules
+              </span>
+              <span class="text-[10px] font-mono font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">All Dashboards</span>
+            </div>
           </div>
         </div>
 
@@ -2606,6 +2613,60 @@
           actions: []
         },
         {
+          id: 'pssr',
+          name: 'PSSR',
+          code: 'PSSR',
+          icon: 'check-circle-2',
+          status: 'Active',
+          hasSheetLink: true,
+          category: 'Process Safety & Quality',
+          department: 'Pre-Startup Safety Review Committee',
+          cadence: 'Live Google Sheet Sync',
+          description: 'Pre-Startup Safety Reviews: punch-list tracking, field verification of construction punch items prior to hazardous fluid commissioning.',
+          color: {
+            bg: '#F0FDFA',
+            primary: '#0D9488',
+            secondary: '#14B8A6',
+            text: '#2B2E33'
+          },
+          gradient: 'from-emerald-500 via-teal-600 to-indigo-600',
+          gradientStop1: '#10B981',
+          gradientStop2: '#0D9488',
+          tagStyle: 'bg-teal-50 text-teal-800 border-teal-200',
+          kpis: { total: 31, closed: 23, inProgress: 8, overdue: 0, compliance: '74.2%' },
+          punchList: { open: 8, closed: 23, total: 31, rate: '74.2%' },
+          dataReadiness: { master: '100%', signoff: '100%' },
+          statusComment: 'Live synchronized with Google Sheet tab PSSR (1PjGP79SLOhTJwFv4tPyRJeX07XEW5e9OBFWQ4aUefyY).',
+          actions: []
+        },
+        {
+          id: 'capex',
+          name: 'CAPEX',
+          code: 'CAPEX',
+          icon: 'circle-dollar-sign',
+          status: 'Active',
+          hasSheetLink: true,
+          category: 'Capital Expenditure & Projects',
+          department: 'Capital Projects & Engineering',
+          cadence: 'Live Sync / Google Sheet',
+          description: 'FPCL Plant CapEx Portfolio (24 Projects across all years: 10 Closed, 14 Open • 41.7% Closure Rate) • Live synchronized with Google Sheet tab CAPEX (13ys4PbggcQq0H06Rh6cScAtdVnlrY-yyiWxA4e6dDzc, Column R).',
+          color: {
+            bg: '#F7F8FA',
+            primary: '#0B1D3A',
+            secondary: '#D4AF37',
+            text: '#0B1D3A'
+          },
+          gradient: 'from-[#0B1D3A] to-[#0B1D3A]',
+          gradientStop1: '#0B1D3A',
+          gradientStop2: '#D4AF37',
+          tagStyle: 'bg-[#0B1D3A]/5 text-[#0B1D3A] border-[#D4AF37]/50',
+          kpis: { total: 24, closed: 10, inProgress: 14, overdue: 0, compliance: '41.7%' },
+          punchList: { open: 14, closed: 10, total: 24, rate: '41.7%' },
+          dataReadiness: { master: '100%', signoff: '100%' },
+          statusComment: 'Live synchronized with Google Sheet tab CAPEX (13ys4PbggcQq0H06Rh6cScAtdVnlrY-yyiWxA4e6dDzc, Column R Status _Open_Close).',
+          actions: []
+        },
+        {
           id: 'executive-hse-committee-ehsec',
           name: 'EHSE',
           code: 'EHSE',
@@ -2765,60 +2826,6 @@
           punchList: { open: 0, closed: 0, total: 0, rate: '0.0%' },
           dataReadiness: { master: '0%', signoff: '0%' },
           statusComment: 'Awaiting Google Sheet connection.',
-          actions: []
-        },
-        {
-          id: 'pssr',
-          name: 'PSSR',
-          code: 'PSSR',
-          icon: 'check-circle-2',
-          status: 'Active',
-          hasSheetLink: true,
-          category: 'Process Safety & Quality',
-          department: 'Pre-Startup Safety Review Committee',
-          cadence: 'Live Google Sheet Sync',
-          description: 'Pre-Startup Safety Reviews: punch-list tracking, field verification of construction punch items prior to hazardous fluid commissioning.',
-          color: {
-            bg: '#F0FDFA',
-            primary: '#0D9488',
-            secondary: '#14B8A6',
-            text: '#2B2E33'
-          },
-          gradient: 'from-emerald-500 via-teal-600 to-indigo-600',
-          gradientStop1: '#10B981',
-          gradientStop2: '#0D9488',
-          tagStyle: 'bg-teal-50 text-teal-800 border-teal-200',
-          kpis: { total: 31, closed: 23, inProgress: 8, overdue: 0, compliance: '74.2%' },
-          punchList: { open: 8, closed: 23, total: 31, rate: '74.2%' },
-          dataReadiness: { master: '100%', signoff: '100%' },
-          statusComment: 'Live synchronized with Google Sheet tab PSSR (1PjGP79SLOhTJwFv4tPyRJeX07XEW5e9OBFWQ4aUefyY).',
-          actions: []
-        },
-        {
-          id: 'capex',
-          name: 'CAPEX',
-          code: 'CAPEX',
-          icon: 'circle-dollar-sign',
-          status: 'Active',
-          hasSheetLink: true,
-          category: 'Capital Expenditure & Projects',
-          department: 'Capital Projects & Engineering',
-          cadence: 'Live Sync / Google Sheet',
-          description: 'FPCL Plant CapEx Portfolio (24 Projects across all years: 10 Closed, 14 Open • 41.7% Closure Rate) • Live synchronized with Google Sheet tab CAPEX (13ys4PbggcQq0H06Rh6cScAtdVnlrY-yyiWxA4e6dDzc, Column R).',
-          color: {
-            bg: '#F7F8FA',
-            primary: '#0B1D3A',
-            secondary: '#D4AF37',
-            text: '#0B1D3A'
-          },
-          gradient: 'from-[#0B1D3A] to-[#0B1D3A]',
-          gradientStop1: '#0B1D3A',
-          gradientStop2: '#D4AF37',
-          tagStyle: 'bg-[#0B1D3A]/5 text-[#0B1D3A] border-[#D4AF37]/50',
-          kpis: { total: 24, closed: 10, inProgress: 14, overdue: 0, compliance: '41.7%' },
-          punchList: { open: 14, closed: 10, total: 24, rate: '41.7%' },
-          dataReadiness: { master: '100%', signoff: '100%' },
-          statusComment: 'Live synchronized with Google Sheet tab CAPEX (13ys4PbggcQq0H06Rh6cScAtdVnlrY-yyiWxA4e6dDzc, Column R Status _Open_Close).',
           actions: []
         },
         {
@@ -3849,7 +3856,7 @@
           if (typeof this.showToast === 'function') {
             this.showToast(
               'Export Successful',
-              `Exported ${exportRows.length} records matching ${dept === 'all' ? 'All Departments' : dept} (${status === 'all' ? 'All Statuses' : (status === 'open' ? 'Open Actions' : 'Closed Actions')}) to CSV.`,
+              `Exported ${exportRows.length} records matching ${dept === 'all' ? 'All Departments' : (dept === 'PE' ? 'PE (Process Engineering)' : dept)} (${status === 'all' ? 'All Statuses' : (status === 'open' ? 'Open Actions' : 'Closed Actions')}) to CSV.`,
               'success'
             );
           }
@@ -3912,7 +3919,7 @@
                   : (psmK.total + valK.total + plrK.total));
 
               const statusLabel = status === 'open' ? 'Open Actions' : (status === 'close' ? 'Closed Actions' : 'Actions / Personnel');
-              const deptLabel = dept === 'all' ? 'All Departments' : dept;
+              const deptLabel = dept === 'all' ? 'All Departments' : (dept === 'PE' ? 'PE (Process Engineering)' : dept);
 
               summaryText.textContent = `${deptLabel} • ${activeCount} ${statusLabel} (PSM: ${status === 'open' ? psmK.inProgress : (status === 'close' ? psmK.closed : psmK.total)}, PLR: ${status === 'open' ? plrK.inProgress : (status === 'close' ? plrK.closed : plrK.total)}, Validation: ${status === 'open' ? valK.inProgress : (status === 'close' ? valK.closed : valK.total)})`;
             } else {
@@ -3977,14 +3984,13 @@
             ? effectiveValPending 
             : ((openCloseFilter === 'close') ? effectiveValPassed : valTotal);
 
-          // Build comparison items: Includes all modules, labeling PSM as PSM Audits, plotting PSM Validation on secondary axis, and plotting CAPEX in place of Sub HSE ERI
+          // Build comparison items: Includes all modules, labeling PSM as PSM Audits, plotting PSM Validation on secondary axis, and plotting PSSR and CAPEX next to IMS
           const chartItems = [];
           DASHBOARD_REGISTRY.forEach(d => {
-            // Exclude strategic from the Overview Progress Comparison Status
-            if (d.id === 'strategic') return;
+            // Exclude strategic and sub-hse-eri from the Overview Progress Comparison Status
+            if (d.id === 'strategic' || d.id === 'sub-hse-eri') return;
 
-            // Remove sub HSE ERI and plot there CAPEX open close projects for all years
-            if (d.id === 'sub-hse-eri') {
+            if (d.id === 'capex') {
               const capexKpi = this.getCapexFilteredKpis(deptFilter, openCloseFilter);
               const capexClosed = (openCloseFilter === 'open') ? 0 : (capexKpi.closed || 0);
               const capexOpen = (openCloseFilter === 'close') ? 0 : (capexKpi.inProgress ?? capexKpi.deptOpen ?? 0);
@@ -4010,9 +4016,6 @@
               });
               return;
             }
-
-            // Exclude capex from its default later position so it is not duplicated
-            if (d.id === 'capex') return;
 
             if (d.id === 'psm-validation') {
               chartItems.push({
@@ -4332,7 +4335,7 @@
           }).join('');
 
           container.innerHTML = `
-            <svg viewBox="0 0 ${width} ${height}" class="w-full h-auto overflow-visible select-none">
+            <svg viewBox="0 0 ${width} ${height}" class="min-w-[960px] md:min-w-full w-full h-auto overflow-visible select-none">
               <defs>${defsGradients}</defs>
               <!-- Baseline -->
               <line x1="${pad.left}" y1="${baseY}" x2="${width - pad.right}" y2="${baseY}" stroke="#64748B" stroke-width="2"/>
@@ -4644,13 +4647,9 @@
               nearmiss: 240
             };
 
-            const yearCount = (this.state.hseqYears && this.state.hseqYears.length) || 10;
-            const minYear = this.state.hseqYears && this.state.hseqYears.length ? Math.min(...this.state.hseqYears.map(Number)) : 2017;
-            const maxYear = this.state.hseqYears && this.state.hseqYears.length ? Math.max(...this.state.hseqYears.map(Number)) : 2026;
-
-            if (badgeText) badgeText.textContent = `Sum of All ${yearCount} Years (${minYear}–${maxYear})`;
+            if (badgeText) badgeText.textContent = '';
             if (badgeEl) {
-              badgeEl.className = 'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg text-[11px] font-bold text-blue-800 bg-blue-50/90 border border-blue-200 shadow-2xs';
+              badgeEl.className = 'hidden';
             }
 
             subTextMap = {
