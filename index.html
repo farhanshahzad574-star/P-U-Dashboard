@@ -97,9 +97,9 @@
     <script src="/assets/imsSuite.js?v=20260923f"></script>
     <!-- PSSR (Pre-Startup Safety Review) Dataset & Specialized Executive Suite -->
     <script src="/assets/pssrData.js?v=20260923b"></script>
-    <script src="/assets/pssrSuite.js?v=20260923b"></script>
+    <script src="/assets/pssrSuite.js?v=20260924e"></script>
     <!-- CAPEX (Capital Expenditure) Specialized Executive Suite -->
-    <script src="/assets/capexSuite.js?v=20260924a"></script>
+    <script src="/assets/capexSuite.js?v=20260924e"></script>
 
     <style>
       /* Base font legibility: standard across devices, calibrated for wall displays */
@@ -1043,9 +1043,9 @@
               </div>
 
               <!-- Active Status Badge -->
-              <span id="hseq-year-status-badge" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg text-[11px] font-bold text-blue-800 bg-blue-50/90 border border-blue-200 shadow-2xs">
+              <span id="hseq-year-status-badge" class="hidden items-center gap-1.5 px-2.5 py-0.5 rounded-lg text-[11px] font-bold text-blue-800 bg-blue-50/90 border border-blue-200 shadow-2xs">
                 <i data-lucide="sigma" class="w-3 h-3 text-blue-600"></i>
-                <span id="hseq-year-status-text">Sum of All 10 Years (2017–2026)</span>
+                <span id="hseq-year-status-text"></span>
               </span>
             </div>
 
@@ -1284,9 +1284,6 @@
               <h3 class="text-sm sm:text-base font-black text-[#1E293B] tracking-wide flex items-center gap-2">
                 <span class="text-lg">📊</span> PROGRESS COMPARISON STATUS
               </h3>
-              <p class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider font-mono mt-0.5">
-                Stacked Column Chart • Closed vs Open Actions &amp; PSM Validation (Secondary Axis in %)
-              </p>
             </div>
             <div class="flex flex-wrap items-center gap-2 text-xs font-mono font-bold">
               <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-blue-50 text-blue-700 border border-blue-200" title="Closed Actions completed">
@@ -1346,7 +1343,7 @@
                   <option value="Finance">Finance</option>
                   <option value="HSEQ">HSEQ / HSE</option>
                   <option value="SCM">SCM (Supply Chain Management)</option>
-                  <option value="PE">PE (Plant Engineering)</option>
+                  <option value="PE">PE (Process Engineering)</option>
                   <option value="Technical">Technical & HSE</option>
                   <option value="Inspection">Inspection & Workshop Services</option>
                   <option value="Reliability">Reliability</option>
@@ -2128,7 +2125,40 @@
               </div>
             </div>
 
-            <!-- Source 4: Additional Registered Dashboards & Future Sheets -->
+            <!-- Source 4: Capital Expenditure (CAPEX) Projects -->
+            <div class="border border-slate-200 rounded-xl p-3.5 bg-slate-50/70 hover:bg-slate-50 transition-colors">
+              <div class="flex items-center justify-between flex-wrap gap-2 mb-2.5">
+                <div class="flex items-center gap-2">
+                  <span class="px-2.5 py-0.5 rounded-md text-[10px] font-mono font-bold bg-slate-900 text-[#D4AF37] border border-[#D4AF37]/40">
+                    CAPEX
+                  </span>
+                  <span class="font-bold text-slate-900 text-xs sm:text-sm">FPCL Plant CapEx Portfolio (24 Projects across all years)</span>
+                </div>
+                <span class="text-[10px] font-mono text-slate-500 bg-white px-2 py-0.5 rounded border border-slate-200">
+                  Tab: CAPEX (Sheet ID 13ys4PbggcQq0H06Rh6cScAtdVnlrY-yyiWxA4e6dDzc)
+                </span>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+                <div class="p-2.5 bg-white rounded-lg border border-slate-200/90 shadow-2xs">
+                  <div class="text-slate-500 font-bold mb-1 flex items-center gap-1">
+                    <i data-lucide="building-2" class="w-3 h-3 text-blue-600"></i>
+                    <span>Department Filter Reference</span>
+                  </div>
+                  <div class="font-mono text-blue-700 font-bold text-xs">Column I: <span class="text-slate-800 font-semibold font-sans">Responsible Unit</span></div>
+                  <div class="text-[10px] text-slate-400 mt-1">Inspection, E&I, Project/Maintenance, Maintenance, ICT, Admin</div>
+                </div>
+                <div class="p-2.5 bg-white rounded-lg border border-slate-200/90 shadow-2xs">
+                  <div class="text-slate-500 font-bold mb-1 flex items-center gap-1">
+                    <i data-lucide="check-circle-2" class="w-3 h-3 text-amber-600"></i>
+                    <span>Status Filter Reference</span>
+                  </div>
+                  <div class="font-mono text-emerald-700 font-bold text-xs">Column R: <span class="text-slate-800 font-semibold font-sans">Status _Open_Close</span></div>
+                  <div class="text-[10px] text-slate-400 mt-1">Values: "Open" (14 projects) or "Close" (10 projects) across all years</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Source 5: Additional Registered Dashboards & Future Sheets -->
             <div class="border border-slate-200 rounded-xl p-3.5 bg-slate-50/70 hover:bg-slate-50 transition-colors">
               <div class="flex items-center justify-between flex-wrap gap-2 mb-2.5">
                 <div class="flex items-center gap-2">
@@ -2358,6 +2388,42 @@
     <!-- JAVASCRIPT ENGINE: EXACT COLOR SCHEMES, VIEW SWITCHER, CARDS & DETAIL     -->
     <!-- ========================================================================= -->
     <script>
+      /**
+       * Seed baseline for CAPEX Projects from Google Sheet ID 13ys4PbggcQq0H06Rh6cScAtdVnlrY-yyiWxA4e6dDzc (tab CAPEX)
+       * Column R determines Status (Open vs Close)
+       * 24 Projects total across all years: 10 Closed, 14 Open
+       */
+      const FPCL_CAPEX_INITIAL_DATA = [
+        { sr: 1, year: '2024', name: 'Additional Economizer Tubes (HHI Recommendation)', budget: 257249580, consumed: 186721673, commitment: 21949421, available: 48578486, wbs: 'FL-2024-0002-PRO-01', unit: 'Inspection', status: 'Open', rawStatus: 'Open', strategy: 'To be executed in ATA 2027', remarks: '' },
+        { sr: 2, year: '2024', name: 'Fire protection systems For Coal Conveyor Belts & Crusher Baghouse', budget: 43500000, consumed: 32546046, commitment: 9597879, available: 1356075, wbs: 'FL-2024-0002-HSE-01', unit: 'Project/Maintenance', status: 'Open', rawStatus: 'Open', strategy: 'Provide date of Completion. CAPEX will lapse at this year end.', remarks: '' },
+        { sr: 3, year: '2025', name: 'Coal Dust Study Recommendation by M/s Stonehouse (USA): Fire & Explosion protection systems of Coal Conveyor Belts (Linear Heat Detectors & water sprinklers) - Phase II', budget: 88000000, consumed: 45011747, commitment: 42714379, available: 273874, wbs: 'FL-2025-0002-HSE-01', unit: 'Equipment/Maintenance/E&I', status: 'Open', rawStatus: 'Open', strategy: 'Provide date of Completion. CAPEX will lapse at this year end.', remarks: '' },
+        { sr: 4, year: '2025', name: 'Extension of Wind Fencing at the South-East side of Coal Shed', budget: 66000000, consumed: 34569109, commitment: 3263321, available: 28167570, wbs: 'FL-2025-0002-HSE-02', unit: 'Project/Maintenance', status: 'Open', rawStatus: 'Open', strategy: 'Provide date of Completion. CAPEX will lapse at this year end.', remarks: '' },
+        { sr: 5, year: '2025', name: 'Plant Emergency Siren System', budget: 40000000, consumed: 21816581, commitment: 474964, available: 17708455, wbs: 'FL-2025-0002-HSE-03', unit: 'E&I', status: 'Open', rawStatus: 'Open', strategy: 'Provide date of Completion.', remarks: '' },
+        { sr: 6, year: '2025', name: 'Additional Economizer Tubes (HHI Recommendation)', budget: 228000000, consumed: 215444390, commitment: 12555610, available: 0, wbs: 'FL-2025-0002-PRO-01', unit: '-', status: 'Close', rawStatus: 'Close', strategy: 'Completed - Commitments to be closed', remarks: '' },
+        { sr: 7, year: '2025', name: 'Fire protection systems For Coal Conveyor Belts & Crusher Baghouse', budget: 43500000, consumed: 33742468, commitment: 9757532, available: 0, wbs: 'FL-2025-0002-HSE-01', unit: '-', status: 'Close', rawStatus: 'Close', strategy: 'Completed - Commitments to be closed', remarks: '' },
+        { sr: 8, year: '2025', name: 'Boiler Tubes Thermal Spray Coating - 2025', budget: 85291228, consumed: 51517300, commitment: 17263982, available: 16509946, wbs: 'FL-2025-0002-INS-01', unit: 'Inspection', status: 'Close', rawStatus: 'Close', strategy: 'Completed - Commitments to be closed', remarks: '' },
+        { sr: 9, year: '2025', name: 'VFD Electrical and Instrumentation', budget: 152750000, consumed: 115301154, commitment: 16703957, available: 20744889, wbs: 'FL-2025-0002-PRO-01', unit: 'E&I', status: 'Close', rawStatus: 'Close', strategy: 'Completed - Commitments to be closed', remarks: '' },
+        { sr: 10, year: '2025', name: 'Capex-Coal Shed Rehabiltation MEC (PKR 562,300,000)', budget: 562300000, consumed: 542990547, commitment: 3437132, available: 15872321, wbs: 'FL-2025-0003-MEC-01', unit: 'Maintenance', status: 'Close', rawStatus: 'Close', strategy: 'Completed - Commitments to be closed', remarks: '' },
+        { sr: 11, year: '2026', name: 'Boiler Tubes Thermal Spray Coating Job 2026 (Approved Sept 2025 BOD)', budget: 120000000, consumed: 66349314, commitment: 0, available: 53650686, wbs: 'FL-2026-0001-INS-01', unit: 'Inspection', status: 'Close', rawStatus: 'Close', strategy: 'Completed - Commitments to be closed', remarks: '' },
+        { sr: 12, year: '2026', name: 'Solarization - FPCL Building area (250 KW – Initial Phase)', budget: 25000000, consumed: 0, commitment: 0, available: 25000000, wbs: 'FL-2026-0001-ELE-1', unit: 'E&I/SCM', status: 'Open', rawStatus: 'Open', strategy: 'Please update status.', remarks: '' },
+        { sr: 13, year: '2026', name: '10x Split ACs (2 Ton) & 10x Split ACs (1.5 Ton)', budget: 5880000, consumed: 2294875, commitment: 1271635, available: 2313490, wbs: 'FL-2026-0001-ELE-02', unit: 'E&I', status: 'Close', rawStatus: 'Close', strategy: 'Completed - Commitments to be closed', remarks: '' },
+        { sr: 14, year: '2026', name: 'Low Value Assets (07x Laptops)', budget: 2708000, consumed: 0, commitment: 3150000, available: -442000, wbs: 'FL-2026-0001-TEC-01', unit: 'ICT', status: 'Open', rawStatus: 'Open', strategy: 'ICT to please update.', remarks: '' },
+        { sr: 15, year: '2026', name: 'Low Value Assets (16x Desktops)', budget: 5600000, consumed: 0, commitment: 5600000, available: 0, wbs: 'FL-2026-0001-TEC-02', unit: 'ICT', status: 'Open', rawStatus: 'Open', strategy: 'ICT to please update.', remarks: '' },
+        { sr: 16, year: '2026', name: 'Low Value Assets (05x Tablets)', budget: 325000, consumed: 0, commitment: 0, available: 325000, wbs: 'FL-2026-0001-TEC-03', unit: 'ICT', status: 'Open', rawStatus: 'Open', strategy: 'ICT to please update.', remarks: '' },
+        { sr: 17, year: '2026', name: 'Cisco Network Switches- Cisco (FPCL Plant fault Replacement)', budget: 3600000, consumed: 0, commitment: 0, available: 3600000, wbs: 'FL-2026-0001-TEC-04', unit: 'ICT', status: 'Open', rawStatus: 'Open', strategy: 'ICT to please update.', remarks: '' },
+        { sr: 18, year: '2026', name: 'Procurement of AutoCAD Licenses (04 EA, 02 years validity)', budget: 3500000, consumed: 0, commitment: 3489486, available: 10514, wbs: 'FL-2026-0001-TEC-05', unit: 'ICT', status: 'Close', rawStatus: 'Close', strategy: 'Completed - Commitments to be closed', remarks: '' },
+        { sr: 19, year: '2026', name: 'Procurement of SolidWorks Licenses (02 EA, Perpetual)', budget: 7500000, consumed: 6440000, commitment: 840000, available: 220000, wbs: 'FL-2026-0001-TEC-06', unit: 'ICT', status: 'Close', rawStatus: 'Close', strategy: 'Completed - Commitments to be closed', remarks: '' },
+        { sr: 20, year: '2026', name: 'SAP Rise Project', budget: 135000000, consumed: 6760530, commitment: 0, available: 128239470, wbs: 'FL-2026-0001-TEC-07', unit: 'ICT', status: 'Open', rawStatus: 'Open', strategy: 'To be confirmed from Faisal habib', remarks: '' },
+        { sr: 21, year: '2026', name: 'Fuel Dispencing Barcode Solutions', budget: 2100000, consumed: 0, commitment: 2545738, available: -445738, wbs: 'FL-2026-0001-TEC-08', unit: 'Project', status: 'Open', rawStatus: 'Open', strategy: 'Please update status.', remarks: '' },
+        { sr: 22, year: '2026', name: '(01x Laptops) for Anees Afzal', budget: 442000, consumed: 0, commitment: 442000, available: 0, wbs: 'FL-2026-0001-TEC-09', unit: 'ICT', status: 'Close', rawStatus: 'Close', strategy: 'Completed - Commitments to be closed', remarks: '' },
+        { sr: 23, year: '2026', name: 'Security Cameras for Warehouse Yard and FPCL Entry Gate', budget: 11000000, consumed: 0, commitment: 0, available: 11000000, wbs: 'FL-2026-0001-ADM-01', unit: 'Admin', status: 'Open', rawStatus: 'Open', strategy: 'Please update status.', remarks: '' },
+        { sr: 24, year: '2027', name: 'Boiler Tubes Thermal Spray Coating Job 2027 (Approved Dec 2026 BOD)', budget: 120000000, consumed: 0, commitment: 26077743, available: 93922257, wbs: 'FL-2027-0002-INS-01', unit: 'Inspection', status: 'Open', rawStatus: 'Open', strategy: 'Continue', remarks: '' }
+      ];
+      window.FPCL_CAPEX_INITIAL_DATA = FPCL_CAPEX_INITIAL_DATA;
+      if (!window.FPCL_CAPEX_DATA || window.FPCL_CAPEX_DATA.length === 0) {
+        window.FPCL_CAPEX_DATA = JSON.parse(JSON.stringify(FPCL_CAPEX_INITIAL_DATA));
+      }
+
       /**
        * Registry of the 11 Individual Dashboards with EXACT User Color Schemes
        * Columns: Dashboard | Background | Primary Accent | Secondary Accent | Text Color
@@ -2737,8 +2803,8 @@
           hasSheetLink: true,
           category: 'Capital Expenditure & Projects',
           department: 'Capital Projects & Engineering',
-          cadence: 'Live Sync / 2027 Portfolio',
-          description: 'FPCL Plant CapEx Portfolio (2027) • Total PKR 1,028 M (36 Projects), Major vs Minor allocations, Replacements vs New Installations, and MOC Compliance.',
+          cadence: 'Live Sync / Google Sheet',
+          description: 'FPCL Plant CapEx Portfolio (24 Projects across all years: 10 Closed, 14 Open • 41.7% Closure Rate) • Live synchronized with Google Sheet tab CAPEX (13ys4PbggcQq0H06Rh6cScAtdVnlrY-yyiWxA4e6dDzc, Column R).',
           color: {
             bg: '#F7F8FA',
             primary: '#0B1D3A',
@@ -2749,10 +2815,10 @@
           gradientStop1: '#0B1D3A',
           gradientStop2: '#D4AF37',
           tagStyle: 'bg-[#0B1D3A]/5 text-[#0B1D3A] border-[#D4AF37]/50',
-          kpis: { total: 36, closed: 12, inProgress: 24, overdue: 0, compliance: '97.0%' },
-          punchList: { open: 24, closed: 12, total: 36, rate: '97.0%' },
+          kpis: { total: 24, closed: 10, inProgress: 14, overdue: 0, compliance: '41.7%' },
+          punchList: { open: 14, closed: 10, total: 24, rate: '41.7%' },
           dataReadiness: { master: '100%', signoff: '100%' },
-          statusComment: 'Live synchronized with Google Sheet tab CAPEX (13ys4PbggcQq0H06Rh6cScAtdVnlrY-yyiWxA4e6dDzc).',
+          statusComment: 'Live synchronized with Google Sheet tab CAPEX (13ys4PbggcQq0H06Rh6cScAtdVnlrY-yyiWxA4e6dDzc, Column R Status _Open_Close).',
           actions: []
         },
         {
@@ -2890,6 +2956,7 @@
           this.renderTimelineChart();
           this.renderComparisonChart();
           this.fetchHseqKpis();
+          this.fetchCapexData({ silent: true });
           this.renderActionScenarios();
           this.renderPunchListTable();
           this.renderDataReadiness();
@@ -3047,6 +3114,8 @@
           // Handle common singular/plural & acronym equivalences
           if ((c1 === 'operations' && c2 === 'operation') || (c1 === 'operation' && c2 === 'operations')) return true;
           if ((c1 === 'hseq' && c2 === 'hse') || (c1 === 'hse' && c2 === 'hseq')) return true;
+          if ((c1 === 'pe' && (c2.includes('processengineering') || c2.includes('plantengineering'))) ||
+              ((c1.includes('processengineering') || c1.includes('plantengineering')) && c2 === 'pe')) return true;
 
           if (c1.includes(c2) || c2.includes(c1)) {
             if (c2.length >= 4) return true;
@@ -3387,6 +3456,72 @@
         },
 
         /**
+         * CAPEX: Column I (Responsible Unit) for department filter, Column R (Status _Open_Close) for open/close status
+         * Sheet ID: 13ys4PbggcQq0H06Rh6cScAtdVnlrY-yyiWxA4e6dDzc, tab: CAPEX
+         */
+        getCapexFilteredKpis(deptFilter, openCloseFilter) {
+          let raw = [];
+          if (Array.isArray(window.FPCL_CAPEX_DATA) && window.FPCL_CAPEX_DATA.length > 0) {
+            raw = window.FPCL_CAPEX_DATA;
+          } else if (Array.isArray(window.FPCL_CAPEX_INITIAL_DATA)) {
+            raw = window.FPCL_CAPEX_INITIAL_DATA;
+          }
+
+          const deptRows = raw.filter(r => {
+            const unit = r.unit || r.responsibleUnit || r.department || r.assigned || '';
+            return this.isDeptMatch(unit, deptFilter);
+          });
+          const deptTotal = deptRows.length;
+          const deptClosed = deptRows.filter(r => {
+            const st = String(r.status || r.statusOpenClose || r.rawStatus || '').toLowerCase().trim();
+            return st.includes('close') || st.includes('comp');
+          }).length;
+          const deptOpen = deptTotal - deptClosed;
+          const deptRate = deptTotal > 0 ? ((deptClosed / deptTotal) * 100).toFixed(1) + '%' : '0.0%';
+
+          if (openCloseFilter === 'open') {
+            return {
+              total: deptOpen,
+              closed: 0,
+              inProgress: deptOpen,
+              overdue: 0,
+              compliance: deptOpen + ' Open',
+              deptTotal,
+              deptClosed,
+              deptOpen,
+              deptRate,
+              mode: 'open'
+            };
+          } else if (openCloseFilter === 'close') {
+            return {
+              total: deptClosed,
+              closed: deptClosed,
+              inProgress: 0,
+              overdue: 0,
+              compliance: deptClosed + ' Closed',
+              deptTotal,
+              deptClosed,
+              deptOpen,
+              deptRate,
+              mode: 'close'
+            };
+          } else {
+            return {
+              total: deptTotal,
+              closed: deptClosed,
+              inProgress: deptOpen,
+              overdue: 0,
+              compliance: deptRate,
+              deptTotal,
+              deptClosed,
+              deptOpen,
+              deptRate,
+              mode: 'all'
+            };
+          }
+        },
+
+        /**
          * Get live filtered KPIs for any summary dashboard card based on overview filters
          */
         getEffectiveCardKpis(item) {
@@ -3409,6 +3544,9 @@
           }
           if (item.id === 'pssr') {
             return this.getPssrFilteredKpis(deptFilter, openCloseFilter);
+          }
+          if (item.id === 'capex') {
+            return this.getCapexFilteredKpis(deptFilter, openCloseFilter);
           }
 
           if (deptFilter === 'all' && openCloseFilter === 'all') {
@@ -3606,7 +3744,33 @@
             });
           });
 
-          // 4. Other Modules' Actions in DASHBOARD_REGISTRY if defined
+          // 4. Gather CAPEX Projects (Column R: Status _Open_Close)
+          let capexRaw = [];
+          if (Array.isArray(window.FPCL_CAPEX_DATA) && window.FPCL_CAPEX_DATA.length > 0) {
+            capexRaw = window.FPCL_CAPEX_DATA;
+          } else if (Array.isArray(window.FPCL_CAPEX_INITIAL_DATA)) {
+            capexRaw = window.FPCL_CAPEX_INITIAL_DATA;
+          }
+          capexRaw.forEach(r => {
+            const unit = r.unit || r.responsibleUnit || r.department || r.assigned || '';
+            if (!this.isDeptMatch(unit, dept)) return;
+            const isClosed = String(r.status || r.statusOpenClose || r.rawStatus || '').toLowerCase().trim().includes('close');
+            if (status === 'open' && isClosed) return;
+            if (status === 'close' && !isClosed) return;
+
+            exportRows.push({
+              module: 'CAPEX',
+              refId: r.wbs || `CAPEX-${r.sr || ''}`,
+              dept: unit || 'Capital Projects',
+              status: isClosed ? 'Close' : 'Open',
+              desc: r.name || '',
+              category: r.category || 'Capital Expenditure',
+              unit: r.year ? `Year: ${r.year}` : '-',
+              remarks: `Budget: PKR ${(r.budget || 0).toLocaleString()}, Status Col R: ${r.status || (isClosed ? 'Close' : 'Open')}`
+            });
+          });
+
+          // 5. Other Modules' Actions in DASHBOARD_REGISTRY if defined
           if (Array.isArray(DASHBOARD_REGISTRY)) {
             DASHBOARD_REGISTRY.forEach(d => {
               if (d.id === 'sub-hse-psm' || d.id === 'psm-validation' || d.id === 'plr') return;
@@ -3813,11 +3977,42 @@
             ? effectiveValPending 
             : ((openCloseFilter === 'close') ? effectiveValPassed : valTotal);
 
-          // Build comparison items: Includes all modules, labeling PSM as PSM Audits, and plotting PSM Validation on secondary axis
+          // Build comparison items: Includes all modules, labeling PSM as PSM Audits, plotting PSM Validation on secondary axis, and plotting CAPEX in place of Sub HSE ERI
           const chartItems = [];
           DASHBOARD_REGISTRY.forEach(d => {
-            // Exclude strategic and capex from the Overview Progress Comparison Status
-            if (d.id === 'strategic' || d.id === 'capex') return;
+            // Exclude strategic from the Overview Progress Comparison Status
+            if (d.id === 'strategic') return;
+
+            // Remove sub HSE ERI and plot there CAPEX open close projects for all years
+            if (d.id === 'sub-hse-eri') {
+              const capexKpi = this.getCapexFilteredKpis(deptFilter, openCloseFilter);
+              const capexClosed = (openCloseFilter === 'open') ? 0 : (capexKpi.closed || 0);
+              const capexOpen = (openCloseFilter === 'close') ? 0 : (capexKpi.inProgress ?? capexKpi.deptOpen ?? 0);
+              let capexTotal = (openCloseFilter === 'open') 
+                ? capexOpen 
+                : ((openCloseFilter === 'close') 
+                  ? capexClosed 
+                  : (capexKpi.deptTotal !== undefined ? capexKpi.deptTotal : (capexKpi.total || (capexClosed + capexOpen))));
+              if (capexTotal < capexClosed + capexOpen) {
+                capexTotal = capexClosed + capexOpen;
+              }
+
+              chartItems.push({
+                id: 'capex',
+                name: 'CAPEX',
+                code: 'CAPEX',
+                type: 'action',
+                closed: capexClosed,
+                open: capexOpen,
+                total: capexTotal,
+                clickHandler: "portalApp.showDetailView('capex');",
+                tooltip: `CAPEX (All Years):\n• Total Projects: ${capexTotal}\n• Closed: ${capexClosed}\n• Open: ${capexOpen}\nClick to view CAPEX Dashboard`
+              });
+              return;
+            }
+
+            // Exclude capex from its default later position so it is not duplicated
+            if (d.id === 'capex') return;
 
             if (d.id === 'psm-validation') {
               chartItems.push({
@@ -4215,6 +4410,190 @@
             if (icon) icon.classList.remove('animate-spin');
             if (window.lucide) window.lucide.createIcons();
           }
+        },
+
+        /**
+         * Fetch live CAPEX project records from Google Sheet ID 13ys4PbggcQq0H06Rh6cScAtdVnlrY-yyiWxA4e6dDzc (tab CAPEX)
+         * Column R: Status _Open_Close
+         * Column I: Responsible Unit (Department)
+         */
+        async fetchCapexData(options = {}) {
+          const silent = options.silent !== undefined ? options.silent : true;
+          try {
+            let csvText = '';
+            // Attempt 1: Server proxy route
+            try {
+              const resp = await fetch('/api/sheets/fetch?sheetTab=CAPEX&tileId=capex', {
+                cache: 'no-store',
+                headers: { 'Cache-Control': 'no-cache, no-store' }
+              });
+              if (resp.ok) {
+                const data = await resp.json();
+                if (data && data.success && data.csvText) {
+                  csvText = data.csvText;
+                }
+              }
+            } catch (e) {}
+
+            // Attempt 2: Direct Google Sheet fetch
+            if (!csvText) {
+              try {
+                const directUrl = `https://docs.google.com/spreadsheets/d/13ys4PbggcQq0H06Rh6cScAtdVnlrY-yyiWxA4e6dDzc/gviz/tq?tqx=out:csv&sheet=CAPEX&_nocache=${Date.now()}`;
+                const res = await fetch(directUrl, { cache: 'no-store' });
+                if (res.ok) {
+                  const t = await res.text();
+                  if (t && !t.includes('<!DOCTYPE html>') && t.includes(',')) {
+                    csvText = t;
+                  }
+                }
+              } catch (e) {}
+            }
+
+            if (csvText) {
+              const parsed = this.parseCapexCsv(csvText);
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                window.FPCL_CAPEX_DATA = parsed;
+                const total = parsed.length;
+                const closed = parsed.filter(r => (r.status || '').toLowerCase().includes('close')).length;
+                const inProgress = total - closed;
+                const compliance = total > 0 ? ((closed / total) * 100).toFixed(1) + '%' : '0.0%';
+
+                const capexItem = DASHBOARD_REGISTRY.find(d => d.id === 'capex');
+                if (capexItem) {
+                  capexItem.kpis = { total, closed, inProgress, overdue: 0, compliance };
+                  capexItem.punchList = { open: inProgress, closed, total, rate: compliance };
+                }
+
+                this.updateRollupStats();
+                this.renderCards();
+                this.renderComparisonChart();
+              }
+            }
+          } catch (err) {
+            console.warn('CAPEX Overview fetch error:', err);
+          }
+        },
+
+        parseCapexCsv(csvText) {
+          if (!csvText || typeof csvText !== 'string') return [];
+          const records = [];
+          let currentRecord = [];
+          let currentField = '';
+          let inQuotes = false;
+          for (let i = 0; i < csvText.length; i++) {
+            const c = csvText[i];
+            if (c === '"') {
+              if (inQuotes && csvText[i + 1] === '"') {
+                currentField += '"';
+                i++;
+              } else {
+                inQuotes = !inQuotes;
+              }
+            } else if (c === ',' && !inQuotes) {
+              currentRecord.push(currentField.trim());
+              currentField = '';
+            } else if ((c === '\r' || c === '\n') && !inQuotes) {
+              if (c === '\r' && csvText[i + 1] === '\n') i++;
+              currentRecord.push(currentField.trim());
+              currentField = '';
+              if (currentRecord.length > 1 || (currentRecord[0] && currentRecord[0] !== '')) {
+                records.push(currentRecord);
+              }
+              currentRecord = [];
+            } else {
+              currentField += c;
+            }
+          }
+          if (currentField.length > 0 || currentRecord.length > 0) {
+            currentRecord.push(currentField.trim());
+            records.push(currentRecord);
+          }
+
+          if (records.length < 2) return [];
+          const headers = records[0];
+          const colMap = {};
+          headers.forEach((h, idx) => {
+            const clean = h.toLowerCase().replace(/[^a-z0-9]/g, '');
+            colMap[clean] = idx;
+          });
+
+          const parsedItems = [];
+          for (let r = 1; r < records.length; r++) {
+            const row = records[r];
+            if (!row || row.length < 3) continue;
+
+            const getField = (colIdx, aliases, fallback = '') => {
+              if (colIdx !== undefined && row[colIdx] !== undefined && String(row[colIdx]).trim() !== '') {
+                return String(row[colIdx]).trim();
+              }
+              if (Array.isArray(aliases)) {
+                for (const a of aliases) {
+                  const idx = colMap[a.toLowerCase().replace(/[^a-z0-9]/g, '')];
+                  if (idx !== undefined && row[idx] !== undefined && String(row[idx]).trim() !== '') {
+                    return String(row[idx]).trim();
+                  }
+                }
+              }
+              return fallback;
+            };
+
+            const parseNum = (val) => {
+              if (!val) return 0;
+              const clean = String(val).replace(/,/g, '').replace(/[^\d.-]/g, '');
+              return parseFloat(clean) || 0;
+            };
+
+            const sr = parseInt(getField(0, ['sr', 'sr#', 'sno', 'id'], String(parsedItems.length + 1))) || (parsedItems.length + 1);
+            const year = getField(1, ['year', 'yr'], '2026');
+            const name = getField(2, ['projects', 'project', 'projectname', 'initiative', 'item'], '');
+            if (!name) continue;
+
+            const budget = parseNum(getField(3, ['budgetpkr', 'budget', 'cost', 'capex', 'capexpkr'], '0'));
+            const consumed = parseNum(getField(4, ['consumedpkr', 'consumed', 'actual', 'spent'], '0'));
+            const commitment = parseNum(getField(5, ['commitmentpkr', 'commitment', 'committed'], '0'));
+            const available = parseNum(getField(6, ['availablepkr', 'available', 'balance'], '0'));
+            const wbs = getField(7, ['wbselements', 'wbs', 'wbselement'], `FL-${year}-${String(parsedItems.length + 1).padStart(4, '0')}`);
+            const unit = getField(8, ['responsibleunit', 'unit', 'department', 'respunit'], 'Maintenance');
+            const reason = getField(9, ['reason', 'justification'], '');
+            const serviceLife = getField(10, ['servicelife', 'life'], '');
+            const moc = getField(11, ['mocrequired', 'moc'], 'No');
+            const priority = getField(12, ['priority', 'prio'], 'B');
+            const type = getField(13, ['replacementnew', 'replacement_new', 'type'], 'Replacement');
+            const category = getField(14, ['category', 'cat', 'classification'], 'Others/Admin');
+            const quantity = getField(15, ['quantity', 'qty'], '1');
+            const strategy = getField(16, ['actionsassigned', 'strategy', 'execution'], '');
+            // Column R (index 17): Status _Open_Close
+            const rawStatus = getField(17, ['statusopenclose', 'status', 'status_open_close', 'state'], 'Open');
+            const status = (rawStatus.toLowerCase().includes('close') || rawStatus.toLowerCase().includes('comp')) ? 'Close' : 'Open';
+            const remarks = getField(18, ['enduserremarkscurrentstatus', 'remarks', 'currentstatus'], '');
+
+            parsedItems.push({
+              sr,
+              year,
+              name,
+              budget,
+              consumed,
+              commitment,
+              available,
+              wbs,
+              unit,
+              responsibleUnit: unit,
+              department: unit,
+              reason,
+              serviceLife,
+              moc,
+              priority,
+              type,
+              category,
+              quantity,
+              strategy,
+              status,
+              rawStatus,
+              remarks,
+              assigned: unit
+            });
+          }
+          return parsedItems;
         },
 
         /**
@@ -4993,8 +5372,8 @@
 
           const query = this.state.searchQuery.toLowerCase().trim();
           const filtered = DASHBOARD_REGISTRY.filter(item => {
-            // Exclude strategic from the Overview Department Card Grid
-            if (item.id === 'strategic') return false;
+            // Exclude strategic and sub-hse-eri from the Overview Department Card Grid
+            if (item.id === 'strategic' || item.id === 'sub-hse-eri') return false;
 
             const matchesQuery = !query || 
               item.name.toLowerCase().includes(query) ||
@@ -5260,9 +5639,10 @@
          * Update badge counts
          */
         updateCounts() {
-          const total = DASHBOARD_REGISTRY.length;
-          const active = DASHBOARD_REGISTRY.filter(d => d.status === 'Active').length;
-          const awaiting = DASHBOARD_REGISTRY.filter(d => d.status.includes('Awaiting')).length;
+          const overviewItems = DASHBOARD_REGISTRY.filter(d => d.id !== 'strategic' && d.id !== 'sub-hse-eri');
+          const total = overviewItems.length;
+          const active = overviewItems.filter(d => d.status === 'Active').length;
+          const awaiting = overviewItems.filter(d => d.status.includes('Awaiting')).length;
 
           const countAll = document.getElementById('count-all');
           const countActive = document.getElementById('count-active');
@@ -5935,12 +6315,17 @@
             if (capexContainer) {
               capexContainer.classList.remove('hidden');
               capexContainer.hidden = false;
-              if (window.FPCL_CAPEX_SUITE && typeof window.FPCL_CAPEX_SUITE.render === 'function') {
-                window.FPCL_CAPEX_SUITE.render();
+              if (window.FPCL_CAPEX_SUITE) {
+                if (typeof window.FPCL_CAPEX_SUITE.render === 'function') {
+                  window.FPCL_CAPEX_SUITE.render();
+                }
+                if (typeof window.FPCL_CAPEX_SUITE.syncLiveFeed === 'function') {
+                  window.FPCL_CAPEX_SUITE.syncLiveFeed({ silent: true });
+                }
               }
             }
             const breadcrumbActive = document.getElementById('breadcrumb-active-name');
-            if (breadcrumbActive) breadcrumbActive.textContent = 'Plant CapEx Portfolio (2027)';
+            if (breadcrumbActive) breadcrumbActive.textContent = 'Plant CapEx Portfolio';
             if (sheetKeyEl) {
               sheetKeyEl.textContent = 'CAPEX Dashboard • Live Synchronized (13ys4PbggcQq0H06Rh6cScAtdVnlrY-yyiWxA4e6dDzc)';
               sheetKeyEl.title = 'Live Google Sheets: CAPEX Tab (13ys4PbggcQq0H06Rh6cScAtdVnlrY-yyiWxA4e6dDzc)';
@@ -6189,6 +6574,7 @@
             this.updateRollupStats();
             this.renderCards();
             this.fetchHseqKpis();
+            this.fetchCapexData({ silent: true });
 
             // If viewing PLR dashboard, also sync live Google Sheet tabs
             if (this.state.activeDashboardId === 'plr' && typeof portalApp.refreshFromLiveSheet === 'function') {

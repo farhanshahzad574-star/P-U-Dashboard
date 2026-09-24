@@ -381,7 +381,9 @@
             const res = await window.fetchGoogleSheetData(HARDCODED_PSSR_SHEET_URL, {
               sheetTab: HARDCODED_PSSR_SHEET_TAB
             });
-            if (res && res.csvText) {
+            if (typeof res === 'string' && res.trim().length > 0) {
+              csvText = res;
+            } else if (res && res.csvText) {
               csvText = res.csvText;
             }
           } catch (e) {
@@ -389,15 +391,33 @@
           }
         }
 
-        // Attempt 3: Direct CSV fetch with cache buster
-        if (!csvText) {
-          const directUrl = `${HARDCODED_PSSR_SHEET_URL}&_nocache=${Date.now()}`;
-          const res = await fetch(directUrl, { cache: 'no-store' });
-          if (res.ok) {
-            const text = await res.text();
-            if (text && !text.includes('<!DOCTYPE html>') && text.includes(',')) {
-              csvText = text;
+        // Attempt 2b: Direct JSONP via Google Visualization API
+        if (!csvText && typeof window.fetchGoogleSheetViaJSONP === 'function') {
+          try {
+            const jsonpRes = await window.fetchGoogleSheetViaJSONP(HARDCODED_PSSR_SHEET_URL, {
+              sheetTab: HARDCODED_PSSR_SHEET_TAB
+            });
+            if (jsonpRes && jsonpRes.csvText) {
+              csvText = jsonpRes.csvText;
             }
+          } catch (e) {
+            // continue
+          }
+        }
+
+        // Attempt 3: Direct CSV fetch with cache buster (safe try/catch against browser CORS)
+        if (!csvText) {
+          try {
+            const directUrl = `${HARDCODED_PSSR_SHEET_URL}&_nocache=${Date.now()}`;
+            const res = await fetch(directUrl, { cache: 'no-store' });
+            if (res.ok) {
+              const text = await res.text();
+              if (text && !text.includes('<!DOCTYPE html>') && text.includes(',')) {
+                csvText = text;
+              }
+            }
+          } catch (directErr) {
+            // Direct browser fetch blocked by CORS or network, handled gracefully
           }
         }
 
@@ -418,7 +438,7 @@
           }
         }
       } catch (err) {
-        console.error('PSSR live sync error:', err);
+        console.warn('PSSR live sync warning:', err);
         if (!silent && window.portalApp && typeof window.portalApp.showToast === 'function') {
           window.portalApp.showToast('Could not sync live feed: ' + (err.message || 'Network error'), 'error');
         }
