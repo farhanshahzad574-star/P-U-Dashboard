@@ -464,10 +464,12 @@
       display: flex;
       flex-direction: column;
       justify-content: center;
-      gap: 4px;
+      align-items: center;
+      text-align: center;
+      gap: 5px;
       box-shadow: 0 3px 10px -2px rgba(15,23,42,0.06);
       transition: transform .15s ease, box-shadow .15s ease;
-      min-height: 72px;
+      min-height: 76px;
     }
     .ppt-stat:hover {
       transform: translateY(-1px);
@@ -478,21 +480,28 @@
       .ppt-stat.wide { grid-column: span 2; }
     }
     .ppt-stat .k {
-      font-size: clamp(12px, 0.92vw, 15px);
+      font-size: clamp(13px, 0.98vw, 16px);
       font-weight: 800;
       text-transform: uppercase;
-      letter-spacing: .03em;
+      letter-spacing: .04em;
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 6px;
+      justify-content: center;
+      text-align: center;
+      width: 100%;
+      gap: 7px;
     }
     .ppt-stat .v {
       font-weight: 900;
-      font-size: clamp(16px, 1.4vw, 23px);
+      font-size: clamp(17.5px, 1.55vw, 25px);
       min-height: 1.2em;
       word-break: break-word;
       line-height: 1.2;
+      text-align: center;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .ppt-stat .v2 {
       display: none !important;
@@ -515,9 +524,14 @@
     .ppt-stat.budget .k { color: #059669; }
     .ppt-stat.budget .v {
       font-family: 'JetBrains Mono', monospace;
-      font-size: clamp(18px, 1.65vw, 27px);
+      font-size: clamp(20px, 1.85vw, 29px);
       color: #047857;
       font-weight: 900;
+      text-align: center;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .ppt-stat.type {
@@ -603,20 +617,22 @@
       align-items: center;
       justify-content: space-between;
       gap: 8px;
-      padding: 5px 10px;
-      margin: -8px -12px 6px -12px;
+      padding: 6px 12px;
+      margin: -8px -12px 8px -12px;
       border-radius: 10px 10px 0 0;
       flex-shrink: 0;
+      box-shadow: 0 2px 8px -2px rgba(0,0,0,0.15);
     }
     .ppt-card-head h3 {
       font-family: 'Fraunces', serif;
       font-weight: 700;
-      font-size: clamp(12.5px, 0.95vw, 15px);
+      font-size: clamp(13px, 1.0vw, 15.5px);
       margin: 0;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 7px;
       color: #FFFFFF;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.25);
     }
 
     /* Scrollable Text Body Container */
@@ -652,50 +668,50 @@
       word-break: break-word;
     }
 
-    /* Vibrant Banner Header & Border Colors for the 5 Tiles */
+    /* Vibrant Banner Header Gradients & Border Colors for the 5 Tiles */
     .ppt-card.card-background {
       border-color: #BFDBFE;
       border-left: 5px solid #2563EB;
-      box-shadow: 0 4px 14px -3px rgba(37,99,235,0.12);
+      box-shadow: 0 4px 14px -3px rgba(37,99,235,0.15);
     }
     .ppt-card.card-background .ppt-card-head {
-      background: linear-gradient(90deg, #1D4ED8 0%, #3B82F6 100%);
+      background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 50%, #38BDF8 100%);
     }
 
     .ppt-card.card-problem {
       border-color: #FECACA;
       border-left: 5px solid #DC2626;
-      box-shadow: 0 4px 14px -3px rgba(220,38,38,0.12);
+      box-shadow: 0 4px 14px -3px rgba(220,38,38,0.15);
     }
     .ppt-card.card-problem .ppt-card-head {
-      background: linear-gradient(90deg, #B91C1C 0%, #EF4444 100%);
+      background: linear-gradient(135deg, #991B1B 0%, #DC2626 50%, #F87171 100%);
     }
 
     .ppt-card.card-reason {
       border-color: #FDE68A;
       border-left: 5px solid #D97706;
-      box-shadow: 0 4px 14px -3px rgba(217,119,6,0.12);
+      box-shadow: 0 4px 14px -3px rgba(217,119,6,0.15);
     }
     .ppt-card.card-reason .ppt-card-head {
-      background: linear-gradient(90deg, #B45309 0%, #F59E0B 100%);
+      background: linear-gradient(135deg, #9A3412 0%, #EA580C 50%, #FBBF24 100%);
     }
 
     .ppt-card.card-justification {
       border-color: #A7F3D0;
       border-left: 5px solid #059669;
-      box-shadow: 0 4px 14px -3px rgba(5,150,105,0.12);
+      box-shadow: 0 4px 14px -3px rgba(5,150,105,0.15);
     }
     .ppt-card.card-justification .ppt-card-head {
-      background: linear-gradient(90deg, #047857 0%, #10B981 100%);
+      background: linear-gradient(135deg, #064E3B 0%, #059669 50%, #34D399 100%);
     }
 
     .ppt-card.card-status {
       border-color: #DDD6FE;
       border-left: 5px solid #7C3AED;
-      box-shadow: 0 4px 14px -3px rgba(124,58,237,0.12);
+      box-shadow: 0 4px 14px -3px rgba(124,58,237,0.15);
     }
     .ppt-card.card-status .ppt-card-head {
-      background: linear-gradient(90deg, #6D28D9 0%, #8B5CF6 100%);
+      background: linear-gradient(135deg, #4C1D95 0%, #7C3AED 50%, #C084FC 100%);
     }
 
     .ppt-badge {
@@ -3309,40 +3325,41 @@
             <div class="ppt-stats">
               <div class="ppt-stat priority">
                 <div class="k">
+                  <i data-lucide="flame" class="w-4.5 h-4.5 text-[#DC2626]"></i>
                   <span>Priority</span>
-                  <i data-lucide="flame" class="w-4 h-4 text-[#DC2626]"></i>
                 </div>
                 <div class="v">${escapeHtml(p.priority ? (p.priority.toLowerCase().startsWith('prio') ? p.priority : 'Priority ' + p.priority) : '')}</div>
               </div>
 
               <div class="ppt-stat budget wide">
                 <div class="k">
+                  <i data-lucide="coins" class="w-4.5 h-4.5 text-[#059669]"></i>
                   <span>Requested Budget (PKR)</span>
-                  ${budgetMillions ? `<span class="font-mono font-bold text-xs sm:text-[13px] bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-0.5 rounded">${escapeHtml(budgetMillions)}</span>` : '<i data-lucide="coins" class="w-4 h-4 text-[#059669]"></i>'}
+                  ${budgetMillions ? `<span class="font-mono font-bold text-xs sm:text-[13px] bg-emerald-100 text-emerald-800 border border-emerald-300 px-2.5 py-0.5 rounded-full ml-1">${escapeHtml(budgetMillions)}</span>` : ''}
                 </div>
                 <div class="v">${escapeHtml(budgetVal)}</div>
               </div>
 
               <div class="ppt-stat type">
                 <div class="k">
+                  <i data-lucide="layers" class="w-4.5 h-4.5 text-[#2563EB]"></i>
                   <span>Replacement / New</span>
-                  <i data-lucide="layers" class="w-4 h-4 text-[#2563EB]"></i>
                 </div>
                 <div class="v">${escapeHtml(p.type || p.replacementNew || '')}</div>
               </div>
 
               <div class="ppt-stat moc">
                 <div class="k">
+                  <i data-lucide="shield-check" class="w-4.5 h-4.5 text-[#D97706]"></i>
                   <span>MOC Required</span>
-                  <i data-lucide="shield-check" class="w-4 h-4 text-[#D97706]"></i>
                 </div>
                 <div class="v">${escapeHtml(p.moc || p.mocRequired || '')}</div>
               </div>
 
               <div class="ppt-stat life">
                 <div class="k">
+                  <i data-lucide="clock" class="w-4.5 h-4.5 text-[#0D9488]"></i>
                   <span>Service Life</span>
-                  <i data-lucide="clock" class="w-4 h-4 text-[#0D9488]"></i>
                 </div>
                 <div class="v">${escapeHtml(p.serviceLife || '')}</div>
               </div>
@@ -3351,7 +3368,7 @@
             <!-- 5 Content Tiles in 2 Columns: Scrollable on Overflow -->
             <div class="ppt-body-grid">
               
-              <!-- Column 1: Background, Problem, REason -->
+              <!-- Column 1: Background, Problem, Reason -->
               <div class="ppt-col">
                 <!-- Tile 1: Background -->
                 <div class="ppt-card card-background">
@@ -3373,10 +3390,10 @@
                   </div>
                 </div>
 
-                <!-- Tile 3: REason -->
+                <!-- Tile 3: Reason -->
                 <div class="ppt-card card-reason">
                   <div class="ppt-card-head">
-                    <h3><i data-lucide="target" class="w-4 h-4 text-white"></i>REason</h3>
+                    <h3><i data-lucide="target" class="w-4 h-4 text-white"></i>Reason</h3>
                   </div>
                   <div class="ppt-card-body">
                     <p>${escapeHtml(p.reason || '')}</p>
