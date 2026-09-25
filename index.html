@@ -50,7 +50,7 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
     <!-- Tailwind CSS via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -99,7 +99,7 @@
     <script src="/assets/pssrData.js?v=20260923b"></script>
     <script src="/assets/pssrSuite.js?v=20260924e"></script>
     <!-- CAPEX (Capital Expenditure) Specialized Executive Suite -->
-    <script src="/assets/capexSuite.js?v=20260924e"></script>
+    <script src="/assets/capexSuite.js?v=20260925a"></script>
 
     <style>
       /* Base font legibility: standard across devices, calibrated for wall displays */
@@ -4568,7 +4568,10 @@
             // Column R (index 17): Status _Open_Close
             const rawStatus = getField(17, ['statusopenclose', 'status', 'status_open_close', 'state'], 'Open');
             const status = (rawStatus.toLowerCase().includes('close') || rawStatus.toLowerCase().includes('comp')) ? 'Close' : 'Open';
-            const remarks = getField(18, ['enduserremarkscurrentstatus', 'remarks', 'currentstatus'], '');
+            const remarks = getField(18, ['enduserremarkscurrentstatus', 'remarks', 'currentstatus', 'current_status'], '');
+            const background = getField(19, ['background', 'bg', 'projectbackground', 'project_background'], '');
+            const problem = getField(20, ['problem', 'problemstatement', 'issue'], '');
+            const justification = getField(21, ['justification', 'projectjustification'], '');
 
             parsedItems.push({
               sr,
@@ -4593,7 +4596,10 @@
               status,
               rawStatus,
               remarks,
-              assigned: unit
+              assigned: unit,
+              background,
+              problem,
+              justification
             });
           }
           return parsedItems;

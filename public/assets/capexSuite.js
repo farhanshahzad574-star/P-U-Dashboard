@@ -38,7 +38,10 @@
       strategy: 'To be executed in ATA 2027',
       status: 'Open',
       remarks: 'in progress',
-      assigned: 'Inspection'
+      assigned: 'Inspection',
+      background: '',
+      problem: '',
+      justification: ''
     },
     {
       sr: 2,
@@ -60,7 +63,10 @@
       strategy: 'To be executed in ATA 2027',
       status: 'Open',
       remarks: 'guidance needed',
-      assigned: 'Operation'
+      assigned: 'Operation',
+      background: '',
+      problem: '',
+      justification: ''
     },
     {
       sr: 3,
@@ -82,7 +88,10 @@
       strategy: 'To be executed in ATA 2027',
       status: 'Close',
       remarks: 'completed',
-      assigned: 'HSE'
+      assigned: 'HSE',
+      background: '',
+      problem: '',
+      justification: ''
     },
     {
       sr: 4,
@@ -104,9 +113,716 @@
       strategy: 'To be executed in ATA 2027',
       status: 'Close',
       remarks: 'completed',
-      assigned: 'PE'
+      assigned: 'PE',
+      background: '',
+      problem: '',
+      justification: ''
     }
   ];
+
+  function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  const PPT_STYLES_CSS = `
+    #capex-ppt-modal-container {
+      position: fixed !important;
+      inset: 0 !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      z-index: 2147483647 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      background: #FFFFFF !important;
+      --bg-a: #FFFFFF;
+      --bg-b: #F8FAFC;
+      --panel: #FFFFFF;
+      --panel-2: #F8FAFC;
+      --ink: #0F172A;
+      --muted: #475569;
+      --line: rgba(15,23,42,0.1);
+      --gold: #D4AF37;
+      --gold-ink: #785A18;
+      --gold-tint: #FEF3C7;
+      --emerald: #059669;
+      --emerald-tint: #ECFDF5;
+      --rust: #DC2626;
+      --rust-tint: #FEF2F2;
+      --navy: #1E1B4B;
+      --navy-tint: #EEF2FF;
+      --radius-lg: 0px;
+      --radius-sm: 10px;
+      --shadow: none;
+    }
+    #capex-ppt-modal-container:empty {
+      display: none !important;
+    }
+    #capex-ppt-modal-container[data-theme="navy"] {
+      --bg-a: #070D18;
+      --bg-b: #0F172A;
+      --panel: #FAF9F5;
+      --panel-2: #F1EFEA;
+      --ink: #0F172A;
+      --muted: #64748B;
+      --line: rgba(15,23,42,0.12);
+      --navy: #0F2042;
+      --navy-tint: #EEF2F9;
+    }
+    #capex-ppt-modal-container[data-theme="graphite"] {
+      --bg-a: #090A0D;
+      --bg-b: #12141A;
+      --panel: #16181F;
+      --panel-2: #1E212B;
+      --ink: #F8FAFC;
+      --muted: #94A3B8;
+      --line: rgba(255,255,255,0.12);
+      --navy: #1E293B;
+      --navy-tint: #26334D;
+    }
+    #capex-ppt-modal-container[data-theme="emerald"] {
+      --bg-a: #041B15;
+      --bg-b: #082F25;
+      --panel: #FAFCF9;
+      --panel-2: #EEF6F0;
+      --ink: #06281E;
+      --muted: #4B6358;
+      --line: rgba(6,40,30,0.12);
+      --navy: #064E3B;
+      --navy-tint: #D1FAE5;
+    }
+
+    .ppt-modal-backdrop {
+      position: fixed !important;
+      inset: 0 !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      z-index: 2147483647 !important;
+      display: flex;
+      flex-direction: column;
+      background: #FFFFFF;
+      margin: 0 !important;
+      padding: 0 !important;
+      overflow: hidden;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      color: var(--ink);
+      transition: background .35s ease;
+    }
+
+    .ppt-frame {
+      width: 100vw !important;
+      height: 100vh !important;
+      max-width: 100vw !important;
+      max-height: 100vh !important;
+      background: #FFFFFF !important;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+    @media (max-width: 900px) {
+      .ppt-frame {
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+    }
+
+    /* Eye-Catching Colorful Marketing Banner Header */
+    .ppt-hero {
+      background: linear-gradient(135deg, #0F172A 0%, #1E1B4B 22%, #312E81 48%, #4338CA 74%, #6366F1 100%);
+      color: #FFFFFF;
+      padding: 12px 28px 10px;
+      position: relative;
+      flex-shrink: 0;
+      box-shadow: 0 4px 20px -2px rgba(49,46,129,0.35);
+      border-bottom: 3.5px solid #F59E0B;
+    }
+    @media (max-width: 768px) {
+      .ppt-hero {
+        padding: 10px 14px 8px;
+      }
+    }
+    .ppt-hero::after {
+      content: "";
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 8px;
+      background: linear-gradient(180deg, #F59E0B, #EC4899 50%, #8B5CF6 100%);
+    }
+
+    .ppt-themebar {
+      position: absolute;
+      top: 10px;
+      right: 22px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      z-index: 10;
+    }
+    @media (max-width: 640px) {
+      .ppt-themebar {
+        top: 8px;
+        right: 10px;
+        gap: 5px;
+      }
+    }
+    .ppt-theme-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      color: #C7D2FE;
+      margin-right: 2px;
+    }
+    @media (max-width: 640px) {
+      .ppt-theme-label { display: none; }
+    }
+    .ppt-swatch {
+      width: 19px;
+      height: 19px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.7);
+      cursor: pointer;
+      padding: 0;
+      outline: none;
+      transition: transform .15s ease, box-shadow .15s ease;
+    }
+    .ppt-swatch:hover { transform: scale(1.2); }
+    .ppt-swatch.active { box-shadow: 0 0 0 2.5px #F59E0B; transform: scale(1.15); }
+    .ppt-swatch.white { background: #FFFFFF; border-color: #94A3B8; }
+    .ppt-swatch.navy { background: #0F2042; }
+    .ppt-swatch.graphite { background: #16181F; }
+    .ppt-swatch.emerald { background: #064E3B; }
+
+    .ppt-top-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(255,255,255,0.15);
+      color: #FFFFFF;
+      border: 1px solid rgba(255,255,255,0.3);
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .15s ease;
+      backdrop-filter: blur(4px);
+    }
+    .ppt-top-btn:hover {
+      background: rgba(255,255,255,0.28);
+      color: #FFFFFF;
+      transform: translateY(-1px);
+    }
+    .ppt-top-btn.exit {
+      background: rgba(239,68,68,0.35);
+      border-color: rgba(239,68,68,0.6);
+      color: #FFFFFF;
+    }
+    .ppt-top-btn.exit:hover {
+      background: rgba(239,68,68,0.55);
+    }
+
+    .ppt-eyebrow-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 6px;
+      padding-right: 220px;
+    }
+    @media (max-width: 640px) {
+      .ppt-eyebrow-row {
+        padding-right: 120px;
+        gap: 5px;
+      }
+    }
+    .ppt-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .03em;
+      color: #0F172A;
+      background: linear-gradient(135deg, #FDE047, #F59E0B);
+      padding: 3px 10px;
+      border-radius: 999px;
+      box-shadow: 0 2px 8px -2px rgba(245,158,11,0.5);
+    }
+    .ppt-id-chip {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: #FFFFFF;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.25);
+      padding: 3px 9px;
+      border-radius: 6px;
+    }
+    .ppt-filter-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: #A7F3D0;
+      background: rgba(16,185,129,0.2);
+      border: 1px solid rgba(16,185,129,0.4);
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+
+    .ppt-title {
+      font-family: 'Fraunces', serif;
+      font-weight: 700;
+      font-size: clamp(19px, 2.0vw, 32px);
+      line-height: 1.18;
+      margin: 0;
+      letter-spacing: -0.015em;
+      color: #FFFFFF;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      min-height: 1.15em;
+    }
+
+    .ppt-hero-meta {
+      display: flex;
+      gap: 12px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+    @media (max-width: 640px) {
+      .ppt-hero-meta {
+        gap: 8px;
+        margin-top: 6px;
+      }
+    }
+    .ppt-meta-pill {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.22);
+      border-radius: 7px;
+      padding: 3px 9px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      backdrop-filter: blur(4px);
+    }
+    .ppt-meta-pill .m-label {
+      font-size: 9.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      color: #C7D2FE;
+    }
+    .ppt-meta-pill .m-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: clamp(11.5px, 0.95vw, 13.5px);
+      color: #FFFFFF;
+    }
+
+    /* 6 Vibrant Marketing Feature Stat Tiles (Bigger text & values) */
+    .ppt-stats {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 12px;
+      padding: 10px 28px 6px;
+      flex-shrink: 0;
+      background: #FFFFFF;
+    }
+    @media (max-width: 1100px) {
+      .ppt-stats { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 640px) {
+      .ppt-stats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        padding: 8px 14px 4px;
+      }
+    }
+
+    .ppt-stat {
+      background: #FFFFFF;
+      border: 1.5px solid #E2E8F0;
+      border-radius: 12px;
+      padding: 10px 14px 11px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 4px;
+      box-shadow: 0 3px 10px -2px rgba(15,23,42,0.06);
+      transition: transform .15s ease, box-shadow .15s ease;
+      min-height: 72px;
+    }
+    .ppt-stat:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px -2px rgba(15,23,42,0.1);
+    }
+    .ppt-stat.wide { grid-column: span 2; }
+    @media (max-width: 640px) {
+      .ppt-stat.wide { grid-column: span 2; }
+    }
+    .ppt-stat .k {
+      font-size: clamp(12px, 0.92vw, 15px);
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .03em;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+    .ppt-stat .v {
+      font-weight: 900;
+      font-size: clamp(16px, 1.4vw, 23px);
+      min-height: 1.2em;
+      word-break: break-word;
+      line-height: 1.2;
+    }
+    .ppt-stat .v2 {
+      display: none !important;
+    }
+
+    /* Vibrant Stat Theme Styling on White Background */
+    .ppt-stat.priority {
+      background: linear-gradient(180deg, #FEF2F2 0%, #FFFFFF 100%);
+      border-color: #FECACA;
+      border-left: 5px solid #DC2626;
+    }
+    .ppt-stat.priority .k { color: #DC2626; }
+    .ppt-stat.priority .v { color: #991B1B; }
+
+    .ppt-stat.budget {
+      background: linear-gradient(180deg, #ECFDF5 0%, #FFFFFF 100%);
+      border-color: #A7F3D0;
+      border-left: 5px solid #059669;
+    }
+    .ppt-stat.budget .k { color: #059669; }
+    .ppt-stat.budget .v {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: clamp(18px, 1.65vw, 27px);
+      color: #047857;
+      font-weight: 900;
+    }
+
+    .ppt-stat.type {
+      background: linear-gradient(180deg, #EFF6FF 0%, #FFFFFF 100%);
+      border-color: #BFDBFE;
+      border-left: 5px solid #2563EB;
+    }
+    .ppt-stat.type .k { color: #2563EB; }
+    .ppt-stat.type .v { color: #1E40AF; }
+
+    .ppt-stat.moc {
+      background: linear-gradient(180deg, #FFFBEB 0%, #FFFFFF 100%);
+      border-color: #FDE68A;
+      border-left: 5px solid #D97706;
+    }
+    .ppt-stat.moc .k { color: #D97706; }
+    .ppt-stat.moc .v { color: #92400E; }
+
+    .ppt-stat.life {
+      background: linear-gradient(180deg, #F0FDFA 0%, #FFFFFF 100%);
+      border-color: #99F6E4;
+      border-left: 5px solid #0D9488;
+    }
+    .ppt-stat.life .k { color: #0D9488; }
+    .ppt-stat.life .v { color: #115E59; }
+
+    /* 5 Main Body Content Tiles in Marketing Banner Styling */
+    .ppt-body-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      padding: 6px 28px 4px;
+      flex: 1;
+      min-height: 0;
+      background: #FFFFFF;
+    }
+    @media (max-width: 900px) {
+      .ppt-body-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        padding: 6px 14px 4px;
+        flex: none;
+      }
+    }
+
+    .ppt-col {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      height: 100%;
+      min-height: 0;
+    }
+    @media (max-width: 900px) {
+      .ppt-col {
+        height: auto;
+        min-height: auto;
+      }
+    }
+
+    .ppt-card {
+      background: #FFFFFF;
+      border-radius: 12px;
+      border: 1.5px solid #E2E8F0;
+      padding: 8px 12px 10px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+      box-shadow: 0 4px 14px -3px rgba(15,23,42,0.06);
+      position: relative;
+    }
+    @media (max-width: 900px) {
+      .ppt-card {
+        flex: none;
+        height: auto;
+        max-height: 240px;
+      }
+    }
+
+    /* Colorful Marketing Banner Header Strips on Each Card */
+    .ppt-card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 5px 10px;
+      margin: -8px -12px 6px -12px;
+      border-radius: 10px 10px 0 0;
+      flex-shrink: 0;
+    }
+    .ppt-card-head h3 {
+      font-family: 'Fraunces', serif;
+      font-weight: 700;
+      font-size: clamp(12.5px, 0.95vw, 15px);
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #FFFFFF;
+    }
+
+    /* Scrollable Text Body Container */
+    .ppt-card-body {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding-right: 6px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(99,102,241,0.4) transparent;
+    }
+    .ppt-card-body::-webkit-scrollbar {
+      width: 5px;
+    }
+    .ppt-card-body::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.03);
+      border-radius: 999px;
+    }
+    .ppt-card-body::-webkit-scrollbar-thumb {
+      background: rgba(99,102,241,0.4);
+      border-radius: 999px;
+    }
+    .ppt-card-body::-webkit-scrollbar-thumb:hover {
+      background: rgba(99,102,241,0.8);
+    }
+    .ppt-card-body p {
+      margin: 0;
+      font-size: clamp(12px, 0.88vw, 14px);
+      line-height: 1.55;
+      color: #1E293B;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    /* Vibrant Banner Header & Border Colors for the 5 Tiles */
+    .ppt-card.card-background {
+      border-color: #BFDBFE;
+      border-left: 5px solid #2563EB;
+      box-shadow: 0 4px 14px -3px rgba(37,99,235,0.12);
+    }
+    .ppt-card.card-background .ppt-card-head {
+      background: linear-gradient(90deg, #1D4ED8 0%, #3B82F6 100%);
+    }
+
+    .ppt-card.card-problem {
+      border-color: #FECACA;
+      border-left: 5px solid #DC2626;
+      box-shadow: 0 4px 14px -3px rgba(220,38,38,0.12);
+    }
+    .ppt-card.card-problem .ppt-card-head {
+      background: linear-gradient(90deg, #B91C1C 0%, #EF4444 100%);
+    }
+
+    .ppt-card.card-reason {
+      border-color: #FDE68A;
+      border-left: 5px solid #D97706;
+      box-shadow: 0 4px 14px -3px rgba(217,119,6,0.12);
+    }
+    .ppt-card.card-reason .ppt-card-head {
+      background: linear-gradient(90deg, #B45309 0%, #F59E0B 100%);
+    }
+
+    .ppt-card.card-justification {
+      border-color: #A7F3D0;
+      border-left: 5px solid #059669;
+      box-shadow: 0 4px 14px -3px rgba(5,150,105,0.12);
+    }
+    .ppt-card.card-justification .ppt-card-head {
+      background: linear-gradient(90deg, #047857 0%, #10B981 100%);
+    }
+
+    .ppt-card.card-status {
+      border-color: #DDD6FE;
+      border-left: 5px solid #7C3AED;
+      box-shadow: 0 4px 14px -3px rgba(124,58,237,0.12);
+    }
+    .ppt-card.card-status .ppt-card-head {
+      background: linear-gradient(90deg, #6D28D9 0%, #8B5CF6 100%);
+    }
+
+    .ppt-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 999px;
+      letter-spacing: .02em;
+    }
+    .ppt-badge.open {
+      background: #FEF3C7;
+      color: #92400E;
+      border: 1px solid #FDE68A;
+    }
+    .ppt-badge.closed {
+      background: #D1FAE5;
+      color: #065F46;
+      border: 1px solid #A7F3D0;
+    }
+
+    /* Footer Navigation Bar */
+    .ppt-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 8px 28px 10px;
+      border-top: 1px solid #E2E8F0;
+      background: #FFFFFF;
+      flex-shrink: 0;
+    }
+    @media (max-width: 640px) {
+      .ppt-footer {
+        padding: 6px 14px 8px;
+        gap: 6px;
+      }
+    }
+
+    .ppt-counter {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 800;
+      background: #EEF2FF;
+      color: #3730A3;
+      border: 1px solid #C7D2FE;
+      padding: 4px 12px;
+      border-radius: 999px;
+    }
+
+    .ppt-nav-btns {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .ppt-btn {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      font-weight: 700;
+      font-size: 12px;
+      padding: 7px 14px;
+      border-radius: 9px;
+      border: 1px solid #CBD5E1;
+      background: #F8FAFC;
+      color: #1E293B;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: transform .12s ease, background .15s ease;
+    }
+    .ppt-btn:hover { background: #E2E8F0; transform: translateY(-1px); }
+    .ppt-btn:active { transform: scale(.97); }
+    .ppt-btn.primary {
+      background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+      color: #FFFFFF;
+      border: none;
+      box-shadow: 0 2px 10px -2px rgba(79,70,229,0.4);
+    }
+    .ppt-btn.primary:hover {
+      filter: brightness(1.15);
+    }
+    .ppt-btn.close {
+      background: #FEE2E2;
+      color: #991B1B;
+      border-color: #FECACA;
+    }
+    .ppt-btn.close:hover {
+      background: #FCA5A5;
+      color: #7F1D1D;
+    }
+
+    .ppt-side-arrow {
+      position: fixed;
+      top: 52%;
+      transform: translateY(-50%);
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(15,23,42,0.85);
+      color: #FFFFFF;
+      border: 1.5px solid rgba(255,255,255,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 2147483647;
+      transition: all .2s ease;
+      backdrop-filter: blur(6px);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    }
+    .ppt-side-arrow:hover {
+      background: #4F46E5;
+      border-color: #FFFFFF;
+      transform: translateY(-50%) scale(1.1);
+    }
+    .ppt-side-arrow.left { left: 14px; }
+    .ppt-side-arrow.right { right: 14px; }
+
+    .ppt-fade {
+      animation: pptFadeIn .25s ease;
+    }
+    @keyframes pptFadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  `;
 
   const capexSuite = {
     state: {
@@ -128,11 +844,30 @@
       lastSynced: 'Live',
       hoveredCategory: null,
       customSheetUrl: (function() { try { return localStorage.getItem('FPCL_CAPEX_CUSTOM_URL') || ''; } catch(e) { return ''; } })(),
-      sheetConnected: true
+      sheetConnected: true,
+      pptActive: false,
+      pptIndex: 0,
+      pptTheme: 'white'
     },
 
     init() {
       window.FPCL_CAPEX_SUITE = this;
+
+      // Inject or update PPT Mode styles into document head
+      let styleEl = document.getElementById('capex-ppt-styles');
+      if (!styleEl) {
+        styleEl = document.createElement('style');
+        styleEl.id = 'capex-ppt-styles';
+        document.head.appendChild(styleEl);
+      }
+      styleEl.textContent = PPT_STYLES_CSS;
+
+      // Ensure modal container is directly attached to document.body
+      if (!document.getElementById('capex-ppt-modal-container')) {
+        const modalContainer = document.createElement('div');
+        modalContainer.id = 'capex-ppt-modal-container';
+        document.body.appendChild(modalContainer);
+      }
 
       // Purge any stale cache that contained mock/dummy projects
       try {
@@ -141,7 +876,8 @@
           const parsed = JSON.parse(cached);
           if (Array.isArray(parsed) && parsed.length > 0) {
             const hasDummy = parsed.some(p => (p.name || '').includes('Boiler Tubes Thermal') || (p.name || '').includes('SAP Rise'));
-            if (!hasDummy) {
+            const hasNewColumns = parsed.some(p => p.background !== undefined || p.problem !== undefined || p.justification !== undefined);
+            if (!hasDummy && hasNewColumns) {
               window.FPCL_CAPEX_DATA = parsed;
             } else {
               localStorage.removeItem('FPCL_CAPEX_DATA_CACHE');
@@ -238,8 +974,11 @@
           const matchRemarks = (item.remarks || '').toLowerCase().includes(q);
           const matchStrategy = (item.strategy || '').toLowerCase().includes(q);
           const matchYear = String(item.year || '').toLowerCase().includes(q);
+          const matchBg = (item.background || '').toLowerCase().includes(q);
+          const matchProb = (item.problem || '').toLowerCase().includes(q);
+          const matchJust = (item.justification || '').toLowerCase().includes(q);
 
-          if (!matchName && !matchWbs && !matchUnit && !matchCat && !matchReason && !matchType && !matchRemarks && !matchStrategy && !matchYear) {
+          if (!matchName && !matchWbs && !matchUnit && !matchCat && !matchReason && !matchType && !matchRemarks && !matchStrategy && !matchYear && !matchBg && !matchProb && !matchJust) {
             return false;
           }
         }
@@ -548,75 +1287,87 @@
         const wbs = getField(7, ['wbselements', 'wbs', 'wbselement'], `FL-${year}-${String(parsedItems.length + 1).padStart(4, '0')}`);
 
         // Col I (idx 8): Responsible Unit
-        const unit = getField(8, ['responsibleunit', 'unit', 'department', 'respunit'], 'Maintenance');
+        const unit = getField(8, ['responsibleunit', 'unit', 'department', 'respunit'], '');
 
         // Col J (idx 9): Reason
-        const reason = getField(9, ['reason', 'justification'], 'Plant Reliability Sustenance');
+        const reason = getField(9, ['reason'], '');
 
         // Col K (idx 10): Service life
-        const serviceLife = getField(10, ['servicelife', 'life'], '5 Years');
+        const serviceLife = getField(10, ['servicelife', 'service_life', 'life'], '');
 
         // Col L (idx 11): MOC required
-        const rawMoc = getField(11, ['mocrequired', 'moc', 'moc_required'], 'No');
-        const moc = (rawMoc.toLowerCase().includes('yes') || rawMoc.toLowerCase() === 'y' || rawMoc.toLowerCase().includes('req')) ? 'Yes' : 'No';
+        const rawMoc = getField(11, ['mocrequired', 'moc', 'moc_required'], '');
+        let moc = '';
+        if (rawMoc) {
+          moc = (rawMoc.toLowerCase().includes('yes') || rawMoc.toLowerCase() === 'y' || rawMoc.toLowerCase().includes('req')) ? 'Yes' : (rawMoc.toLowerCase().includes('no') || rawMoc.toLowerCase() === 'n' ? 'No' : rawMoc);
+        }
 
         // Col M (idx 12): Priority
-        const priorityRaw = getField(12, ['priority', 'prio'], 'B');
-        const priority = ['A', 'B', 'C'].includes(priorityRaw.toUpperCase().charAt(0)) ? priorityRaw.toUpperCase().charAt(0) : 'B';
+        const priorityRaw = getField(12, ['priority', 'prio'], '');
+        const priority = priorityRaw.trim();
 
         // Col N (idx 13): Replacement_New
         const rawType = getField(13, ['replacementnew', 'replacement_new', 'type', 'nature'], '').trim();
-        let type = 'Replacement';
-        if (rawType.toLowerCase().includes('new')) {
+        let type = rawType;
+        if (!type && projectName.toLowerCase().includes('new')) {
           type = 'New';
-        } else if (rawType.toLowerCase().includes('rep')) {
-          type = 'Replacement';
-        } else if (rawType) {
-          type = rawType;
-        } else {
-          type = projectName.toLowerCase().includes('new') ? 'New' : 'Replacement';
         }
 
         // Col O (idx 14): Category
         let category = getField(14, ['category', 'cat', 'classification'], '').trim();
-        if (!category) {
-          category = budget > 4500000 ? 'Reliability & Sustenance' : 'Others/Admin';
-        }
 
         // Col P (idx 15): Quantity
-        const quantity = getField(15, ['quantity', 'qty'], '1 Lot');
+        const quantity = getField(15, ['quantity', 'qty'], '');
 
         // Col Q (idx 16): Actions Assigned
-        const strategy = getField(16, ['actionsassigned', 'strategy', 'execution'], '');
+        const strategy = getField(16, ['actionsassigned', 'actions_assigned', 'strategy', 'execution'], '');
 
         // Col R (idx 17): Status Open/Close
-        const rawStatus = getField(17, ['statusopenclose', 'status', 'status_open_close'], 'Open');
-        const status = (rawStatus.toLowerCase().includes('close') || rawStatus.toLowerCase().includes('comp')) ? 'Close' : 'Open';
+        const rawStatus = getField(17, ['statusopenclose', 'status', 'status_open_close'], '');
+        const status = rawStatus ? (rawStatus.toLowerCase().includes('close') || rawStatus.toLowerCase().includes('comp') ? 'Close' : 'Open') : '';
 
         // Col S (idx 18): End User Remarks / Current status
-        const remarks = getField(18, ['enduserremarkscurrentstatus', 'remarks', 'statusremarks'], '');
+        const remarks = getField(18, ['currentstatus', 'current_status', 'enduserremarkscurrentstatus', 'remarks', 'statusremarks'], '');
+
+        // Col T (idx 19): Background
+        const background = getField(19, ['background', 'bg', 'projectbackground', 'project_background'], '');
+
+        // Col U (idx 20): Problem
+        const problem = getField(20, ['problem', 'problemstatement', 'problem_statement', 'issue'], '');
+
+        // Col V (idx 21): Justification
+        const justification = getField(21, ['justification', 'projectjustification', 'project_justification'], '');
 
         parsedItems.push({
           sr,
           year: String(year).trim(),
           name: projectName,
+          project: projectName,
           budget,
+          budgetPKR: budget,
           consumed,
           commitment,
           available,
           wbs,
           unit,
+          responsibleUnit: unit,
           reason,
           serviceLife,
           moc,
+          mocRequired: moc,
           priority,
           type,
+          replacementNew: type,
           category,
           quantity,
           strategy,
           status,
           remarks,
-          assigned: unit
+          currentStatus: remarks,
+          assigned: unit,
+          background,
+          problem,
+          justification
         });
       }
 
@@ -730,7 +1481,7 @@
         return;
       }
 
-      const headers = ['Sr#', 'Year', 'Project Name', 'WBS Element', 'Responsible Unit', 'Category', 'Reason / Justification', 'Type', 'MOC Required', 'CAPEX Budget (PKR)', 'Consumed (PKR)', 'Commitment (PKR)', 'Available (PKR)', 'Priority', 'Status', 'Strategy Notes', 'Remarks'];
+      const headers = ['Sr#', 'Year', 'Project Name', 'WBS Element', 'Responsible Unit', 'Category', 'Reason / Justification', 'Type', 'MOC Required', 'CAPEX Budget (PKR)', 'Consumed (PKR)', 'Commitment (PKR)', 'Available (PKR)', 'Priority', 'Status', 'Strategy Notes', 'Remarks', 'Background', 'Problem', 'Justification'];
       const rows = dataset.map(p => [
         p.sr,
         `"${p.year}"`,
@@ -748,7 +1499,10 @@
         `"${p.priority || ''}"`,
         `"${p.status || ''}"`,
         `"${(p.strategy || '').replace(/"/g, '""')}"`,
-        `"${(p.remarks || '').replace(/"/g, '""')}"`
+        `"${(p.remarks || '').replace(/"/g, '""')}"`,
+        `"${(p.background || '').replace(/"/g, '""')}"`,
+        `"${(p.problem || '').replace(/"/g, '""')}"`,
+        `"${(p.justification || '').replace(/"/g, '""')}"`
       ]);
 
       const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
@@ -917,6 +1671,45 @@
                 </div>
               </div>
 
+              ${p.background ? `
+              <!-- Project Background (Column T) -->
+              <div class="space-y-1.5">
+                <h4 class="text-[11px] font-bold uppercase tracking-wider text-[#7A8699] flex items-center gap-1.5">
+                  <i data-lucide="info" class="w-3.5 h-3.5 text-[#0B1D3A]"></i>
+                  Background (Col T)
+                </h4>
+                <div class="p-3.5 rounded-md bg-white border border-[#E2E6EE] text-xs text-[#1A1F2B] leading-relaxed shadow-[0_1px_2px_rgba(11,29,58,0.03)] font-medium whitespace-pre-line">
+                  ${p.background}
+                </div>
+              </div>
+              ` : ''}
+
+              ${p.problem ? `
+              <!-- Problem Statement (Column U) -->
+              <div class="space-y-1.5">
+                <h4 class="text-[11px] font-bold uppercase tracking-wider text-[#7A8699] flex items-center gap-1.5">
+                  <i data-lucide="alert-circle" class="w-3.5 h-3.5 text-[#0B1D3A]"></i>
+                  Problem Statement (Col U)
+                </h4>
+                <div class="p-3.5 rounded-md bg-white border border-[#E2E6EE] text-xs text-[#1A1F2B] leading-relaxed shadow-[0_1px_2px_rgba(11,29,58,0.03)] font-medium whitespace-pre-line">
+                  ${p.problem}
+                </div>
+              </div>
+              ` : ''}
+
+              ${p.justification ? `
+              <!-- Project Justification (Column V) -->
+              <div class="space-y-1.5">
+                <h4 class="text-[11px] font-bold uppercase tracking-wider text-[#7A8699] flex items-center gap-1.5">
+                  <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-[#0B1D3A]"></i>
+                  Project Justification (Col V)
+                </h4>
+                <div class="p-3.5 rounded-md bg-white border border-[#E2E6EE] text-xs text-[#1A1F2B] leading-relaxed shadow-[0_1px_2px_rgba(11,29,58,0.03)] font-medium whitespace-pre-line">
+                  ${p.justification}
+                </div>
+              </div>
+              ` : ''}
+
               <!-- Strategy & Governance Notes -->
               <div class="space-y-1.5">
                 <h4 class="text-[11px] font-bold uppercase tracking-wider text-[#7A8699] flex items-center gap-1.5">
@@ -1048,6 +1841,16 @@
               <!-- Function Buttons -->
               <div class="flex flex-wrap items-center gap-2 self-start sm:self-auto shrink-0">
                 <button
+                  type="button"
+                  id="btn-top-ppt-mode"
+                  onclick="window.FPCL_CAPEX_SUITE.openPptMode()"
+                  class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-black bg-gradient-to-r from-[#B4923C] to-[#D4AF37] hover:from-[#9C7A2E] hover:to-[#B4923C] text-[#0B1220] transition-all cursor-pointer shadow-md active:scale-95"
+                  title="Launch full-page Boardroom Slide Deck (PPT Mode)"
+                >
+                  <i data-lucide="presentation" class="w-3.5 h-3.5 text-[#0B1220]"></i>
+                  <span>PPT Mode</span>
+                </button>
+                <button
                   onclick="window.FPCL_CAPEX_SUITE.state.currencyFormat = window.FPCL_CAPEX_SUITE.state.currencyFormat === 'M' ? 'full' : 'M'; window.FPCL_CAPEX_SUITE.render();"
                   class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold bg-white/10 hover:bg-white/20 text-white border border-white/25 transition-all cursor-pointer shadow-xs"
                   title="Toggle Millions vs Full PKR (prices in Google Sheet are in raw PKR)"
@@ -1087,100 +1890,100 @@
           <!-- ========================================================================= -->
           <!-- 2. KPI VALUES: Dynamic Executive Boardroom Cards (Clean Titles & Gradients)-->
           <!-- ========================================================================= -->
-          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3.5">
             
             <!-- Card 1: Total Portfolio (Gold/Navy Gradient) -->
-            <div class="bg-gradient-to-br from-[#0F172A] via-[#1E293B] to-[#0B1D3A] border border-amber-500/35 rounded-xl p-4 sm:p-5 shadow-md text-center flex flex-col items-center justify-center transition-transform hover:-translate-y-0.5">
-              <span class="text-[11px] uppercase font-extrabold tracking-wider text-slate-300">
+            <div class="bg-gradient-to-br from-[#0F172A] via-[#1E293B] to-[#0B1D3A] border border-amber-500/35 rounded-xl p-3 sm:p-5 shadow-md text-center flex flex-col items-center justify-center transition-transform hover:-translate-y-0.5">
+              <span class="text-[10px] sm:text-[11px] uppercase font-extrabold tracking-wider text-slate-300">
                 Total CapEx
               </span>
-              <div class="mt-2 text-xl sm:text-2xl lg:text-3xl font-black font-mono tracking-tight text-amber-400">
+              <div class="mt-1.5 sm:mt-2 text-lg sm:text-2xl lg:text-3xl font-black font-mono tracking-tight text-amber-400">
                 ${s.currencyFormat === 'M' ? `PKR ${kpis.totalBudgetMillions} M` : this.formatCurrency(kpis.totalBudget)}
               </div>
-              <div class="text-[10px] text-slate-400 font-mono mt-0.5">
+              <div class="text-[9px] sm:text-[10px] text-slate-400 font-mono mt-0.5 truncate max-w-full">
                 PKR ${(kpis.totalBudget || 0).toLocaleString('en-US')}
               </div>
-              <div class="mt-2 text-[11px] font-semibold text-slate-300">
+              <div class="mt-1.5 sm:mt-2 text-[10px] sm:text-[11px] font-semibold text-slate-300">
                 ${kpis.totalProjects} Projects • Rep: ${kpis.replacementCount} | New: ${kpis.newCount}
               </div>
             </div>
 
             <!-- Card 2: Major CapEx (Royal Blue Gradient) -->
-            <div class="bg-gradient-to-br from-[#0B1D3A] via-[#1E3A8A] to-[#172554] border border-blue-400/35 rounded-xl p-4 sm:p-5 shadow-md text-center flex flex-col items-center justify-center transition-transform hover:-translate-y-0.5">
-              <span class="text-[11px] uppercase font-extrabold tracking-wider text-blue-200">
+            <div class="bg-gradient-to-br from-[#0B1D3A] via-[#1E3A8A] to-[#172554] border border-blue-400/35 rounded-xl p-3 sm:p-5 shadow-md text-center flex flex-col items-center justify-center transition-transform hover:-translate-y-0.5">
+              <span class="text-[10px] sm:text-[11px] uppercase font-extrabold tracking-wider text-blue-200">
                 Major CapEx
               </span>
-              <div class="mt-2 text-xl sm:text-2xl lg:text-3xl font-black font-mono tracking-tight text-blue-300">
+              <div class="mt-1.5 sm:mt-2 text-lg sm:text-2xl lg:text-3xl font-black font-mono tracking-tight text-blue-300">
                 ${s.currencyFormat === 'M' ? `PKR ${kpis.majorBudgetMillions} M` : this.formatCurrency(kpis.majorBudget)}
               </div>
-              <div class="text-[10px] text-blue-300/70 font-mono mt-0.5">
+              <div class="text-[9px] sm:text-[10px] text-blue-300/70 font-mono mt-0.5 truncate max-w-full">
                 PKR ${(kpis.majorBudget || 0).toLocaleString('en-US')}
               </div>
-              <div class="mt-2 text-[11px] font-semibold text-blue-200">
+              <div class="mt-1.5 sm:mt-2 text-[10px] sm:text-[11px] font-semibold text-blue-200">
                 ${kpis.majorCount} Projects • Rep: ${kpis.majorReplacementCount} | New: ${kpis.majorNewCount}
               </div>
             </div>
 
             <!-- Card 3: Minor CapEx (Teal Gradient) -->
-            <div class="bg-gradient-to-br from-[#0F2830] via-[#134E4A] to-[#042F2E] border border-teal-400/35 rounded-xl p-4 sm:p-5 shadow-md text-center flex flex-col items-center justify-center transition-transform hover:-translate-y-0.5">
-              <span class="text-[11px] uppercase font-extrabold tracking-wider text-teal-200">
+            <div class="bg-gradient-to-br from-[#0F2830] via-[#134E4A] to-[#042F2E] border border-teal-400/35 rounded-xl p-3 sm:p-5 shadow-md text-center flex flex-col items-center justify-center transition-transform hover:-translate-y-0.5">
+              <span class="text-[10px] sm:text-[11px] uppercase font-extrabold tracking-wider text-teal-200">
                 Minor CapEx
               </span>
-              <div class="mt-2 text-xl sm:text-2xl lg:text-3xl font-black font-mono tracking-tight text-teal-300">
+              <div class="mt-1.5 sm:mt-2 text-lg sm:text-2xl lg:text-3xl font-black font-mono tracking-tight text-teal-300">
                 ${s.currencyFormat === 'M' ? `PKR ${kpis.minorBudgetMillions} M` : this.formatCurrency(kpis.minorBudget)}
               </div>
-              <div class="text-[10px] text-teal-300/70 font-mono mt-0.5">
+              <div class="text-[9px] sm:text-[10px] text-teal-300/70 font-mono mt-0.5 truncate max-w-full">
                 PKR ${(kpis.minorBudget || 0).toLocaleString('en-US')}
               </div>
-              <div class="mt-2 text-[11px] font-semibold text-teal-200">
+              <div class="mt-1.5 sm:mt-2 text-[10px] sm:text-[11px] font-semibold text-teal-200">
                 ${kpis.minorCount} Projects • Rep: ${kpis.minorReplacementCount} | New: ${kpis.minorNewCount}
               </div>
             </div>
 
             <!-- Card 4: Replacements (Burnt Orange Gradient) -->
-            <div class="bg-gradient-to-br from-[#1C1917] via-[#292524] to-[#431407] border border-orange-400/35 rounded-xl p-4 sm:p-5 shadow-md text-center flex flex-col items-center justify-center transition-transform hover:-translate-y-0.5">
-              <span class="text-[11px] uppercase font-extrabold tracking-wider text-orange-200">
+            <div class="bg-gradient-to-br from-[#1C1917] via-[#292524] to-[#431407] border border-orange-400/35 rounded-xl p-3 sm:p-5 shadow-md text-center flex flex-col items-center justify-center transition-transform hover:-translate-y-0.5">
+              <span class="text-[10px] sm:text-[11px] uppercase font-extrabold tracking-wider text-orange-200">
                 Replacements
               </span>
-              <div class="mt-2 text-xl sm:text-2xl lg:text-3xl font-black font-mono tracking-tight text-orange-400">
+              <div class="mt-1.5 sm:mt-2 text-lg sm:text-2xl lg:text-3xl font-black font-mono tracking-tight text-orange-400">
                 ${s.currencyFormat === 'M' ? `PKR ${kpis.replacementBudgetMillions} M` : this.formatCurrency(kpis.replacementBudget)}
               </div>
-              <div class="text-[10px] text-orange-300/70 font-mono mt-0.5">
+              <div class="text-[9px] sm:text-[10px] text-orange-300/70 font-mono mt-0.5 truncate max-w-full">
                 PKR ${(kpis.replacementBudget || 0).toLocaleString('en-US')}
               </div>
-              <div class="mt-2 text-[11px] font-semibold text-orange-200">
+              <div class="mt-1.5 sm:mt-2 text-[10px] sm:text-[11px] font-semibold text-orange-200">
                 ${kpis.replacementCount} Projects • Replacement
               </div>
             </div>
 
             <!-- Card 5: New Installations (Purple Gradient) -->
-            <div class="bg-gradient-to-br from-[#2E1065] via-[#3B0764] to-[#1E1B4B] border border-purple-400/35 rounded-xl p-4 sm:p-5 shadow-md text-center flex flex-col items-center justify-center transition-transform hover:-translate-y-0.5">
-              <span class="text-[11px] uppercase font-extrabold tracking-wider text-purple-200">
+            <div class="bg-gradient-to-br from-[#2E1065] via-[#3B0764] to-[#1E1B4B] border border-purple-400/35 rounded-xl p-3 sm:p-5 shadow-md text-center flex flex-col items-center justify-center transition-transform hover:-translate-y-0.5">
+              <span class="text-[10px] sm:text-[11px] uppercase font-extrabold tracking-wider text-purple-200">
                 New Projects
               </span>
-              <div class="mt-2 text-xl sm:text-2xl lg:text-3xl font-black font-mono tracking-tight text-purple-300">
+              <div class="mt-1.5 sm:mt-2 text-lg sm:text-2xl lg:text-3xl font-black font-mono tracking-tight text-purple-300">
                 ${s.currencyFormat === 'M' ? `PKR ${kpis.newBudgetMillions} M` : this.formatCurrency(kpis.newBudget)}
               </div>
-              <div class="text-[10px] text-purple-300/70 font-mono mt-0.5">
+              <div class="text-[9px] sm:text-[10px] text-purple-300/70 font-mono mt-0.5 truncate max-w-full">
                 PKR ${(kpis.newBudget || 0).toLocaleString('en-US')}
               </div>
-              <div class="mt-2 text-[11px] font-semibold text-purple-200">
+              <div class="mt-1.5 sm:mt-2 text-[10px] sm:text-[11px] font-semibold text-purple-200">
                 ${kpis.newCount} Projects • New
               </div>
             </div>
 
             <!-- Card 6: MOC Required (Emerald Gradient) -->
-            <div class="bg-gradient-to-br from-[#022C22] via-[#064E3B] to-[#042F2E] border border-emerald-400/35 rounded-xl p-4 sm:p-5 shadow-md text-center flex flex-col items-center justify-center transition-transform hover:-translate-y-0.5">
-              <span class="text-[11px] uppercase font-extrabold tracking-wider text-emerald-200">
+            <div class="bg-gradient-to-br from-[#022C22] via-[#064E3B] to-[#042F2E] border border-emerald-400/35 rounded-xl p-3 sm:p-5 shadow-md text-center flex flex-col items-center justify-center transition-transform hover:-translate-y-0.5">
+              <span class="text-[10px] sm:text-[11px] uppercase font-extrabold tracking-wider text-emerald-200">
                 MOC Required
               </span>
-              <div class="mt-2 text-xl sm:text-2xl lg:text-3xl font-black font-mono tracking-tight text-emerald-400">
+              <div class="mt-1.5 sm:mt-2 text-lg sm:text-2xl lg:text-3xl font-black font-mono tracking-tight text-emerald-400">
                 ${kpis.mocCount} Projects
               </div>
-              <div class="text-[10px] text-emerald-300/70 font-mono mt-0.5">
+              <div class="text-[9px] sm:text-[10px] text-emerald-300/70 font-mono mt-0.5 truncate max-w-full">
                 Statutory Safety Compliance
               </div>
-              <div class="mt-2 text-[11px] font-semibold text-emerald-200">
+              <div class="mt-1.5 sm:mt-2 text-[10px] sm:text-[11px] font-semibold text-emerald-200">
                 Rep: ${kpis.mocReplacementCount} | New: ${kpis.mocNewCount}
               </div>
             </div>
@@ -1188,52 +1991,52 @@
           </div>
 
           <!-- Financial Execution Highlights Sub-Bar: Styled identically with colorful boardroom gradients -->
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3.5">
             
             <!-- Card 7: Total Consumed (Navy/Blue Gradient) -->
-            <div class="bg-gradient-to-br from-[#0B1D3A] via-[#1E3A8A] to-[#172554] border border-blue-400/35 rounded-xl p-4 sm:p-5 shadow-md text-center flex flex-col items-center justify-center transition-transform hover:-translate-y-0.5">
-              <span class="text-[11px] uppercase font-extrabold tracking-wider text-blue-200">
+            <div class="bg-gradient-to-br from-[#0B1D3A] via-[#1E3A8A] to-[#172554] border border-blue-400/35 rounded-xl p-3.5 sm:p-5 shadow-md text-center flex flex-col items-center justify-center transition-transform hover:-translate-y-0.5">
+              <span class="text-[10px] sm:text-[11px] uppercase font-extrabold tracking-wider text-blue-200">
                 Total Consumed
               </span>
-              <div class="mt-2 text-xl sm:text-2xl lg:text-3xl font-black font-mono tracking-tight text-blue-300">
+              <div class="mt-1.5 sm:mt-2 text-xl sm:text-2xl lg:text-3xl font-black font-mono tracking-tight text-blue-300">
                 ${s.currencyFormat === 'M' ? `PKR ${(kpis.totalConsumed / 1000000).toFixed(1)} M` : this.formatCurrency(kpis.totalConsumed)}
               </div>
-              <div class="text-[10px] text-blue-300/70 font-mono mt-0.5">
+              <div class="text-[9px] sm:text-[10px] text-blue-300/70 font-mono mt-0.5 truncate max-w-full">
                 PKR ${(kpis.totalConsumed || 0).toLocaleString('en-US')}
               </div>
-              <div class="mt-2 text-[11px] font-semibold text-blue-200">
+              <div class="mt-1.5 sm:mt-2 text-[10px] sm:text-[11px] font-semibold text-blue-200">
                 ${kpis.totalBudget > 0 ? ((kpis.totalConsumed / kpis.totalBudget) * 100).toFixed(1) : '0.0'}% of Budget Consumed
               </div>
             </div>
 
             <!-- Card 8: Total Commitment (Bronze/Amber Gradient) -->
-            <div class="bg-gradient-to-br from-[#1C1917] via-[#292524] to-[#431407] border border-orange-400/35 rounded-xl p-4 sm:p-5 shadow-md text-center flex flex-col items-center justify-center transition-transform hover:-translate-y-0.5">
-              <span class="text-[11px] uppercase font-extrabold tracking-wider text-orange-200">
+            <div class="bg-gradient-to-br from-[#1C1917] via-[#292524] to-[#431407] border border-orange-400/35 rounded-xl p-3.5 sm:p-5 shadow-md text-center flex flex-col items-center justify-center transition-transform hover:-translate-y-0.5">
+              <span class="text-[10px] sm:text-[11px] uppercase font-extrabold tracking-wider text-orange-200">
                 Total Commitment
               </span>
-              <div class="mt-2 text-xl sm:text-2xl lg:text-3xl font-black font-mono tracking-tight text-orange-400">
+              <div class="mt-1.5 sm:mt-2 text-xl sm:text-2xl lg:text-3xl font-black font-mono tracking-tight text-orange-400">
                 ${s.currencyFormat === 'M' ? (kpis.totalCommitment >= 1000000 ? `PKR ${(kpis.totalCommitment / 1000000).toFixed(1)} M` : `PKR ${(kpis.totalCommitment / 1000).toFixed(0)} K`) : this.formatCurrency(kpis.totalCommitment)}
               </div>
-              <div class="text-[10px] text-orange-300/70 font-mono mt-0.5">
+              <div class="text-[9px] sm:text-[10px] text-orange-300/70 font-mono mt-0.5 truncate max-w-full">
                 PKR ${(kpis.totalCommitment || 0).toLocaleString('en-US')}
               </div>
-              <div class="mt-2 text-[11px] font-semibold text-orange-200">
+              <div class="mt-1.5 sm:mt-2 text-[10px] sm:text-[11px] font-semibold text-orange-200">
                 ${kpis.totalBudget > 0 ? ((kpis.totalCommitment / kpis.totalBudget) * 100).toFixed(1) : '0.0'}% of Budget Committed
               </div>
             </div>
 
             <!-- Card 9: Total Available (Emerald/Teal Gradient) -->
-            <div class="bg-gradient-to-br from-[#022C22] via-[#064E3B] to-[#042F2E] border border-emerald-400/35 rounded-xl p-4 sm:p-5 shadow-md text-center flex flex-col items-center justify-center transition-transform hover:-translate-y-0.5">
-              <span class="text-[11px] uppercase font-extrabold tracking-wider text-emerald-200">
+            <div class="bg-gradient-to-br from-[#022C22] via-[#064E3B] to-[#042F2E] border border-emerald-400/35 rounded-xl p-3.5 sm:p-5 shadow-md text-center flex flex-col items-center justify-center transition-transform hover:-translate-y-0.5">
+              <span class="text-[10px] sm:text-[11px] uppercase font-extrabold tracking-wider text-emerald-200">
                 Total Available
               </span>
-              <div class="mt-2 text-xl sm:text-2xl lg:text-3xl font-black font-mono tracking-tight text-emerald-400">
+              <div class="mt-1.5 sm:mt-2 text-xl sm:text-2xl lg:text-3xl font-black font-mono tracking-tight text-emerald-400">
                 ${s.currencyFormat === 'M' ? (kpis.totalAvailable >= 1000000 ? `PKR ${(kpis.totalAvailable / 1000000).toFixed(1)} M` : `PKR ${(kpis.totalAvailable || 0).toLocaleString('en-US')}`) : this.formatCurrency(kpis.totalAvailable)}
               </div>
-              <div class="text-[10px] text-emerald-300/70 font-mono mt-0.5">
+              <div class="text-[9px] sm:text-[10px] text-emerald-300/70 font-mono mt-0.5 truncate max-w-full">
                 PKR ${(kpis.totalAvailable || 0).toLocaleString('en-US')}
               </div>
-              <div class="mt-2 text-[11px] font-semibold text-emerald-200">
+              <div class="mt-1.5 sm:mt-2 text-[10px] sm:text-[11px] font-semibold text-emerald-200">
                 Uncommitted Capital Funds
               </div>
             </div>
@@ -1372,19 +2175,19 @@
               <!-- Donut SVG & Dynamic Legend -->
               <div class="py-5 flex flex-col sm:flex-row items-center justify-center gap-6">
                 
-                <!-- SVG Donut Chart (Enlarged with ample inner clearance so text fits cleanly) -->
-                <div class="relative w-80 h-80 sm:w-96 sm:h-96 md:w-[410px] md:h-[410px] shrink-0 flex items-center justify-center">
+                <!-- SVG Donut Chart (Responsive across mobile viewports without horizontal overflow) -->
+                <div class="relative w-64 h-64 sm:w-80 sm:h-80 md:w-96 md:h-96 max-w-full shrink-0 flex items-center justify-center mx-auto">
                   ${this.renderDonutSvg(kpis)}
                   <!-- Center Info Overlay fitted inside enlarged donut hole -->
-                  <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center p-4 select-none max-w-[240px] mx-auto">
-                    <span class="text-[11px] sm:text-xs uppercase font-extrabold text-[#7A8699] tracking-wider">Total CapEx</span>
-                    <span class="text-2xl sm:text-3xl md:text-4xl font-black font-mono text-[#0B1D3A] tracking-tight leading-none my-1.5">
+                  <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center p-2 sm:p-4 select-none max-w-[190px] sm:max-w-[240px] mx-auto">
+                    <span class="text-[10px] sm:text-xs uppercase font-extrabold text-[#7A8699] tracking-wider">Total CapEx</span>
+                    <span class="text-xl sm:text-3xl md:text-4xl font-black font-mono text-[#0B1D3A] tracking-tight leading-none my-1">
                       PKR ${kpis.totalBudgetMillions}M
                     </span>
-                    <span class="text-xs font-bold text-[#7A8699] bg-slate-100/90 px-2.5 py-0.5 rounded-full border border-slate-200 mt-1">
+                    <span class="text-[11px] sm:text-xs font-bold text-[#7A8699] bg-slate-100/90 px-2 py-0.5 rounded-full border border-slate-200 mt-0.5">
                       ${kpis.totalProjects} Projects
                     </span>
-                    <span class="text-[11px] font-semibold text-[#2E5EAA] mt-1.5">
+                    <span class="text-[10px] sm:text-[11px] font-semibold text-[#2E5EAA] mt-1">
                       Rep: ${kpis.replacementCount} • New: ${kpis.newCount}
                     </span>
                   </div>
@@ -1441,31 +2244,31 @@
                   </div>
                   
                   ${kpis.majorCount === 0 ? `
-                    <div class="h-14 w-full bg-slate-50 rounded-lg flex items-center justify-center text-xs text-slate-400 font-semibold italic border border-dashed border-slate-300">
+                    <div class="h-12 sm:h-14 w-full bg-slate-50 rounded-lg flex items-center justify-center text-xs text-slate-400 font-semibold italic border border-dashed border-slate-300">
                       No Major Projects (>4.5M) in selected filters
                     </div>
                   ` : `
-                    <div class="h-14 w-full bg-slate-100 rounded-lg overflow-hidden flex border border-[#CBD2DE] cursor-pointer shadow-inner">
+                    <div class="h-12 sm:h-14 w-full bg-slate-100 rounded-lg overflow-hidden flex border border-[#CBD2DE] cursor-pointer shadow-inner">
                       ${majorRepPct > 0 ? `
                       <div
                         onclick="window.FPCL_CAPEX_SUITE.setClassFilter('major', 'Replacement')"
                         style="width: ${majorRepPct}%;"
-                        class="h-full bg-gradient-to-r from-[#1E3A8A] to-[#2563EB] hover:opacity-95 transition-opacity flex items-center justify-between px-3 text-white font-semibold min-w-0"
+                        class="h-full bg-gradient-to-r from-[#1E3A8A] to-[#2563EB] hover:opacity-95 transition-opacity flex items-center justify-between px-2 sm:px-3 text-white font-semibold min-w-0 overflow-hidden"
                         title="Major Replacements: PKR ${majorRepMillions} M (${majorRepPct}%)"
                       >
-                        <span class="text-xs truncate">Replacements</span>
-                        <span class="font-mono text-[11px] sm:text-xs font-bold bg-black/30 px-2 py-0.5 rounded shrink-0 whitespace-nowrap">${majorRepPct}% • PKR ${majorRepMillions}M</span>
+                        <span class="text-[11px] sm:text-xs truncate mr-1">Replacements</span>
+                        <span class="font-mono text-[10px] sm:text-xs font-bold bg-black/30 px-1.5 sm:px-2 py-0.5 rounded shrink-0 whitespace-nowrap">${majorRepPct}%<span class="hidden sm:inline"> • PKR ${majorRepMillions}M</span></span>
                       </div>
                       ` : ''}
                       ${majorNewPct > 0 ? `
                       <div
                         onclick="window.FPCL_CAPEX_SUITE.setClassFilter('major', 'New')"
                         style="width: ${majorNewPct}%;"
-                        class="h-full bg-gradient-to-r from-[#D9782D] to-[#F97316] hover:opacity-95 transition-opacity flex items-center justify-between px-3 text-white font-semibold min-w-0"
+                        class="h-full bg-gradient-to-r from-[#D9782D] to-[#F97316] hover:opacity-95 transition-opacity flex items-center justify-between px-2 sm:px-3 text-white font-semibold min-w-0 overflow-hidden"
                         title="Major New Installations: PKR ${majorNewMillions} M (${majorNewPct}%)"
                       >
-                        <span class="text-xs truncate">New</span>
-                        <span class="font-mono text-[11px] sm:text-xs font-bold bg-black/30 px-2 py-0.5 rounded shrink-0 whitespace-nowrap">${majorNewPct}% • PKR ${majorNewMillions}M</span>
+                        <span class="text-[11px] sm:text-xs truncate mr-1">New</span>
+                        <span class="font-mono text-[10px] sm:text-xs font-bold bg-black/30 px-1.5 sm:px-2 py-0.5 rounded shrink-0 whitespace-nowrap">${majorNewPct}%<span class="hidden sm:inline"> • PKR ${majorNewMillions}M</span></span>
                       </div>
                       ` : ''}
                     </div>
@@ -1486,31 +2289,31 @@
                   </div>
                   
                   ${kpis.minorCount === 0 ? `
-                    <div class="h-14 w-full bg-slate-50 rounded-lg flex items-center justify-center text-xs text-slate-400 font-semibold italic border border-dashed border-slate-300">
+                    <div class="h-12 sm:h-14 w-full bg-slate-50 rounded-lg flex items-center justify-center text-xs text-slate-400 font-semibold italic border border-dashed border-slate-300">
                       No Minor Projects (≤4.5M) in selected filters
                     </div>
                   ` : `
-                    <div class="h-14 w-full bg-slate-100 rounded-lg overflow-hidden flex border border-[#CBD2DE] cursor-pointer shadow-inner">
+                    <div class="h-12 sm:h-14 w-full bg-slate-100 rounded-lg overflow-hidden flex border border-[#CBD2DE] cursor-pointer shadow-inner">
                       ${minorRepPct > 0 ? `
                       <div
                         onclick="window.FPCL_CAPEX_SUITE.setClassFilter('minor', 'Replacement')"
                         style="width: ${minorRepPct}%;"
-                        class="h-full bg-gradient-to-r from-[#1E3A8A]/90 to-[#2563EB]/90 hover:opacity-95 transition-opacity flex items-center justify-between px-3 text-white font-semibold min-w-0"
+                        class="h-full bg-gradient-to-r from-[#1E3A8A]/90 to-[#2563EB]/90 hover:opacity-95 transition-opacity flex items-center justify-between px-2 sm:px-3 text-white font-semibold min-w-0 overflow-hidden"
                         title="Minor Replacements: PKR ${minorRepMillions} M (${minorRepPct}%)"
                       >
-                        <span class="text-xs truncate">Replacements</span>
-                        <span class="font-mono text-[11px] sm:text-xs font-bold bg-black/30 px-2 py-0.5 rounded shrink-0 whitespace-nowrap">${minorRepPct}% • PKR ${minorRepMillions}M</span>
+                        <span class="text-[11px] sm:text-xs truncate mr-1">Replacements</span>
+                        <span class="font-mono text-[10px] sm:text-xs font-bold bg-black/30 px-1.5 sm:px-2 py-0.5 rounded shrink-0 whitespace-nowrap">${minorRepPct}%<span class="hidden sm:inline"> • PKR ${minorRepMillions}M</span></span>
                       </div>
                       ` : ''}
                       ${minorNewPct > 0 ? `
                       <div
                         onclick="window.FPCL_CAPEX_SUITE.setClassFilter('minor', 'New')"
                         style="width: ${minorNewPct}%;"
-                        class="h-full bg-gradient-to-r from-[#D9782D]/90 to-[#F97316]/90 hover:opacity-95 transition-opacity flex items-center justify-between px-3 text-white font-semibold min-w-0"
+                        class="h-full bg-gradient-to-r from-[#D9782D]/90 to-[#F97316]/90 hover:opacity-95 transition-opacity flex items-center justify-between px-2 sm:px-3 text-white font-semibold min-w-0 overflow-hidden"
                         title="Minor New Installations: PKR ${minorNewMillions} M (${minorNewPct}%)"
                       >
-                        <span class="text-xs truncate">New</span>
-                        <span class="font-mono text-[11px] sm:text-xs font-bold bg-black/30 px-2 py-0.5 rounded shrink-0 whitespace-nowrap">${minorNewPct}% • PKR ${minorNewMillions}M</span>
+                        <span class="text-[11px] sm:text-xs truncate mr-1">New</span>
+                        <span class="font-mono text-[10px] sm:text-xs font-bold bg-black/30 px-1.5 sm:px-2 py-0.5 rounded shrink-0 whitespace-nowrap">${minorNewPct}%<span class="hidden sm:inline"> • PKR ${minorNewMillions}M</span></span>
                       </div>
                       ` : ''}
                     </div>
@@ -1529,7 +2332,7 @@
             
             <!-- Table Header Bar with Top Horizontal Scroll Navigation -->
             <div class="p-4 sm:p-5 border-b border-[#E2E6EE] flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white">
-              <div class="flex items-center gap-2.5">
+              <div class="flex items-center gap-2.5 flex-wrap">
                 <i data-lucide="table-2" class="w-5 h-5 text-[#0B1D3A]"></i>
                 <h3 class="text-base font-bold text-[#1A1F2B]">
                   Project Portfolio Detail Master Table
@@ -1537,6 +2340,16 @@
                 <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#0B1D3A]/5 text-[#0B1D3A] border border-[#0B1D3A]/15">
                   ${filteredData.length} Projects Live
                 </span>
+                <button
+                  type="button"
+                  id="btn-capex-ppt-mode"
+                  onclick="window.FPCL_CAPEX_SUITE.openPptMode()"
+                  class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-extrabold bg-gradient-to-r from-[#D4AF37] via-[#F59E0B] to-[#D97706] hover:brightness-110 text-[#0F172A] border border-[#CA8A04] shadow-md transition-all duration-150 cursor-pointer active:scale-95"
+                  title="Launch Boardroom Fullscreen Slide Presentation (PPT Mode) for filtered projects"
+                >
+                  <i data-lucide="presentation" class="w-4 h-4 text-[#0F172A]"></i>
+                  <span>PPT Mode</span>
+                </button>
               </div>
               
               <div class="flex items-center gap-3">
@@ -1583,12 +2396,12 @@
               class="overflow-x-auto overflow-y-hidden border-b border-[#CBD2DE] bg-slate-100/90 py-1.5 px-1 select-none"
               title="Top Horizontal Scrollbar (drag to scroll columns horizontally)"
             >
-              <div id="capex-table-top-scroll-inner" class="h-2.5" style="width: 2500px;"></div>
+              <div id="capex-table-top-scroll-inner" class="h-2.5" style="width: 3200px;"></div>
             </div>
 
             <!-- Scrollable Responsive Master Table -->
             <div id="capex-table-scroll-body" class="overflow-x-auto max-h-[620px] overflow-y-auto">
-              <table id="capex-master-table" class="w-full text-left border-collapse text-xs min-w-[2100px]">
+              <table id="capex-master-table" class="w-full text-left border-collapse text-xs min-w-[2800px]">
                 <thead class="sticky top-0 z-20 bg-[#0B1D3A] text-white select-none">
                   <tr>
                     <th onclick="window.FPCL_CAPEX_SUITE.handleSort('sr')" class="py-3 px-3 cursor-pointer hover:bg-white/10 text-center w-14">
@@ -1648,6 +2461,15 @@
                     <th class="py-3 px-3 min-w-[220px]">
                       End User Remarks
                     </th>
+                    <th onclick="window.FPCL_CAPEX_SUITE.handleSort('background')" class="py-3 px-3 cursor-pointer hover:bg-white/10 min-w-[240px]">
+                      Background ${this.renderSortArrow('background')}
+                    </th>
+                    <th onclick="window.FPCL_CAPEX_SUITE.handleSort('problem')" class="py-3 px-3 cursor-pointer hover:bg-white/10 min-w-[240px]">
+                      Problem ${this.renderSortArrow('problem')}
+                    </th>
+                    <th onclick="window.FPCL_CAPEX_SUITE.handleSort('justification')" class="py-3 px-3 cursor-pointer hover:bg-white/10 min-w-[240px]">
+                      Justification ${this.renderSortArrow('justification')}
+                    </th>
                     <th class="py-3 px-3 text-center sticky right-0 bg-[#0B1D3A] z-30 w-16">
                       View
                     </th>
@@ -1656,7 +2478,7 @@
                 <tbody class="divide-y divide-[#E2E6EE] bg-white">
                   ${paginatedData.length === 0 ? `
                     <tr>
-                      <td colspan="20" class="py-12 text-center text-[#7A8699]">
+                      <td colspan="23" class="py-12 text-center text-[#7A8699]">
                         <i data-lucide="folder-search" class="w-8 h-8 mx-auto mb-2 opacity-40"></i>
                         <div class="font-bold text-sm text-[#0B1D3A]">No Projects Match Current Filters</div>
                         <div class="text-xs mt-1">Try resetting active filters or clearing the search query.</div>
@@ -1790,11 +2612,31 @@
                           ${p.remarks || '-'}
                         </td>
 
-                        <!-- 20. Scope Action Button (Sticky Right) -->
-                        <td class="py-3 px-3 text-center whitespace-nowrap sticky right-0 bg-white group-hover:bg-amber-50/40 z-10 shadow-[-4px_0_6px_-2px_rgba(0,0,0,0.05)]" onclick="event.stopPropagation(); window.FPCL_CAPEX_SUITE.openDrawerByIndex(${startIdx + idx})">
-                          <button class="p-1.5 rounded text-[#7A8699] hover:text-[#0B1D3A] hover:bg-slate-100 transition-colors" title="View Full Project Scope">
-                            <i data-lucide="eye" class="w-4 h-4"></i>
-                          </button>
+                        <!-- 20. Background (Column T) -->
+                        <td class="py-3 px-3 text-[11px] text-slate-600 max-w-xs truncate" title="${p.background || '-'}">
+                          ${p.background ? `<span class="text-slate-800">${p.background}</span>` : '<span class="text-slate-400 font-mono">-</span>'}
+                        </td>
+
+                        <!-- 21. Problem (Column U) -->
+                        <td class="py-3 px-3 text-[11px] text-slate-600 max-w-xs truncate" title="${p.problem || '-'}">
+                          ${p.problem ? `<span class="text-slate-800">${p.problem}</span>` : '<span class="text-slate-400 font-mono">-</span>'}
+                        </td>
+
+                        <!-- 22. Justification (Column V) -->
+                        <td class="py-3 px-3 text-[11px] text-slate-600 max-w-xs truncate" title="${p.justification || '-'}">
+                          ${p.justification ? `<span class="text-slate-800">${p.justification}</span>` : '<span class="text-slate-400 font-mono">-</span>'}
+                        </td>
+
+                        <!-- 23. Scope Action Button (Sticky Right) -->
+                        <td class="py-3 px-3 text-center whitespace-nowrap sticky right-0 bg-white group-hover:bg-amber-50/40 z-10 shadow-[-4px_0_6px_-2px_rgba(0,0,0,0.05)]">
+                          <div class="flex items-center justify-center gap-1">
+                            <button onclick="event.stopPropagation(); window.FPCL_CAPEX_SUITE.openPptMode(${startIdx + idx})" class="p-1.5 rounded text-[#B4923C] hover:text-[#7A5E1E] hover:bg-amber-50 transition-colors cursor-pointer" title="View slide in PPT Mode">
+                              <i data-lucide="presentation" class="w-4 h-4"></i>
+                            </button>
+                            <button onclick="event.stopPropagation(); window.FPCL_CAPEX_SUITE.openDrawerByIndex(${startIdx + idx})" class="p-1.5 rounded text-[#7A8699] hover:text-[#0B1D3A] hover:bg-slate-100 transition-colors cursor-pointer" title="View Full Project Scope">
+                              <i data-lucide="eye" class="w-4 h-4"></i>
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     `;
@@ -1822,7 +2664,7 @@
                       <div>${this.formatCurrency(kpis.totalAvailable)}</div>
                       <div class="text-[10px] text-slate-500 font-mono font-normal">PKR ${kpis.totalAvailable.toLocaleString('en-US')}</div>
                     </td>
-                    <td colspan="13"></td>
+                    <td colspan="16"></td>
                   </tr>
                 </tfoot>
               </table>
@@ -2173,6 +3015,446 @@
       } catch (e) {}
       this.closeSheetModal();
       this.syncLiveFeed();
+    },
+
+    openPptMode(index = 0) {
+      const dataset = this.getSortedData();
+      if (!dataset || dataset.length === 0) {
+        if (window.portalApp && typeof window.portalApp.showToast === 'function') {
+          window.portalApp.showToast('No projects found matching current filter.', 'info');
+        } else {
+          alert('No projects found matching current filter.');
+        }
+        return;
+      }
+
+      this.state.pptActive = true;
+      this.state.pptIndex = Math.max(0, Math.min(Number(index) || 0, dataset.length - 1));
+
+      // 1. Move or ensure modal container is directly attached to document.body for true edge-to-edge full screen
+      let container = document.getElementById('capex-ppt-modal-container');
+      if (!container) {
+        container = document.createElement('div');
+        container.id = 'capex-ppt-modal-container';
+        document.body.appendChild(container);
+      } else if (container.parentElement !== document.body) {
+        document.body.appendChild(container);
+      }
+
+      // 2. Temporarily reset any html zoom (e.g. zoom: 75% on wall displays) so modal is 100% full screen
+      if (!this._zoomOverridden) {
+        this._prevHtmlZoom = document.documentElement.style.zoom;
+        this._prevBodyOverflow = document.body.style.overflow;
+        document.documentElement.style.zoom = '1';
+        document.body.style.overflow = 'hidden';
+        this._zoomOverridden = true;
+      }
+
+      // 3. Request native browser fullscreen on container or documentElement
+      try {
+        const elem = document.documentElement;
+        if (!document.fullscreenElement && elem && elem.requestFullscreen) {
+          elem.requestFullscreen().catch(() => {});
+        }
+      } catch (err) {}
+
+      this.initPptKeyboard();
+      this.renderPptSlide();
+    },
+
+    closePptMode() {
+      this.state.pptActive = false;
+      this.destroyPptKeyboard();
+
+      // 1. Restore zoom and overflow
+      if (this._zoomOverridden) {
+        document.documentElement.style.zoom = this._prevHtmlZoom || '';
+        document.body.style.overflow = this._prevBodyOverflow || '';
+        this._zoomOverridden = false;
+      }
+
+      // 2. Exit fullscreen if active
+      try {
+        if (document.fullscreenElement && document.exitFullscreen) {
+          document.exitFullscreen().catch(() => {});
+        }
+      } catch (err) {}
+
+      const container = document.getElementById('capex-ppt-modal-container');
+      if (container) {
+        container.innerHTML = '';
+      }
+    },
+
+    toggleFullscreen() {
+      try {
+        if (!document.fullscreenElement) {
+          const elem = document.documentElement;
+          if (elem && elem.requestFullscreen) {
+            elem.requestFullscreen().catch(() => {});
+          }
+        } else {
+          if (document.exitFullscreen) {
+            document.exitFullscreen().catch(() => {});
+          }
+        }
+      } catch (err) {}
+    },
+
+    navigatePpt(dir) {
+      const dataset = this.getSortedData();
+      if (!dataset || dataset.length === 0) return;
+      this.state.pptIndex = (this.state.pptIndex + dir + dataset.length) % dataset.length;
+      this.renderPptSlide();
+    },
+
+    setPptTheme(name) {
+      this.state.pptTheme = name;
+      const container = document.getElementById('capex-ppt-modal-container');
+      if (container) {
+        container.setAttribute('data-theme', name);
+      }
+      const swatches = document.querySelectorAll('.ppt-swatch');
+      swatches.forEach(s => {
+        if (s.dataset.theme === name) {
+          s.classList.add('active');
+        } else {
+          s.classList.remove('active');
+        }
+      });
+    },
+
+    initPptKeyboard() {
+      if (this._pptKeyHandler) return;
+      this._pptKeyHandler = (e) => {
+        if (!this.state.pptActive) return;
+        if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
+          e.preventDefault();
+          this.navigatePpt(1);
+        } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+          e.preventDefault();
+          this.navigatePpt(-1);
+        } else if (e.key === 'Escape') {
+          e.preventDefault();
+          this.closePptMode();
+        } else if (e.key === 'f' || e.key === 'F') {
+          e.preventDefault();
+          this.toggleFullscreen();
+        }
+      };
+      window.addEventListener('keydown', this._pptKeyHandler);
+
+      this._pptFsHandler = () => {
+        const fsBtn = document.getElementById('ppt-fs-icon');
+        if (fsBtn) {
+          if (document.fullscreenElement) {
+            fsBtn.setAttribute('data-lucide', 'minimize');
+          } else {
+            fsBtn.setAttribute('data-lucide', 'maximize');
+          }
+          if (window.lucide) window.lucide.createIcons();
+        }
+      };
+      document.addEventListener('fullscreenchange', this._pptFsHandler);
+    },
+
+    destroyPptKeyboard() {
+      if (this._pptKeyHandler) {
+        window.removeEventListener('keydown', this._pptKeyHandler);
+        this._pptKeyHandler = null;
+      }
+      if (this._pptFsHandler) {
+        document.removeEventListener('fullscreenchange', this._pptFsHandler);
+        this._pptFsHandler = null;
+      }
+    },
+
+    renderPptSlide() {
+      const container = document.getElementById('capex-ppt-modal-container');
+      if (!container || !this.state.pptActive) return;
+
+      const dataset = this.getSortedData();
+      const total = dataset.length;
+      if (total === 0) {
+        this.closePptMode();
+        return;
+      }
+
+      const idx = Math.max(0, Math.min(this.state.pptIndex, total - 1));
+      const p = dataset[idx];
+      const theme = this.state.pptTheme || 'navy';
+      container.setAttribute('data-theme', theme);
+
+      // Raw PKR budget display & millions breakdown
+      const rawBudget = Number(p.budget);
+      const budgetVal = (p.budget !== undefined && p.budget !== null && p.budget !== '' && !isNaN(rawBudget))
+        ? ('PKR ' + rawBudget.toLocaleString('en-US'))
+        : (p.budget ? String(p.budget) : '');
+
+      const budgetMillions = (rawBudget && rawBudget >= 1000000)
+        ? `PKR ${(rawBudget / 1000000).toFixed(1)} M`
+        : '';
+
+      const isFs = Boolean(document.fullscreenElement);
+
+      const s = this.state;
+      const hasActiveFilters = s.yearFilter !== 'all' || s.statusFilter !== 'all' || s.categoryFilter !== 'all' || s.unitFilter !== 'all' || s.typeFilter !== 'all' || s.priorityFilter !== 'all' || s.classFilter !== 'all' || (s.searchQuery && s.searchQuery.trim() !== '');
+
+      const filterSummary = [];
+      if (s.yearFilter !== 'all') filterSummary.push(`Year: ${s.yearFilter}`);
+      if (s.statusFilter !== 'all') filterSummary.push(`Status: ${s.statusFilter}`);
+      if (s.categoryFilter !== 'all') filterSummary.push(`Cat: ${s.categoryFilter}`);
+      if (s.unitFilter !== 'all') filterSummary.push(`Unit: ${s.unitFilter}`);
+      if (s.typeFilter !== 'all') filterSummary.push(`Type: ${s.typeFilter}`);
+      if (s.priorityFilter !== 'all') filterSummary.push(`Priority: ${s.priorityFilter}`);
+      if (s.searchQuery) filterSummary.push(`"${s.searchQuery}"`);
+
+      container.innerHTML = `
+        <div class="ppt-modal-backdrop" onclick="if(event.target === this) window.FPCL_CAPEX_SUITE.closePptMode()">
+          
+          <!-- Floating Side Arrows (Desktop) -->
+          <button
+            type="button"
+            class="ppt-side-arrow left hidden md:flex"
+            onclick="window.FPCL_CAPEX_SUITE.navigatePpt(-1)"
+            title="Previous Slide (← Left Arrow)"
+          >
+            <i data-lucide="chevron-left" class="w-6 h-6"></i>
+          </button>
+          
+          <button
+            type="button"
+            class="ppt-side-arrow right hidden md:flex"
+            onclick="window.FPCL_CAPEX_SUITE.navigatePpt(1)"
+            title="Next Slide (→ Right Arrow)"
+          >
+            <i data-lucide="chevron-right" class="w-6 h-6"></i>
+          </button>
+
+          <!-- Full Screen Slide Frame -->
+          <div class="ppt-frame" id="ppt-slide-frame" onclick="event.stopPropagation()">
+            
+            <!-- Hero Header with Fullscreen & Theme Controls -->
+            <div class="ppt-hero">
+              <div class="ppt-themebar">
+                <span class="ppt-theme-label">Theme</span>
+                <button class="ppt-swatch white ${theme === 'white' ? 'active' : ''}" data-theme="white" title="Marketing Banner (White)" onclick="window.FPCL_CAPEX_SUITE.setPptTheme('white')"></button>
+                <button class="ppt-swatch navy ${theme === 'navy' ? 'active' : ''}" data-theme="navy" title="Executive Navy" onclick="window.FPCL_CAPEX_SUITE.setPptTheme('navy')"></button>
+                <button class="ppt-swatch graphite ${theme === 'graphite' ? 'active' : ''}" data-theme="graphite" title="Graphite Dark" onclick="window.FPCL_CAPEX_SUITE.setPptTheme('graphite')"></button>
+                <button class="ppt-swatch emerald ${theme === 'emerald' ? 'active' : ''}" data-theme="emerald" title="Deep Emerald" onclick="window.FPCL_CAPEX_SUITE.setPptTheme('emerald')"></button>
+                
+                <button
+                  type="button"
+                  class="ppt-top-btn"
+                  onclick="window.FPCL_CAPEX_SUITE.toggleFullscreen()"
+                  title="Toggle Fullscreen (F)"
+                >
+                  <i id="ppt-fs-icon" data-lucide="${isFs ? 'minimize' : 'maximize'}" class="w-3.5 h-3.5"></i>
+                  <span class="hidden sm:inline">Fullscreen</span>
+                </button>
+
+                <button
+                  type="button"
+                  class="ppt-top-btn exit"
+                  onclick="window.FPCL_CAPEX_SUITE.closePptMode()"
+                  title="Exit Presentation (Esc)"
+                >
+                  <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                  <span>Exit</span>
+                </button>
+              </div>
+
+              <!-- Eyebrows / Meta Chips -->
+              <div class="ppt-eyebrow-row">
+                <span class="ppt-tag">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0F172A" stroke-width="2.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                  CAPEX Board Proposal
+                </span>
+                ${p.wbs ? `<span class="ppt-id-chip">${escapeHtml(p.wbs)}</span>` : `<span class="ppt-id-chip">ID: CPX-${escapeHtml(p.year || '2026')}-${String(p.sr || (idx + 1)).padStart(3, '0')}</span>`}
+                ${hasActiveFilters ? `<span class="ppt-filter-chip"><i data-lucide="filter" class="w-3 h-3"></i> Filter: ${escapeHtml(filterSummary.join(', '))}</span>` : ''}
+              </div>
+
+              <!-- Main Project Title -->
+              <h1 class="ppt-title ppt-fade">${escapeHtml(p.name || p.project || '')}</h1>
+
+              <!-- Sub-bar: Year, Responsible Unit, Category -->
+              <div class="ppt-hero-meta">
+                <div class="ppt-meta-pill">
+                  <i data-lucide="calendar" class="w-3.5 h-3.5 text-amber-400"></i>
+                  <div>
+                    <span class="m-label">Year:</span>
+                    <span class="m-value">${escapeHtml(p.year || '')}</span>
+                  </div>
+                </div>
+
+                <div class="ppt-meta-pill">
+                  <i data-lucide="building-2" class="w-3.5 h-3.5 text-blue-400"></i>
+                  <div>
+                    <span class="m-label">Responsible Unit:</span>
+                    <span class="m-value">${escapeHtml(p.unit || p.responsibleUnit || '')}</span>
+                  </div>
+                </div>
+
+                <div class="ppt-meta-pill">
+                  <i data-lucide="tag" class="w-3.5 h-3.5 text-emerald-400"></i>
+                  <div>
+                    <span class="m-label">Category:</span>
+                    <span class="m-value">${escapeHtml(p.category || '')}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Stats Bar (Priority, Budget_PKR, Replacement_New, MOC_required, service life) -->
+            <div class="ppt-stats">
+              <div class="ppt-stat priority">
+                <div class="k">
+                  <span>Priority</span>
+                  <i data-lucide="flame" class="w-4 h-4 text-[#DC2626]"></i>
+                </div>
+                <div class="v">${escapeHtml(p.priority ? (p.priority.toLowerCase().startsWith('prio') ? p.priority : 'Priority ' + p.priority) : '')}</div>
+              </div>
+
+              <div class="ppt-stat budget wide">
+                <div class="k">
+                  <span>Requested Budget (PKR)</span>
+                  ${budgetMillions ? `<span class="font-mono font-bold text-xs sm:text-[13px] bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-0.5 rounded">${escapeHtml(budgetMillions)}</span>` : '<i data-lucide="coins" class="w-4 h-4 text-[#059669]"></i>'}
+                </div>
+                <div class="v">${escapeHtml(budgetVal)}</div>
+              </div>
+
+              <div class="ppt-stat type">
+                <div class="k">
+                  <span>Replacement / New</span>
+                  <i data-lucide="layers" class="w-4 h-4 text-[#2563EB]"></i>
+                </div>
+                <div class="v">${escapeHtml(p.type || p.replacementNew || '')}</div>
+              </div>
+
+              <div class="ppt-stat moc">
+                <div class="k">
+                  <span>MOC Required</span>
+                  <i data-lucide="shield-check" class="w-4 h-4 text-[#D97706]"></i>
+                </div>
+                <div class="v">${escapeHtml(p.moc || p.mocRequired || '')}</div>
+              </div>
+
+              <div class="ppt-stat life">
+                <div class="k">
+                  <span>Service Life</span>
+                  <i data-lucide="clock" class="w-4 h-4 text-[#0D9488]"></i>
+                </div>
+                <div class="v">${escapeHtml(p.serviceLife || '')}</div>
+              </div>
+            </div>
+
+            <!-- 5 Content Tiles in 2 Columns: Scrollable on Overflow -->
+            <div class="ppt-body-grid">
+              
+              <!-- Column 1: Background, Problem, REason -->
+              <div class="ppt-col">
+                <!-- Tile 1: Background -->
+                <div class="ppt-card card-background">
+                  <div class="ppt-card-head">
+                    <h3><i data-lucide="book-open" class="w-4 h-4 text-white"></i>Background</h3>
+                  </div>
+                  <div class="ppt-card-body">
+                    <p>${escapeHtml(p.background || '')}</p>
+                  </div>
+                </div>
+
+                <!-- Tile 2: Problem -->
+                <div class="ppt-card card-problem">
+                  <div class="ppt-card-head">
+                    <h3><i data-lucide="alert-triangle" class="w-4 h-4 text-white"></i>Problem</h3>
+                  </div>
+                  <div class="ppt-card-body">
+                    <p>${escapeHtml(p.problem || '')}</p>
+                  </div>
+                </div>
+
+                <!-- Tile 3: REason -->
+                <div class="ppt-card card-reason">
+                  <div class="ppt-card-head">
+                    <h3><i data-lucide="target" class="w-4 h-4 text-white"></i>REason</h3>
+                  </div>
+                  <div class="ppt-card-body">
+                    <p>${escapeHtml(p.reason || '')}</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Column 2: Justification, Current status -->
+              <div class="ppt-col">
+                <!-- Tile 4: Justification -->
+                <div class="ppt-card card-justification">
+                  <div class="ppt-card-head">
+                    <h3><i data-lucide="trending-up" class="w-4 h-4 text-white"></i>Justification</h3>
+                  </div>
+                  <div class="ppt-card-body">
+                    <p>${escapeHtml(p.justification || '')}</p>
+                  </div>
+                </div>
+
+                <!-- Tile 5: Current status -->
+                <div class="ppt-card card-status">
+                  <div class="ppt-card-head">
+                    <h3><i data-lucide="activity" class="w-4 h-4 text-white"></i>Current status</h3>
+                    ${p.status ? `<span class="ppt-badge ${String(p.status).toLowerCase().includes('close') ? 'closed' : 'open'}">${escapeHtml(p.status)}</span>` : ''}
+                  </div>
+                  <div class="ppt-card-body">
+                    <p>${escapeHtml(p.currentStatus || p.remarks || '')}</p>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Footer Navigation Bar -->
+            <div class="ppt-footer">
+              <div class="flex items-center gap-3">
+                <span class="ppt-counter">Project ${idx + 1} of ${total}</span>
+                <span class="text-[11px] opacity-75 font-mono hidden sm:inline text-slate-500">
+                  ${hasActiveFilters ? `(Filtered from ${this.getRawData().length} total)` : `(Full Portfolio)`}
+                </span>
+              </div>
+
+              <div class="ppt-nav-btns">
+                <button
+                  type="button"
+                  class="ppt-btn"
+                  onclick="window.FPCL_CAPEX_SUITE.navigatePpt(-1)"
+                  title="Previous Project (← Left Arrow)"
+                >
+                  <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                  <span>Previous</span>
+                </button>
+                <button
+                  type="button"
+                  class="ppt-btn primary"
+                  onclick="window.FPCL_CAPEX_SUITE.navigatePpt(1)"
+                  title="Next Project (→ Right Arrow / Space)"
+                >
+                  <span>Next Project</span>
+                  <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                </button>
+                <button
+                  type="button"
+                  class="ppt-btn close"
+                  onclick="window.FPCL_CAPEX_SUITE.closePptMode()"
+                  title="Exit Presentation (Esc)"
+                >
+                  <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                  <span>Exit</span>
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      `;
+
+      if (window.lucide) window.lucide.createIcons();
     }
   };
 
