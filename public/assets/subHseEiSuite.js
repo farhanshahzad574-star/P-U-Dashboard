@@ -131,7 +131,9 @@
         // Column C Filter: Year from Date of Meeting
         if (s.yearFilter !== 'all') {
           const itemYear = this.getItemYear(item);
-          if (itemYear !== s.yearFilter) {
+          if (s.yearFilter === 'unknown') {
+            if (itemYear) return false;
+          } else if (itemYear !== s.yearFilter) {
             return false;
           }
         }
@@ -306,6 +308,11 @@
     },
 
     // Filter mutators - apply globally across the whole dashboard
+    setYearFilter(val) {
+      this.state.yearFilter = val;
+      this.render();
+    },
+
     setRefFilter(val) {
       this.state.refFilter = val;
       this.render();
@@ -333,6 +340,7 @@
 
     resetFilters() {
       this.state.searchQuery = '';
+      this.state.yearFilter = 'all';
       this.state.refFilter = 'all';
       this.state.deptFilter = 'all';
       this.state.statusFilter = 'all';
@@ -960,6 +968,8 @@
         .sort((a, b) => b.total - a.total);
 
       // Distinct options for filters from dataset
+      const allYears = Array.from(new Set(raw.map(i => this.getItemYear(i)).filter(Boolean))).sort().reverse();
+      const hasUnknownYear = raw.some(i => !this.getItemYear(i));
       const allRefNumbers = Array.from(new Set(raw.map(i => i.refNo).filter(Boolean))).sort();
       const allDepartments = Array.from(new Set(raw.map(i => i.actionBy).filter(Boolean))).sort();
       const rawClosedCount = raw.filter(i => this.isItemClosed(i)).length;
@@ -967,6 +977,7 @@
 
       const isAnyFilterActive =
         (s.searchQuery && s.searchQuery.trim().length > 0) ||
+        s.yearFilter !== 'all' ||
         s.refFilter !== 'all' ||
         s.deptFilter !== 'all' ||
         s.statusFilter !== 'all';
@@ -1150,9 +1161,29 @@
               </div>
             ` : ''}
 
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               
-              <!-- Filter 1: Column D (Ref. #) -->
+              <!-- Filter 1: Column C (Year from Date of Meeting) -->
+              <div class="space-y-1">
+                <label class="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">
+                  Column C: Year (Date of Meeting)
+                </label>
+                <select
+                  onchange="FPCL_SUB_HSE_EI_SUITE.setYearFilter(this.value)"
+                  class="w-full text-xs font-semibold px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500 cursor-pointer transition-colors shadow-2xs"
+                >
+                  <option value="all" ${s.yearFilter === 'all' ? 'selected' : ''}>All Years (${allYears.length > 0 ? allYears.length : 'All'})</option>
+                  ${allYears.map(yr => {
+                    const yrCount = raw.filter(i => this.getItemYear(i) === yr).length;
+                    return `<option value="${yr}" ${s.yearFilter === yr ? 'selected' : ''}>${yr} (${yrCount})</option>`;
+                  }).join('')}
+                  ${hasUnknownYear ? `
+                    <option value="unknown" ${s.yearFilter === 'unknown' ? 'selected' : ''}>Unknown Year</option>
+                  ` : ''}
+                </select>
+              </div>
+
+              <!-- Filter 2: Column D (Ref. #) -->
               <div class="space-y-1">
                 <label class="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">
                   Column D: Ref. #
@@ -1168,7 +1199,7 @@
                 </select>
               </div>
 
-              <!-- Filter 2: Column G (Responsibility Department / Action by) -->
+              <!-- Filter 3: Column G (Responsibility Department / Action by) -->
               <div class="space-y-1">
                 <label class="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">
                   Column G: Responsibility Dept (Action by)
@@ -1184,7 +1215,7 @@
                 </select>
               </div>
 
-              <!-- Filter 3: Column H (Status: Open / Close) -->
+              <!-- Filter 4: Column H (Status: Open / Close) -->
               <div class="space-y-1">
                 <label class="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">
                   Column H: Status (Open Close)

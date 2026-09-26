@@ -435,6 +435,13 @@
     return parsed;
   }
 
+  // Ensure every initial item has the year field populated from Column C (Date of Meeting)
+  INITIAL_SUB_HSE_EI_OBSERVATIONS.forEach(item => {
+    if (!item.year) {
+      item.year = extractYearFromDate(item.dateOfMeeting) || '2025';
+    }
+  });
+
   // Export globally
   window.FPCL_SUB_HSE_EI_INITIAL_SEED = INITIAL_SUB_HSE_EI_OBSERVATIONS;
   window.FPCL_SUB_HSE_EI_DATA = INITIAL_SUB_HSE_EI_OBSERVATIONS;

@@ -93,7 +93,7 @@ export default async function handler(req: any, res: any) {
       } else if (normalizedTileId.includes('admin') || normalizedTileId.includes('security') || sLower.includes('admin') || sLower.includes('security')) {
         url = getSheetUrlForTile('admin-security');
       } else if (sLower.includes('validation') || sLower.includes('valid')) {
-        url = process.env.PSM_Validation_sheet_URL || process.env.PSM_VALIDATION_SHEET_URL || process.env.PSM_Validation_sheet || 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTyc0eRsaIpv3DWLdBbEplWo5FqrNwuCFpFrXM4_A6pRTkQgHz56DaN9FMV0cuCkQXnXfPDyKS_nsYC/pub?gid=1928323828&single=true&output=csv';
+        url = process.env.PSM_VALIDATION_SHEET_URL || process.env.PSM_Validation_sheet_URL || process.env.PSM_Validation_sheet || 'https://docs.google.com/spreadsheets/d/1bFBRGKqIfO8Pn7qPSTU0pbdTB87ezDyXvVDnCbTGrx4/gviz/tq?tqx=out:csv&sheet=PSM%20Validation';
       } else if (sLower.includes('hseq') || sLower.includes('kpi')) {
         url = process.env.HSEQ_KPI || 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTyc0eRsaIpv3DWLdBbEplWo5FqrNwuCFpFrXM4_A6pRTkQgHz56DaN9FMV0cuCkQXnXfPDyKS_nsYC/pub?gid=553516171&single=true&output=csv';
       } else if ((sLower.includes('plr') || sLower.includes('status')) && process.env.PLR_STATUS_SHEET_URL) {
@@ -112,8 +112,8 @@ export default async function handler(req: any, res: any) {
         url = process.env.Sub_HSE_Mech || process.env.SUB_HSE_MECH || process.env.SUB_HSE_MECH_SHEET_URL || (process.env.SUB_HSE_MECH_SHEET_ID ? `https://docs.google.com/spreadsheets/d/${process.env.SUB_HSE_MECH_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Sub_HSE_Mech` : 'https://docs.google.com/spreadsheets/d/1Put-VhgQkpG43kAuW_l3cRtj4MH6Dl3aa2gms9IaLqQ/gviz/tq?tqx=out:csv&sheet=Sub_HSE_Mech');
       } else if (sLower === 'ehse' || sLower.includes('ehse') || (normalizedTileId && normalizedTileId.includes('ehse'))) {
         url = process.env.EHSE || process.env.EHSE_SHEET_URL || (process.env.EHSE_SHEET_ID ? `https://docs.google.com/spreadsheets/d/${process.env.EHSE_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=EHSE` : 'https://docs.google.com/spreadsheets/d/1I4oX4kPr6d0_7q--9OcoJWs0W7IQG1dK1rBmNO7BlGo/gviz/tq?tqx=out:csv&sheet=EHSE');
-      } else if (sLower.includes('psm') && process.env.PSM_SHEET_URL) {
-        url = process.env.PSM_SHEET_URL;
+      } else if (sLower.includes('psm') && !sLower.includes('validation')) {
+        url = process.env.PSM_SHEET_URL || 'https://docs.google.com/spreadsheets/d/1bFBRGKqIfO8Pn7qPSTU0pbdTB87ezDyXvVDnCbTGrx4/gviz/tq?tqx=out:csv&sheet=PSM';
       } else if (process.env.RECOMMENDATIONS_SHEET_URL) {
         url = process.env.RECOMMENDATIONS_SHEET_URL;
       } else if (process.env.GOOGLE_SHEETS_CSV_URL) {
@@ -205,6 +205,16 @@ export default async function handler(req: any, res: any) {
     } else if (sLower.includes('sub_hse_mech') || sLower.includes('sub-hse-mech') || sLower.includes('mech') || trimmedUrl.includes('1Put-VhgQkpG43kAuW_l3cRtj4MH6Dl3aa2gms9IaLqQ')) {
       const extraSubHseMechTabs = ['Sub_HSE_Mech', 'Sub_HSE-Mech', 'Sub HSE Mech', 'Sub HSE - Mech', 'Sub_HSE_mech', 'Sheet1'];
       extraSubHseMechTabs.forEach(t => {
+        if (!candidateTabs.includes(t)) candidateTabs.push(t);
+      });
+    } else if ((sLower.includes('psm') || trimmedUrl.includes('1bFBRGKqIfO8Pn7qPSTU0pbdTB87ezDyXvVDnCbTGrx4')) && !sLower.includes('validation')) {
+      const extraPsmTabs = ['PSM', 'psm', 'PSM Audits', 'PSM_Audits', 'Sheet1'];
+      extraPsmTabs.forEach(t => {
+        if (!candidateTabs.includes(t)) candidateTabs.push(t);
+      });
+    } else if (sLower.includes('validation')) {
+      const extraValTabs = ['PSM Validation', 'PSM_Validation', 'PSMValidation', 'Validation', 'Sheet1'];
+      extraValTabs.forEach(t => {
         if (!candidateTabs.includes(t)) candidateTabs.push(t);
       });
     }

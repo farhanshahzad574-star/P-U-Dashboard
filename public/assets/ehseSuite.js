@@ -11,7 +11,7 @@
  * - Unique colorful perimeter lines on each visual card and KPI card
  * - 4 Executive KPI cards: Total observation, Closed observations column H, Open observations column H (RED color), Percentage completion
  *   (Strictly only KPI heading and value, center aligned, no other details)
- * - Multi-dimensional drilldown filters below KPIs: Column D (Ref. #), Column G (Responsibility Dept), Column H (Status)
+ * - Multi-dimensional drilldown filters below KPIs: Column C (Year from Date of Meeting), Column D (Ref. #), Column G (Responsibility Dept), Column H (Status)
  *   (No heading to filter banner)
  * - Horizontal Stacked Bar Chart with font-size 12 values on bar with total open (red) and close (emerald) observation for each department
  * - Large Donut Chart engineered so text in both laptop and mobile view fits inside without overlapping the donut (thicker donut ring)
@@ -31,6 +31,7 @@
   const ehseSuite = {
     state: {
       searchQuery: '',
+      yearFilter: 'all',    // Column C: Year from Date of Meeting
       refFilter: 'all',     // Column D: Ref. #
       deptFilter: 'all',    // Column G: Responsibility Department (Action by)
       statusFilter: 'all',  // Column H: Status (Open / Close)
@@ -87,6 +88,47 @@
       return [];
     },
 
+    // Extraction of Year from Column C: Date of Meeting
+    extractYearFromDate(dateStr) {
+      if (!dateStr) return '';
+      const str = String(dateStr).trim();
+      if (!str || str === '-' || str.toLowerCase() === 'null' || str.toLowerCase() === 'undefined') return '';
+
+      // Check for 4-digit year (e.g. 2024, 2025, 2026)
+      const fourDigitMatch = str.match(/\b(19\d\d|20\d\d)\b/);
+      if (fourDigitMatch) return fourDigitMatch[1];
+
+      // Check for 2-digit year at end (e.g. 23-Apr-25, 12/12/25, 4-Jun-24, 23-04-25)
+      const twoDigitEndMatch = str.match(/(?:[-/.\s])(\d{2})$/);
+      if (twoDigitEndMatch) {
+        const yr2 = parseInt(twoDigitEndMatch[1], 10);
+        return String(yr2 >= 50 ? 1900 + yr2 : 2000 + yr2);
+      }
+
+      // Check for 2-digit year at beginning (e.g. 25-04-23)
+      const twoDigitStartMatch = str.match(/^(\d{2})[-/.]\d{1,2}[-/.]\d{1,2}$/);
+      if (twoDigitStartMatch) {
+        const yr2 = parseInt(twoDigitStartMatch[1], 10);
+        return String(yr2 >= 50 ? 1900 + yr2 : 2000 + yr2);
+      }
+
+      // Try Date.parse
+      const parsedTime = Date.parse(str);
+      if (!isNaN(parsedTime)) {
+        const d = new Date(parsedTime);
+        const yr = d.getFullYear();
+        if (yr >= 1990 && yr <= 2099) return String(yr);
+      }
+
+      return '';
+    },
+
+    getItemYear(item) {
+      if (!item) return '';
+      if (item.year) return String(item.year);
+      return this.extractYearFromDate(item.dateOfMeeting);
+    },
+
     // Helper to evaluate item status (instruction: count point as open if empty cell is found)
     isItemClosed(item) {
       if (!item) return false;
@@ -104,6 +146,16 @@
       const q = (s.searchQuery || '').trim().toLowerCase();
 
       return raw.filter(item => {
+        // Column C Filter: Year from Date of Meeting
+        if (s.yearFilter !== 'all') {
+          const itemYear = this.getItemYear(item);
+          if (s.yearFilter === 'unknown') {
+            if (itemYear) return false;
+          } else if (itemYear !== s.yearFilter) {
+            return false;
+          }
+        }
+
         // Column D Filter: Ref. #
         if (s.refFilter !== 'all' && item.refNo !== s.refFilter) {
           return false;
@@ -272,6 +324,11 @@
     },
 
     // Filter mutators - apply globally across all visuals
+    setYearFilter(val) {
+      this.state.yearFilter = val;
+      this.render();
+    },
+
     setRefFilter(val) {
       this.state.refFilter = val;
       this.render();
@@ -299,6 +356,7 @@
 
     resetFilters() {
       this.state.searchQuery = '';
+      this.state.yearFilter = 'all';
       this.state.refFilter = 'all';
       this.state.deptFilter = 'all';
       this.state.statusFilter = 'all';
@@ -928,6 +986,17 @@
         .sort((a, b) => b.total - a.total);
 
       // Distinct options for filters from dataset
+      const yearSet = new Set();
+      let hasUnknownYear = false;
+      raw.forEach(item => {
+        const yr = this.getItemYear(item);
+        if (yr) {
+          yearSet.add(yr);
+        } else {
+          hasUnknownYear = true;
+        }
+      });
+      const allYears = Array.from(yearSet).sort((a, b) => b.localeCompare(a));
       const allRefNumbers = Array.from(new Set(raw.map(i => i.refNo).filter(Boolean))).sort();
       const allDepartments = Array.from(new Set(raw.map(i => i.actionBy).filter(Boolean))).sort();
       const rawClosedCount = raw.filter(i => this.isItemClosed(i)).length;
@@ -935,6 +1004,7 @@
 
       const isAnyFilterActive =
         (s.searchQuery && s.searchQuery.trim().length > 0) ||
+        s.yearFilter !== 'all' ||
         s.refFilter !== 'all' ||
         s.deptFilter !== 'all' ||
         s.statusFilter !== 'all';
@@ -1102,7 +1172,7 @@
           <!-- ========================================================================= -->
           <!-- 3. MULTI-DIMENSIONAL FILTERS (Unique Teal/Cyan Perimeter Line)               -->
           <!-- No heading on filter banner as instructed                                 -->
-          <!-- Columns D, G, and H for filter creation                                   -->
+          <!-- Columns C, D, G, and H for filter creation                                 -->
           <!-- ========================================================================= -->
           <div class="bg-white border-2 border-teal-500/80 hover:border-teal-600 rounded-2xl p-4 sm:p-5 shadow-[0_4px_18px_rgba(20,184,166,0.16)] relative overflow-hidden transition-all">
             <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-teal-600 via-cyan-600 to-blue-600"></div>
@@ -1120,9 +1190,29 @@
               </div>
             ` : ''}
 
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               
-              <!-- Filter 1: Column D (Ref. #) -->
+              <!-- Filter 1: Column C (Year from Date of Meeting) -->
+              <div class="space-y-1">
+                <label class="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">
+                  Column C: Year (Date of Meeting)
+                </label>
+                <select
+                  onchange="FPCL_EHSE_SUITE.setYearFilter(this.value)"
+                  class="w-full text-xs font-semibold px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer transition-colors shadow-2xs"
+                >
+                  <option value="all" ${s.yearFilter === 'all' ? 'selected' : ''}>All Years (${allYears.length > 0 ? allYears.length : 'All'})</option>
+                  ${allYears.map(yr => {
+                    const yrCount = raw.filter(i => this.getItemYear(i) === yr).length;
+                    return `<option value="${yr}" ${s.yearFilter === yr ? 'selected' : ''}>${yr} (${yrCount})</option>`;
+                  }).join('')}
+                  ${hasUnknownYear ? `
+                    <option value="unknown" ${s.yearFilter === 'unknown' ? 'selected' : ''}>Unknown Year</option>
+                  ` : ''}
+                </select>
+              </div>
+
+              <!-- Filter 2: Column D (Ref. #) -->
               <div class="space-y-1">
                 <label class="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">
                   Column D: Ref. #
@@ -1138,7 +1228,7 @@
                 </select>
               </div>
 
-              <!-- Filter 2: Column G (Responsibility Department / Action by) -->
+              <!-- Filter 3: Column G (Responsibility Department / Action by) -->
               <div class="space-y-1">
                 <label class="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">
                   Column G: Responsibility Dept (Action by)
@@ -1154,7 +1244,7 @@
                 </select>
               </div>
 
-              <!-- Filter 3: Column H (Status: Open / Close) -->
+              <!-- Filter 4: Column H (Status: Open / Close) -->
               <div class="space-y-1">
                 <label class="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">
                   Column H: Status (Open Close)

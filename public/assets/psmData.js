@@ -5,7 +5,7 @@
  * Supports live Google Sheets CSV parsing and offline fallback
  */
 
-window.FPCL_PSM_SHEET_URL = "https://docs.google.com/spreadsheets/d/1bFBRGKqIfO8Pn7qPSTU0pbdTB87ezDyXvVDnCbTGrx4/export?format=csv&gid=0";
+window.FPCL_PSM_SHEET_URL = "https://docs.google.com/spreadsheets/d/1bFBRGKqIfO8Pn7qPSTU0pbdTB87ezDyXvVDnCbTGrx4/gviz/tq?tqx=out:csv&sheet=PSM";
 
 // Robust RFC-4180 compliant CSV Parser supporting multiline quoted fields, escaped quotes, commas
 window.parsePSMCSV = function(csvText) {
@@ -77,6 +77,11 @@ window.parsePSMCSV = function(csvText) {
   const colActionRemarks = findCol(['actiondepartmenetunitremarks', 'actiondepartmentremarks', 'actiondeptremarks'], ['actionremark', 'unitremark']);
   const colStatus = findCol(['statusopencloseoverdue', 'status'], ['status']);
   const colHseqRemarks = findCol(['hseqremarks', 'hseq'], ['hseq']);
+  const colClosureDate = findCol(['closuredate'], ['closure']);
+  const colAuditTeam = findCol(['auditteam'], ['team']);
+  const colTargetDate = findCol(['targetdate'], ['target']);
+  // Column Q (17th column, index 16) is named "Year" or "Audit Year"
+  const colYear = findCol(['audityear', 'year', 'audityrs', 'years'], ['audityear', 'year']);
 
   const parsedItems = [];
 
@@ -105,6 +110,25 @@ window.parsePSMCSV = function(csvText) {
       normStatus = 'Open';
     }
 
+    // Extract Year from Column Q (index 16) or header colYear
+    let rawYear = '';
+    if (colYear !== -1 && row[colYear] !== undefined && row[colYear] !== null) {
+      rawYear = String(row[colYear]).trim();
+    } else if (row.length > 16 && row[16] !== undefined && row[16] !== null) {
+      rawYear = String(row[16]).trim();
+    }
+
+    let normYear = rawYear;
+    if (!normYear) {
+      const fallbackAudit = (colAudit !== -1 && row[colAudit]) ? row[colAudit] : (row[3] || '');
+      const yearMatch = (fallbackAudit + ' ' + rawObs).match(/\b(20\d{2})\b/);
+      if (yearMatch) {
+        normYear = yearMatch[1];
+      } else {
+        normYear = '2026';
+      }
+    }
+
     const item = {
       sr: colSr !== -1 && row[colSr] ? parseInt(row[colSr], 10) || r : r,
       observationNo: rawObs || (colObs !== -1 ? row[colObs] : '') || `PSM-IA-2026-${String(r).padStart(4, '0')}`,
@@ -119,7 +143,11 @@ window.parsePSMCSV = function(csvText) {
       actionRemarks: (colActionRemarks !== -1 ? row[colActionRemarks] : row[10]) || '',
       status: normStatus,
       rawStatus: rawStatus || normStatus,
-      hseqRemarks: (colHseqRemarks !== -1 ? row[colHseqRemarks] : row[12]) || ''
+      hseqRemarks: (colHseqRemarks !== -1 ? row[colHseqRemarks] : row[12]) || '',
+      closureDate: (colClosureDate !== -1 && row[colClosureDate]) ? row[colClosureDate].trim() : (row[13] ? row[13].trim() : ''),
+      auditTeam: (colAuditTeam !== -1 && row[colAuditTeam]) ? row[colAuditTeam].trim() : (row[14] ? row[14].trim() : ''),
+      targetDate: (colTargetDate !== -1 && row[colTargetDate]) ? row[colTargetDate].trim() : (row[15] ? row[15].trim() : ''),
+      year: normYear
     };
 
     parsedItems.push(item);

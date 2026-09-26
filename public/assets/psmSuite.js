@@ -15,7 +15,7 @@
  */
 
 (function() {
-  const HARDCODED_PSM_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1bFBRGKqIfO8Pn7qPSTU0pbdTB87ezDyXvVDnCbTGrx4/export?format=csv&gid=0';
+  const HARDCODED_PSM_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1bFBRGKqIfO8Pn7qPSTU0pbdTB87ezDyXvVDnCbTGrx4/gviz/tq?tqx=out:csv&sheet=PSM';
 
   const psmSuite = {
     state: {
@@ -27,6 +27,7 @@
       elementFilter: 'all',    // PSM Element (MC, RA&PHA, MOC-F, PSI, General)
       natureFilter: 'all',     // Severity / Nature (Major, Minor, Suggestion, PSG)
       auditFilter: 'all',      // Audit No
+      yearFilter: 'all',       // Year from Column Q (Audit Year)
       chartBreakdownMode: 'element', // 'element' | 'severity'
       page: 1,
       pageSize: 15,
@@ -48,6 +49,7 @@
         cadreFilter: 'all',       // 'all' | 'Mngt' | 'JMC' | 'Staff'
         moduleFilter: 'all',      // 'all' | 'T&D'
         unitFilter: 'all',        // Unit
+        yearFilter: 'all',        // 'all' | '2026' | '2025' | '2024' (Column N Validation Year)
         deptBarViewMode: 'chart', // 'chart' | 'table' | 'split'
         trendMode: 'dept',        // 'dept' | 'cadre'
         trendViewType: 'side-by-side', // 'side-by-side' | 'trend' | 'stacked'
@@ -225,6 +227,13 @@
           }
         }
 
+        // Year filter (Column Q named Year)
+        if (s.yearFilter !== 'all') {
+          if (String(item.year || '').trim() !== String(s.yearFilter).trim()) {
+            return false;
+          }
+        }
+
         // Keyword Search across multiple fields
         if (s.searchQuery.trim()) {
           const q = s.searchQuery.toLowerCase().trim();
@@ -235,6 +244,7 @@
             (item.actionUnit && item.actionUnit.toLowerCase().includes(q)) ||
             (item.psmElement && item.psmElement.toLowerCase().includes(q)) ||
             (item.nature && item.nature.toLowerCase().includes(q)) ||
+            (item.year && String(item.year).toLowerCase().includes(q)) ||
             (item.actionRemarks && item.actionRemarks.toLowerCase().includes(q)) ||
             (item.hseqRemarks && item.hseqRemarks.toLowerCase().includes(q));
           
@@ -556,6 +566,16 @@
           if (m.toLowerCase() !== vs.moduleFilter.trim().toLowerCase()) return false;
         }
 
+        // Validation Year filter (Column N named Validation Year)
+        if (vs.yearFilter && vs.yearFilter !== 'all') {
+          const itemYear = String(item.validationYear || item.year || '').trim();
+          if (vs.yearFilter === 'unassigned') {
+            if (itemYear !== '') return false;
+          } else {
+            if (itemYear !== String(vs.yearFilter).trim()) return false;
+          }
+        }
+
         return true;
       });
     },
@@ -580,6 +600,7 @@
       this.state.validationState.cadreFilter = 'all';
       this.state.validationState.moduleFilter = 'all';
       this.state.validationState.unitFilter = 'all';
+      this.state.validationState.yearFilter = 'all';
       this.state.validationState.page = 1;
 
       const headerSearch = document.getElementById('psm-header-search-input');
@@ -663,7 +684,9 @@
         'Validation Status',
         'PSM Module',
         'End User Remarks',
-        'Safety Remarks'
+        'Safety Remarks',
+        'Open/Close',
+        'Validation Year'
       ];
 
       const rows = data.map((d, i) => [
@@ -678,7 +701,9 @@
         `"${String(d.status || '').replace(/"/g, '""')}"`,
         `"${String(d.module || '').replace(/"/g, '""')}"`,
         `"${String(d.endUserRemarks || '').replace(/"/g, '""')}"`,
-        `"${String(d.safetyRemarks || '').replace(/"/g, '""')}"`
+        `"${String(d.safetyRemarks || '').replace(/"/g, '""')}"`,
+        `"${String(d.openClose || '').replace(/"/g, '""')}"`,
+        `"${String(d.validationYear || d.year || '').replace(/"/g, '""')}"`
       ]);
 
       const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\r\n');
@@ -728,7 +753,8 @@
         'HSEQ Remarks',
         'Closure Date',
         'Audit Team',
-        'Target Date'
+        'Target Date',
+        'Year'
       ];
 
       const rows = data.map((d, i) => [
@@ -747,7 +773,8 @@
         `"${String(d.hseqRemarks || '').replace(/"/g, '""')}"`,
         `"${String(d.closureDate || '').replace(/"/g, '""')}"`,
         `"${String(d.auditTeam || '').replace(/"/g, '""')}"`,
-        `"${String(d.targetDate || '').replace(/"/g, '""')}"`
+        `"${String(d.targetDate || '').replace(/"/g, '""')}"`,
+        `"${String(d.year || '').replace(/"/g, '""')}"`
       ]);
 
       const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\r\n');
@@ -789,6 +816,26 @@
       }
     },
 
+    resetFilters() {
+      this.state.searchQuery = '';
+      this.state.statusFilter = 'all';
+      this.state.deptFilter = 'all';
+      this.state.unitFilter = 'all';
+      this.state.elementFilter = 'all';
+      this.state.natureFilter = 'all';
+      this.state.auditFilter = 'all';
+      this.state.yearFilter = 'all';
+      this.state.page = 1;
+      const headerSearch = document.getElementById('psm-header-search-input');
+      if (headerSearch && this.state.activeSubDashboard === 'audits') {
+        headerSearch.value = '';
+      }
+      this.render();
+      if (window.portalApp && window.portalApp.showToast) {
+        window.portalApp.showToast('Filters Cleared', 'Reset all PSM Audits filters to show all findings.', 'info');
+      }
+    },
+
     // Live Google Sheets synchronization for PSM Validation
     async syncValidationLiveFeed(opts = {}) {
       const silent = !!opts.silent;
@@ -799,13 +846,17 @@
       if (syncIcon) syncIcon.classList.add('animate-spin');
 
       try {
-        const res = await fetch('/api/sheets/fetch?sheetTab=validation', { cache: 'no-store' });
+        const res = await fetch('/api/sheets/fetch?sheetTab=PSM%20Validation', { cache: 'no-store' });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
 
         if (data && data.csvText && typeof window.parseValidationCSV === 'function') {
           const parsed = window.parseValidationCSV(data.csvText);
           if (Array.isArray(parsed) && parsed.length > 0) {
+            parsed.forEach(r => {
+              if (r.validationYear === undefined) r.validationYear = r.year || '';
+              if (r.year === undefined) r.year = r.validationYear || '';
+            });
             window.FPCL_PSM_VALIDATION_DATA = parsed;
             try {
               localStorage.setItem('FPCL_PSM_VALIDATION_CACHE', JSON.stringify(parsed));
@@ -924,6 +975,10 @@
                   <span class="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Record Serial</span>
                   <span class="font-mono font-bold text-sm text-slate-600 mt-0.5 block">#${item.sr || '1'}</span>
                 </div>
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                  <span class="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Validation Year</span>
+                  <span class="font-bold text-sm text-teal-800 mt-0.5 block font-mono">${item.validationYear || item.year || 'N/A'}</span>
+                </div>
               </div>
 
               <!-- Remarks Panels -->
@@ -945,14 +1000,25 @@
             </div>
 
             <!-- Modal Footer -->
-            <div class="bg-slate-50 p-4 border-t border-slate-100 flex items-center justify-between">
-              <button
-                type="button"
-                onclick="FPCL_PSM_SUITE.setValidationFilter('deptFilter', '${item.department}'); FPCL_PSM_SUITE.closeValidationInspectionModal();"
-                class="px-3.5 py-2 rounded-xl text-xs font-bold text-teal-700 bg-teal-50 hover:bg-teal-100 border border-teal-200 transition-all cursor-pointer"
-              >
-                Filter for ${item.department}
-              </button>
+            <div class="bg-slate-50 p-4 border-t border-slate-100 flex items-center justify-between flex-wrap gap-2">
+              <div class="flex items-center gap-2 flex-wrap">
+                <button
+                  type="button"
+                  onclick="FPCL_PSM_SUITE.setValidationFilter('deptFilter', '${item.department}'); FPCL_PSM_SUITE.closeValidationInspectionModal();"
+                  class="px-3 py-1.5 rounded-xl text-xs font-bold text-teal-700 bg-teal-50 hover:bg-teal-100 border border-teal-200 transition-all cursor-pointer"
+                >
+                  Dept: ${item.department}
+                </button>
+                ${(item.validationYear || item.year) ? `
+                  <button
+                    type="button"
+                    onclick="FPCL_PSM_SUITE.setValidationFilter('yearFilter', '${item.validationYear || item.year}'); FPCL_PSM_SUITE.closeValidationInspectionModal();"
+                    class="px-3 py-1.5 rounded-xl text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 transition-all cursor-pointer"
+                  >
+                    Year: ${item.validationYear || item.year}
+                  </button>
+                ` : ''}
+              </div>
               <button
                 type="button"
                 onclick="FPCL_PSM_SUITE.closeValidationInspectionModal()"
@@ -1005,6 +1071,15 @@
       const allUnits = Array.from(new Set(raw.map(i => i.unit).filter(Boolean))).sort();
       const allModules = Array.from(new Set(raw.map(i => (i.module || '').trim()).filter(Boolean))).sort();
       if (allModules.length === 0) allModules.push('T&D');
+
+      // Distinct Validation Years from Column N named Validation Year
+      const dataYears = Array.from(new Set(raw.map(i => String(i.validationYear || i.year || '').trim()).filter(Boolean)))
+        .sort((a, b) => String(b).localeCompare(String(a), undefined, { numeric: true }));
+
+      // Candidate operational years so user always has immediate filter options even prior to sheet population
+      const candidateYears = ['2026', '2025', '2024'];
+      const allYears = Array.from(new Set([...dataYears, ...(dataYears.length === 0 ? candidateYears : [])]))
+        .sort((a, b) => String(b).localeCompare(String(a), undefined, { numeric: true }));
 
       // Department Aggregations for Interactive Breakdown
       const deptMap = {};
@@ -1087,6 +1162,7 @@
       // Active filters checking
       const isAnyFilterActive =
         (vs.searchQuery && vs.searchQuery.trim() !== '') ||
+        (vs.yearFilter && vs.yearFilter !== 'all') ||
         (vs.deptFilter && vs.deptFilter !== 'all') ||
         (vs.cadreFilter && vs.cadreFilter !== 'all') ||
         (vs.trainingFilter && vs.trainingFilter !== 'all') ||
@@ -1265,9 +1341,31 @@
             </div>
 
             <!-- Dropdown Filters Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 text-xs">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3 text-xs">
               
-              <!-- 1. Department -->
+              <!-- 1. Validation Year (from Column N named Validation Year) -->
+              <div class="space-y-1">
+                <label class="font-bold text-slate-600 uppercase text-[10px] tracking-wider block flex items-center justify-between">
+                  <span>Validation Year</span>
+                  ${vs.yearFilter && vs.yearFilter !== 'all' ? '<span class="text-[9px] text-teal-600 font-extrabold lowercase">filtered</span>' : ''}
+                </label>
+                <select
+                  id="psm-validation-filter-year"
+                  onchange="FPCL_PSM_SUITE.setValidationFilter('yearFilter', this.value)"
+                  class="w-full ${vs.yearFilter && vs.yearFilter !== 'all' ? 'border-teal-500 bg-teal-50/50 text-teal-900 font-bold ring-1 ring-teal-400' : 'bg-slate-50 hover:bg-slate-100 text-slate-800'} focus:bg-white border border-slate-200 rounded-xl px-2.5 py-2 font-semibold focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer text-xs"
+                >
+                  <option value="all" ${vs.yearFilter === 'all' ? 'selected' : ''}>All Years ${dataYears.length > 0 ? `(${dataYears.join(', ')})` : ''}</option>
+                  ${allYears.map(y => {
+                    const cnt = raw.filter(r => String(r.validationYear || r.year || '').trim() === y).length;
+                    return `<option value="${y}" ${vs.yearFilter === y ? 'selected' : ''}>${y} ${cnt > 0 ? `(${cnt})` : ''}</option>`;
+                  }).join('')}
+                  ${(raw.some(r => !String(r.validationYear || r.year || '').trim()) && dataYears.length > 0) ? `
+                    <option value="unassigned" ${vs.yearFilter === 'unassigned' ? 'selected' : ''}>Unassigned (${raw.filter(r => !String(r.validationYear || r.year || '').trim()).length})</option>
+                  ` : ''}
+                </select>
+              </div>
+
+              <!-- 2. Department -->
               <div class="space-y-1">
                 <label class="font-bold text-slate-600 uppercase text-[10px] tracking-wider block">Department</label>
                 <select
@@ -1282,7 +1380,7 @@
                 </select>
               </div>
 
-              <!-- 2. Cadre -->
+              <!-- 3. Cadre -->
               <div class="space-y-1">
                 <label class="font-bold text-slate-600 uppercase text-[10px] tracking-wider block">Cadre</label>
                 <select
@@ -1297,7 +1395,7 @@
                 </select>
               </div>
 
-              <!-- 3. Training Status -->
+              <!-- 4. Training Status -->
               <div class="space-y-1">
                 <label class="font-bold text-slate-600 uppercase text-[10px] tracking-wider block">Training Status</label>
                 <select
@@ -1310,7 +1408,7 @@
                 </select>
               </div>
 
-              <!-- 4. Validation Result -->
+              <!-- 5. Validation Result -->
               <div class="space-y-1">
                 <label class="font-bold text-slate-600 uppercase text-[10px] tracking-wider block">Validation Result</label>
                 <select
@@ -1323,7 +1421,7 @@
                 </select>
               </div>
 
-              <!-- 5. PSM Module -->
+              <!-- 6. PSM Module -->
               <div class="space-y-1">
                 <label class="font-bold text-slate-600 uppercase text-[10px] tracking-wider block">PSM Module</label>
                 <select
@@ -1338,7 +1436,7 @@
                 </select>
               </div>
 
-              <!-- 6. Search Personnel -->
+              <!-- 7. Search Personnel -->
               <div class="space-y-1">
                 <label class="font-bold text-slate-600 uppercase text-[10px] tracking-wider block">Search Personnel</label>
                 <div class="relative">
@@ -1368,6 +1466,13 @@
             ${isAnyFilterActive ? `
               <div class="pt-2 border-t border-slate-100 flex items-center flex-wrap gap-2 text-xs">
                 <span class="text-slate-400 font-bold uppercase text-[10px] tracking-wider">Active Filters:</span>
+                
+                ${vs.yearFilter && vs.yearFilter !== 'all' ? `
+                  <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-teal-50 text-teal-800 border border-teal-200 font-bold">
+                    Validation Year: ${vs.yearFilter}
+                    <button onclick="FPCL_PSM_SUITE.setValidationFilter('yearFilter', 'all')" class="hover:text-rose-600 cursor-pointer"><i data-lucide="x" class="w-3 h-3"></i></button>
+                  </span>
+                ` : ''}
                 
                 ${vs.deptFilter && vs.deptFilter !== 'all' ? `
                   <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-teal-50 text-teal-800 border border-teal-200 font-bold">
@@ -1526,6 +1631,21 @@
               </div>
 
               <div class="flex items-center flex-wrap gap-2.5">
+                <!-- Quick Year Filter -->
+                <div class="flex items-center gap-1.5 text-xs text-slate-500">
+                  <span class="font-bold text-slate-600 uppercase text-[10px]">Year:</span>
+                  <select
+                    onchange="FPCL_PSM_SUITE.setValidationFilter('yearFilter', this.value)"
+                    class="bg-slate-50 border ${vs.yearFilter && vs.yearFilter !== 'all' ? 'border-teal-500 bg-teal-50 text-teal-900 font-bold' : 'border-slate-200 text-slate-700'} rounded-lg px-2 py-1 font-semibold focus:outline-none focus:ring-1 focus:ring-teal-500 cursor-pointer text-xs"
+                  >
+                    <option value="all" ${vs.yearFilter === 'all' ? 'selected' : ''}>All</option>
+                    ${allYears.map(y => `<option value="${y}" ${vs.yearFilter === y ? 'selected' : ''}>${y}</option>`).join('')}
+                    ${(raw.some(r => !String(r.validationYear || r.year || '').trim()) && dataYears.length > 0) ? `
+                      <option value="unassigned" ${vs.yearFilter === 'unassigned' ? 'selected' : ''}>Unassigned</option>
+                    ` : ''}
+                  </select>
+                </div>
+
                 <!-- Page Size Selector -->
                 <div class="flex items-center gap-1.5 text-xs text-slate-500">
                   <span>Rows:</span>
@@ -1568,6 +1688,7 @@
                     <th class="py-3 px-3 text-center">Training</th>
                     <th class="py-3 px-3 text-center">Status</th>
                     <th class="py-3 px-3 text-center">Module</th>
+                    <th class="py-3 px-3 text-center">Val. Year</th>
                     <th class="py-3 px-3">Remarks</th>
                     <th class="py-3 px-3 text-center w-16">Profile</th>
                   </tr>
@@ -1575,7 +1696,7 @@
                 <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
                   ${pageItems.length === 0 ? `
                     <tr>
-                      <td colspan="11" class="py-12 text-center text-slate-400">
+                      <td colspan="12" class="py-12 text-center text-slate-400">
                         <i data-lucide="inbox" class="w-8 h-8 mx-auto mb-2 text-slate-300"></i>
                         <p class="font-semibold text-sm text-slate-700">No personnel records found</p>
                         <p class="text-xs mt-1">Try adjusting your filters or search query.</p>
@@ -1640,6 +1761,9 @@
                         </td>
                         <td class="py-3 px-3 text-center font-mono font-bold text-teal-700 text-[11px]">
                           ${item.module || 'T&D'}
+                        </td>
+                        <td class="py-3 px-3 text-center font-mono font-bold text-[11px]">
+                          ${(item.validationYear || item.year) ? `<span class="px-2 py-0.5 rounded-md bg-teal-50 text-teal-800 border border-teal-200 font-bold">${item.validationYear || item.year}</span>` : '<span class="text-slate-400 font-normal">-</span>'}
                         </td>
                         <td class="py-3 px-3 max-w-xs truncate text-[11px] text-slate-500" title="${item.endUserRemarks || item.safetyRemarks || 'No remarks'}">
                           ${item.endUserRemarks || item.safetyRemarks || '-'}
@@ -1730,6 +1854,9 @@
       const allElements = Array.from(new Set(raw.map(d => d.psmElement).filter(Boolean))).sort();
       const allNatures = Array.from(new Set(raw.map(d => d.nature).filter(Boolean))).sort();
       const allAudits = Array.from(new Set(raw.map(d => d.auditNo).filter(Boolean))).sort();
+      const allYears = Array.from(new Set(raw.map(d => d.year).filter(Boolean))).sort((a, b) => {
+        return String(b).localeCompare(String(a), undefined, { numeric: true });
+      });
 
       // Department & Unit Aggregations
       const deptList = this.getDepartmentAggregation(filtered);
@@ -1903,7 +2030,7 @@
           <!-- ========================================================================= -->
           <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs space-y-3">
             <!-- Filter Controls Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-7 gap-3">
 
               <!-- 1. Status Filter -->
               <div>
@@ -1975,6 +2102,22 @@
                 >
                   <option value="all" ${s.auditFilter === 'all' ? 'selected' : ''}>All Audit Numbers</option>
                   ${allAudits.map(a => `<option value="${a}" ${s.auditFilter === a ? 'selected' : ''}>${a}</option>`).join('')}
+                </select>
+              </div>
+
+              <!-- 7. Year (from Column Q named Year) -->
+              <div>
+                <label class="block text-xs sm:text-[13px] font-bold uppercase tracking-wider text-slate-600 mb-1.5 flex items-center justify-between">
+                  <span>YEAR</span>
+                  ${s.yearFilter !== 'all' ? '<span class="text-[10px] text-teal-600 font-extrabold lowercase">filtered</span>' : ''}
+                </label>
+                <select
+                  id="psm-filter-year"
+                  onchange="FPCL_PSM_SUITE.setYearFilter(this.value)"
+                  class="w-full px-3.5 py-2.5 bg-slate-50 border ${s.yearFilter !== 'all' ? 'border-teal-500 bg-teal-50/20 text-teal-900 font-bold' : 'border-slate-300 text-slate-800'} rounded-xl text-xs sm:text-sm font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer shadow-2xs"
+                >
+                  <option value="all" ${s.yearFilter === 'all' ? 'selected' : ''}>All Years ${allYears.length > 0 ? `(${allYears.join(', ')})` : ''}</option>
+                  ${allYears.map(y => `<option value="${y}" ${s.yearFilter === y ? 'selected' : ''}>${y}</option>`).join('')}
                 </select>
               </div>
             </div>
@@ -2133,6 +2276,18 @@
                   </select>
                 </div>
 
+                <!-- Year Quick Filter (Column Q) -->
+                <div class="flex items-center gap-1 text-xs text-slate-700">
+                  <span class="font-bold text-slate-500 uppercase text-[11px]">YEAR:</span>
+                  <select
+                    onchange="FPCL_PSM_SUITE.setYearFilter(this.value)"
+                    class="text-xs font-semibold px-2 py-1.5 rounded-lg border ${s.yearFilter !== 'all' ? 'border-teal-500 bg-teal-50 text-teal-900 font-bold' : 'border-slate-300 bg-white text-slate-800'} focus:outline-none focus:ring-1 focus:ring-teal-500 cursor-pointer"
+                  >
+                    <option value="all" ${s.yearFilter === 'all' ? 'selected' : ''}>All</option>
+                    ${allYears.map(y => `<option value="${y}" ${s.yearFilter === y ? 'selected' : ''}>${y}</option>`).join('')}
+                  </select>
+                </div>
+
                 <!-- Page Size Selector -->
                 <div class="flex items-center gap-1 text-xs text-slate-700">
                   <span class="font-bold text-slate-500 uppercase text-[11px]">SHOW:</span>
@@ -2160,7 +2315,7 @@
                 </button>
 
                 <!-- Reset Button -->
-                ${(s.statusFilter !== 'all' || s.deptFilter !== 'all' || s.unitFilter !== 'all' || s.elementFilter !== 'all' || s.natureFilter !== 'all' || s.auditFilter !== 'all' || s.searchQuery) ? `
+                ${(s.statusFilter !== 'all' || s.deptFilter !== 'all' || s.unitFilter !== 'all' || s.elementFilter !== 'all' || s.natureFilter !== 'all' || s.auditFilter !== 'all' || s.yearFilter !== 'all' || s.searchQuery) ? `
                   <button
                     type="button"
                     onclick="FPCL_PSM_SUITE.resetAllFilters()"
@@ -2181,6 +2336,7 @@
                   <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-600 uppercase tracking-wider select-none">
                     <th class="py-3 px-3 w-12 text-center">Sr.</th>
                     <th class="py-3 px-3 w-28">Obs #</th>
+                    <th class="py-3 px-3 w-20 text-center">Year</th>
                     <th class="py-3 px-3 w-28">Audit #</th>
                     <th class="py-3 px-3 w-32">PSM Element</th>
                     <th class="py-3 px-3 w-32">Auditee Dept</th>
@@ -2195,7 +2351,7 @@
                 <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
                   ${pageItems.length === 0 ? `
                     <tr>
-                      <td colspan="11" class="py-12 text-center text-slate-400">
+                      <td colspan="12" class="py-12 text-center text-slate-400">
                         <i data-lucide="inbox" class="w-8 h-8 mx-auto mb-2 text-slate-300"></i>
                         <p class="font-semibold text-sm text-slate-700">No audit findings found</p>
                         <p class="text-xs mt-1">Try adjusting your search query or filter criteria.</p>
@@ -2226,6 +2382,11 @@
                           >
                             ${item.observationNo || '-'}
                           </button>
+                        </td>
+                        <td class="py-3 px-3 text-center whitespace-nowrap font-mono font-bold text-slate-700 text-xs">
+                          <span class="inline-block px-2 py-0.5 rounded-md bg-slate-100 border border-slate-200 text-slate-700 text-[11px] font-bold">
+                            ${item.year || '2026'}
+                          </span>
                         </td>
                         <td class="py-3 px-3 font-mono text-slate-600 text-[11px] whitespace-nowrap">${item.auditNo || '-'}</td>
                         <td class="py-3 px-3 whitespace-nowrap">
@@ -3816,6 +3977,9 @@
       if (s.auditFilter !== 'all') {
         pills.push({ label: `Audit: ${s.auditFilter}`, clear: () => this.setAuditFilter('all') });
       }
+      if (s.yearFilter !== 'all') {
+        pills.push({ label: `Year: ${s.yearFilter}`, clear: () => this.setYearFilter('all') });
+      }
       if (s.searchQuery.trim()) {
         pills.push({ label: `Search: "${s.searchQuery}"`, clear: () => this.clearSearch() });
       }
@@ -3852,6 +4016,7 @@
       if (s.elementFilter !== 'all') pills.push(() => this.setElementFilter('all'));
       if (s.natureFilter !== 'all') pills.push(() => this.setNatureFilter('all'));
       if (s.auditFilter !== 'all') pills.push(() => this.setAuditFilter('all'));
+      if (s.yearFilter !== 'all') pills.push(() => this.setYearFilter('all'));
       if (s.searchQuery.trim()) pills.push(() => this.clearSearch());
 
       if (pills[idx]) {
@@ -3937,6 +4102,12 @@
       this.render();
     },
 
+    setYearFilter(year) {
+      this.state.yearFilter = year;
+      this.state.page = 1;
+      this.render();
+    },
+
     setBreakdownMode(mode) {
       this.state.chartBreakdownMode = mode;
       this.render();
@@ -3983,6 +4154,7 @@
       this.state.elementFilter = 'all';
       this.state.natureFilter = 'all';
       this.state.auditFilter = 'all';
+      this.state.yearFilter = 'all';
       this.state.page = 1;
       this.render();
     },
@@ -4024,7 +4196,11 @@
 
         <div class="space-y-4 text-xs">
           <!-- Metadata Grid -->
-          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+            <div>
+              <span class="text-slate-400 font-bold block text-[10px] uppercase">Audit Year</span>
+              <span class="font-bold text-teal-800 font-mono">${item.year || '2026'}</span>
+            </div>
             <div>
               <span class="text-slate-400 font-bold block text-[10px] uppercase">PSM Element</span>
               <span class="font-bold text-slate-800 font-mono">${item.psmElement}</span>
@@ -4048,6 +4224,10 @@
             <div>
               <span class="text-slate-400 font-bold block text-[10px] uppercase">Action Unit</span>
               <span class="font-bold text-teal-800">${item.actionUnit}</span>
+            </div>
+            <div>
+              <span class="text-slate-400 font-bold block text-[10px] uppercase">Audit #</span>
+              <span class="font-medium text-slate-700 font-mono">${item.auditNo || '—'}</span>
             </div>
           </div>
 
@@ -4414,6 +4594,7 @@
       const filterUnit = config.filterUnit !== undefined ? config.filterUnit : (this.state.unitFilter !== 'all' ? this.state.unitFilter : 'all');
       const filterElement = config.filterElement !== undefined ? config.filterElement : (this.state.elementFilter !== 'all' ? this.state.elementFilter : 'all');
       const filterNature = config.filterNature !== undefined ? config.filterNature : (this.state.natureFilter !== 'all' ? this.state.natureFilter : 'all');
+      const filterYear = config.filterYear !== undefined ? config.filterYear : (this.state.yearFilter !== 'all' ? this.state.yearFilter : 'all');
       
       let statusTab = 'all';
       if (config.filterStatus && config.filterStatus !== 'all') {
@@ -4430,6 +4611,7 @@
         filterUnit: filterUnit || 'all',
         filterElement: filterElement || 'all',
         filterNature: filterNature || 'all',
+        filterYear: filterYear || 'all',
         baseRecords: baseRecords,
         searchQuery: config.searchQuery || '',
         activeStatusTab: statusTab
@@ -4492,6 +4674,7 @@
       this.state.unitFilter = m.filterUnit || 'all';
       this.state.elementFilter = m.filterElement || 'all';
       this.state.natureFilter = m.filterNature || 'all';
+      if (m.filterYear) this.state.yearFilter = m.filterYear;
       this.state.statusFilter = m.activeStatusTab || 'all';
       if (m.searchQuery) this.state.searchQuery = m.searchQuery;
       this.closeDataModal();
@@ -4524,7 +4707,8 @@
         'NatureofFindings',
         'ActionDepartmenet/UnitRemarks',
         'Status',
-        'HSEQRemarks'
+        'HSEQRemarks',
+        'Year'
       ];
 
       const rows = data.map((d, i) => [
@@ -4540,7 +4724,8 @@
         `"${(d.nature || '').replace(/"/g, '""')}"`,
         `"${(d.actionRemarks || '').replace(/"/g, '""')}"`,
         `"${(d.status || '').replace(/"/g, '""')}"`,
-        `"${(d.hseqRemarks || '').replace(/"/g, '""')}"`
+        `"${(d.hseqRemarks || '').replace(/"/g, '""')}"`,
+        `"${(d.year || '').replace(/"/g, '""')}"`
       ]);
 
       const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\r\n');
@@ -4565,6 +4750,7 @@
         if (m.filterUnit && m.filterUnit !== 'all' && item.actionUnit !== m.filterUnit) return false;
         if (m.filterElement && m.filterElement !== 'all' && item.psmElement !== m.filterElement) return false;
         if (m.filterNature && m.filterNature !== 'all' && item.nature !== m.filterNature) return false;
+        if (m.filterYear && m.filterYear !== 'all' && String(item.year || '').trim() !== String(m.filterYear).trim()) return false;
         return true;
       });
     },
@@ -4588,6 +4774,7 @@
           (r.psmElement && r.psmElement.toLowerCase().includes(q)) ||
           (r.nature && r.nature.toLowerCase().includes(q)) ||
           (r.auditNo && r.auditNo.toLowerCase().includes(q)) ||
+          (r.year && String(r.year).toLowerCase().includes(q)) ||
           (r.actionRemarks && r.actionRemarks.toLowerCase().includes(q)) ||
           (r.hseqRemarks && r.hseqRemarks.toLowerCase().includes(q))
         );
@@ -4884,6 +5071,8 @@
       }
     }
   };
+
+  window.FPCL_PSM_SUITE = psmSuite;
 
   // Auto-register on DOM ready
   document.addEventListener('DOMContentLoaded', () => {

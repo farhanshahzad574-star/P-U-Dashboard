@@ -5,9 +5,9 @@
 window.FPCL_PSM_VALIDATION_SHEET_URL = (function() {
   try {
     const saved = localStorage.getItem('FPCL_PSM_VALIDATION_SHEET_URL');
-    if (saved && saved.trim()) return saved.trim();
+    if (saved && saved.trim() && saved.includes('1bFBRGKqIfO8Pn7qPSTU0pbdTB87ezDyXvVDnCbTGrx4')) return saved.trim();
   } catch (e) {}
-  return "https://docs.google.com/spreadsheets/d/e/2PACX-1vTyc0eRsaIpv3DWLdBbEplWo5FqrNwuCFpFrXM4_A6pRTkQgHz56DaN9FMV0cuCkQXnXfPDyKS_nsYC/pub?gid=1928323828&single=true&output=csv";
+  return "https://docs.google.com/spreadsheets/d/1bFBRGKqIfO8Pn7qPSTU0pbdTB87ezDyXvVDnCbTGrx4/gviz/tq?tqx=out:csv&sheet=PSM%20Validation";
 })();
 
 window.parseValidationCSV = function(csvText) {
@@ -53,11 +53,25 @@ window.parseValidationCSV = function(csvText) {
   }
   
   if (rows.length <= 1) return [];
+
+  const headerRow = rows[0] || [];
+  let colYear = -1;
+  for (let c = 0; c < headerRow.length; c++) {
+    const colName = String(headerRow[c] || '').toLowerCase().trim();
+    if (colName.includes('validation year') || colName === 'validation year' || colName === 'year') {
+      colYear = c;
+      break;
+    }
+  }
+  if (colYear === -1) {
+    colYear = 13; // Column N is index 13
+  }
   
   const records = [];
   for (let i = 1; i < rows.length; i++) {
     const r = rows[i];
     if (!r || r.length < 2 || !r[1]) continue;
+    const yearVal = (colYear !== -1 && r[colYear] !== undefined) ? String(r[colYear] || '').trim() : (r[13] ? String(r[13]).trim() : '');
     records.push({
       sr: parseInt(r[0], 10) || i,
       pNo: String(r[1] || '').trim(),
@@ -71,7 +85,9 @@ window.parseValidationCSV = function(csvText) {
       module: String(r[9] || '').trim(),
       endUserRemarks: String(r[10] || '').trim(),
       safetyRemarks: String(r[11] || '').trim(),
-      openClose: String(r[12] || (String(r[8] || '').trim().toLowerCase() === 'pass' ? 'Close' : 'Open')).trim()
+      openClose: String(r[12] || (String(r[8] || '').trim().toLowerCase() === 'pass' ? 'Close' : 'Open')).trim(),
+      validationYear: yearVal,
+      year: yearVal
     });
   }
   return records;
@@ -3566,11 +3582,17 @@ window.FPCL_PSM_VALIDATION_DATA = [
   }
 ];
 
-// Ensure openClose is populated on all static validation records (Column M / Open Close point)
+// Ensure openClose and validationYear are populated on all static validation records (Column M / Column N)
 if (Array.isArray(window.FPCL_PSM_VALIDATION_DATA)) {
   window.FPCL_PSM_VALIDATION_DATA.forEach(r => {
     if (!r.openClose) {
       r.openClose = (r.status || '').toLowerCase() === 'pass' ? 'Close' : 'Open';
+    }
+    if (r.validationYear === undefined) {
+      r.validationYear = r.year || '';
+    }
+    if (r.year === undefined) {
+      r.year = r.validationYear || '';
     }
   });
 }
