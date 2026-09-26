@@ -12,12 +12,13 @@
   'use strict';
 
   const SUB_HSE_EI_SHEET_ID = '1ZcxlHSoQk4MjHFs7m0hfujM_7ud8JNNrMQg0cLq-Ruw';
-  const SUB_HSE_EI_SHEET_TAB = 'Sub_HSE _E&I';
+  const SUB_HSE_EI_SHEET_TAB = 'Sub_HSE_E&I';
   const SUB_HSE_EI_SHEET_URL = `https://docs.google.com/spreadsheets/d/${SUB_HSE_EI_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SUB_HSE_EI_SHEET_TAB)}`;
 
   const subHseEiSuite = {
     state: {
       searchQuery: '',
+      yearFilter: 'all',    // Column C: Year from Date of Meeting
       refFilter: 'all',     // Column D: Ref. #
       deptFilter: 'all',    // Column G: Responsibility Department (Action by)
       statusFilter: 'all',  // Column H: Status (Open / Close)
@@ -74,6 +75,42 @@
       return [];
     },
 
+    // Extraction of Year from Column C: Date of Meeting
+    extractYearFromDate(dateStr) {
+      if (!dateStr) return '';
+      if (typeof window.extractSubHseEiYear === 'function') {
+        const y = window.extractSubHseEiYear(dateStr);
+        if (y) return y;
+      }
+      const str = String(dateStr).trim();
+      if (!str) return '';
+      const fourDigitMatch = str.match(/\b(19\d\d|20\d\d)\b/);
+      if (fourDigitMatch) return fourDigitMatch[1];
+      const twoDigitEndMatch = str.match(/(?:[-/.\s])(\d{2})$/);
+      if (twoDigitEndMatch) {
+        const yr2 = parseInt(twoDigitEndMatch[1], 10);
+        return String(yr2 >= 50 ? 1900 + yr2 : 2000 + yr2);
+      }
+      const twoDigitStartMatch = str.match(/^(\d{2})[-/.]\d{1,2}[-/.]\d{1,2}$/);
+      if (twoDigitStartMatch) {
+        const yr2 = parseInt(twoDigitStartMatch[1], 10);
+        return String(yr2 >= 50 ? 1900 + yr2 : 2000 + yr2);
+      }
+      const parsedTime = Date.parse(str);
+      if (!isNaN(parsedTime)) {
+        const d = new Date(parsedTime);
+        const yr = d.getFullYear();
+        if (yr >= 1990 && yr <= 2099) return String(yr);
+      }
+      return '';
+    },
+
+    getItemYear(item) {
+      if (!item) return '';
+      if (item.year) return String(item.year);
+      return this.extractYearFromDate(item.dateOfMeeting);
+    },
+
     // Instruction: Count point as open if empty cell is found
     isItemClosed(item) {
       if (!item) return false;
@@ -91,6 +128,14 @@
       const q = (s.searchQuery || '').trim().toLowerCase();
 
       return raw.filter(item => {
+        // Column C Filter: Year from Date of Meeting
+        if (s.yearFilter !== 'all') {
+          const itemYear = this.getItemYear(item);
+          if (itemYear !== s.yearFilter) {
+            return false;
+          }
+        }
+
         // Column D Filter: Ref. #
         if (s.refFilter !== 'all' && item.refNo !== s.refFilter) {
           return false;

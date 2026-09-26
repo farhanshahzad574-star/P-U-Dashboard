@@ -16,6 +16,7 @@
   const pssrSuite = {
     state: {
       searchQuery: '',
+      yearFilter: 'all',       // Year from Date_of_Initiator
       areaFilter: 'all',       // Column C
       deptFilter: 'all',       // Column M (Responsibility)
       statusFilter: 'all',     // Column O (Status)
@@ -28,6 +29,7 @@
       barSortMode: 'total',    // 'total' | 'open' | 'closed' | 'alpha'
       isTargetDatesModalOpen: false,
       targetDatesModalSearch: '',
+      targetDatesModalYear: 'all',
       targetDatesModalDept: 'all',
       targetDatesModalArea: 'all'
     },
@@ -98,7 +100,45 @@
     },
 
     /**
-     * Filters dataset by Area (Col C), Responsibility (Col M), Status (Col O), and Search Query
+     * Extracts 4-digit year from Date_of_Initiator (e.g. "26/Aug/25" -> "2025", "12/Feb/26" -> "2026")
+     */
+    extractYear(dateStr) {
+      if (!dateStr || typeof dateStr !== 'string') return '';
+      const clean = dateStr.trim();
+      if (!clean || clean === '-' || clean === 'N/A') return '';
+
+      // Case 1: 4-digit year like 2024, 2025, 2026 anywhere in string
+      const fourDigitMatch = clean.match(/\b(19\d\d|20\d\d)\b/);
+      if (fourDigitMatch) {
+        return fourDigitMatch[1];
+      }
+
+      // Case 2: DD/MMM/YY or DD-MMM-YY, e.g., 26/Aug/25 or 12-Feb-26
+      const parts = clean.split(/[\/\-\.\s]+/);
+      if (parts.length >= 3) {
+        const lastPart = parts[parts.length - 1].trim();
+        if (/^\d{2}$/.test(lastPart)) {
+          const yrNum = parseInt(lastPart, 10);
+          return yrNum < 50 ? String(2000 + yrNum) : String(1900 + yrNum);
+        }
+        const firstPart = parts[0].trim();
+        if (/^\d{4}$/.test(firstPart)) {
+          return firstPart;
+        }
+      }
+
+      // Case 3: JS Date parsing fallback
+      const parsed = new Date(clean);
+      if (!isNaN(parsed.getTime())) {
+        const y = parsed.getFullYear();
+        if (y >= 1990 && y <= 2100) return String(y);
+      }
+
+      return '';
+    },
+
+    /**
+     * Filters dataset by Year (Date_of_Initiator), Area (Col C), Responsibility (Col M), Status (Col O), and Search Query
      */
     getFilteredData() {
       const raw = this.getRawData();
@@ -106,6 +146,14 @@
       const q = s.searchQuery.toLowerCase().trim();
 
       return raw.filter(item => {
+        // Year filter (from column Date_of_Initiator)
+        if (s.yearFilter && s.yearFilter !== 'all') {
+          const itemYear = this.extractYear(item.dateOfInitiator);
+          if (itemYear !== s.yearFilter) {
+            return false;
+          }
+        }
+
         // Area filter (Column C)
         if (s.areaFilter !== 'all') {
           if ((item.area || '').toLowerCase() !== s.areaFilter.toLowerCase()) {
@@ -140,17 +188,19 @@
           const matchFacility = (item.facilityDescription || '').toLowerCase().includes(q);
           const matchArea = (item.area || '').toLowerCase().includes(q);
           const matchUnit = (item.initiatorUnit || '').toLowerCase().includes(q);
+          const matchDate = (item.dateOfInitiator || '').toLowerCase().includes(q);
+          const matchYear = this.extractYear(item.dateOfInitiator).includes(q);
           const matchOwner = (item.areaOwner || '').toLowerCase().includes(q);
           const matchDef = (item.acDeficiencies || '').toLowerCase().includes(q);
           const matchResp = (item.responsibility || '').toLowerCase().includes(q);
           const matchStatus = (item.status || '').toLowerCase().includes(q);
-          const matchDate = (item.targetDate || '').toLowerCase().includes(q);
+          const matchTargetDate = (item.targetDate || '').toLowerCase().includes(q);
           const matchCompDate = (item.completionDate || '').toLowerCase().includes(q);
           const matchRemarks = (item.remarks || '').toLowerCase().includes(q);
           const matchClarification = (item.clarification || '').toLowerCase().includes(q);
 
           if (!matchId && !matchFacility && !matchArea && !matchUnit && !matchOwner &&
-              !matchDef && !matchResp && !matchStatus && !matchDate && !matchCompDate &&
+              !matchDef && !matchResp && !matchStatus && !matchDate && !matchYear && !matchTargetDate && !matchCompDate &&
               !matchRemarks && !matchClarification) {
             return false;
           }
@@ -319,32 +369,72 @@
 
       if (rows.length < 2) return [];
 
+      // Dynamically locate column indices from header row for resilience
+      const headers = rows[0] || [];
+      const colMap = {};
+      headers.forEach((h, idx) => {
+        const key = String(h || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        colMap[key] = idx;
+      });
+
+      const getColIdx = (keys, fallbackIdx) => {
+        for (const k of keys) {
+          const cleanKey = k.toLowerCase().replace(/[^a-z0-9]/g, '');
+          if (colMap[cleanKey] !== undefined) return colMap[cleanKey];
+        }
+        return fallbackIdx;
+      };
+
+      const idIdx = getColIdx(['id'], 0);
+      const facilityIdx = getColIdx(['facilitydescription', 'facility_description'], 1);
+      const areaIdx = getColIdx(['area'], 2);
+      const unitIdx = getColIdx(['initiatorunit', 'initiator_unit'], 3);
+      const dateInitIdx = getColIdx(['dateofinitiator', 'date_of_initiator', 'dateinitiator', 'date_initiator'], 4);
+      const areaOwnerIdx = getColIdx(['areaowner', 'area_owner'], 5);
+      const formIdx = getColIdx(['shortlongform', 'short_long_form'], 6);
+      const bcPointsIdx = getColIdx(['bcpoints', 'bc_points'], 7);
+      const commAuthIdx = getColIdx(['commissiongauthorizationafterclosureofbcpoints', 'commissioningauth', 'commissioningauthorization'], 8);
+      const signDateIdx = getColIdx(['signingdateofauthorization', 'signingdateauth'], 9);
+      const numAcIdx = getColIdx(['numberofacpoints', 'numacpoints'], 10);
+      const acDefIdx = getColIdx(['acdeficiencies', 'ac_deficiencies'], 11);
+      const respIdx = getColIdx(['responsibility'], 12);
+      const targetDateIdx = getColIdx(['targetdate', 'target_date'], 13);
+      const statusIdx = getColIdx(['statusopenclose', 'status'], 14);
+      const ext1Idx = getColIdx(['targetdate1stextensions', 'targetdate1stext'], 15);
+      const ext2Idx = getColIdx(['targetdate2ndextensions', 'targetdate2ndext'], 16);
+      const ext3Idx = getColIdx(['targetdate3rdextensions', 'targetdate3rdext'], 17);
+      const compDateIdx = getColIdx(['completiondate', 'completion_date'], 18);
+      const compRemarksIdx = getColIdx(['completionremarks', 'completion_remarks'], 19);
+      const clarIdx = getColIdx(['clarification'], 20);
+      const resp2Idx = getColIdx(['responsibility2'], 21);
+      const remarksIdx = getColIdx(['remarks'], 22);
+
       const dataRows = rows.slice(1);
       return dataRows.map((r, idx) => ({
         rowIdx: idx + 1,
-        id: (r[0] || '').trim(),
-        facilityDescription: (r[1] || '').trim(),
-        area: (r[2] || '').trim(),
-        initiatorUnit: (r[3] || '').trim(),
-        dateOfInitiator: (r[4] || '').trim(),
-        areaOwner: (r[5] || '').trim(),
-        shortLongForm: (r[6] || '').trim(),
-        bcPoints: (r[7] || '').trim(),
-        commissioningAuth: (r[8] || '').trim(),
-        signingDateAuth: (r[9] || '').trim(),
-        numAcPoints: (r[10] || '').trim(),
-        acDeficiencies: (r[11] || '').trim(),
-        responsibility: (r[12] || '').trim(),
-        targetDate: (r[13] || '').trim(),
-        status: (r[14] || '').trim(),
-        targetDate1stExt: (r[15] || '').trim(),
-        targetDate2ndExt: (r[16] || '').trim(),
-        targetDate3rdExt: (r[17] || '').trim(),
-        completionDate: (r[18] || '').trim(),
-        completionRemarks: (r[19] || '').trim(),
-        clarification: (r[20] || '').trim(),
-        responsibility2: (r[21] || '').trim(),
-        remarks: (r[22] || '').trim()
+        id: (r[idIdx] || '').trim(),
+        facilityDescription: (r[facilityIdx] || '').trim(),
+        area: (r[areaIdx] || '').trim(),
+        initiatorUnit: (r[unitIdx] || '').trim(),
+        dateOfInitiator: (r[dateInitIdx] || '').trim(),
+        areaOwner: (r[areaOwnerIdx] || '').trim(),
+        shortLongForm: (r[formIdx] || '').trim(),
+        bcPoints: (r[bcPointsIdx] || '').trim(),
+        commissioningAuth: (r[commAuthIdx] || '').trim(),
+        signingDateAuth: (r[signDateIdx] || '').trim(),
+        numAcPoints: (r[numAcIdx] || '').trim(),
+        acDeficiencies: (r[acDefIdx] || '').trim(),
+        responsibility: (r[respIdx] || '').trim(),
+        targetDate: (r[targetDateIdx] || '').trim(),
+        status: (r[statusIdx] || '').trim(),
+        targetDate1stExt: (r[ext1Idx] || '').trim(),
+        targetDate2ndExt: (r[ext2Idx] || '').trim(),
+        targetDate3rdExt: (r[ext3Idx] || '').trim(),
+        completionDate: (r[compDateIdx] || '').trim(),
+        completionRemarks: (r[compRemarksIdx] || '').trim(),
+        clarification: (r[clarIdx] || '').trim(),
+        responsibility2: (r[resp2Idx] || '').trim(),
+        remarks: (r[remarksIdx] || '').trim()
       }));
     },
 
@@ -552,6 +642,7 @@
      */
     resetFilters() {
       this.state.searchQuery = '';
+      this.state.yearFilter = 'all';
       this.state.areaFilter = 'all';
       this.state.deptFilter = 'all';
       this.state.statusFilter = 'all';
@@ -567,6 +658,12 @@
 
     setSearch(q) {
       this.state.searchQuery = q;
+      this.state.page = 1;
+      this.render();
+    },
+
+    setYearFilter(val) {
+      this.state.yearFilter = val;
       this.state.page = 1;
       this.render();
     },
@@ -596,8 +693,9 @@
     openTargetDatesModal() {
       this.state.isTargetDatesModalOpen = true;
       this.state.targetDatesModalSearch = '';
-      this.state.targetDatesModalDept = 'all';
-      this.state.targetDatesModalArea = 'all';
+      this.state.targetDatesModalYear = this.state.yearFilter !== 'all' ? this.state.yearFilter : 'all';
+      this.state.targetDatesModalDept = this.state.deptFilter !== 'all' ? this.state.deptFilter : 'all';
+      this.state.targetDatesModalArea = this.state.areaFilter !== 'all' ? this.state.areaFilter : 'all';
       this.render();
 
       // Bind ESC key to close modal
@@ -621,6 +719,11 @@
       this.renderTargetDatesModalBodyOnly();
     },
 
+    setTargetDatesYear(yr) {
+      this.state.targetDatesModalYear = yr;
+      this.renderTargetDatesModalBodyOnly();
+    },
+
     setTargetDatesDept(dept) {
       this.state.targetDatesModalDept = dept;
       this.renderTargetDatesModalBodyOnly();
@@ -634,12 +737,19 @@
     getOpenObservationsWithDates() {
       const raw = this.getRawData();
       const search = (this.state.targetDatesModalSearch || '').toLowerCase().trim();
+      const yr = this.state.targetDatesModalYear || 'all';
       const dept = (this.state.targetDatesModalDept || 'all').toLowerCase();
       const area = (this.state.targetDatesModalArea || 'all').toLowerCase();
 
       return raw.filter(item => {
         // Only Open observations
         if (this.isClosedStatus(item.status)) return false;
+
+        // Year filter (Date_of_Initiator)
+        if (yr !== 'all') {
+          const itemYr = this.extractYear(item.dateOfInitiator);
+          if (itemYr !== yr) return false;
+        }
 
         // Dept filter
         if (dept !== 'all') {
@@ -991,6 +1101,7 @@
       const deptSummary = this.getDepartmentSummary(filtered);
 
       // Collect unique filter options from raw dataset
+      const years = Array.from(new Set(raw.map(i => this.extractYear(i.dateOfInitiator)).filter(Boolean))).sort();
       const areas = Array.from(new Set(raw.map(i => i.area).filter(Boolean))).sort();
       const depts = Array.from(new Set(raw.map(i => this.normalizeDept(i.responsibility)).filter(Boolean))).sort();
       const statuses = ['Close', 'Open', 'Extension'];
@@ -1168,14 +1279,14 @@
 
           <!-- ========================================================================= -->
           <!-- 3. UNIVERSAL FILTERS BAR (DIRECTLY BELOW KPIS)                            -->
-          <!-- Universal Filters (Column C: Area • Column M: Responsibility • Column O: Status) -->
+          <!-- Universal Filters (Year: Date_of_Initiator • Area • Responsibility • Status) -->
           <!-- ========================================================================= -->
           <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-sm space-y-3">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-2 border-b border-slate-100 gap-2">
               <div class="flex items-center gap-2">
                 <i data-lucide="filter" class="w-4 h-4 text-blue-600"></i>
                 <span class="text-xs sm:text-sm font-black text-slate-800 uppercase tracking-wider">
-                  Universal Filters (Column C: Area • Column M: Responsibility • Column O: Status)
+                  Universal Filters (Year: Date_of_Initiator • Column C: Area • Column M: Responsibility • Column O: Status)
                 </span>
               </div>
               <div class="flex items-center gap-2 text-xs font-bold text-slate-500">
@@ -1191,9 +1302,27 @@
               </div>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 pt-1">
               
-              <!-- Filter 1: Column C (Area) -->
+              <!-- Filter 1: Year (Date_of_Initiator) -->
+              <div class="space-y-1">
+                <label class="block text-[11px] font-extrabold text-slate-600 uppercase tracking-wider flex items-center gap-1">
+                  <i data-lucide="calendar" class="w-3 h-3 text-teal-600"></i>
+                  <span>Year (Date_of_Initiator)</span>
+                </label>
+                <div class="relative">
+                  <select
+                    id="filter-pssr-year"
+                    onchange="FPCL_PSSR_SUITE.setYearFilter(this.value)"
+                    class="w-full bg-slate-50 hover:bg-slate-100 border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer transition-all"
+                  >
+                    <option value="all" ${s.yearFilter === 'all' ? 'selected' : ''}>All Years (${years.length})</option>
+                    ${years.map(y => `<option value="${y}" ${s.yearFilter === y ? 'selected' : ''}>Year ${y}</option>`).join('')}
+                  </select>
+                </div>
+              </div>
+
+              <!-- Filter 2: Column C (Area) -->
               <div class="space-y-1">
                 <label class="block text-[11px] font-extrabold text-slate-600 uppercase tracking-wider">
                   Area (Column C)
@@ -1210,7 +1339,7 @@
                 </div>
               </div>
 
-              <!-- Filter 2: Column M (Responsibility / Department) -->
+              <!-- Filter 3: Column M (Responsibility / Department) -->
               <div class="space-y-1">
                 <label class="block text-[11px] font-extrabold text-slate-600 uppercase tracking-wider">
                   Responsibility (Column M)
@@ -1227,7 +1356,7 @@
                 </div>
               </div>
 
-              <!-- Filter 3: Column O (Status Open/Close) -->
+              <!-- Filter 4: Column O (Status Open/Close) -->
               <div class="space-y-1">
                 <label class="block text-[11px] font-extrabold text-slate-600 uppercase tracking-wider">
                   Status (Column O)
@@ -1246,7 +1375,7 @@
                 </div>
               </div>
 
-              <!-- Filter 4: Text Search & Quick Reset -->
+              <!-- Filter 5: Text Search & Quick Reset -->
               <div class="space-y-1">
                 <label class="block text-[11px] font-extrabold text-slate-600 uppercase tracking-wider">
                   Search Filter
@@ -1686,6 +1815,14 @@
 
               <div class="flex items-center gap-2 w-full sm:w-auto">
                 <select
+                  onchange="FPCL_PSSR_SUITE.setTargetDatesYear(this.value)"
+                  class="bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-500 cursor-pointer shadow-2xs flex-1 sm:flex-initial"
+                >
+                  <option value="all" ${s.targetDatesModalYear === 'all' ? 'selected' : ''}>All Years (${years.length})</option>
+                  ${years.map(y => `<option value="${y}" ${s.targetDatesModalYear === y ? 'selected' : ''}>Year ${y}</option>`).join('')}
+                </select>
+
+                <select
                   onchange="FPCL_PSSR_SUITE.setTargetDatesDept(this.value)"
                   class="bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-500 cursor-pointer shadow-2xs flex-1 sm:flex-initial"
                 >
@@ -1793,7 +1930,7 @@
                 <th class="px-4 py-3 border-r border-slate-200">Facility Description (Col B)</th>
                 <th class="px-3 py-3 border-r border-slate-200">Area (Col C)</th>
                 <th class="px-3 py-3 border-r border-slate-200">Initiator Unit (Col D)</th>
-                <th class="px-3 py-3 border-r border-slate-200">Date Initiator (Col E)</th>
+                <th class="px-3 py-3 border-r border-slate-200">Date Initiator (Date_of_Initiator)</th>
                 <th class="px-3 py-3 border-r border-slate-200">Area Owner (Col F)</th>
                 <th class="px-3 py-3 border-r border-slate-200">Form (Col G)</th>
                 <th class="px-3 py-3 border-r border-slate-200 text-center">BC Pts (Col H)</th>

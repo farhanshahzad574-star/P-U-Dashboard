@@ -94,10 +94,10 @@
     <script src="/assets/strategicSuite.js?v=20260920c"></script>
     <!-- IMS Audits Dataset & Specialized Executive Suite -->
     <script src="/assets/imsData.js?v=20260923e"></script>
-    <script src="/assets/imsSuite.js?v=20260923f"></script>
+    <script src="/assets/imsSuite.js?v=20260926g"></script>
     <!-- PSSR (Pre-Startup Safety Review) Dataset & Specialized Executive Suite -->
     <script src="/assets/pssrData.js?v=20260923b"></script>
-    <script src="/assets/pssrSuite.js?v=20260924e"></script>
+    <script src="/assets/pssrSuite.js?v=20260926f"></script>
     <!-- CAPEX (Capital Expenditure) Specialized Executive Suite -->
     <script src="/assets/capexSuite.js?v=20260925a"></script>
     <!-- Sub HSE - P (Production HSE Sub-Committee) Dataset & Specialized Executive Suite -->
@@ -109,6 +109,9 @@
     <!-- EHSE (Executive HSE Committee) Dataset & Specialized Executive Suite -->
     <script src="/assets/ehseData.js?v=20260926a"></script>
     <script src="/assets/ehseSuite.js?v=20260926a"></script>
+    <!-- Sub HSE – Mech (Mechanical HSE Sub-Committee) Dataset & Specialized Executive Suite -->
+    <script src="/assets/subHseMechData.js?v=20260926b"></script>
+    <script src="/assets/subHseMechSuite.js?v=20260926b"></script>
 
     <style>
       /* Base font legibility: standard across devices, calibrated for wall displays */
@@ -1034,8 +1037,8 @@
                   class="appearance-none bg-white hover:bg-slate-50 focus:bg-white border border-slate-300 focus:border-blue-600 rounded-lg text-xs font-bold text-slate-800 pl-2.5 pr-7 py-1 shadow-2xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer transition-all"
                   title="Filter HSEQ KPIs by specific year or view sum of all values"
                 >
-                  <option value="all" selected>All Years (Sum of All)</option>
-                  <option value="2026">2026</option>
+                  <option value="all">All Years (Sum of All)</option>
+                  <option value="2026" selected>2026</option>
                   <option value="2025">2025</option>
                   <option value="2024">2024</option>
                   <option value="2023">2023</option>
@@ -1052,9 +1055,9 @@
               </div>
 
               <!-- Active Status Badge -->
-              <span id="hseq-year-status-badge" class="hidden items-center gap-1.5 px-2.5 py-0.5 rounded-lg text-[11px] font-bold text-blue-800 bg-blue-50/90 border border-blue-200 shadow-2xs">
-                <i data-lucide="sigma" class="w-3 h-3 text-blue-600"></i>
-                <span id="hseq-year-status-text"></span>
+              <span id="hseq-year-status-badge" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg text-[11px] font-bold text-emerald-800 bg-emerald-50/90 border border-emerald-200 shadow-2xs">
+                <i data-lucide="calendar" class="w-3 h-3 text-emerald-600"></i>
+                <span id="hseq-year-status-text">Filtered: Year 2026</span>
               </span>
             </div>
 
@@ -1099,7 +1102,7 @@
               <!-- Main Value -->
               <div class="flex-1 flex flex-col justify-center items-center text-center min-w-0 w-full overflow-hidden my-auto py-1">
                 <div id="kpi-val-safe-manhours" class="text-xl min-[360px]:text-2xl min-[400px]:text-[1.65rem] sm:text-3xl lg:text-[1.55rem] xl:text-[1.95rem] font-black font-mono tracking-tight text-emerald-800 leading-none whitespace-nowrap text-center -mx-2 sm:mx-0 my-auto cursor-pointer" title="Safe Manhours (Click to view trend)">
-                  222,004,450
+                  22,200,445
                 </div>
               </div>
             </div>
@@ -1135,7 +1138,7 @@
                 <!-- Planned Box -->
                 <div class="flex-1 flex flex-col items-center justify-center bg-blue-50/90 border border-blue-200/90 rounded-lg py-1 px-1 shadow-2xs hover:bg-blue-100/80 transition-colors">
                   <span class="text-[8px] sm:text-[9px] font-black uppercase tracking-wider text-blue-700 font-mono">Planned</span>
-                  <span id="kpi-val-trir-planned" class="text-base sm:text-xl xl:text-2xl font-black font-mono text-blue-950 leading-none mt-0.5" title="TRIR Planned Target: 50">50</span>
+                  <span id="kpi-val-trir-planned" class="text-base sm:text-xl xl:text-2xl font-black font-mono text-blue-950 leading-none mt-0.5" title="TRIR Planned Target: 5">5</span>
                 </div>
                 <!-- Actual Box -->
                 <div class="flex-1 flex flex-col items-center justify-center bg-emerald-50/90 border border-emerald-200/90 rounded-lg py-1 px-1 shadow-2xs hover:bg-emerald-100/80 transition-colors">
@@ -1242,7 +1245,7 @@
               <!-- Main Value -->
               <div class="flex-1 flex flex-col justify-center items-center text-center my-auto py-1">
                 <div id="kpi-val-first-aid" class="text-2xl sm:text-4xl lg:text-5xl xl:text-6xl font-black font-mono tracking-tight text-amber-800 leading-none text-center hseq-kpi-val cursor-pointer" title="First Aid Case (Click to view trend)">
-                  50
+                  5
                 </div>
               </div>
             </div>
@@ -1276,7 +1279,7 @@
               <!-- Main Value -->
               <div class="flex-1 flex flex-col justify-center items-center text-center my-auto py-1">
                 <div id="kpi-val-nearmiss" class="text-2xl sm:text-4xl lg:text-5xl xl:text-6xl font-black font-mono tracking-tight text-sky-800 leading-none text-center hseq-kpi-val cursor-pointer" title="Near Miss (Click to view trend)">
-                  240
+                  24
                 </div>
               </div>
             </div>
@@ -1944,6 +1947,13 @@
           <!-- Populated dynamically via FPCL_EHSE_SUITE.render() -->
         </div>
 
+        <!-- ========================================================================= -->
+        <!-- DEDICATED FULL-SCALE SUB HSE – MECH EXECUTIVE BI SUITE CONTAINER          -->
+        <!-- ========================================================================= -->
+        <div id="sub-hse-mech-specialized-container" class="hidden space-y-6">
+          <!-- Populated dynamically via FPCL_SUB_HSE_MECH_SUITE.render() -->
+        </div>
+
       </section>
 
     </main>
@@ -2467,33 +2477,6 @@
        */
       const DASHBOARD_REGISTRY = [
         {
-          id: 'hseq',
-          name: 'HSEQ',
-          code: 'HSEQ',
-          icon: 'shield-check',
-          status: 'Awaiting Data',
-          hasSheetLink: false,
-          category: 'Executive & Governance',
-          department: 'HSEQ Directorate',
-          cadence: 'Continuous / Monthly',
-          description: 'Health, Safety, Environment & Quality integrated governance, performance indicators, compliance benchmarks & operational audits.',
-          color: {
-            bg: '#E6F7F2',
-            primary: '#059669',
-            secondary: '#34D399',
-            text: '#064E3B'
-          },
-          gradient: 'from-emerald-600 via-teal-600 to-cyan-600',
-          gradientStop1: '#059669',
-          gradientStop2: '#0D9488',
-          tagStyle: 'bg-emerald-50 text-emerald-800 border-emerald-200',
-          kpis: { total: 0, closed: 0, inProgress: 0, overdue: 0, compliance: '0.0%' },
-          punchList: { open: 0, closed: 0, total: 0, rate: '0.0%' },
-          dataReadiness: { master: '0%', signoff: '0%' },
-          statusComment: 'Data will be provided later.',
-          actions: []
-        },
-        {
           id: 'strategic',
           name: 'Strategic',
           code: 'STRATEGIC',
@@ -2697,33 +2680,6 @@
           actions: []
         },
         {
-          id: 'executive-hse-committee-ehsec',
-          name: 'EHSE',
-          code: 'EHSE',
-          icon: 'shield-check',
-          status: 'Active',
-          hasSheetLink: true,
-          category: 'Executive & Governance',
-          department: 'Executive HSE Directorate',
-          cadence: 'Live Sync / Google Sheet',
-          description: 'Executive leadership governance over plant-wide occupational health, safety culture, environmental compliance & statutory audits • Live synchronized with Google Sheet tab EHSE (1I4oX4kPr6d0_7q--9OcoJWs0W7IQG1dK1rBmNO7BlGo).',
-          color: {
-            bg: '#F0FDFA',
-            primary: '#0D5C75',
-            secondary: '#10B981',
-            text: '#042F2E'
-          },
-          gradient: 'from-[#031B4E] via-[#0D5C75] to-[#10B981]',
-          gradientStop1: '#0D5C75',
-          gradientStop2: '#10B981',
-          tagStyle: 'bg-teal-50 text-teal-800 border-teal-200',
-          kpis: { total: 4, closed: 0, inProgress: 4, overdue: 0, compliance: '0.0%' },
-          punchList: { open: 4, closed: 0, total: 4, rate: '0.0%' },
-          dataReadiness: { master: '100%', signoff: '100%' },
-          statusComment: 'Live Google Sheets: EHSE Tab (1I4oX4kPr6d0_7q--9OcoJWs0W7IQG1dK1rBmNO7BlGo)',
-          actions: []
-        },
-        {
           id: 'sub-hse-p',
           name: 'Sub HSE - P',
           code: 'Sub HSE-P',
@@ -2778,165 +2734,84 @@
           actions: []
         },
         {
+          id: 'executive-hse-committee-ehsec',
+          name: 'EHSE',
+          code: 'EHSE',
+          icon: 'shield-check',
+          status: 'Active',
+          hasSheetLink: true,
+          category: 'Executive & Governance',
+          department: 'Executive HSE Directorate',
+          cadence: 'Live Sync / Google Sheet',
+          description: 'Executive leadership governance over plant-wide occupational health, safety culture, environmental compliance & statutory audits • Live synchronized with Google Sheet tab EHSE (1I4oX4kPr6d0_7q--9OcoJWs0W7IQG1dK1rBmNO7BlGo).',
+          color: {
+            bg: '#F0FDFA',
+            primary: '#0D5C75',
+            secondary: '#10B981',
+            text: '#042F2E'
+          },
+          gradient: 'from-[#031B4E] via-[#0D5C75] to-[#10B981]',
+          gradientStop1: '#0D5C75',
+          gradientStop2: '#10B981',
+          tagStyle: 'bg-teal-50 text-teal-800 border-teal-200',
+          kpis: { total: 4, closed: 0, inProgress: 4, overdue: 0, compliance: '0.0%' },
+          punchList: { open: 4, closed: 0, total: 4, rate: '0.0%' },
+          dataReadiness: { master: '100%', signoff: '100%' },
+          statusComment: 'Live Google Sheets: EHSE Tab (1I4oX4kPr6d0_7q--9OcoJWs0W7IQG1dK1rBmNO7BlGo)',
+          actions: []
+        },
+        {
           id: 'sub-hse-mech',
-          name: 'Sub HSE – Mech.',
+          name: 'Sub HSE – Mech',
           code: 'Sub HSE-Mech',
           icon: 'wrench',
-          status: 'Awaiting Sheet Link',
-          hasSheetLink: false,
+          status: 'Active',
+          hasSheetLink: true,
           category: 'Sub HSE Committees',
           department: 'Mechanical HSE Sub-Committee',
           cadence: 'Weekly Maintenance Review',
           description: 'Mechanical HSE sub-committee: rotating equipment containment, vibration trip safeguards, piping vibration & flange torque audits.',
           color: {
-            bg: '#FBEFF1',
-            primary: '#C25B72',
-            secondary: '#DE9AA9',
-            text: '#2B2E33'
+            bg: '#F0F9FF',
+            primary: '#0284C7',
+            secondary: '#38BDF8',
+            text: '#0F172A'
           },
-          gradient: 'from-rose-500 via-red-600 to-orange-500',
-          gradientStop1: '#E11D48',
-          gradientStop2: '#F97316',
-          tagStyle: 'bg-rose-50 text-rose-700 border-rose-200',
-          kpis: { total: 0, closed: 0, inProgress: 0, overdue: 0, compliance: '0.0%' },
-          punchList: { open: 0, closed: 0, total: 0, rate: '0.0%' },
-          dataReadiness: { master: '0%', signoff: '0%' },
-          statusComment: 'Awaiting Google Sheet connection.',
+          gradient: 'from-blue-600 via-indigo-600 to-teal-500',
+          gradientStop1: '#2563EB',
+          gradientStop2: '#0D9488',
+          tagStyle: 'bg-sky-50 text-sky-800 border-sky-300',
+          kpis: { total: 13, closed: 4, inProgress: 9, overdue: 0, compliance: '30.8%' },
+          punchList: { open: 9, closed: 4, total: 13, rate: '30.8%' },
+          dataReadiness: { master: '100%', signoff: '100%' },
+          statusComment: 'Live Google Sheets: Sub_HSE_Mech Tab (1Put-VhgQkpG43kAuW_l3cRtj4MH6Dl3aa2gms9IaLqQ)',
           actions: []
         },
         {
-          id: 'sub-hse-eri',
-          name: 'Sub HSE - ERI',
-          code: 'Sub HSE-ERI',
-          icon: 'flame',
-          status: 'Awaiting Sheet Link',
+          id: 'hseq',
+          name: 'HSEQ',
+          code: 'HSEQ',
+          icon: 'shield-check',
+          status: 'Awaiting Data',
           hasSheetLink: false,
-          category: 'Sub HSE Committees',
-          department: 'Emergency Response & Incident HSE Sub-Committee',
-          cadence: 'Bi-Weekly Drills',
-          description: 'Emergency Response & Incident sub-committee: plant emergency brigade readiness, fire hydrant ring tests, toxic gas sirens & drill actions.',
+          category: 'Executive & Governance',
+          department: 'HSEQ Directorate',
+          cadence: 'Continuous / Monthly',
+          description: 'Health, Safety, Environment & Quality integrated governance, performance indicators, compliance benchmarks & operational audits.',
           color: {
-            bg: '#FBEAEA',
-            primary: '#C3564F',
-            secondary: '#DE9A96',
-            text: '#2B2E33'
+            bg: '#E6F7F2',
+            primary: '#059669',
+            secondary: '#34D399',
+            text: '#064E3B'
           },
-          gradient: 'from-red-600 via-orange-500 to-amber-500',
-          gradientStop1: '#DC2626',
-          gradientStop2: '#F59E0B',
-          tagStyle: 'bg-red-50 text-red-700 border-red-200',
-          kpis: { total: 0, closed: 0, inProgress: 0, overdue: 0, compliance: '0.0%' },
-          punchList: { open: 0, closed: 0, total: 0, rate: '0.0%' },
-          dataReadiness: { master: '0%', signoff: '0%' },
-          statusComment: 'Awaiting Google Sheet connection.',
-          actions: []
-        },
-        {
-          id: 'sub-hse-rca',
-          name: 'RCA',
-          code: 'RCA',
-          icon: 'search',
-          status: 'Awaiting Sheet Link',
-          hasSheetLink: false,
-          category: 'Process Safety & Quality',
-          department: 'Root Cause Analysis & Reliability Unit',
-          cadence: 'Event-Driven / Monthly',
-          description: 'Root Cause Analysis tracking: structured 5-Why, Fishbone, and Fault Tree investigations to eliminate repetitive process and asset trips.',
-          color: {
-            bg: '#FDF0EC',
-            primary: '#D97B5B',
-            secondary: '#EBAE99',
-            text: '#2B2E33'
-          },
-          gradient: 'from-amber-500 via-orange-500 to-rose-500',
-          gradientStop1: '#D97706',
-          gradientStop2: '#E11D48',
-          tagStyle: 'bg-amber-50 text-amber-700 border-amber-200',
-          kpis: { total: 0, closed: 0, inProgress: 0, overdue: 0, compliance: '0.0%' },
-          punchList: { open: 0, closed: 0, total: 0, rate: '0.0%' },
-          dataReadiness: { master: '0%', signoff: '0%' },
-          statusComment: 'Awaiting Google Sheet connection.',
-          actions: []
-        },
-        {
-          id: 'inspection-report-actions',
-          name: 'Inspection Report Actions',
-          code: 'Inspection',
-          icon: 'clipboard-check',
-          status: 'Awaiting Sheet Link',
-          hasSheetLink: false,
-          category: 'Process Safety & Quality',
-          department: 'Technical Inspection & Integrity Unit',
-          cadence: 'Daily / Continuous',
-          description: 'Inspection Report Actions: pressure vessel ultrasonic thickness measurements, corrosion rate monitoring & NDT compliance tracking.',
-          color: {
-            bg: '#EEF2F5',
-            primary: '#56708A',
-            secondary: '#9AAEC0',
-            text: '#2B2E33'
-          },
-          gradient: 'from-cyan-500 via-blue-600 to-indigo-600',
-          gradientStop1: '#0891B2',
-          gradientStop2: '#4F46E5',
-          tagStyle: 'bg-cyan-50 text-cyan-800 border-cyan-200',
-          kpis: { total: 0, closed: 0, inProgress: 0, overdue: 0, compliance: '0.0%' },
-          punchList: { open: 0, closed: 0, total: 0, rate: '0.0%' },
-          dataReadiness: { master: '0%', signoff: '0%' },
-          statusComment: 'Awaiting Google Sheet connection.',
-          actions: []
-        },
-        {
-          id: 'pha-recommendations',
-          name: 'PHA recommendations',
-          code: 'PHA',
-          icon: 'alert-octagon',
-          status: 'Awaiting Sheet Link',
-          hasSheetLink: false,
-          category: 'Process Safety & Quality',
-          department: 'Process Hazard Analysis Team',
-          cadence: 'Continuous Tracking',
-          description: 'Process Hazard Analysis recommendations: HAZOP, LOPA, What-If lifecycle tracking, Independent Protection Layers (IPL) & SIF upgrades.',
-          color: {
-            bg: '#EAF8F3',
-            primary: '#2FA37E',
-            secondary: '#83CBB0',
-            text: '#2B2E33'
-          },
-          gradient: 'from-emerald-500 via-teal-600 to-cyan-600',
+          gradient: 'from-emerald-600 via-teal-600 to-cyan-600',
           gradientStop1: '#059669',
-          gradientStop2: '#06B6D4',
+          gradientStop2: '#0D9488',
           tagStyle: 'bg-emerald-50 text-emerald-800 border-emerald-200',
           kpis: { total: 0, closed: 0, inProgress: 0, overdue: 0, compliance: '0.0%' },
           punchList: { open: 0, closed: 0, total: 0, rate: '0.0%' },
           dataReadiness: { master: '0%', signoff: '0%' },
-          statusComment: 'Awaiting Google Sheet connection.',
-          actions: []
-        },
-        {
-          id: 'risk-survey',
-          name: 'Risk survey',
-          code: 'Risk survey',
-          icon: 'scale',
-          status: 'Awaiting Sheet Link',
-          hasSheetLink: false,
-          category: 'Executive & Governance',
-          department: 'Corporate Risk & Underwriting Survey Unit',
-          cadence: 'Quarterly / Annual',
-          description: 'Risk survey actions: property insurance, broker risk engineering survey recommendations, loss prevention & asset resilience audits.',
-          color: {
-            bg: '#EEF0FA',
-            primary: '#5B5FA8',
-            secondary: '#9C9ECF',
-            text: '#2B2E33'
-          },
-          gradient: 'from-indigo-500 via-purple-600 to-violet-600',
-          gradientStop1: '#4F46E5',
-          gradientStop2: '#7C3AED',
-          tagStyle: 'bg-indigo-50 text-indigo-700 border-indigo-200',
-          kpis: { total: 0, closed: 0, inProgress: 0, overdue: 0, compliance: '0.0%' },
-          punchList: { open: 0, closed: 0, total: 0, rate: '0.0%' },
-          dataReadiness: { master: '0%', signoff: '0%' },
-          statusComment: 'Awaiting Google Sheet connection.',
+          statusComment: 'Data will be provided later.',
           actions: []
         }
       ];
@@ -2954,6 +2829,7 @@
         categoryFilter: 'all', // 'all', 'Executive & Governance', etc.
         overviewDeptFilter: 'all',
         overviewOpenCloseFilter: 'all',
+        hseqSelectedYear: String(new Date().getFullYear()), // Default to current year for HSEQ_KPI sheet
         activeDashboardId: null,
         connectedSheetUrl: (typeof localStorage !== 'undefined' && localStorage.getItem('FPCL_CONNECTED_SHEET_URL')) || 'https://docs.google.com/spreadsheets/d/1LJOdN8T7UUjaZbSfsCrO_Hdg1eoAgqnuE7mJDGtB8qo/export?format=csv&gid=1344438021',
         connectedPlrStatusSheetUrl: (typeof localStorage !== 'undefined' && localStorage.getItem('FPCL_CONNECTED_PLR_STATUS_SHEET_URL')) || 'https://docs.google.com/spreadsheets/d/1LJOdN8T7UUjaZbSfsCrO_Hdg1eoAgqnuE7mJDGtB8qo/export?format=csv&gid=0',
@@ -4546,11 +4422,16 @@
               this.state.hseqKpis = data.kpis || data.totals || null;
               this.state.hseqLatest = data.latest || null;
 
+              const currentCalendarYear = String(new Date().getFullYear());
+              if (!this.state.hseqSelectedYear) {
+                this.state.hseqSelectedYear = currentCalendarYear;
+              }
+
               // Populate Year select dropdown if available
               this.populateHseqYearDropdown(this.state.hseqYears);
 
-              // Apply current year filter (default: 'all' to show sum of all values)
-              this.applyHseqKpiFilter(this.state.hseqSelectedYear || 'all');
+              // Apply current year filter by default (defaults to current year for HSEQ_KPI)
+              this.applyHseqKpiFilter(this.state.hseqSelectedYear);
 
               const lastUpdatedEl = document.getElementById('hseq-kpi-last-updated');
               if (lastUpdatedEl) {
@@ -4575,7 +4456,11 @@
                 firstAidCase: 50,
                 nearmiss: 240
               };
-              this.applyHseqKpiFilter(this.state.hseqSelectedYear || 'all');
+              const currentCalendarYear = String(new Date().getFullYear());
+              if (!this.state.hseqSelectedYear) {
+                this.state.hseqSelectedYear = currentCalendarYear;
+              }
+              this.applyHseqKpiFilter(this.state.hseqSelectedYear);
             }
             if (showToastNotice && typeof this.showToast === 'function') {
               this.showToast('HSEQ Sync', 'Showing cached Google Sheet values.', 'info');
@@ -4825,12 +4710,19 @@
           const select = document.getElementById('hseq-year-select');
           if (!select || !Array.isArray(years) || years.length === 0) return;
 
-          const currentVal = select.value || this.state.hseqSelectedYear || 'all';
+          const currentCalendarYear = String(new Date().getFullYear());
+          const defaultYear = years.some(y => String(y) === currentCalendarYear)
+            ? currentCalendarYear
+            : (years[years.length - 1] ? String(years[years.length - 1]) : currentCalendarYear);
+
+          const currentVal = this.state.hseqSelectedYear || defaultYear;
+          this.state.hseqSelectedYear = currentVal;
+
           const sortedYears = [...years].sort((a, b) => Number(b) - Number(a));
 
           select.innerHTML = `
-            <option value="all">All Years (Sum of All)</option>
-            ${sortedYears.map(y => `<option value="${y}">Year ${y}</option>`).join('')}
+            <option value="all" ${currentVal === 'all' ? 'selected' : ''}>All Years (Sum of All)</option>
+            ${sortedYears.map(y => `<option value="${y}" ${String(y) === String(currentVal) ? 'selected' : ''}>${y}</option>`).join('')}
           `;
           select.value = currentVal;
         },
@@ -4847,6 +4739,11 @@
          * Apply HSEQ KPI Year Filter (all = sum of all values, or specific year)
          */
         applyHseqKpiFilter(selectedYear) {
+          const select = document.getElementById('hseq-year-select');
+          if (select && selectedYear && select.value !== selectedYear) {
+            select.value = selectedYear;
+          }
+
           const isAll = !selectedYear || selectedYear === 'all';
           const badgeText = document.getElementById('hseq-year-status-text');
           const badgeEl = document.getElementById('hseq-year-status-badge');
@@ -6340,6 +6237,10 @@
           const subHsePContainer = document.getElementById('sub-hse-p-specialized-container');
           const subHseEiContainer = document.getElementById('sub-hse-ei-specialized-container');
           const ehseContainer = document.getElementById('ehse-specialized-container');
+          const subHseMechContainer = document.getElementById('sub-hse-mech-specialized-container');
+
+          // Always ensure all specialized containers are hidden initially unless specifically activated
+          if (subHseMechContainer) { subHseMechContainer.classList.add('hidden'); subHseMechContainer.hidden = true; }
 
           if (dashboardId === 'strategic') {
             if (headerCard) { headerCard.classList.add('hidden'); headerCard.hidden = true; }
@@ -6722,6 +6623,43 @@
               sheetKeyEl.textContent = 'EHSE Dashboard • Live Synchronized (1I4oX4kPr6d0_7q--9OcoJWs0W7IQG1dK1rBmNO7BlGo)';
               sheetKeyEl.title = 'Live Google Sheets: EHSE Tab (1I4oX4kPr6d0_7q--9OcoJWs0W7IQG1dK1rBmNO7BlGo)';
             }
+          } else if (dashboardId === 'sub-hse-mech') {
+            if (headerCard) { headerCard.classList.add('hidden'); headerCard.hidden = true; }
+            if (connCard) { connCard.classList.add('hidden'); connCard.hidden = true; }
+            const psmActions = document.getElementById('detail-psm-actions');
+            if (psmActions) { psmActions.classList.add('hidden'); psmActions.hidden = true; }
+            if (stdContainer) { stdContainer.classList.add('hidden'); stdContainer.hidden = true; }
+            if (plrContainer) { plrContainer.classList.add('hidden'); plrContainer.hidden = true; }
+            if (psmContainer) { psmContainer.classList.add('hidden'); psmContainer.hidden = true; }
+            if (strategicContainer) {
+              strategicContainer.classList.add('hidden');
+              strategicContainer.hidden = true;
+              strategicContainer.style.marginTop = '';
+            }
+            if (imsContainer) { imsContainer.classList.add('hidden'); imsContainer.hidden = true; }
+            if (pssrContainer) { pssrContainer.classList.add('hidden'); pssrContainer.hidden = true; }
+            if (capexContainer) { capexContainer.classList.add('hidden'); capexContainer.hidden = true; }
+            if (subHsePContainer) { subHsePContainer.classList.add('hidden'); subHsePContainer.hidden = true; }
+            if (subHseEiContainer) { subHseEiContainer.classList.add('hidden'); subHseEiContainer.hidden = true; }
+            if (ehseContainer) { ehseContainer.classList.add('hidden'); ehseContainer.hidden = true; }
+            if (subHseMechContainer) {
+              subHseMechContainer.classList.remove('hidden');
+              subHseMechContainer.hidden = false;
+              if (window.FPCL_SUB_HSE_MECH_SUITE) {
+                if (typeof window.FPCL_SUB_HSE_MECH_SUITE.render === 'function') {
+                  window.FPCL_SUB_HSE_MECH_SUITE.render();
+                }
+                if (typeof window.FPCL_SUB_HSE_MECH_SUITE.syncLiveFeed === 'function') {
+                  window.FPCL_SUB_HSE_MECH_SUITE.syncLiveFeed({ silent: true });
+                }
+              }
+            }
+            const breadcrumbActive = document.getElementById('breadcrumb-active-name');
+            if (breadcrumbActive) breadcrumbActive.textContent = 'Sub HSE – Mech Executive Dashboard';
+            if (sheetKeyEl) {
+              sheetKeyEl.textContent = 'Sub HSE – Mech Dashboard • Live Synchronized (1Put-VhgQkpG43kAuW_l3cRtj4MH6Dl3aa2gms9IaLqQ)';
+              sheetKeyEl.title = 'Live Google Sheets: Sub_HSE_Mech Tab (1Put-VhgQkpG43kAuW_l3cRtj4MH6Dl3aa2gms9IaLqQ)';
+            }
           } else {
             if (headerCard) { headerCard.classList.remove('hidden'); headerCard.hidden = false; }
             if (plrContainer) { plrContainer.classList.add('hidden'); plrContainer.hidden = true; }
@@ -6934,6 +6872,11 @@
           if (ehseContainer) {
             ehseContainer.classList.add('hidden');
             ehseContainer.hidden = true;
+          }
+          const subHseMechContainer = document.getElementById('sub-hse-mech-specialized-container');
+          if (subHseMechContainer) {
+            subHseMechContainer.classList.add('hidden');
+            subHseMechContainer.hidden = true;
           }
           if (window.FPCL_STRATEGIC_SUITE && window.FPCL_STRATEGIC_SUITE.state) {
             window.FPCL_STRATEGIC_SUITE.state.currentView = 'grid';

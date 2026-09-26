@@ -264,6 +264,48 @@
   ];
 
   /**
+   * Robust Year extractor from Column C (Date of Meeting)
+   * Handles formats like: "23-Apr-25", "12-Dec-2025", "2025-04-23", "23/04/2025", "2025", etc.
+   */
+  function extractYearFromDate(dateStr) {
+    if (!dateStr) return '';
+    const str = String(dateStr).trim();
+    if (!str) return '';
+
+    // 1. Explicit 4-digit year (1990-2099) anywhere in string
+    const fourDigitMatch = str.match(/\b(19\d\d|20\d\d)\b/);
+    if (fourDigitMatch) {
+      return fourDigitMatch[1];
+    }
+
+    // 2. 2-digit year at end of date: "23-Apr-25", "4-Jun-25", "12/10/25", "23.04.25"
+    const twoDigitEndMatch = str.match(/(?:[-/.\s])(\d{2})$/);
+    if (twoDigitEndMatch) {
+      const yr2 = parseInt(twoDigitEndMatch[1], 10);
+      return String(yr2 >= 50 ? 1900 + yr2 : 2000 + yr2);
+    }
+
+    // 3. 2-digit year at start of date: "25-04-23" (YY-MM-DD)
+    const twoDigitStartMatch = str.match(/^(\d{2})[-/.]\d{1,2}[-/.]\d{1,2}$/);
+    if (twoDigitStartMatch) {
+      const yr2 = parseInt(twoDigitStartMatch[1], 10);
+      return String(yr2 >= 50 ? 1900 + yr2 : 2000 + yr2);
+    }
+
+    // 4. Fallback using Date.parse
+    const parsedTime = Date.parse(str);
+    if (!isNaN(parsedTime)) {
+      const d = new Date(parsedTime);
+      const yr = d.getFullYear();
+      if (yr >= 1990 && yr <= 2099) {
+        return String(yr);
+      }
+    }
+
+    return '';
+  }
+
+  /**
    * Universal CSV parser robust against multiline quotes, escaped quotes, and empty cells
    */
   function parseSubHseEiCSV(csvText) {
@@ -373,11 +415,14 @@
       // Only valid rows with an ID or Subject or Recommendation
       if (!rawId && !rawSubject && !rawRec) continue;
 
+      const yearVal = extractYearFromDate(rawDate);
+
       parsed.push({
         sr: runningSr++,
         id: rawId,
         subject: rawSubject,
         dateOfMeeting: rawDate,
+        year: yearVal,
         refNo: rawRef,
         agenda: rawAgenda,
         recommendations: rawRec,
@@ -394,5 +439,6 @@
   window.FPCL_SUB_HSE_EI_INITIAL_SEED = INITIAL_SUB_HSE_EI_OBSERVATIONS;
   window.FPCL_SUB_HSE_EI_DATA = INITIAL_SUB_HSE_EI_OBSERVATIONS;
   window.parseSubHseEiCSV = parseSubHseEiCSV;
+  window.extractSubHseEiYear = extractYearFromDate;
 
 })();

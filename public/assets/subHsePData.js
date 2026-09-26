@@ -385,6 +385,11 @@
         if (rawDate) lastValidDate = rawDate;
         if (rawRef) lastValidRef = rawRef;
         if (rawAgenda) lastValidAgenda = rawAgenda;
+      } else {
+        if (rawDate) lastValidDate = rawDate;
+        if (rawSubj) lastValidSubj = rawSubj;
+        if (rawRef) lastValidRef = rawRef;
+        if (rawAgenda) lastValidAgenda = rawAgenda;
       }
 
       // If recommendation, actionBy, or openClose is present, it's a valid row

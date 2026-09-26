@@ -41,6 +41,7 @@
       deptFilter: 'all',
       statusFilter: 'all', // 'all' | 'Close' | 'Open'
       standardFilter: 'all',
+      yearFilter: 'all', // Filter by Year from column C (Audit time)
       breakdownTab: 'status', // 'status' | 'standards'
       deptSortBy: 'total_desc', // 'total_desc' | 'name_asc'
       page: 1,
@@ -97,12 +98,63 @@
       return [];
     },
 
+    /**
+     * Extracts 4-digit Year from Column C named "Audit time"
+     * Handles formats such as "Sep-26" -> "2026", "2026", "14-Sep-26" -> "2026", "Oct-25" -> "2025", "2025", etc.
+     */
+    getYearFromAuditTime(auditTime) {
+      if (!auditTime || typeof auditTime !== 'string') return '';
+      const str = auditTime.trim();
+      if (!str) return '';
+
+      // 1) Match 4-digit year like 2024, 2025, 2026, 2027, etc.
+      const fourDigitMatch = str.match(/\b(20\d\d|19\d\d)\b/);
+      if (fourDigitMatch) {
+        return fourDigitMatch[1];
+      }
+
+      // 2) Match Month-YY or DD-Month-YY or Month/YY (e.g. Sep-26, 14-Sep-26, Sep/26, Sep 26)
+      const monthTwoDigitMatch = str.match(/(?:[A-Za-z]{3,}|\d{1,2})[-/ ](\d{2})$/);
+      if (monthTwoDigitMatch) {
+        const yy = parseInt(monthTwoDigitMatch[1], 10);
+        return yy < 70 ? `20${monthTwoDigitMatch[1]}` : `19${monthTwoDigitMatch[1]}`;
+      }
+
+      // 3) Standalone 2-digit number (e.g. "26" -> "2026")
+      const twoDigitStandAlone = str.match(/\b(\d{2})\b/);
+      if (twoDigitStandAlone) {
+        const yy = parseInt(twoDigitStandAlone[1], 10);
+        if (yy >= 20 && yy <= 35) {
+          return `20${twoDigitStandAlone[1]}`;
+        }
+      }
+
+      // 4) Date parse fallback
+      const parsedDate = new Date(str);
+      if (!isNaN(parsedDate.getTime())) {
+        const fullYear = parsedDate.getFullYear();
+        if (fullYear >= 2000 && fullYear <= 2099) {
+          return String(fullYear);
+        }
+      }
+
+      return str;
+    },
+
     getFilteredData() {
       const raw = this.getRawData();
       const s = this.state;
       const q = s.searchQuery.toLowerCase().trim();
 
       return raw.filter(item => {
+        // Year filter (from column C named Audit time)
+        if (s.yearFilter !== 'all') {
+          const itemYear = this.getYearFromAuditTime(item.auditTime);
+          if (itemYear !== s.yearFilter) {
+            return false;
+          }
+        }
+
         // Status filter
         if (s.statusFilter !== 'all') {
           if (item.status.toLowerCase() !== s.statusFilter.toLowerCase()) {
@@ -133,7 +185,8 @@
           const inRemarks = (item.remarks || '').toLowerCase().includes(q);
           const inStd = (item.standards || '').toLowerCase().includes(q);
           const inDate = (item.targetDate || '').toLowerCase().includes(q);
-          if (!inRef && !inGap && !inRec && !inDept && !inRemarks && !inStd && !inDate) {
+          const inAuditTime = (item.auditTime || '').toLowerCase().includes(q);
+          if (!inRef && !inGap && !inRec && !inDept && !inRemarks && !inStd && !inDate && !inAuditTime) {
             return false;
           }
         }
@@ -309,11 +362,18 @@
       this.state.deptFilter = 'all';
       this.state.statusFilter = 'all';
       this.state.standardFilter = 'all';
+      this.state.yearFilter = 'all';
       this.state.page = 1;
       this.render();
       if (window.portalApp && typeof window.portalApp.showToast === 'function') {
         window.portalApp.showToast('Filters Reset', 'All IMS Audit dashboard filters cleared.', 'info');
       }
+    },
+
+    setYearFilter(year) {
+      this.state.yearFilter = year || 'all';
+      this.state.page = 1;
+      this.render();
     },
 
     setDeptFilter(dept) {
@@ -491,6 +551,15 @@
       const raw = this.getRawData();
       const filtered = this.getFilteredData();
       const s = this.state;
+
+      // Extract unique years from column C (Audit time)
+      const allYears = Array.from(
+        new Set(
+          raw
+            .map(i => this.getYearFromAuditTime(i.auditTime))
+            .filter(Boolean)
+        )
+      ).sort((a, b) => b.localeCompare(a));
 
       // Extract unique departments and standards for filter dropdowns
       const allDepts = Array.from(new Set(raw.map(i => i.dept).filter(Boolean))).sort();
@@ -674,8 +743,27 @@
           <!-- 3. GLOBAL FILTER BAR (Matching Reference Image)                           -->
           <!-- ========================================================================= -->
           <div class="bg-white rounded-xl border border-slate-200/90 shadow-xs p-4">
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-end">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 items-end">
               
+              <!-- YEAR Filter (Column C: Audit time) -->
+              <div>
+                <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1 flex items-center gap-1">
+                  <i data-lucide="calendar" class="w-3 h-3 text-teal-600"></i>
+                  Audit Year
+                </label>
+                <select
+                  id="ims-year-filter"
+                  onchange="FPCL_IMS_SUITE.setYearFilter(this.value)"
+                  class="w-full py-2 px-3 text-xs rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white font-medium text-slate-800 shadow-2xs"
+                >
+                  <option value="all" ${s.yearFilter === 'all' ? 'selected' : ''}>All Years (${raw.length})</option>
+                  ${allYears.map(yr => {
+                    const count = raw.filter(i => FPCL_IMS_SUITE.getYearFromAuditTime(i.auditTime) === yr).length;
+                    return `<option value="${yr}" ${s.yearFilter === yr ? 'selected' : ''}>Year ${yr} (${count})</option>`;
+                  }).join('')}
+                </select>
+              </div>
+
               <!-- STATUS Filter -->
               <div>
                 <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Status</label>
@@ -746,9 +834,15 @@
             </div>
 
             <!-- Active Filter Badges -->
-            ${(s.searchQuery || s.deptFilter !== 'all' || s.statusFilter !== 'all' || s.standardFilter !== 'all') ? `
+            ${(s.searchQuery || s.deptFilter !== 'all' || s.statusFilter !== 'all' || s.standardFilter !== 'all' || s.yearFilter !== 'all') ? `
               <div class="flex flex-wrap items-center gap-1.5 pt-3 mt-3 border-t border-slate-100 text-xs">
                 <span class="text-slate-400 font-bold mr-1">Active:</span>
+                ${s.yearFilter !== 'all' ? `
+                  <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-teal-50 text-teal-800 border border-teal-200 font-medium">
+                    Year: ${s.yearFilter}
+                    <button onclick="FPCL_IMS_SUITE.setYearFilter('all');"><i data-lucide="x" class="w-3 h-3"></i></button>
+                  </span>
+                ` : ''}
                 ${s.searchQuery ? `
                   <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 font-medium">
                     "${s.searchQuery}"
@@ -1096,7 +1190,7 @@
 
                 <div class="pt-2 text-xs text-slate-400 flex items-center justify-between">
                   <span>Click any standard card to filter the entire dashboard</span>
-                  <span>Target Audit Period: <strong class="text-slate-700">Sep 2026</strong></span>
+                  <span>Target Audit Period: <strong class="text-slate-700">${s.yearFilter !== 'all' ? 'Year ' + s.yearFilter : 'All Years'}</strong></span>
                 </div>
               </div>
 
