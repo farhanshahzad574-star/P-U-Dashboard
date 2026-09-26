@@ -106,6 +106,10 @@ export default async function handler(req: any, res: any) {
         url = process.env.CAPEX || process.env.CAPEX_SHEET_URL || 'https://docs.google.com/spreadsheets/d/13ys4PbggcQq0H06Rh6cScAtdVnlrY-yyiWxA4e6dDzc/gviz/tq?tqx=out:csv&sheet=CAPEX';
       } else if (sLower.includes('sub_hse_p') || sLower.includes('sub-hse-p') || sLower === 'sub_hse_p' || (normalizedTileId && normalizedTileId.includes('sub-hse-p'))) {
         url = process.env.Sub_HSE_P || process.env.SUB_HSE_P || process.env.SUB_HSE_P_SHEET_URL || (process.env.SUB_HSE_P_SHEET_ID ? `https://docs.google.com/spreadsheets/d/${process.env.SUB_HSE_P_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Sub_HSE_P` : 'https://docs.google.com/spreadsheets/d/1hhO-goFXJlKSr32dSIHQMfEC7XRQsQly7iJCfP39Wjw/gviz/tq?tqx=out:csv&sheet=Sub_HSE_P');
+      } else if (sLower.includes('sub_hse_ei') || sLower.includes('sub_hse _e&i') || sLower.includes('sub-hse-ei') || sLower.includes('e&i') || (normalizedTileId && normalizedTileId.includes('sub-hse-ei'))) {
+        url = process.env.Sub_HSE_EI || process.env.SUB_HSE_EI || process.env.SUB_HSE_EI_SHEET_URL || (process.env.SUB_HSE_EI_SHEET_ID ? `https://docs.google.com/spreadsheets/d/${process.env.SUB_HSE_EI_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Sub_HSE%20_E%26I` : 'https://docs.google.com/spreadsheets/d/1ZcxlHSoQk4MjHFs7m0hfujM_7ud8JNNrMQg0cLq-Ruw/gviz/tq?tqx=out:csv&sheet=Sub_HSE%20_E%26I');
+      } else if (sLower === 'ehse' || sLower.includes('ehse') || (normalizedTileId && normalizedTileId.includes('ehse'))) {
+        url = process.env.EHSE || process.env.EHSE_SHEET_URL || (process.env.EHSE_SHEET_ID ? `https://docs.google.com/spreadsheets/d/${process.env.EHSE_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=EHSE` : 'https://docs.google.com/spreadsheets/d/1I4oX4kPr6d0_7q--9OcoJWs0W7IQG1dK1rBmNO7BlGo/gviz/tq?tqx=out:csv&sheet=EHSE');
       } else if (sLower.includes('psm') && process.env.PSM_SHEET_URL) {
         url = process.env.PSM_SHEET_URL;
       } else if (process.env.RECOMMENDATIONS_SHEET_URL) {
@@ -189,6 +193,11 @@ export default async function handler(req: any, res: any) {
     } else if (sLower.includes('sub_hse_p') || sLower.includes('sub-hse-p') || trimmedUrl.includes('1hhO-goFXJlKSr32dSIHQMfEC7XRQsQly7iJCfP39Wjw')) {
       const extraSubHsePTabs = ['Sub_HSE_P', 'Sub_HSE-P', 'Sub HSE P', 'Sub HSE - P', 'Sub_HSE_p', 'Sheet1'];
       extraSubHsePTabs.forEach(t => {
+        if (!candidateTabs.includes(t)) candidateTabs.push(t);
+      });
+    } else if (sLower.includes('sub_hse_ei') || sLower.includes('sub_hse _e&i') || sLower.includes('sub-hse-ei') || sLower.includes('e&i') || trimmedUrl.includes('1ZcxlHSoQk4MjHFs7m0hfujM_7ud8JNNrMQg0cLq-Ruw')) {
+      const extraSubHseEiTabs = ['Sub_HSE _E&I', 'Sub_HSE_E&I', 'Sub HSE - E&I', 'Sub_HSE-E&I', 'Sub HSE E&I', 'Sub_HSE _E and I', 'Sheet1'];
+      extraSubHseEiTabs.forEach(t => {
         if (!candidateTabs.includes(t)) candidateTabs.push(t);
       });
     }

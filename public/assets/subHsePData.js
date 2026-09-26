@@ -352,7 +352,7 @@
     let openCloseIdx = headerRow.findIndex(h => h.includes('openclose') || h.includes('status') || h.includes('state') || h.includes('closure'));
     if (openCloseIdx === -1) openCloseIdx = 7;
 
-    let remarksIdx = headerRow.findIndex(h => h.includes('remark') || h.includes('comment') || h.includes('note'));
+    let remarksIdx = headerRow.findIndex(h => h.includes('remark') || h.includes('remak') || h.includes('comment') || h.includes('note'));
     if (remarksIdx === -1) remarksIdx = 8;
 
     const parsedItems = [];
@@ -390,14 +390,16 @@
       // If recommendation, actionBy, or openClose is present, it's a valid row
       if (rawRec || rawActionBy || rawOpenClose || rawId) {
         // Standardize openClose status: Open vs Close
-        let normalizedStatus = 'Close';
-        const sLower = rawOpenClose.toLowerCase();
-        if (sLower.includes('open') || sLower === 'in progress' || sLower === 'pending') {
-          normalizedStatus = 'Open';
+        // Instruction: Count point as open if empty cell is found
+        let normalizedStatus = 'Open';
+        const sTrim = (rawOpenClose || '').trim();
+        const sLower = sTrim.toLowerCase();
+        if (!sTrim) {
+          normalizedStatus = 'Open'; // Count point as open if empty cell is found
         } else if (sLower.includes('close') || sLower.includes('complete') || sLower.includes('done')) {
           normalizedStatus = 'Close';
-        } else if (rawOpenClose) {
-          normalizedStatus = rawOpenClose;
+        } else {
+          normalizedStatus = 'Open';
         }
 
         parsedItems.push({

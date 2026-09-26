@@ -1,20 +1,22 @@
 /**
  * FPCL Executive Operations & Compliance Portal
- * Sub HSE - P (Production HSE Sub-Committee) Executive BI Suite
+ * EHSE (Executive HSE Committee) Executive BI Suite
  * 
- * Google Sheet ID: 1hhO-goFXJlKSr32dSIHQMfEC7XRQsQly7iJCfP39Wjw
- * Sheet Tab: Sub_HSE_P
+ * Google Sheet ID: 1I4oX4kPr6d0_7q--9OcoJWs0W7IQG1dK1rBmNO7BlGo
+ * Sheet Tab: EHSE
  * 
  * Features:
  * - Real-time zero-cache live Google Sheets synchronization
  * - Eye-catching top gradient banner (heading and important feature buttons only)
  * - Unique colorful perimeter lines on each visual card and KPI card
- * - 4 Executive KPI cards: Total Observation, Closed Observations (Col H), Open Observations (Col H), Percentage Completion
- *   (Strictly only KPI heading and value, no other details)
+ * - 4 Executive KPI cards: Total observation, Closed observations column H, Open observations column H (RED color), Percentage completion
+ *   (Strictly only KPI heading and value, center aligned, no other details)
  * - Multi-dimensional drilldown filters below KPIs: Column D (Ref. #), Column G (Responsibility Dept), Column H (Status)
- * - Horizontal Stacked Bar Chart with font-size 12 values on bar with total open and close observation for each department
- * - Large Donut Chart engineered so text in both laptop and mobile view fits inside without overlapping the donut
+ *   (No heading to filter banner)
+ * - Horizontal Stacked Bar Chart with font-size 12 values on bar with total open (red) and close (emerald) observation for each department
+ * - Large Donut Chart engineered so text in both laptop and mobile view fits inside without overlapping the donut (thicker donut ring)
  * - Complete scrollable up-down and left-right Excel sheet in form of table with all Columns A through I
+ * - Navigation buttons for left-right scrolling lengthy sheet
  * - Distinct visual grouping for Column A (Meeting ID)
  * - Filter-based CSV export
  */
@@ -22,11 +24,11 @@
 (function () {
   'use strict';
 
-  const SUB_HSE_P_SHEET_ID = '1hhO-goFXJlKSr32dSIHQMfEC7XRQsQly7iJCfP39Wjw';
-  const SUB_HSE_P_SHEET_TAB = 'Sub_HSE_P';
-  const SUB_HSE_P_SHEET_URL = `https://docs.google.com/spreadsheets/d/${SUB_HSE_P_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${SUB_HSE_P_SHEET_TAB}`;
+  const EHSE_SHEET_ID = '1I4oX4kPr6d0_7q--9OcoJWs0W7IQG1dK1rBmNO7BlGo';
+  const EHSE_SHEET_TAB = 'EHSE';
+  const EHSE_SHEET_URL = `https://docs.google.com/spreadsheets/d/${EHSE_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${EHSE_SHEET_TAB}`;
 
-  const subHsePSuite = {
+  const ehseSuite = {
     state: {
       searchQuery: '',
       refFilter: 'all',     // Column D: Ref. #
@@ -39,23 +41,23 @@
     },
 
     init() {
-      window.FPCL_SUB_HSE_P_SUITE = this;
+      window.FPCL_EHSE_SUITE = this;
 
       // Fast cache retrieval
       try {
-        const cached = localStorage.getItem('FPCL_SUB_HSE_P_CACHE');
+        const cached = localStorage.getItem('FPCL_EHSE_CACHE');
         if (cached) {
           const parsed = JSON.parse(cached);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            window.FPCL_SUB_HSE_P_DATA = parsed;
+            window.FPCL_EHSE_DATA = parsed;
           }
         }
       } catch (e) {}
 
-      // Fallback to seed data if empty
-      if (!window.FPCL_SUB_HSE_P_DATA || window.FPCL_SUB_HSE_P_DATA.length === 0) {
-        if (window.FPCL_SUB_HSE_P_INITIAL_SEED) {
-          window.FPCL_SUB_HSE_P_DATA = window.FPCL_SUB_HSE_P_INITIAL_SEED;
+      // Fallback to initial seed if empty
+      if (!window.FPCL_EHSE_DATA || window.FPCL_EHSE_DATA.length === 0) {
+        if (window.FPCL_EHSE_INITIAL_SEED) {
+          window.FPCL_EHSE_DATA = window.FPCL_EHSE_INITIAL_SEED;
         }
       }
 
@@ -76,11 +78,11 @@
     },
 
     getRawData() {
-      if (Array.isArray(window.FPCL_SUB_HSE_P_DATA) && window.FPCL_SUB_HSE_P_DATA.length > 0) {
-        return window.FPCL_SUB_HSE_P_DATA;
+      if (Array.isArray(window.FPCL_EHSE_DATA) && window.FPCL_EHSE_DATA.length > 0) {
+        return window.FPCL_EHSE_DATA;
       }
-      if (Array.isArray(window.FPCL_SUB_HSE_P_INITIAL_SEED) && window.FPCL_SUB_HSE_P_INITIAL_SEED.length > 0) {
-        return window.FPCL_SUB_HSE_P_INITIAL_SEED;
+      if (Array.isArray(window.FPCL_EHSE_INITIAL_SEED) && window.FPCL_EHSE_INITIAL_SEED.length > 0) {
+        return window.FPCL_EHSE_INITIAL_SEED;
       }
       return [];
     },
@@ -155,13 +157,13 @@
       const rate = total > 0 ? ((closed / total) * 100).toFixed(1) + '%' : '0.0%';
 
       if (window.DASHBOARD_REGISTRY) {
-        const subHseEntry = window.DASHBOARD_REGISTRY.find(d => d.id === 'sub-hse-p');
-        if (subHseEntry) {
-          subHseEntry.status = 'Active';
-          subHseEntry.hasSheetLink = true;
-          subHseEntry.kpis = { total, closed, inProgress: open, overdue: 0, compliance: rate };
-          subHseEntry.punchList = { open, closed, total, rate };
-          subHseEntry.statusComment = `Live Google Sheets: Sub_HSE_P Tab (${total} Observations, ${closed} Closed, ${open} Open • ${rate} Resolved)`;
+        const ehseEntry = window.DASHBOARD_REGISTRY.find(d => d.id === 'executive-hse-committee-ehsec' || d.id === 'ehse');
+        if (ehseEntry) {
+          ehseEntry.status = 'Active';
+          ehseEntry.hasSheetLink = true;
+          ehseEntry.kpis = { total, closed, inProgress: open, overdue: 0, compliance: rate };
+          ehseEntry.punchList = { open, closed, total, rate };
+          ehseEntry.statusComment = `Live Google Sheets: EHSE Tab (${total} Observations, ${closed} Closed, ${open} Open • ${rate} Resolved)`;
         }
       }
 
@@ -189,7 +191,7 @@
 
         // Priority 1: Direct CORS-free fetch from Google Sheets CSV GViz
         try {
-          const directUrl = `${SUB_HSE_P_SHEET_URL}&_nocache=${Date.now()}`;
+          const directUrl = `${EHSE_SHEET_URL}&_nocache=${Date.now()}`;
           const directRes = await fetch(directUrl, {
             cache: 'no-store',
             headers: { 'Cache-Control': 'no-cache, no-store' }
@@ -205,7 +207,7 @@
         // Priority 2: Server API endpoint proxy
         if (!csvText) {
           try {
-            const apiRes = await fetch(`/api/sheets/fetch?sheetTab=${encodeURIComponent(SUB_HSE_P_SHEET_TAB)}&_t=${Date.now()}`, {
+            const apiRes = await fetch(`/api/sheets/fetch?sheetTab=${encodeURIComponent(EHSE_SHEET_TAB)}&_t=${Date.now()}`, {
               cache: 'no-store'
             });
             if (apiRes.ok) {
@@ -220,18 +222,18 @@
         // Priority 3: Global fetchGoogleSheetData helper if available
         if (!csvText && typeof window.fetchGoogleSheetData === 'function') {
           try {
-            csvText = await window.fetchGoogleSheetData(SUB_HSE_P_SHEET_URL, {
-              sheetTab: SUB_HSE_P_SHEET_TAB
+            csvText = await window.fetchGoogleSheetData(EHSE_SHEET_URL, {
+              sheetTab: EHSE_SHEET_TAB
             });
           } catch (e) {}
         }
 
-        if (csvText && typeof window.parseSubHsePCSV === 'function') {
-          const parsed = window.parseSubHsePCSV(csvText);
+        if (csvText && typeof window.parseEhseCSV === 'function') {
+          const parsed = window.parseEhseCSV(csvText);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            window.FPCL_SUB_HSE_P_DATA = parsed;
+            window.FPCL_EHSE_DATA = parsed;
             try {
-              localStorage.setItem('FPCL_SUB_HSE_P_CACHE', JSON.stringify(parsed));
+              localStorage.setItem('FPCL_EHSE_CACHE', JSON.stringify(parsed));
             } catch (e) {}
 
             this.state.lastSynced = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -239,7 +241,7 @@
 
             if (!silent && window.portalApp && window.portalApp.showToast) {
               window.portalApp.showToast(
-                'Sub HSE - P Synced',
+                'EHSE Synced',
                 `Synchronized ${parsed.length} observations live from Google Sheet.`,
                 'success'
               );
@@ -247,11 +249,11 @@
           }
         }
       } catch (err) {
-        console.warn('Sub HSE - P sync warning:', err);
+        console.warn('EHSE sync warning:', err);
       } finally {
         this.state.isSyncing = false;
         this.updateSyncUI();
-        const container = document.getElementById('sub-hse-p-specialized-container');
+        const container = document.getElementById('ehse-specialized-container');
         if (container && !container.classList.contains('hidden')) {
           this.render();
         }
@@ -259,7 +261,7 @@
     },
 
     updateSyncUI() {
-      const icon = document.getElementById('sub-hse-p-sync-icon');
+      const icon = document.getElementById('ehse-sync-icon');
       if (icon) {
         if (this.state.isSyncing) {
           icon.classList.add('animate-spin');
@@ -302,7 +304,29 @@
       this.state.statusFilter = 'all';
       this.render();
       if (window.portalApp && window.portalApp.showToast) {
-        window.portalApp.showToast('Filters Reset', 'All Sub HSE - P filters restored to default.', 'info');
+        window.portalApp.showToast('Filters Reset', 'All EHSE filters restored to default.', 'info');
+      }
+    },
+
+    // Table Scrolling Helpers for Left-Right browsing
+    scrollTable(delta) {
+      const el = document.getElementById('ehse-table-scroller');
+      if (el) {
+        el.scrollBy({ left: delta, behavior: 'smooth' });
+      }
+    },
+
+    scrollToStart() {
+      const el = document.getElementById('ehse-table-scroller');
+      if (el) {
+        el.scrollTo({ left: 0, behavior: 'smooth' });
+      }
+    },
+
+    scrollToEnd() {
+      const el = document.getElementById('ehse-table-scroller');
+      if (el) {
+        el.scrollTo({ left: el.scrollWidth, behavior: 'smooth' });
       }
     },
 
@@ -346,7 +370,7 @@
       const link = document.createElement('a');
       link.setAttribute('href', url);
       const dateStr = new Date().toISOString().slice(0, 10);
-      link.setAttribute('download', `Sub_HSE_P_Observations_Filtered_${dateStr}.csv`);
+      link.setAttribute('download', `EHSE_Observations_Filtered_${dateStr}.csv`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -355,7 +379,7 @@
       if (window.portalApp && window.portalApp.showToast) {
         window.portalApp.showToast(
           'CSV Exported',
-          `Successfully exported ${filtered.length} filtered Sub HSE - P observations.`,
+          `Successfully exported ${filtered.length} filtered EHSE observations.`,
           'success'
         );
       }
@@ -368,7 +392,7 @@
       if (!item) return;
 
       this.state.selectedObservation = item;
-      const modalContainer = document.getElementById('sub-hse-p-inspection-modal');
+      const modalContainer = document.getElementById('ehse-inspection-modal');
       if (modalContainer) {
         modalContainer.innerHTML = this.renderInspectionModalContent(item);
         modalContainer.classList.remove('hidden');
@@ -378,7 +402,7 @@
 
     closeInspectionModal() {
       this.state.selectedObservation = null;
-      const modalContainer = document.getElementById('sub-hse-p-inspection-modal');
+      const modalContainer = document.getElementById('ehse-inspection-modal');
       if (modalContainer) {
         modalContainer.classList.add('hidden');
         modalContainer.innerHTML = '';
@@ -391,24 +415,24 @@
 
       return `
         <div class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div class="bg-white rounded-2xl shadow-2xl border-2 border-indigo-500/80 w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+          <div class="bg-white rounded-2xl shadow-2xl border-2 border-teal-500/80 w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <!-- Modal Header -->
-            <div class="bg-gradient-to-r from-[#18113C] via-[#2D1B69] via-[#4338CA] to-[#0D9488] text-white p-5 flex items-start justify-between">
+            <div class="bg-gradient-to-r from-[#031B4E] via-[#0A3A60] via-[#0D5C75] via-[#0B7A75] to-[#10B981] text-white p-5 flex items-start justify-between">
               <div class="space-y-1">
                 <div class="flex items-center gap-2">
                   <span class="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-white/20 text-white border border-white/30">
                     Meeting ID: #${item.id}
                   </span>
-                  <span class="px-2.5 py-0.5 rounded-full text-xs font-bold border ${isClose ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/50' : 'bg-orange-500/20 text-orange-300 border-orange-400/50'}">
+                  <span class="px-2.5 py-0.5 rounded-full text-xs font-bold border ${isClose ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/50' : 'bg-red-500/20 text-red-300 border-red-400/50'}">
                     ${displayStatus}
                   </span>
                 </div>
-                <h3 class="text-lg font-black tracking-tight text-white">${item.subject || 'SUB HSE (P) Meeting'}</h3>
-                <p class="text-xs text-indigo-200 font-mono">Ref. #${item.refNo} • Date: ${item.dateOfMeeting}</p>
+                <h3 class="text-lg font-black tracking-tight text-white">${item.subject || 'EHSE Meeting'}</h3>
+                <p class="text-xs text-teal-200 font-mono">Ref. #${item.refNo} • Date: ${item.dateOfMeeting}</p>
               </div>
               <button
                 type="button"
-                onclick="FPCL_SUB_HSE_P_SUITE.closeInspectionModal()"
+                onclick="FPCL_EHSE_SUITE.closeInspectionModal()"
                 class="p-2 rounded-xl text-white/70 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
                 title="Close"
               >
@@ -421,11 +445,11 @@
               <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
                   <span class="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Responsibility Dept</span>
-                  <span class="font-black text-sm text-indigo-900 mt-0.5 block">${item.actionBy || 'Info'}</span>
+                  <span class="font-black text-sm text-teal-950 mt-0.5 block">${item.actionBy || 'Info'}</span>
                 </div>
                 <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
                   <span class="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Status (Col H)</span>
-                  <span class="font-black text-sm ${isClose ? 'text-emerald-600' : 'text-orange-600'} mt-0.5 block">${displayStatus}</span>
+                  <span class="font-black text-sm ${isClose ? 'text-emerald-600' : 'text-red-600'} mt-0.5 block">${displayStatus}</span>
                 </div>
                 <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
                   <span class="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Date of Meeting</span>
@@ -434,8 +458,8 @@
               </div>
 
               <!-- Agenda Section -->
-              <div class="bg-indigo-50/60 p-4 rounded-xl border border-indigo-100">
-                <span class="text-[10px] uppercase font-bold text-indigo-700 block tracking-wider mb-1">Agenda Topic</span>
+              <div class="bg-teal-50/60 p-4 rounded-xl border border-teal-100">
+                <span class="text-[10px] uppercase font-bold text-teal-800 block tracking-wider mb-1">Agenda Topic</span>
                 <p class="text-xs leading-relaxed text-slate-800 font-semibold">${item.agenda || '-'}</p>
               </div>
 
@@ -455,7 +479,7 @@
 
               <!-- Meeting Context Note -->
               <div class="text-[11px] text-slate-500 bg-slate-50 p-3 rounded-xl border border-slate-200">
-                <strong class="text-indigo-900 font-bold">Meeting Note:</strong> All rows carrying Meeting ID <strong>#${item.id}</strong> originate from the same single Sub HSE P meeting. Multiple departments had responsibility against this session, with distinct recommendations.
+                <strong class="text-teal-900 font-bold">Meeting Note:</strong> All rows carrying Meeting ID <strong>#${item.id}</strong> originate from the same single EHSE meeting. Multiple departments had responsibility against this session, with distinct recommendations.
               </div>
             </div>
 
@@ -463,8 +487,8 @@
             <div class="bg-slate-50 px-6 py-3.5 border-t border-slate-200 flex items-center justify-end">
               <button
                 type="button"
-                onclick="FPCL_SUB_HSE_P_SUITE.closeInspectionModal()"
-                class="px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white transition-all cursor-pointer shadow-xs"
+                onclick="FPCL_EHSE_SUITE.closeInspectionModal()"
+                class="px-4 py-2 rounded-xl text-xs font-bold bg-teal-600 hover:bg-teal-700 text-white transition-all cursor-pointer shadow-xs"
               >
                 Close
               </button>
@@ -477,19 +501,19 @@
     // Settings Modal
     openSettingsModal() {
       this.state.isSettingsOpen = true;
-      const modalContainer = document.getElementById('sub-hse-p-settings-modal');
+      const modalContainer = document.getElementById('ehse-settings-modal');
       if (modalContainer) {
         modalContainer.innerHTML = `
           <div class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-            <div class="bg-white rounded-2xl shadow-2xl border-2 border-indigo-500/80 w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-              <div class="bg-gradient-to-r from-[#18113C] via-[#2D1B69] via-[#4338CA] to-[#0D9488] text-white p-5 flex items-center justify-between">
+            <div class="bg-white rounded-2xl shadow-2xl border-2 border-teal-500/80 w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+              <div class="bg-gradient-to-r from-[#031B4E] via-[#0A3A60] via-[#0D5C75] via-[#0B7A75] to-[#10B981] text-white p-5 flex items-center justify-between">
                 <div class="flex items-center gap-2 font-bold text-sm">
-                  <i data-lucide="settings" class="w-4 h-4 text-cyan-300"></i>
-                  <span>Sub HSE - P Google Sheet Integration</span>
+                  <i data-lucide="settings" class="w-4 h-4 text-emerald-300"></i>
+                  <span>EHSE Google Sheet Integration</span>
                 </div>
                 <button
                   type="button"
-                  onclick="FPCL_SUB_HSE_P_SUITE.closeSettingsModal()"
+                  onclick="FPCL_EHSE_SUITE.closeSettingsModal()"
                   class="p-1.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
                 >
                   <i data-lucide="x" class="w-4 h-4"></i>
@@ -500,15 +524,15 @@
                 <div class="space-y-1">
                   <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Target Google Sheet ID</span>
                   <div class="p-2.5 rounded-xl bg-slate-100 font-mono text-[11px] text-slate-800 break-all select-all border border-slate-200 font-bold">
-                    ${SUB_HSE_P_SHEET_ID}
+                    ${EHSE_SHEET_ID}
                   </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
                   <div class="space-y-1">
                     <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Target Sheet Tab</span>
-                    <div class="p-2.5 rounded-xl bg-slate-100 font-mono font-black text-[12px] text-indigo-700 border border-slate-200">
-                      ${SUB_HSE_P_SHEET_TAB}
+                    <div class="p-2.5 rounded-xl bg-slate-100 font-mono font-black text-[12px] text-teal-700 border border-slate-200">
+                      ${EHSE_SHEET_TAB}
                     </div>
                   </div>
                   <div class="space-y-1">
@@ -523,25 +547,25 @@
                 <div class="space-y-1">
                   <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Direct CSV Feed Link</span>
                   <a
-                    href="${SUB_HSE_P_SHEET_URL}"
+                    href="${EHSE_SHEET_URL}"
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="block p-2.5 rounded-xl bg-indigo-50/70 hover:bg-indigo-100 font-mono text-[10px] text-indigo-700 truncate border border-indigo-200 transition-colors"
-                    title="${SUB_HSE_P_SHEET_URL}"
+                    class="block p-2.5 rounded-xl bg-teal-50/70 hover:bg-teal-100 font-mono text-[10px] text-teal-800 truncate border border-teal-200 transition-colors"
+                    title="${EHSE_SHEET_URL}"
                   >
-                    ${SUB_HSE_P_SHEET_URL}
+                    ${EHSE_SHEET_URL}
                   </a>
                 </div>
 
                 <div class="text-[11px] text-slate-500 bg-slate-50 p-3 rounded-xl border border-slate-200 leading-relaxed">
-                  Data synchronizes automatically from the public viewer Google Sheet tab <strong>Sub_HSE_P</strong>. Click <strong>Sync Feed</strong> anytime to immediately pull the latest row additions.
+                  Data synchronizes automatically from the public viewer Google Sheet tab <strong>EHSE</strong>. Click <strong>Sync Feed</strong> anytime to immediately pull the latest row additions.
                 </div>
               </div>
 
               <div class="bg-slate-50 px-6 py-3.5 border-t border-slate-200 flex items-center justify-between">
                 <button
                   type="button"
-                  onclick="FPCL_SUB_HSE_P_SUITE.syncLiveFeed(); FPCL_SUB_HSE_P_SUITE.closeSettingsModal();"
+                  onclick="FPCL_EHSE_SUITE.syncLiveFeed(); FPCL_EHSE_SUITE.closeSettingsModal();"
                   class="px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
                 >
                   <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
@@ -549,7 +573,7 @@
                 </button>
                 <button
                   type="button"
-                  onclick="FPCL_SUB_HSE_P_SUITE.closeSettingsModal()"
+                  onclick="FPCL_EHSE_SUITE.closeSettingsModal()"
                   class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-200 hover:bg-slate-300 text-slate-800 transition-all cursor-pointer"
                 >
                   Close
@@ -565,7 +589,7 @@
 
     closeSettingsModal() {
       this.state.isSettingsOpen = false;
-      const modalContainer = document.getElementById('sub-hse-p-settings-modal');
+      const modalContainer = document.getElementById('ehse-settings-modal');
       if (modalContainer) {
         modalContainer.classList.add('hidden');
         modalContainer.innerHTML = '';
@@ -574,7 +598,7 @@
 
     /**
      * Horizontal Stacked Bar Chart with Font Size 12 Values on Bar
-     * Shows Total, Open, and Closed observation for each department (from Column G)
+     * Shows Total, Open (Red), and Closed (Emerald) observation for each department (from Column G)
      */
     renderHorizontalStackedBarChart(deptList) {
       if (!deptList || deptList.length === 0) {
@@ -627,15 +651,15 @@
         return `
           <g
             class="cursor-pointer group"
-            onclick="FPCL_SUB_HSE_P_SUITE.setDeptFilter('${this.state.deptFilter === d.name ? 'all' : d.name.replace(/'/g, "\\'")}')"
+            onclick="FPCL_EHSE_SUITE.setDeptFilter('${this.state.deptFilter === d.name ? 'all' : d.name.replace(/'/g, "\\'")}')"
           >
             <title>${d.name}: Total ${d.total} (${d.close} Closed, ${d.open} Open • ${d.closureRate}% Resolved)</title>
 
             <!-- Row hover highlight -->
-            <rect x="0" y="${y}" width="${w}" height="${rowH}" fill="${isSelected ? '#EEF2FF' : 'transparent'}" class="group-hover:fill-indigo-50/70 transition-colors rounded-xl"/>
+            <rect x="0" y="${y}" width="${w}" height="${rowH}" fill="${isSelected ? '#F0FDFA' : 'transparent'}" class="group-hover:fill-teal-50/70 transition-colors rounded-xl"/>
 
             <!-- Department Label (Column G) -->
-            <text x="${padLeft - 16}" y="${centerY}" fill="${isSelected ? '#4338CA' : '#1E293B'}" font-size="13" font-weight="${isSelected ? '800' : '700'}" font-family="'Plus Jakarta Sans', system-ui, sans-serif" text-anchor="end" dominant-baseline="central" class="transition-colors group-hover:fill-indigo-700">
+            <text x="${padLeft - 16}" y="${centerY}" fill="${isSelected ? '#0F766E' : '#1E293B'}" font-size="13" font-weight="${isSelected ? '800' : '700'}" font-family="'Plus Jakarta Sans', system-ui, sans-serif" text-anchor="end" dominant-baseline="central" class="transition-colors group-hover:fill-teal-700">
               ${d.name}
             </text>
 
@@ -655,7 +679,7 @@
               />
             ` : ''}
 
-            <!-- Stacked Open Segment (Vibrant Orange) -->
+            <!-- Stacked Open Segment (Vibrant Red - as explicitly instructed for open points) -->
             ${d.open > 0 ? `
               <rect
                 x="${padLeft + closeW}"
@@ -663,7 +687,7 @@
                 width="${openW}"
                 height="${barH}"
                 rx="${d.close > 0 ? '0 7 7 0' : '7'}"
-                fill="#F97316"
+                fill="#EF4444"
                 class="transition-all opacity-95 group-hover:opacity-100"
               />
             ` : ''}
@@ -706,19 +730,20 @@
 
     /**
      * Large Donut Chart Engineered to Prevent Overlap in Both Laptop and Mobile Views
-     * Inner cutout diameter is large enough (240px+) that text scales cleanly without touching the ring
+     * Thick donut ring (stroke-width: 32) looking visually appealing
+     * Inner cutout diameter is large enough (260px+) that text scales cleanly without touching the ring
      */
     renderDonutChart(closedCount, openCount, totalCount) {
       if (totalCount === 0) {
         return `<div class="text-center py-12 text-xs text-slate-400 font-medium">No observation records to calculate</div>`;
       }
 
-      // Large SVG viewport with spacious center radius (radius = 125, stroke = 26)
-      const size = 360;
-      const center = size / 2; // 180
-      const radius = 125;
-      const strokeWidth = 26;
-      const circumference = 2 * Math.PI * radius; // ~785.4
+      // Large SVG viewport with spacious center radius (radius = 130, stroke = 32)
+      const size = 380;
+      const center = size / 2; // 190
+      const radius = 130;
+      const strokeWidth = 32;
+      const circumference = 2 * Math.PI * radius; // ~816.8
 
       const closedPct = Math.round((closedCount / totalCount) * 100);
       const openPct = 100 - closedPct;
@@ -732,7 +757,7 @@
       return `
         <div class="flex flex-col items-center justify-center p-3 select-none w-full">
           <!-- Large Donut SVG Wrapper (Optimized for both mobile and laptop views) -->
-          <div class="relative w-64 h-64 min-[400px]:w-72 min-[400px]:h-72 sm:w-80 sm:h-80 md:w-96 md:h-96 lg:w-[380px] lg:h-[380px] shrink-0 mx-auto">
+          <div class="relative w-64 h-64 min-[400px]:w-72 min-[400px]:h-72 sm:w-80 sm:h-80 md:w-96 md:h-96 lg:w-[400px] lg:h-[400px] shrink-0 mx-auto">
             <svg viewBox="0 0 ${size} ${size}" class="w-full h-full transform -rotate-90">
               <!-- Background Track Ring -->
               <circle
@@ -755,24 +780,24 @@
                   stroke-dasharray="${closedDash} ${circumference}"
                   stroke-dashoffset="${closedOffset}"
                   class="transition-all duration-500 hover:opacity-90 cursor-pointer"
-                  onclick="FPCL_SUB_HSE_P_SUITE.setStatusFilter('${this.state.statusFilter === 'Close' ? 'all' : 'Close'}')"
+                  onclick="FPCL_EHSE_SUITE.setStatusFilter('${this.state.statusFilter === 'Close' ? 'all' : 'Close'}')"
                 >
                   <title>Closed Observations: ${closedCount} (${closedPct}%)</title>
                 </circle>
               ` : ''}
-              <!-- Open Observations Arc (Orange) -->
+              <!-- Open Observations Arc (Vibrant Red for open points) -->
               ${openCount > 0 ? `
                 <circle
                   cx="${center}"
                   cy="${center}"
                   r="${radius}"
                   fill="none"
-                  stroke="#F97316"
+                  stroke="#EF4444"
                   stroke-width="${strokeWidth}"
                   stroke-dasharray="${openDash} ${circumference}"
                   stroke-dashoffset="${openOffset}"
                   class="transition-all duration-500 hover:opacity-90 cursor-pointer"
-                  onclick="FPCL_SUB_HSE_P_SUITE.setStatusFilter('${this.state.statusFilter === 'Open' ? 'all' : 'Open'}')"
+                  onclick="FPCL_EHSE_SUITE.setStatusFilter('${this.state.statusFilter === 'Open' ? 'all' : 'Open'}')"
                 >
                   <title>Open Observations: ${openCount} (${openPct}%)</title>
                 </circle>
@@ -828,7 +853,7 @@
           <div class="mt-4 flex items-center justify-center gap-3 sm:gap-4 flex-wrap text-xs">
             <button
               type="button"
-              onclick="FPCL_SUB_HSE_P_SUITE.setStatusFilter('${this.state.statusFilter === 'Close' ? 'all' : 'Close'}')"
+              onclick="FPCL_EHSE_SUITE.setStatusFilter('${this.state.statusFilter === 'Close' ? 'all' : 'Close'}')"
               class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl border transition-all cursor-pointer ${this.state.statusFilter === 'Close' ? 'bg-emerald-50 border-emerald-400 ring-2 ring-emerald-500/20' : 'bg-white border-slate-200 hover:bg-slate-50'}"
             >
               <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
@@ -839,21 +864,21 @@
 
             <button
               type="button"
-              onclick="FPCL_SUB_HSE_P_SUITE.setStatusFilter('${this.state.statusFilter === 'Open' ? 'all' : 'Open'}')"
-              class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl border transition-all cursor-pointer ${this.state.statusFilter === 'Open' ? 'bg-orange-50 border-orange-400 ring-2 ring-orange-500/20' : 'bg-white border-slate-200 hover:bg-slate-50'}"
+              onclick="FPCL_EHSE_SUITE.setStatusFilter('${this.state.statusFilter === 'Open' ? 'all' : 'Open'}')"
+              class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl border transition-all cursor-pointer ${this.state.statusFilter === 'Open' ? 'bg-red-50 border-red-400 ring-2 ring-red-500/20' : 'bg-white border-slate-200 hover:bg-slate-50'}"
             >
-              <span class="w-3 h-3 rounded-full bg-orange-500"></span>
+              <span class="w-3 h-3 rounded-full bg-red-500"></span>
               <span class="font-bold text-slate-700">Open:</span>
-              <span class="font-mono font-black text-orange-700">${openCount}</span>
+              <span class="font-mono font-black text-red-600">${openCount}</span>
               <span class="text-slate-400 font-bold">(${openPct}%)</span>
             </button>
 
             <button
               type="button"
-              onclick="FPCL_SUB_HSE_P_SUITE.setStatusFilter('all')"
-              class="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 transition-all cursor-pointer ${this.state.statusFilter === 'all' ? 'bg-indigo-50/70 border-indigo-300 text-indigo-800' : 'bg-white'}"
+              onclick="FPCL_EHSE_SUITE.setStatusFilter('all')"
+              class="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 transition-all cursor-pointer ${this.state.statusFilter === 'all' ? 'bg-teal-50/70 border-teal-300 text-teal-800' : 'bg-white'}"
             >
-              <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+              <span class="w-2 h-2 rounded-full bg-teal-500"></span>
               <span class="font-bold">Total:</span>
               <span class="font-mono font-black">${totalCount}</span>
             </button>
@@ -862,9 +887,9 @@
       `;
     },
 
-    // Main Render function for the Sub HSE - P Dashboard
+    // Main Render function for the EHSE Dashboard
     render() {
-      const container = document.getElementById('sub-hse-p-specialized-container');
+      const container = document.getElementById('ehse-specialized-container');
       if (!container) return;
 
       const raw = this.getRawData();
@@ -919,17 +944,19 @@
 
           <!-- ========================================================================= -->
           <!-- 1. Eye-Catching Gradient Banner at Top (Unique Colorful Perimeter Line)    -->
+          <!-- Modern Stylish Color Scheme: Deep Ocean Navy & Emerald-Teal Gradient      -->
+          <!-- Only heading & important feature buttons as strictly instructed           -->
           <!-- ========================================================================= -->
-          <div class="bg-gradient-to-r from-[#18113C] via-[#2D1B69] via-[#4338CA] to-[#0D9488] text-white rounded-2xl p-5 sm:p-6 shadow-xl border-2 border-indigo-400/80 hover:border-indigo-400 shadow-[0_6px_28px_rgba(99,102,241,0.22)] relative overflow-hidden flex flex-col lg:flex-row lg:items-center justify-between gap-4 transition-all">
-            <div class="absolute -right-10 -bottom-10 w-80 h-80 bg-cyan-400/15 rounded-full blur-3xl pointer-events-none"></div>
+          <div class="bg-gradient-to-r from-[#031B4E] via-[#0A3A60] via-[#0D5C75] via-[#0B7A75] to-[#10B981] text-white rounded-2xl p-5 sm:p-6 shadow-xl border-2 border-teal-400/90 hover:border-teal-300 shadow-[0_6px_28px_rgba(20,184,166,0.25)] relative overflow-hidden flex flex-col lg:flex-row lg:items-center justify-between gap-4 transition-all">
+            <div class="absolute -right-10 -bottom-10 w-80 h-80 bg-emerald-400/15 rounded-full blur-3xl pointer-events-none"></div>
 
             <!-- Heading Only (No extra texts and details as strictly instructed) -->
             <div class="relative z-10 flex items-center gap-3">
-              <div class="w-10 h-10 rounded-xl bg-white/15 border border-white/30 flex items-center justify-center text-cyan-300 shrink-0 shadow-xs">
-                <i data-lucide="layers" class="w-5 h-5"></i>
+              <div class="w-10 h-10 rounded-xl bg-white/15 border border-white/30 flex items-center justify-center text-teal-200 shrink-0 shadow-xs">
+                <i data-lucide="shield-check" class="w-5 h-5"></i>
               </div>
               <h1 class="text-xl sm:text-2xl font-black tracking-tight text-white leading-none">
-                Sub HSE - P Executive Dashboard
+                EHSE Executive Dashboard
               </h1>
             </div>
 
@@ -943,14 +970,14 @@
                   <input
                     type="text"
                     value="${(s.searchQuery || '').replace(/"/g, '&quot;')}"
-                    oninput="FPCL_SUB_HSE_P_SUITE.setSearchQuery(this.value)"
+                    oninput="FPCL_EHSE_SUITE.setSearchQuery(this.value)"
                     placeholder="SEARCH FINDINGS"
                     class="bg-transparent text-white placeholder-white/75 text-xs font-black uppercase tracking-wider focus:outline-none w-36 sm:w-44"
                   />
                   ${s.searchQuery ? `
                     <button
                       type="button"
-                      onclick="FPCL_SUB_HSE_P_SUITE.clearSearch()"
+                      onclick="FPCL_EHSE_SUITE.clearSearch()"
                       class="text-white/70 hover:text-white ml-1 cursor-pointer"
                       title="Clear search"
                     >
@@ -963,7 +990,7 @@
               <!-- Reset Filters Button -->
               <button
                 type="button"
-                onclick="FPCL_SUB_HSE_P_SUITE.resetFilters()"
+                onclick="FPCL_EHSE_SUITE.resetFilters()"
                 class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-black uppercase tracking-wide bg-white/10 hover:bg-white/20 text-white border border-white/35 backdrop-blur-md transition-all cursor-pointer shadow-xs active:scale-95"
                 title="Reset all filters"
               >
@@ -974,7 +1001,7 @@
               <!-- Export CSV Button (Based on active filter) -->
               <button
                 type="button"
-                onclick="FPCL_SUB_HSE_P_SUITE.exportFilteredCSV()"
+                onclick="FPCL_EHSE_SUITE.exportFilteredCSV()"
                 class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-black uppercase tracking-wide bg-white/10 hover:bg-white/20 text-white border border-white/35 backdrop-blur-md transition-all cursor-pointer shadow-xs active:scale-95"
                 title="Download CSV based on active filter"
               >
@@ -985,18 +1012,18 @@
               <!-- Sync Feed Button -->
               <button
                 type="button"
-                onclick="FPCL_SUB_HSE_P_SUITE.syncLiveFeed()"
+                onclick="FPCL_EHSE_SUITE.syncLiveFeed()"
                 class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-black uppercase tracking-wide bg-white/10 hover:bg-white/20 text-white border border-white/35 backdrop-blur-md transition-all cursor-pointer shadow-xs active:scale-95"
                 title="Sync live from Google Sheet"
               >
-                <i id="sub-hse-p-sync-icon" data-lucide="refresh-cw" class="w-3.5 h-3.5 text-white/90 ${s.isSyncing ? 'animate-spin' : ''}"></i>
+                <i id="ehse-sync-icon" data-lucide="refresh-cw" class="w-3.5 h-3.5 text-white/90 ${s.isSyncing ? 'animate-spin' : ''}"></i>
                 <span>Sync Feed</span>
               </button>
 
               <!-- Settings Gear Button -->
               <button
                 type="button"
-                onclick="FPCL_SUB_HSE_P_SUITE.openSettingsModal()"
+                onclick="FPCL_EHSE_SUITE.openSettingsModal()"
                 class="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/35 backdrop-blur-md transition-all cursor-pointer shadow-xs active:scale-95"
                 title="View Google Sheet connection details"
               >
@@ -1008,13 +1035,14 @@
           <!-- ========================================================================= -->
           <!-- 2. UNIQUE COLORFUL LINES AT PERIMETER OF EACH KPI CARD                     -->
           <!-- (Strictly only KPI heading and value, center-aligned without subtitles)    -->
+          <!-- Red color for open points as strictly required                             -->
           <!-- ========================================================================= -->
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             
             <!-- KPI 1: Total Observation (Unique Blue/Indigo Perimeter Line) -->
             <div
-              onclick="FPCL_SUB_HSE_P_SUITE.resetFilters()"
-              class="bg-white border-2 border-blue-500/80 hover:border-blue-600 rounded-2xl p-5 relative overflow-hidden cursor-pointer shadow-[0_4px_18px_rgba(59,130,246,0.16)] transition-all group flex flex-col items-center justify-center text-center min-h-[140px]"
+              onclick="FPCL_EHSE_SUITE.resetFilters()"
+              class="bg-white border-2 border-blue-500/80 hover:border-blue-600 rounded-2xl p-5 relative overflow-hidden cursor-pointer shadow-[0_4px_18px_rgba(59,130,246,0.18)] transition-all group flex flex-col items-center justify-center text-center min-h-[140px]"
               title="Click to reset filters"
             >
               <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500"></div>
@@ -1028,8 +1056,8 @@
 
             <!-- KPI 2: Closed Observations Column H (Unique Emerald/Teal Perimeter Line) -->
             <div
-              onclick="FPCL_SUB_HSE_P_SUITE.setStatusFilter('Close')"
-              class="bg-white border-2 border-emerald-500/80 hover:border-emerald-600 rounded-2xl p-5 relative overflow-hidden cursor-pointer shadow-[0_4px_18px_rgba(16,185,129,0.16)] transition-all group flex flex-col items-center justify-center text-center min-h-[140px]"
+              onclick="FPCL_EHSE_SUITE.setStatusFilter('Close')"
+              class="bg-white border-2 border-emerald-500/80 hover:border-emerald-600 rounded-2xl p-5 relative overflow-hidden cursor-pointer shadow-[0_4px_18px_rgba(16,185,129,0.18)] transition-all group flex flex-col items-center justify-center text-center min-h-[140px]"
               title="Click to filter Closed observations"
             >
               <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-500 via-teal-500 to-green-600"></div>
@@ -1041,24 +1069,24 @@
               </div>
             </div>
 
-            <!-- KPI 3: Open Observations Column H (Unique Coral/Orange Perimeter Line) -->
+            <!-- KPI 3: Open Observations Column H (Unique Red Perimeter Line & Red Text) -->
             <div
-              onclick="FPCL_SUB_HSE_P_SUITE.setStatusFilter('Open')"
-              class="bg-white border-2 border-orange-500/80 hover:border-orange-600 rounded-2xl p-5 relative overflow-hidden cursor-pointer shadow-[0_4px_18px_rgba(249,115,22,0.16)] transition-all group flex flex-col items-center justify-center text-center min-h-[140px]"
+              onclick="FPCL_EHSE_SUITE.setStatusFilter('Open')"
+              class="bg-white border-2 border-red-500/80 hover:border-red-600 rounded-2xl p-5 relative overflow-hidden cursor-pointer shadow-[0_4px_18px_rgba(239,68,68,0.22)] transition-all group flex flex-col items-center justify-center text-center min-h-[140px]"
               title="Click to filter Open observations"
             >
-              <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500"></div>
-              <div class="text-orange-800 text-xs sm:text-sm font-black tracking-wider uppercase text-center w-full">
+              <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-red-600 via-rose-500 to-amber-500"></div>
+              <div class="text-red-700 text-xs sm:text-sm font-black tracking-wider uppercase text-center w-full">
                 OPEN OBSERVATIONS
               </div>
               <div class="mt-3 text-center w-full flex items-center justify-center">
-                <span class="text-5xl sm:text-6xl font-black font-mono tracking-tight text-orange-600 text-center">${openFiltered}</span>
+                <span class="text-5xl sm:text-6xl font-black font-mono tracking-tight text-red-600 text-center">${openFiltered}</span>
               </div>
             </div>
 
             <!-- KPI 4: Percentage Completion (Unique Purple/Cyan Perimeter Line) -->
             <div
-              class="bg-white border-2 border-purple-500/80 hover:border-purple-600 rounded-2xl p-5 relative overflow-hidden shadow-[0_4px_18px_rgba(168,85,247,0.16)] transition-all flex flex-col items-center justify-center text-center min-h-[140px]"
+              class="bg-white border-2 border-purple-500/80 hover:border-purple-600 rounded-2xl p-5 relative overflow-hidden shadow-[0_4px_18px_rgba(168,85,247,0.18)] transition-all flex flex-col items-center justify-center text-center min-h-[140px]"
             >
               <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-purple-500 via-fuchsia-500 to-pink-500"></div>
               <div class="text-purple-900 text-xs sm:text-sm font-black tracking-wider uppercase text-center w-full">
@@ -1072,17 +1100,18 @@
           </div>
 
           <!-- ========================================================================= -->
-          <!-- 3. MULTI-DIMENSIONAL FILTERS (Unique Violet Perimeter Line)                -->
+          <!-- 3. MULTI-DIMENSIONAL FILTERS (Unique Teal/Cyan Perimeter Line)               -->
           <!-- No heading on filter banner as instructed                                 -->
+          <!-- Columns D, G, and H for filter creation                                   -->
           <!-- ========================================================================= -->
-          <div class="bg-white border-2 border-violet-400/80 hover:border-violet-500 rounded-2xl p-4 sm:p-5 shadow-[0_4px_18px_rgba(139,92,246,0.14)] relative overflow-hidden transition-all">
-            <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-violet-600 to-indigo-600"></div>
+          <div class="bg-white border-2 border-teal-500/80 hover:border-teal-600 rounded-2xl p-4 sm:p-5 shadow-[0_4px_18px_rgba(20,184,166,0.16)] relative overflow-hidden transition-all">
+            <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-teal-600 via-cyan-600 to-blue-600"></div>
 
             ${isAnyFilterActive ? `
               <div class="flex justify-end pb-2.5">
                 <button
                   type="button"
-                  onclick="FPCL_SUB_HSE_P_SUITE.resetFilters()"
+                  onclick="FPCL_EHSE_SUITE.resetFilters()"
                   class="text-xs font-bold text-rose-600 hover:text-rose-700 flex items-center gap-1 cursor-pointer transition-colors"
                 >
                   <i data-lucide="rotate-ccw" class="w-3 h-3"></i>
@@ -1099,8 +1128,8 @@
                   Column D: Ref. #
                 </label>
                 <select
-                  onchange="FPCL_SUB_HSE_P_SUITE.setRefFilter(this.value)"
-                  class="w-full text-xs font-semibold px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500 cursor-pointer transition-colors shadow-2xs"
+                  onchange="FPCL_EHSE_SUITE.setRefFilter(this.value)"
+                  class="w-full text-xs font-semibold px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer transition-colors shadow-2xs"
                 >
                   <option value="all" ${s.refFilter === 'all' ? 'selected' : ''}>All Ref. Numbers (${allRefNumbers.length})</option>
                   ${allRefNumbers.map(ref => `
@@ -1115,8 +1144,8 @@
                   Column G: Responsibility Dept (Action by)
                 </label>
                 <select
-                  onchange="FPCL_SUB_HSE_P_SUITE.setDeptFilter(this.value)"
-                  class="w-full text-xs font-semibold px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500 cursor-pointer transition-colors shadow-2xs"
+                  onchange="FPCL_EHSE_SUITE.setDeptFilter(this.value)"
+                  class="w-full text-xs font-semibold px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer transition-colors shadow-2xs"
                 >
                   <option value="all" ${s.deptFilter === 'all' ? 'selected' : ''}>All Departments (${allDepartments.length})</option>
                   ${allDepartments.map(dept => `
@@ -1131,8 +1160,8 @@
                   Column H: Status (Open Close)
                 </label>
                 <select
-                  onchange="FPCL_SUB_HSE_P_SUITE.setStatusFilter(this.value)"
-                  class="w-full text-xs font-semibold px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500 cursor-pointer transition-colors shadow-2xs"
+                  onchange="FPCL_EHSE_SUITE.setStatusFilter(this.value)"
+                  class="w-full text-xs font-semibold px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer transition-colors shadow-2xs"
                 >
                   <option value="all" ${s.statusFilter === 'all' ? 'selected' : ''}>All Statuses (Open & Close)</option>
                   <option value="Close" ${s.statusFilter === 'Close' ? 'selected' : ''}>Close (${rawClosedCount})</option>
@@ -1145,8 +1174,10 @@
 
           <!-- ========================================================================= -->
           <!-- 4. HORIZONTAL STACKED BAR CHART (Unique Indigo/Sky Perimeter Line)          -->
+          <!-- Values on bar have 12 font size as instructed                              -->
+          <!-- Open points in Red, Closed points in Emerald                              -->
           <!-- ========================================================================= -->
-          <div class="bg-white border-2 border-indigo-400/80 hover:border-indigo-500 rounded-2xl p-5 sm:p-6 shadow-[0_4px_18px_rgba(99,102,241,0.14)] relative overflow-hidden space-y-4 transition-all">
+          <div class="bg-white border-2 border-indigo-500/80 hover:border-indigo-600 rounded-2xl p-5 sm:p-6 shadow-[0_4px_18px_rgba(99,102,241,0.16)] relative overflow-hidden space-y-4 transition-all">
             <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-indigo-600 via-blue-600 to-teal-500"></div>
 
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3 pt-1">
@@ -1157,14 +1188,14 @@
                 </h3>
               </div>
               
-              <!-- Legend with Closed (Emerald) and Open (Orange) -->
+              <!-- Legend with Closed (Emerald) and Open (Red) -->
               <div class="flex items-center gap-4 text-xs font-bold">
                 <div class="flex items-center gap-1.5 text-slate-700">
                   <span class="w-3.5 h-3.5 rounded-xs bg-[#10B981]"></span>
                   <span>Closed</span>
                 </div>
                 <div class="flex items-center gap-1.5 text-slate-700">
-                  <span class="w-3.5 h-3.5 rounded-xs bg-[#F97316]"></span>
+                  <span class="w-3.5 h-3.5 rounded-xs bg-[#EF4444]"></span>
                   <span>Open</span>
                 </div>
               </div>
@@ -1179,8 +1210,9 @@
           <!-- ========================================================================= -->
           <!-- 5. LARGE DONUT CHART (Unique Teal/Emerald Perimeter Line)                  -->
           <!-- Text inside engineered to fit without overlapping in laptop & mobile       -->
+          <!-- Thicker donut ring for rich visual appeal                                  -->
           <!-- ========================================================================= -->
-          <div class="bg-white border-2 border-teal-400/80 hover:border-teal-500 rounded-2xl p-5 sm:p-6 shadow-[0_4px_18px_rgba(20,184,166,0.14)] relative overflow-hidden space-y-4 transition-all">
+          <div class="bg-white border-2 border-teal-400/80 hover:border-teal-500 rounded-2xl p-5 sm:p-6 shadow-[0_4px_18px_rgba(20,184,166,0.16)] relative overflow-hidden space-y-4 transition-all">
             <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-teal-500 via-emerald-500 to-cyan-500"></div>
 
             <div class="flex items-center justify-between border-b border-slate-100 pb-3 pt-1">
@@ -1196,16 +1228,16 @@
 
           <!-- ========================================================================= -->
           <!-- 6. COMPLETE SCROLLABLE EXCEL SHEET IN FORM OF TABLE (Unique Sky Perimeter)  -->
-          <!-- Scrollable UP-DOWN and LEFT-RIGHT with Excel Headers                        -->
+          <!-- Scrollable UP-DOWN and LEFT-RIGHT with Excel Headers & Navigation Buttons  -->
           <!-- ========================================================================= -->
-          <div class="bg-white border-2 border-sky-400/80 hover:border-sky-500 rounded-2xl p-4 sm:p-6 shadow-[0_4px_18px_rgba(14,165,233,0.14)] relative overflow-hidden space-y-4 transition-all">
+          <div class="bg-white border-2 border-sky-400/80 hover:border-sky-500 rounded-2xl p-4 sm:p-6 shadow-[0_4px_18px_rgba(14,165,233,0.16)] relative overflow-hidden space-y-4 transition-all">
             <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-600 via-cyan-600 to-indigo-600"></div>
 
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3 pt-1">
               <div class="space-y-0.5">
                 <h3 class="text-sm font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
                   <i data-lucide="table" class="w-4 h-4 text-sky-600"></i>
-                  <span>Sub HSE - P Complete Observations Master Sheet</span>
+                  <span>EHSE Complete Observations Master Sheet</span>
                 </h3>
                 <p class="text-[11px] text-slate-500 flex items-center gap-2 flex-wrap">
                   <span>Showing <strong>${totalFiltered}</strong> of <strong>${raw.length}</strong> records</span>
@@ -1216,11 +1248,49 @@
                 </p>
               </div>
 
-              <!-- Quick Table Actions -->
-              <div class="flex items-center gap-2">
+              <!-- Quick Table Actions: Left/Right Scroll Buttons & CSV Export -->
+              <div class="flex items-center gap-2 flex-wrap">
+                <!-- Navigation buttons for left-right scrolling lengthy sheet -->
+                <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 shadow-2xs">
+                  <button
+                    type="button"
+                    onclick="FPCL_EHSE_SUITE.scrollToStart()"
+                    class="p-1.5 rounded-lg text-slate-600 hover:text-teal-700 hover:bg-white transition-all cursor-pointer"
+                    title="Jump to first column (Col A)"
+                  >
+                    <i data-lucide="chevrons-left" class="w-4 h-4"></i>
+                  </button>
+                  <button
+                    type="button"
+                    onclick="FPCL_EHSE_SUITE.scrollTable(-320)"
+                    class="px-2.5 py-1 rounded-lg text-xs font-bold text-slate-700 hover:text-teal-700 hover:bg-white flex items-center gap-1 transition-all cursor-pointer"
+                    title="Scroll sheet left"
+                  >
+                    <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+                    <span>Scroll Left</span>
+                  </button>
+                  <button
+                    type="button"
+                    onclick="FPCL_EHSE_SUITE.scrollTable(320)"
+                    class="px-2.5 py-1 rounded-lg text-xs font-bold text-slate-700 hover:text-teal-700 hover:bg-white flex items-center gap-1 transition-all cursor-pointer"
+                    title="Scroll sheet right"
+                  >
+                    <span>Scroll Right</span>
+                    <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                  </button>
+                  <button
+                    type="button"
+                    onclick="FPCL_EHSE_SUITE.scrollToEnd()"
+                    class="p-1.5 rounded-lg text-slate-600 hover:text-teal-700 hover:bg-white transition-all cursor-pointer"
+                    title="Jump to last column (Col I)"
+                  >
+                    <i data-lucide="chevrons-right" class="w-4 h-4"></i>
+                  </button>
+                </div>
+
                 <button
                   type="button"
-                  onclick="FPCL_SUB_HSE_P_SUITE.exportFilteredCSV()"
+                  onclick="FPCL_EHSE_SUITE.exportFilteredCSV()"
                   class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 transition-colors cursor-pointer shadow-2xs"
                 >
                   <i data-lucide="download" class="w-3.5 h-3.5"></i>
@@ -1230,7 +1300,7 @@
             </div>
 
             <!-- Complete Scrollable UP-DOWN and LEFT-RIGHT Excel Sheet Container -->
-            <div class="w-full overflow-x-auto overflow-y-auto max-h-[640px] rounded-xl border border-slate-200/90 shadow-2xs bg-white">
+            <div id="ehse-table-scroller" class="w-full overflow-x-auto overflow-y-auto max-h-[640px] rounded-xl border border-slate-200/90 shadow-2xs bg-white">
               <table class="min-w-[1250px] w-full text-left border-collapse text-xs select-text">
                 <!-- Sticky Excel Column Letters Row (Row 1) -->
                 <thead class="sticky top-0 z-20 shadow-xs">
@@ -1269,8 +1339,8 @@
                         <p class="text-xs mt-1">Try clearing or adjusting your filter selection.</p>
                         <button
                           type="button"
-                          onclick="FPCL_SUB_HSE_P_SUITE.resetFilters()"
-                          class="mt-3 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-indigo-50 text-indigo-700 border border-indigo-200 font-bold hover:bg-indigo-100 cursor-pointer"
+                          onclick="FPCL_EHSE_SUITE.resetFilters()"
+                          class="mt-3 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-teal-50 text-teal-700 border border-teal-200 font-bold hover:bg-teal-100 cursor-pointer"
                         >
                           Reset Filters
                         </button>
@@ -1282,15 +1352,15 @@
                     
                     // Distinct ID Color Badge to emphasize rows sharing the same Meeting ID
                     const idColor = String(item.id) === '69'
-                      ? 'bg-purple-100 text-purple-900 border-purple-300'
+                      ? 'bg-teal-100 text-teal-900 border-teal-300'
                       : (String(item.id) === '70'
                         ? 'bg-blue-100 text-blue-900 border-blue-300'
-                        : 'bg-emerald-100 text-emerald-900 border-emerald-300');
+                        : 'bg-purple-100 text-purple-900 border-purple-300');
 
                     return `
                       <tr
-                        onclick="FPCL_SUB_HSE_P_SUITE.inspectObservation(${item.sr})"
-                        class="hover:bg-indigo-50/50 transition-colors cursor-pointer group divide-x divide-slate-100"
+                        onclick="FPCL_EHSE_SUITE.inspectObservation(${item.sr})"
+                        class="hover:bg-teal-50/50 transition-colors cursor-pointer group divide-x divide-slate-100"
                         title="Click to inspect full details for row #${idx + 1}"
                       >
                         <!-- Row # -->
@@ -1304,7 +1374,7 @@
                         </td>
 
                         <!-- Col B: Subject -->
-                        <td class="py-3 px-3 font-bold text-slate-900 group-hover:text-indigo-700 transition-colors">
+                        <td class="py-3 px-3 font-bold text-slate-900 group-hover:text-teal-700 transition-colors">
                           ${item.subject || '-'}
                         </td>
 
@@ -1314,7 +1384,7 @@
                         </td>
 
                         <!-- Col D: Ref. # -->
-                        <td class="py-3 px-3 font-mono text-[11px] text-indigo-700 whitespace-nowrap font-bold">
+                        <td class="py-3 px-3 font-mono text-[11px] text-teal-700 whitespace-nowrap font-bold">
                           ${item.refNo || '-'}
                         </td>
 
@@ -1339,10 +1409,10 @@
                           </span>
                         </td>
 
-                        <!-- Col H: Open Close -->
+                        <!-- Col H: Open Close (Red for Open, Emerald for Close) -->
                         <td class="py-3 px-3 text-center whitespace-nowrap">
-                          <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${isClose ? 'bg-emerald-50 text-emerald-800 border-emerald-300' : 'bg-orange-50 text-orange-800 border-orange-300'}">
-                            <span class="w-1.5 h-1.5 rounded-full ${isClose ? 'bg-emerald-500' : 'bg-orange-500'}"></span>
+                          <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${isClose ? 'bg-emerald-50 text-emerald-800 border-emerald-300' : 'bg-red-50 text-red-700 border-red-300'}">
+                            <span class="w-1.5 h-1.5 rounded-full ${isClose ? 'bg-emerald-500' : 'bg-red-500'}"></span>
                             ${displayStatus}
                           </span>
                         </td>
@@ -1361,11 +1431,11 @@
             <!-- Footer Note on Meeting Structure (Column A ID Grouping) -->
             <div class="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-slate-500">
               <div class="flex items-center gap-2">
-                <i data-lucide="info" class="w-3.5 h-3.5 text-indigo-500 shrink-0"></i>
-                <span>Column A rows carrying the same ID represent one single meeting of Sub HSE P. Multiple departments (Column G) have responsibility against different recommendations (Columns F, H, I).</span>
+                <i data-lucide="info" class="w-3.5 h-3.5 text-teal-600 shrink-0"></i>
+                <span>Column A rows carrying the same ID represent one single meeting of EHSE. Multiple departments (Column G) have responsibility against different recommendations (Columns F, H, I).</span>
               </div>
               <div class="shrink-0 font-mono text-[11px]">
-                Google Sheet ID: <strong>${SUB_HSE_P_SHEET_ID}</strong> • Tab: <strong>${SUB_HSE_P_SHEET_TAB}</strong>
+                Google Sheet ID: <strong>${EHSE_SHEET_ID}</strong> • Tab: <strong>${EHSE_SHEET_TAB}</strong>
               </div>
             </div>
           </div>
@@ -1373,10 +1443,10 @@
         </div>
 
         <!-- Inspection Modal Container -->
-        <div id="sub-hse-p-inspection-modal" class="hidden"></div>
+        <div id="ehse-inspection-modal" class="hidden"></div>
 
         <!-- Settings Modal Container -->
-        <div id="sub-hse-p-settings-modal" class="hidden"></div>
+        <div id="ehse-settings-modal" class="hidden"></div>
       `;
 
       if (window.lucide) {
@@ -1386,11 +1456,11 @@
   };
 
   // Attach to window and auto-initialize
-  window.FPCL_SUB_HSE_P_SUITE = subHsePSuite;
+  window.FPCL_EHSE_SUITE = ehseSuite;
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => subHsePSuite.init());
+    document.addEventListener('DOMContentLoaded', () => ehseSuite.init());
   } else {
-    subHsePSuite.init();
+    ehseSuite.init();
   }
 
 })();

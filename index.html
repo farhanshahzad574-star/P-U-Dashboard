@@ -101,8 +101,14 @@
     <!-- CAPEX (Capital Expenditure) Specialized Executive Suite -->
     <script src="/assets/capexSuite.js?v=20260925a"></script>
     <!-- Sub HSE - P (Production HSE Sub-Committee) Dataset & Specialized Executive Suite -->
-    <script src="/assets/subHsePData.js?v=20260925a"></script>
-    <script src="/assets/subHsePSuite.js?v=20260925a"></script>
+    <script src="/assets/subHsePData.js?v=20260926a"></script>
+    <script src="/assets/subHsePSuite.js?v=20260926a"></script>
+    <!-- Sub HSE – E&I (Electrical & Instrumentation HSE Sub-Committee) Dataset & Specialized Executive Suite -->
+    <script src="/assets/subHseEiData.js?v=20260926a"></script>
+    <script src="/assets/subHseEiSuite.js?v=20260926a"></script>
+    <!-- EHSE (Executive HSE Committee) Dataset & Specialized Executive Suite -->
+    <script src="/assets/ehseData.js?v=20260926a"></script>
+    <script src="/assets/ehseSuite.js?v=20260926a"></script>
 
     <style>
       /* Base font legibility: standard across devices, calibrated for wall displays */
@@ -1924,6 +1930,20 @@
           <!-- Populated dynamically via FPCL_SUB_HSE_P_SUITE.render() -->
         </div>
 
+        <!-- ========================================================================= -->
+        <!-- DEDICATED FULL-SCALE SUB HSE – E&I EXECUTIVE BI SUITE CONTAINER           -->
+        <!-- ========================================================================= -->
+        <div id="sub-hse-ei-specialized-container" class="hidden space-y-6">
+          <!-- Populated dynamically via FPCL_SUB_HSE_EI_SUITE.render() -->
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- DEDICATED FULL-SCALE EHSE EXECUTIVE BI SUITE CONTAINER                    -->
+        <!-- ========================================================================= -->
+        <div id="ehse-specialized-container" class="hidden space-y-6">
+          <!-- Populated dynamically via FPCL_EHSE_SUITE.render() -->
+        </div>
+
       </section>
 
     </main>
@@ -2681,26 +2701,26 @@
           name: 'EHSE',
           code: 'EHSE',
           icon: 'shield-check',
-          status: 'Awaiting Sheet Link',
-          hasSheetLink: false,
+          status: 'Active',
+          hasSheetLink: true,
           category: 'Executive & Governance',
           department: 'Executive HSE Directorate',
-          cadence: 'Monthly Executive Review',
-          description: 'Executive leadership governance over plant-wide occupational health, safety culture, environmental compliance & statutory audits.',
+          cadence: 'Live Sync / Google Sheet',
+          description: 'Executive leadership governance over plant-wide occupational health, safety culture, environmental compliance & statutory audits • Live synchronized with Google Sheet tab EHSE (1I4oX4kPr6d0_7q--9OcoJWs0W7IQG1dK1rBmNO7BlGo).',
           color: {
-            bg: '#EEF1F7',
-            primary: '#4C63A8',
-            secondary: '#93A3CC',
-            text: '#2B2E33'
+            bg: '#F0FDFA',
+            primary: '#0D5C75',
+            secondary: '#10B981',
+            text: '#042F2E'
           },
-          gradient: 'from-blue-600 via-indigo-600 to-cyan-500',
-          gradientStop1: '#2563EB',
-          gradientStop2: '#06B6D4',
-          tagStyle: 'bg-blue-50 text-blue-700 border-blue-200',
-          kpis: { total: 0, closed: 0, inProgress: 0, overdue: 0, compliance: '0.0%' },
-          punchList: { open: 0, closed: 0, total: 0, rate: '0.0%' },
-          dataReadiness: { master: '0%', signoff: '0%' },
-          statusComment: 'Awaiting Google Sheet connection.',
+          gradient: 'from-[#031B4E] via-[#0D5C75] to-[#10B981]',
+          gradientStop1: '#0D5C75',
+          gradientStop2: '#10B981',
+          tagStyle: 'bg-teal-50 text-teal-800 border-teal-200',
+          kpis: { total: 4, closed: 0, inProgress: 4, overdue: 0, compliance: '0.0%' },
+          punchList: { open: 4, closed: 0, total: 4, rate: '0.0%' },
+          dataReadiness: { master: '100%', signoff: '100%' },
+          statusComment: 'Live Google Sheets: EHSE Tab (1I4oX4kPr6d0_7q--9OcoJWs0W7IQG1dK1rBmNO7BlGo)',
           actions: []
         },
         {
@@ -2735,26 +2755,26 @@
           name: 'Sub HSE – E&I',
           code: 'Sub HSE-E&I',
           icon: 'zap',
-          status: 'Awaiting Sheet Link',
-          hasSheetLink: false,
+          status: 'Active',
+          hasSheetLink: true,
           category: 'Sub HSE Committees',
           department: 'Electrical & Instrumentation HSE Sub-Committee',
           cadence: 'Bi-Weekly Review',
-          description: 'Electrical & Instrumentation HSE sub-committee: SIL testing, arc flash assessments, substation safeguards & transmitter calibrations.',
+          description: 'Electrical & Instrumentation HSE sub-committee: 20 Observations across Sub HSE sessions with active live Google Sheets synchronization.',
           color: {
-            bg: '#EAF2FB',
-            primary: '#2E6DA4',
-            secondary: '#7FA8CC',
-            text: '#2B2E33'
+            bg: '#F5F3FF',
+            primary: '#7C3AED',
+            secondary: '#C084FC',
+            text: '#1E1B4B'
           },
-          gradient: 'from-sky-500 via-blue-600 to-indigo-600',
-          gradientStop1: '#0284C7',
-          gradientStop2: '#4F46E5',
-          tagStyle: 'bg-sky-50 text-sky-700 border-sky-200',
-          kpis: { total: 0, closed: 0, inProgress: 0, overdue: 0, compliance: '0.0%' },
-          punchList: { open: 0, closed: 0, total: 0, rate: '0.0%' },
-          dataReadiness: { master: '0%', signoff: '0%' },
-          statusComment: 'Awaiting Google Sheet connection.',
+          gradient: 'from-purple-600 via-indigo-600 to-fuchsia-600',
+          gradientStop1: '#7C3AED',
+          gradientStop2: '#DB2777',
+          tagStyle: 'bg-purple-50 text-purple-700 border-purple-200',
+          kpis: { total: 20, closed: 18, inProgress: 2, overdue: 0, compliance: '90.0%' },
+          punchList: { open: 2, closed: 18, total: 20, rate: '90.0%' },
+          dataReadiness: { master: '100%', signoff: '100%' },
+          statusComment: 'Live Google Sheets: Sub_HSE _E&I Tab (1ZcxlHSoQk4MjHFs7m0hfujM_7ud8JNNrMQg0cLq-Ruw)',
           actions: []
         },
         {
@@ -2974,6 +2994,9 @@
           this.renderComparisonChart();
           this.fetchHseqKpis();
           this.fetchCapexData({ silent: true });
+          this.fetchSubHsePData({ silent: true });
+          this.fetchSubHseEiData({ silent: true });
+          this.fetchEhseData({ silent: true });
           this.renderActionScenarios();
           this.renderPunchListTable();
           this.renderDataReadiness();
@@ -3539,6 +3562,138 @@
         },
 
         /**
+         * Sub HSE - P: Column G (Responsibility Department / Action by), Column H (Open Close status)
+         * Sheet ID: 1hhO-goFXJlKSr32dSIHQMfEC7XRQsQly7iJCfP39Wjw, tab: Sub_HSE_P
+         */
+        getSubHsePFilteredKpis(deptFilter, openCloseFilter) {
+          let raw = [];
+          if (Array.isArray(window.FPCL_SUB_HSE_P_DATA) && window.FPCL_SUB_HSE_P_DATA.length > 0) {
+            raw = window.FPCL_SUB_HSE_P_DATA;
+          } else if (Array.isArray(window.FPCL_SUB_HSE_P_INITIAL_SEED)) {
+            raw = window.FPCL_SUB_HSE_P_INITIAL_SEED;
+          }
+
+          const deptRows = raw.filter(r => {
+            const unit = r.actionBy || r.department || '';
+            return this.isDeptMatch(unit, deptFilter);
+          });
+          const deptTotal = deptRows.length;
+          const deptClosed = deptRows.filter(r => {
+            const st = String(r.openClose || r.status || '').toLowerCase().trim();
+            return st === 'close' || st.includes('close');
+          }).length;
+          const deptOpen = deptTotal - deptClosed;
+          const deptRate = deptTotal > 0 ? ((deptClosed / deptTotal) * 100).toFixed(1) + '%' : '0.0%';
+
+          if (openCloseFilter === 'open') {
+            return {
+              total: deptOpen,
+              closed: 0,
+              inProgress: deptOpen,
+              overdue: 0,
+              compliance: deptOpen + ' Open',
+              deptTotal,
+              deptClosed,
+              deptOpen,
+              deptRate,
+              mode: 'open'
+            };
+          } else if (openCloseFilter === 'close') {
+            return {
+              total: deptClosed,
+              closed: deptClosed,
+              inProgress: 0,
+              overdue: 0,
+              compliance: deptClosed + ' Closed',
+              deptTotal,
+              deptClosed,
+              deptOpen,
+              deptRate,
+              mode: 'close'
+            };
+          } else {
+            return {
+              total: deptTotal,
+              closed: deptClosed,
+              inProgress: deptOpen,
+              overdue: 0,
+              compliance: deptRate,
+              deptTotal,
+              deptClosed,
+              deptOpen,
+              deptRate,
+              mode: 'all'
+            };
+          }
+        },
+
+        /**
+         * Sub HSE – E&I: Column G (Responsibility Department / Action by), Column H (Open Close status)
+         * Sheet ID: 1ZcxlHSoQk4MjHFs7m0hfujM_7ud8JNNrMQg0cLq-Ruw, tab: Sub_HSE _E&I
+         */
+        getSubHseEiFilteredKpis(deptFilter, openCloseFilter) {
+          let raw = [];
+          if (Array.isArray(window.FPCL_SUB_HSE_EI_DATA) && window.FPCL_SUB_HSE_EI_DATA.length > 0) {
+            raw = window.FPCL_SUB_HSE_EI_DATA;
+          } else if (Array.isArray(window.FPCL_SUB_HSE_EI_INITIAL_SEED)) {
+            raw = window.FPCL_SUB_HSE_EI_INITIAL_SEED;
+          }
+
+          const deptRows = raw.filter(r => {
+            const unit = r.actionBy || r.department || '';
+            return this.isDeptMatch(unit, deptFilter);
+          });
+          const deptTotal = deptRows.length;
+          const deptClosed = deptRows.filter(r => {
+            const st = String(r.openClose || r.status || '').toLowerCase().trim();
+            return st === 'close' || st.includes('close');
+          }).length;
+          const deptOpen = deptTotal - deptClosed;
+          const deptRate = deptTotal > 0 ? ((deptClosed / deptTotal) * 100).toFixed(1) + '%' : '0.0%';
+
+          if (openCloseFilter === 'open') {
+            return {
+              total: deptOpen,
+              closed: 0,
+              inProgress: deptOpen,
+              overdue: 0,
+              compliance: deptOpen + ' Open',
+              deptTotal,
+              deptClosed,
+              deptOpen,
+              deptRate,
+              mode: 'open'
+            };
+          } else if (openCloseFilter === 'close') {
+            return {
+              total: deptClosed,
+              closed: deptClosed,
+              inProgress: 0,
+              overdue: 0,
+              compliance: deptClosed + ' Closed',
+              deptTotal,
+              deptClosed,
+              deptOpen,
+              deptRate,
+              mode: 'close'
+            };
+          } else {
+            return {
+              total: deptTotal,
+              closed: deptClosed,
+              inProgress: deptOpen,
+              overdue: 0,
+              compliance: deptRate,
+              deptTotal,
+              deptClosed,
+              deptOpen,
+              deptRate,
+              mode: 'all'
+            };
+          }
+        },
+
+        /**
          * Get live filtered KPIs for any summary dashboard card based on overview filters
          */
         getEffectiveCardKpis(item) {
@@ -3547,6 +3702,12 @@
           const deptFilter = (this.state && this.state.overviewDeptFilter) || 'all';
           const openCloseFilter = (this.state && this.state.overviewOpenCloseFilter) || 'all';
 
+          if (item.id === 'sub-hse-p') {
+            return this.getSubHsePFilteredKpis(deptFilter, openCloseFilter);
+          }
+          if (item.id === 'sub-hse-ei') {
+            return this.getSubHseEiFilteredKpis(deptFilter, openCloseFilter);
+          }
           if (item.id === 'sub-hse-psm') {
             return this.getPsmAuditFilteredKpis(deptFilter, openCloseFilter);
           }
@@ -4484,6 +4645,48 @@
             }
           } catch (err) {
             console.warn('CAPEX Overview fetch error:', err);
+          }
+        },
+
+        /**
+         * Fetch live Sub HSE - P observation records from Google Sheet ID 1hhO-goFXJlKSr32dSIHQMfEC7XRQsQly7iJCfP39Wjw (tab Sub_HSE_P)
+         */
+        async fetchSubHsePData(options = {}) {
+          const silent = options.silent !== undefined ? options.silent : true;
+          try {
+            if (window.FPCL_SUB_HSE_P_SUITE && typeof window.FPCL_SUB_HSE_P_SUITE.syncLiveFeed === 'function') {
+              await window.FPCL_SUB_HSE_P_SUITE.syncLiveFeed({ silent });
+            }
+          } catch (err) {
+            console.warn('Sub HSE - P overview sync error:', err);
+          }
+        },
+
+        /**
+         * Fetch live Sub HSE – E&I observation records from Google Sheet ID 1ZcxlHSoQk4MjHFs7m0hfujM_7ud8JNNrMQg0cLq-Ruw (tab Sub_HSE _E&I)
+         */
+        async fetchSubHseEiData(options = {}) {
+          const silent = options.silent !== undefined ? options.silent : true;
+          try {
+            if (window.FPCL_SUB_HSE_EI_SUITE && typeof window.FPCL_SUB_HSE_EI_SUITE.syncLiveFeed === 'function') {
+              await window.FPCL_SUB_HSE_EI_SUITE.syncLiveFeed({ silent });
+            }
+          } catch (err) {
+            console.warn('Sub HSE – E&I overview sync error:', err);
+          }
+        },
+
+        /**
+         * Fetch live EHSE observation records from Google Sheet ID 1I4oX4kPr6d0_7q--9OcoJWs0W7IQG1dK1rBmNO7BlGo (tab EHSE)
+         */
+        async fetchEhseData(options = {}) {
+          const silent = options.silent !== undefined ? options.silent : true;
+          try {
+            if (window.FPCL_EHSE_SUITE && typeof window.FPCL_EHSE_SUITE.syncLiveFeed === 'function') {
+              await window.FPCL_EHSE_SUITE.syncLiveFeed({ silent });
+            }
+          } catch (err) {
+            console.warn('EHSE overview sync error:', err);
           }
         },
 
@@ -6134,6 +6337,9 @@
           const imsContainer = document.getElementById('ims-specialized-container');
           const pssrContainer = document.getElementById('pssr-specialized-container');
           const capexContainer = document.getElementById('capex-specialized-container');
+          const subHsePContainer = document.getElementById('sub-hse-p-specialized-container');
+          const subHseEiContainer = document.getElementById('sub-hse-ei-specialized-container');
+          const ehseContainer = document.getElementById('ehse-specialized-container');
 
           if (dashboardId === 'strategic') {
             if (headerCard) { headerCard.classList.add('hidden'); headerCard.hidden = true; }
@@ -6146,6 +6352,9 @@
             if (imsContainer) { imsContainer.classList.add('hidden'); imsContainer.hidden = true; }
             if (pssrContainer) { pssrContainer.classList.add('hidden'); pssrContainer.hidden = true; }
             if (capexContainer) { capexContainer.classList.add('hidden'); capexContainer.hidden = true; }
+            if (subHsePContainer) { subHsePContainer.classList.add('hidden'); subHsePContainer.hidden = true; }
+            if (subHseEiContainer) { subHseEiContainer.classList.add('hidden'); subHseEiContainer.hidden = true; }
+            if (ehseContainer) { ehseContainer.classList.add('hidden'); ehseContainer.hidden = true; }
             if (strategicContainer) {
               strategicContainer.classList.remove('hidden');
               strategicContainer.hidden = false;
@@ -6164,6 +6373,9 @@
             if (imsContainer) { imsContainer.classList.add('hidden'); imsContainer.hidden = true; }
             if (pssrContainer) { pssrContainer.classList.add('hidden'); pssrContainer.hidden = true; }
             if (capexContainer) { capexContainer.classList.add('hidden'); capexContainer.hidden = true; }
+            if (subHsePContainer) { subHsePContainer.classList.add('hidden'); subHsePContainer.hidden = true; }
+            if (subHseEiContainer) { subHseEiContainer.classList.add('hidden'); subHseEiContainer.hidden = true; }
+            if (ehseContainer) { ehseContainer.classList.add('hidden'); ehseContainer.hidden = true; }
             if (strategicContainer) {
               strategicContainer.classList.add('hidden');
               strategicContainer.hidden = true;
@@ -6192,6 +6404,9 @@
             if (imsContainer) { imsContainer.classList.add('hidden'); imsContainer.hidden = true; }
             if (pssrContainer) { pssrContainer.classList.add('hidden'); pssrContainer.hidden = true; }
             if (capexContainer) { capexContainer.classList.add('hidden'); capexContainer.hidden = true; }
+            if (subHsePContainer) { subHsePContainer.classList.add('hidden'); subHsePContainer.hidden = true; }
+            if (subHseEiContainer) { subHseEiContainer.classList.add('hidden'); subHseEiContainer.hidden = true; }
+            if (ehseContainer) { ehseContainer.classList.add('hidden'); ehseContainer.hidden = true; }
             if (strategicContainer) {
               strategicContainer.classList.add('hidden');
               strategicContainer.hidden = true;
@@ -6247,6 +6462,9 @@
             if (psmContainer) { psmContainer.classList.add('hidden'); psmContainer.hidden = true; }
             if (pssrContainer) { pssrContainer.classList.add('hidden'); pssrContainer.hidden = true; }
             if (capexContainer) { capexContainer.classList.add('hidden'); capexContainer.hidden = true; }
+            if (subHsePContainer) { subHsePContainer.classList.add('hidden'); subHsePContainer.hidden = true; }
+            if (subHseEiContainer) { subHseEiContainer.classList.add('hidden'); subHseEiContainer.hidden = true; }
+            if (ehseContainer) { ehseContainer.classList.add('hidden'); ehseContainer.hidden = true; }
             if (strategicContainer) {
               strategicContainer.classList.add('hidden');
               strategicContainer.hidden = true;
@@ -6279,6 +6497,9 @@
             if (plrContainer) { plrContainer.classList.add('hidden'); plrContainer.hidden = true; }
             if (psmContainer) { psmContainer.classList.add('hidden'); psmContainer.hidden = true; }
             if (capexContainer) { capexContainer.classList.add('hidden'); capexContainer.hidden = true; }
+            if (subHsePContainer) { subHsePContainer.classList.add('hidden'); subHsePContainer.hidden = true; }
+            if (subHseEiContainer) { subHseEiContainer.classList.add('hidden'); subHseEiContainer.hidden = true; }
+            if (ehseContainer) { ehseContainer.classList.add('hidden'); ehseContainer.hidden = true; }
             if (strategicContainer) {
               strategicContainer.classList.add('hidden');
               strategicContainer.hidden = true;
@@ -6339,11 +6560,167 @@
                 }
               }
             }
+            if (subHsePContainer) { subHsePContainer.classList.add('hidden'); subHsePContainer.hidden = true; }
+            if (subHseEiContainer) { subHseEiContainer.classList.add('hidden'); subHseEiContainer.hidden = true; }
+            if (ehseContainer) { ehseContainer.classList.add('hidden'); ehseContainer.hidden = true; }
             const breadcrumbActive = document.getElementById('breadcrumb-active-name');
             if (breadcrumbActive) breadcrumbActive.textContent = 'Plant CapEx Portfolio';
             if (sheetKeyEl) {
               sheetKeyEl.textContent = 'CAPEX Dashboard • Live Synchronized (13ys4PbggcQq0H06Rh6cScAtdVnlrY-yyiWxA4e6dDzc)';
               sheetKeyEl.title = 'Live Google Sheets: CAPEX Tab (13ys4PbggcQq0H06Rh6cScAtdVnlrY-yyiWxA4e6dDzc)';
+            }
+          } else if (dashboardId === 'sub-hse-p') {
+            if (headerCard) { headerCard.classList.add('hidden'); headerCard.hidden = true; }
+            if (connCard) { connCard.classList.add('hidden'); connCard.hidden = true; }
+            const psmActions = document.getElementById('detail-psm-actions');
+            if (psmActions) { psmActions.classList.add('hidden'); psmActions.hidden = true; }
+            if (stdContainer) { stdContainer.classList.add('hidden'); stdContainer.hidden = true; }
+            if (plrContainer) { plrContainer.classList.add('hidden'); plrContainer.hidden = true; }
+            if (psmContainer) { psmContainer.classList.add('hidden'); psmContainer.hidden = true; }
+            if (strategicContainer) {
+              strategicContainer.classList.add('hidden');
+              strategicContainer.hidden = true;
+              strategicContainer.style.marginTop = '';
+            }
+            if (imsContainer) {
+              imsContainer.classList.add('hidden');
+              imsContainer.hidden = true;
+            }
+            if (pssrContainer) {
+              pssrContainer.classList.add('hidden');
+              pssrContainer.hidden = true;
+            }
+            if (capexContainer) {
+              capexContainer.classList.add('hidden');
+              capexContainer.hidden = true;
+            }
+            if (subHseEiContainer) {
+              subHseEiContainer.classList.add('hidden');
+              subHseEiContainer.hidden = true;
+            }
+            if (ehseContainer) {
+              ehseContainer.classList.add('hidden');
+              ehseContainer.hidden = true;
+            }
+            if (subHsePContainer) {
+              subHsePContainer.classList.remove('hidden');
+              subHsePContainer.hidden = false;
+              if (window.FPCL_SUB_HSE_P_SUITE) {
+                if (typeof window.FPCL_SUB_HSE_P_SUITE.render === 'function') {
+                  window.FPCL_SUB_HSE_P_SUITE.render();
+                }
+                if (typeof window.FPCL_SUB_HSE_P_SUITE.syncLiveFeed === 'function') {
+                  window.FPCL_SUB_HSE_P_SUITE.syncLiveFeed({ silent: true });
+                }
+              }
+            }
+            const breadcrumbActive = document.getElementById('breadcrumb-active-name');
+            if (breadcrumbActive) breadcrumbActive.textContent = 'Sub HSE - P Executive Dashboard';
+            if (sheetKeyEl) {
+              sheetKeyEl.textContent = 'Sub HSE - P Dashboard • Live Synchronized (1hhO-goFXJlKSr32dSIHQMfEC7XRQsQly7iJCfP39Wjw)';
+              sheetKeyEl.title = 'Live Google Sheets: Sub_HSE_P Tab (1hhO-goFXJlKSr32dSIHQMfEC7XRQsQly7iJCfP39Wjw)';
+            }
+          } else if (dashboardId === 'sub-hse-ei') {
+            if (headerCard) { headerCard.classList.add('hidden'); headerCard.hidden = true; }
+            if (connCard) { connCard.classList.add('hidden'); connCard.hidden = true; }
+            const psmActions = document.getElementById('detail-psm-actions');
+            if (psmActions) { psmActions.classList.add('hidden'); psmActions.hidden = true; }
+            if (stdContainer) { stdContainer.classList.add('hidden'); stdContainer.hidden = true; }
+            if (plrContainer) { plrContainer.classList.add('hidden'); plrContainer.hidden = true; }
+            if (psmContainer) { psmContainer.classList.add('hidden'); psmContainer.hidden = true; }
+            if (strategicContainer) {
+              strategicContainer.classList.add('hidden');
+              strategicContainer.hidden = true;
+              strategicContainer.style.marginTop = '';
+            }
+            if (imsContainer) {
+              imsContainer.classList.add('hidden');
+              imsContainer.hidden = true;
+            }
+            if (pssrContainer) {
+              pssrContainer.classList.add('hidden');
+              pssrContainer.hidden = true;
+            }
+            if (capexContainer) {
+              capexContainer.classList.add('hidden');
+              capexContainer.hidden = true;
+            }
+            if (subHsePContainer) {
+              subHsePContainer.classList.add('hidden');
+              subHsePContainer.hidden = true;
+            }
+            if (ehseContainer) {
+              ehseContainer.classList.add('hidden');
+              ehseContainer.hidden = true;
+            }
+            if (subHseEiContainer) {
+              subHseEiContainer.classList.remove('hidden');
+              subHseEiContainer.hidden = false;
+              if (window.FPCL_SUB_HSE_EI_SUITE) {
+                if (typeof window.FPCL_SUB_HSE_EI_SUITE.render === 'function') {
+                  window.FPCL_SUB_HSE_EI_SUITE.render();
+                }
+                if (typeof window.FPCL_SUB_HSE_EI_SUITE.syncLiveFeed === 'function') {
+                  window.FPCL_SUB_HSE_EI_SUITE.syncLiveFeed({ silent: true });
+                }
+              }
+            }
+            const breadcrumbActive = document.getElementById('breadcrumb-active-name');
+            if (breadcrumbActive) breadcrumbActive.textContent = 'Sub HSE – E&I Executive Dashboard';
+            if (sheetKeyEl) {
+              sheetKeyEl.textContent = 'Sub HSE – E&I Dashboard • Live Synchronized (1ZcxlHSoQk4MjHFs7m0hfujM_7ud8JNNrMQg0cLq-Ruw)';
+              sheetKeyEl.title = 'Live Google Sheets: Sub_HSE _E&I Tab (1ZcxlHSoQk4MjHFs7m0hfujM_7ud8JNNrMQg0cLq-Ruw)';
+            }
+          } else if (dashboardId === 'executive-hse-committee-ehsec' || dashboardId === 'ehse') {
+            if (headerCard) { headerCard.classList.add('hidden'); headerCard.hidden = true; }
+            if (connCard) { connCard.classList.add('hidden'); connCard.hidden = true; }
+            const psmActions = document.getElementById('detail-psm-actions');
+            if (psmActions) { psmActions.classList.add('hidden'); psmActions.hidden = true; }
+            if (stdContainer) { stdContainer.classList.add('hidden'); stdContainer.hidden = true; }
+            if (plrContainer) { plrContainer.classList.add('hidden'); plrContainer.hidden = true; }
+            if (psmContainer) { psmContainer.classList.add('hidden'); psmContainer.hidden = true; }
+            if (strategicContainer) {
+              strategicContainer.classList.add('hidden');
+              strategicContainer.hidden = true;
+              strategicContainer.style.marginTop = '';
+            }
+            if (imsContainer) {
+              imsContainer.classList.add('hidden');
+              imsContainer.hidden = true;
+            }
+            if (pssrContainer) {
+              pssrContainer.classList.add('hidden');
+              pssrContainer.hidden = true;
+            }
+            if (capexContainer) {
+              capexContainer.classList.add('hidden');
+              capexContainer.hidden = true;
+            }
+            if (subHsePContainer) {
+              subHsePContainer.classList.add('hidden');
+              subHsePContainer.hidden = true;
+            }
+            if (subHseEiContainer) {
+              subHseEiContainer.classList.add('hidden');
+              subHseEiContainer.hidden = true;
+            }
+            if (ehseContainer) {
+              ehseContainer.classList.remove('hidden');
+              ehseContainer.hidden = false;
+              if (window.FPCL_EHSE_SUITE) {
+                if (typeof window.FPCL_EHSE_SUITE.render === 'function') {
+                  window.FPCL_EHSE_SUITE.render();
+                }
+                if (typeof window.FPCL_EHSE_SUITE.syncLiveFeed === 'function') {
+                  window.FPCL_EHSE_SUITE.syncLiveFeed({ silent: true });
+                }
+              }
+            }
+            const breadcrumbActive = document.getElementById('breadcrumb-active-name');
+            if (breadcrumbActive) breadcrumbActive.textContent = 'EHSE Executive Dashboard';
+            if (sheetKeyEl) {
+              sheetKeyEl.textContent = 'EHSE Dashboard • Live Synchronized (1I4oX4kPr6d0_7q--9OcoJWs0W7IQG1dK1rBmNO7BlGo)';
+              sheetKeyEl.title = 'Live Google Sheets: EHSE Tab (1I4oX4kPr6d0_7q--9OcoJWs0W7IQG1dK1rBmNO7BlGo)';
             }
           } else {
             if (headerCard) { headerCard.classList.remove('hidden'); headerCard.hidden = false; }
@@ -6352,6 +6729,9 @@
             if (imsContainer) { imsContainer.classList.add('hidden'); imsContainer.hidden = true; }
             if (pssrContainer) { pssrContainer.classList.add('hidden'); pssrContainer.hidden = true; }
             if (capexContainer) { capexContainer.classList.add('hidden'); capexContainer.hidden = true; }
+            if (subHsePContainer) { subHsePContainer.classList.add('hidden'); subHsePContainer.hidden = true; }
+            if (subHseEiContainer) { subHseEiContainer.classList.add('hidden'); subHseEiContainer.hidden = true; }
+            if (ehseContainer) { ehseContainer.classList.add('hidden'); ehseContainer.hidden = true; }
             if (strategicContainer) {
               strategicContainer.classList.add('hidden');
               strategicContainer.hidden = true;
@@ -6539,6 +6919,21 @@
           if (capexContainer) {
             capexContainer.classList.add('hidden');
             capexContainer.hidden = true;
+          }
+          const subHsePContainer = document.getElementById('sub-hse-p-specialized-container');
+          if (subHsePContainer) {
+            subHsePContainer.classList.add('hidden');
+            subHsePContainer.hidden = true;
+          }
+          const subHseEiContainer = document.getElementById('sub-hse-ei-specialized-container');
+          if (subHseEiContainer) {
+            subHseEiContainer.classList.add('hidden');
+            subHseEiContainer.hidden = true;
+          }
+          const ehseContainer = document.getElementById('ehse-specialized-container');
+          if (ehseContainer) {
+            ehseContainer.classList.add('hidden');
+            ehseContainer.hidden = true;
           }
           if (window.FPCL_STRATEGIC_SUITE && window.FPCL_STRATEGIC_SUITE.state) {
             window.FPCL_STRATEGIC_SUITE.state.currentView = 'grid';
