@@ -100,6 +100,9 @@
     <script src="/assets/pssrSuite.js?v=20260924e"></script>
     <!-- CAPEX (Capital Expenditure) Specialized Executive Suite -->
     <script src="/assets/capexSuite.js?v=20260925a"></script>
+    <!-- Sub HSE - P (Production HSE Sub-Committee) Dataset & Specialized Executive Suite -->
+    <script src="/assets/subHsePData.js?v=20260925a"></script>
+    <script src="/assets/subHsePSuite.js?v=20260925a"></script>
 
     <style>
       /* Base font legibility: standard across devices, calibrated for wall displays */
@@ -1914,6 +1917,13 @@
           <!-- Populated dynamically via FPCL_CAPEX_SUITE.render() -->
         </div>
 
+        <!-- ========================================================================= -->
+        <!-- DEDICATED FULL-SCALE SUB HSE - P EXECUTIVE BI SUITE CONTAINER             -->
+        <!-- ========================================================================= -->
+        <div id="sub-hse-p-specialized-container" class="hidden space-y-6">
+          <!-- Populated dynamically via FPCL_SUB_HSE_P_SUITE.render() -->
+        </div>
+
       </section>
 
     </main>
@@ -2698,26 +2708,26 @@
           name: 'Sub HSE - P',
           code: 'Sub HSE-P',
           icon: 'layers',
-          status: 'Awaiting Sheet Link',
-          hasSheetLink: false,
+          status: 'Active',
+          hasSheetLink: true,
           category: 'Sub HSE Committees',
           department: 'Production HSE Sub-Committee',
           cadence: 'Weekly Operations Review',
           description: 'Production HSE sub-committee tracking operating window envelopes, interlock overrides, toxic gas monitoring & barrier integrity.',
           color: {
-            bg: '#F3EEFB',
-            primary: '#7A5FB0',
-            secondary: '#B39DDB',
-            text: '#2B2E33'
+            bg: '#EEF2FF',
+            primary: '#4F46E5',
+            secondary: '#A5B4FC',
+            text: '#1E1B4B'
           },
-          gradient: 'from-purple-600 via-violet-600 to-pink-500',
-          gradientStop1: '#7C3AED',
-          gradientStop2: '#EC4899',
-          tagStyle: 'bg-purple-50 text-purple-700 border-purple-200',
-          kpis: { total: 0, closed: 0, inProgress: 0, overdue: 0, compliance: '0.0%' },
-          punchList: { open: 0, closed: 0, total: 0, rate: '0.0%' },
-          dataReadiness: { master: '0%', signoff: '0%' },
-          statusComment: 'Awaiting Google Sheet connection.',
+          gradient: 'from-indigo-600 via-indigo-700 to-cyan-500',
+          gradientStop1: '#4F46E5',
+          gradientStop2: '#06B6D4',
+          tagStyle: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+          kpis: { total: 20, closed: 18, inProgress: 2, overdue: 0, compliance: '90.0%' },
+          punchList: { open: 2, closed: 18, total: 20, rate: '90.0%' },
+          dataReadiness: { master: '100%', signoff: '100%' },
+          statusComment: 'Live Google Sheets: Sub_HSE_P Tab (1hhO-goFXJlKSr32dSIHQMfEC7XRQsQly7iJCfP39Wjw)',
           actions: []
         },
         {
