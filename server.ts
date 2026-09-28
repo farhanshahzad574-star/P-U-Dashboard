@@ -590,7 +590,7 @@ app.all('/api/sheets/fetch', async (req: Request, res: Response): Promise<void> 
         const scmSecret = process.env.SCM_SHEET_URL || process.env.STRATEGIC_SCM_SHEET_URL || process.env.GOOGLE_SHEET_SCM || process.env.SCM_URL || process.env.SCM;
         if (scmSecret) url = scmSecret;
       } else if (sLower.includes('validation') || sLower.includes('valid')) {
-        url = process.env.PSM_Validation_sheet_URL || process.env.PSM_VALIDATION_SHEET_URL || process.env.PSM_Validation_sheet || 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTyc0eRsaIpv3DWLdBbEplWo5FqrNwuCFpFrXM4_A6pRTkQgHz56DaN9FMV0cuCkQXnXfPDyKS_nsYC/pub?gid=1928323828&single=true&output=csv';
+        url = process.env.PSM_Validation_sheet_URL || process.env.PSM_VALIDATION_SHEET_URL || process.env.PSM_Validation_sheet || 'https://docs.google.com/spreadsheets/d/1bFBRGKqIfO8Pn7qPSTU0pbdTB87ezDyXvVDnCbTGrx4/gviz/tq?tqx=out:csv&sheet=PSM%20Validation';
       } else if (sLower.includes('hseq') || sLower.includes('kpi')) {
         url = process.env.HSEQ_KPI || 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTyc0eRsaIpv3DWLdBbEplWo5FqrNwuCFpFrXM4_A6pRTkQgHz56DaN9FMV0cuCkQXnXfPDyKS_nsYC/pub?gid=553516171&single=true&output=csv';
       } else if ((sLower.includes('plr') || sLower.includes('status')) && process.env.PLR_STATUS_SHEET_URL) {
@@ -665,7 +665,7 @@ app.all('/api/sheets/fetch', async (req: Request, res: Response): Promise<void> 
         if (!candidateTabs.includes(t)) candidateTabs.push(t);
       });
     } else if (sLower.includes('validation') || sLower.includes('valid')) {
-      const extraValTabs = ['Validation', 'PSM Validation', 'PSM_Validation', 'Sheet1', 'Data'];
+      const extraValTabs = ['PSM Validation', 'PSM_Validation', 'PSMValidation', 'Validation', 'Sheet1'];
       extraValTabs.forEach(t => {
         if (!candidateTabs.includes(t)) candidateTabs.push(t);
       });

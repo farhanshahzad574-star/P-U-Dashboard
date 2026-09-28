@@ -16,6 +16,7 @@
 
 (function() {
   const HARDCODED_PSM_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1bFBRGKqIfO8Pn7qPSTU0pbdTB87ezDyXvVDnCbTGrx4/gviz/tq?tqx=out:csv&sheet=PSM';
+  const HARDCODED_PSM_VALIDATION_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1bFBRGKqIfO8Pn7qPSTU0pbdTB87ezDyXvVDnCbTGrx4/gviz/tq?tqx=out:csv&sheet=PSM%20Validation';
 
   const psmSuite = {
     state: {
@@ -86,7 +87,9 @@
         const cachedVal = localStorage.getItem('FPCL_PSM_VALIDATION_CACHE');
         if (cachedVal) {
           const parsedVal = JSON.parse(cachedVal);
-          if (Array.isArray(parsedVal) && parsedVal.length > 0) {
+          // Only hydrate from cache if valid and not older/smaller than baseline dataset
+          const baselineLen = (Array.isArray(window.FPCL_PSM_VALIDATION_DATA) && window.FPCL_PSM_VALIDATION_DATA.length) || 0;
+          if (Array.isArray(parsedVal) && parsedVal.length >= baselineLen) {
             window.FPCL_PSM_VALIDATION_DATA = parsedVal;
           }
         }
@@ -496,7 +499,13 @@
           const vTrained = vRaw.filter(i => (i.training || '').toLowerCase() === 'yes').length;
           const vPassed = vRaw.filter(i => (i.status || '').toLowerCase() === 'pass').length;
           sheetKeyEl.textContent = `PSM Validation • ${vRaw.length} Personnel (${vTrained} Trained, ${vPassed} Passed)`;
-          sheetKeyEl.title = 'Live Google Sheets: PSM_Validation_sheet_URL';
+          sheetKeyEl.title = 'Live Google Sheets: PSM Validation (1bFBRGKqIfO8Pn7qPSTU0pbdTB87ezDyXvVDnCbTGrx4)';
+        }
+        // Auto-refresh validation data when tab is opened
+        const now = Date.now();
+        if (!this._lastValSyncTime || (now - this._lastValSyncTime > 15000)) {
+          this._lastValSyncTime = now;
+          this.syncValidationLiveFeed({ silent: true });
         }
       }
 
@@ -845,13 +854,106 @@
       const syncIcon = document.getElementById('psm-header-sync-icon');
       if (syncIcon) syncIcon.classList.add('animate-spin');
 
-      try {
-        const res = await fetch('/api/sheets/fetch?sheetTab=PSM%20Validation', { cache: 'no-store' });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
+      const targetUrl = window.FPCL_PSM_VALIDATION_SHEET_URL || HARDCODED_PSM_VALIDATION_SHEET_URL;
+      let csvText = '';
+      const now = Date.now();
+      const nonce = Math.floor(Math.random() * 10000000);
 
-        if (data && data.csvText && typeof window.parseValidationCSV === 'function') {
-          const parsed = window.parseValidationCSV(data.csvText);
+      try {
+        // Tier 1: Universal zero-cache resilient fetcher (serverless proxy + JSONP + direct)
+        if (typeof window.fetchGoogleSheetData === 'function') {
+          try {
+            csvText = await window.fetchGoogleSheetData(targetUrl, { sheetTab: 'PSM Validation' });
+          } catch (e) {
+            console.warn('window.fetchGoogleSheetData error for validation:', e);
+          }
+        }
+
+        // Tier 2: Direct JSONP via Google Visualization API (eliminates CORS restrictions across any deployment origin)
+        if (!csvText && typeof window.fetchGoogleSheetViaJSONP === 'function') {
+          try {
+            const jsonpRes = await window.fetchGoogleSheetViaJSONP(targetUrl, { sheetTab: 'PSM Validation' });
+            if (jsonpRes && jsonpRes.csvText && jsonpRes.csvText.length > 50) {
+              csvText = jsonpRes.csvText;
+            }
+          } catch (e) {
+            console.warn('JSONP fallback error for validation:', e);
+          }
+        }
+
+        // Tier 3: Server proxy (/api/sheets/fetch) with explicit targetUrl and no-cache
+        if (!csvText) {
+          try {
+            const res = await fetch('/api/sheets/fetch', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0'
+              },
+              cache: 'no-store',
+              body: JSON.stringify({ url: targetUrl, sheetTab: 'PSM Validation', gid: '0', t: now, _nocache: nonce })
+            });
+            if (res.ok) {
+              const json = await res.json();
+              if (json && json.csvText && json.csvText.length > 50) {
+                csvText = json.csvText;
+              }
+            }
+          } catch (proxyErr) {
+            console.warn('Proxy POST failed for PSM Validation:', proxyErr);
+          }
+        }
+
+        // Tier 3b: Server proxy GET fallback with explicit URL param
+        if (!csvText) {
+          try {
+            const getRes = await fetch(`/api/sheets/fetch?sheetTab=PSM%20Validation&url=${encodeURIComponent(targetUrl)}&_t=${now}&_nocache=${nonce}`, {
+              cache: 'no-store',
+              headers: {
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache'
+              }
+            });
+            if (getRes.ok) {
+              const json = await getRes.json();
+              if (json && json.csvText && json.csvText.length > 50) {
+                csvText = json.csvText;
+              }
+            }
+          } catch (getErr) {
+            console.warn('Proxy GET failed for PSM Validation:', getErr);
+          }
+        }
+
+        // Tier 4: Direct browser fetch with cache-busting query
+        if (!csvText) {
+          try {
+            const separator = targetUrl.includes('?') ? '&' : '?';
+            const cacheBustedUrl = `${targetUrl}${separator}_t=${now}&_nocache=${nonce}&t=${now}`;
+            const resp = await fetch(cacheBustedUrl, {
+              method: 'GET',
+              cache: 'no-store',
+              headers: {
+                'Accept': 'text/csv,text/plain,*/*',
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache'
+              }
+            });
+            if (resp.ok) {
+              const txt = await resp.text();
+              if (txt && !txt.includes('<!DOCTYPE html>') && !txt.includes('<html') && txt.length > 50) {
+                csvText = txt;
+              }
+            }
+          } catch (directErr) {
+            console.warn('Direct fetch failed for PSM Validation:', directErr);
+          }
+        }
+
+        if (csvText && typeof window.parseValidationCSV === 'function') {
+          const parsed = window.parseValidationCSV(csvText);
           if (Array.isArray(parsed) && parsed.length > 0) {
             parsed.forEach(r => {
               if (r.validationYear === undefined) r.validationYear = r.year || '';
@@ -860,6 +962,7 @@
             window.FPCL_PSM_VALIDATION_DATA = parsed;
             try {
               localStorage.setItem('FPCL_PSM_VALIDATION_CACHE', JSON.stringify(parsed));
+              localStorage.setItem('FPCL_PSM_VALIDATION_LAST_SYNC', String(Date.now()));
             } catch (e) {}
 
             vs.lastSynced = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
