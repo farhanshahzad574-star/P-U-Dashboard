@@ -2379,10 +2379,13 @@
                 </div>
               </div>
 
-              <!-- Enlarged Donut SVG Container -->
+              <!-- Donut SVG Container -->
               <div class="py-2 flex-1 flex items-center justify-center">
                 ${this.renderBreakdownDonut(filtered)}
               </div>
+
+              <!-- Legends of Audit Breakdown Placed at Bottom -->
+              ${this.renderBreakdownLegends(filtered)}
 
             </div>
 
@@ -3917,6 +3920,26 @@
       `;
     },
 
+    // Distinct accessible color palette for PSM Breakdown donut slices and legends
+    getBreakdownColors() {
+      return [
+        '#0D9488', // Teal
+        '#0284C7', // Sky Blue
+        '#6366F1', // Indigo
+        '#EC4899', // Pink
+        '#F59E0B', // Amber
+        '#8B5CF6', // Purple
+        '#10B981', // Emerald
+        '#3B82F6', // Blue
+        '#F97316', // Orange
+        '#14B8A6', // Cyan-Teal
+        '#A855F7', // Violet
+        '#E11D48', // Rose
+        '#06B6D4', // Cyan
+        '#84CC16', // Lime
+      ];
+    },
+
     // Interactive Donut Chart for Audit Breakdown
     renderBreakdownDonut(filteredData) {
       const isElement = this.state.chartBreakdownMode === 'element';
@@ -3926,8 +3949,8 @@
         return `<div class="text-center py-16 text-xs text-slate-400 font-medium">No records available in current scope</div>`;
       }
 
-      // Elegant palette colors for slices
-      const colors = ['#0D9488', '#0284C7', '#6366F1', '#EC4899', '#F59E0B', '#8B5CF6', '#10B981'];
+      // Elegant palette colors for slices matching legends exactly
+      const colors = this.getBreakdownColors();
 
       const total = items.reduce((acc, it) => acc + it.count, 0);
       const radius = 105;
@@ -3963,10 +3986,10 @@
       }).join('');
 
       return `
-        <div class="flex items-center justify-center w-full h-full py-4">
-          <!-- Enlarged Donut SVG Container -->
+        <div class="flex items-center justify-center w-full h-full py-2">
+          <!-- Donut SVG Container -->
           <div
-            class="relative w-64 h-64 min-[400px]:w-72 min-[400px]:h-72 sm:w-80 sm:h-80 md:w-96 md:h-96 lg:w-[380px] lg:h-[380px] shrink-0 cursor-pointer select-none mx-auto"
+            class="relative w-56 h-56 min-[400px]:w-64 min-[400px]:h-64 sm:w-72 sm:h-72 md:w-80 md:h-80 lg:w-[310px] lg:h-[310px] shrink-0 cursor-pointer select-none mx-auto"
             onclick="FPCL_PSM_SUITE.onDonutGeneralClick()"
             title="Click any part of donut to open data window"
           >
@@ -3990,14 +4013,105 @@
                 onmouseenter="FPCL_PSM_SUITE.showTooltip(event, { title: 'Complete Audit Scope', badge: 'All Findings', color: '#0F172A', subtitle: '${isElement ? 'All PSM Elements' : 'All Severity Levels'}', metrics: [{ label: 'Total In Scope', value: '${total}' }], hint: 'Click to open pop-up window for all ${total} audit records' })"
                 onmousemove="FPCL_PSM_SUITE.moveTooltip(event)"
                 onmouseleave="FPCL_PSM_SUITE.hideTooltip()"
-                class="w-40 h-40 sm:w-48 sm:h-48 md:w-56 md:h-56 rounded-full flex flex-col items-center justify-center pointer-events-auto cursor-pointer bg-white hover:bg-slate-50 transition-all duration-200 group border border-slate-100 shadow-md"
+                class="w-36 h-36 sm:w-44 sm:h-44 md:w-48 md:h-48 rounded-full flex flex-col items-center justify-center pointer-events-auto cursor-pointer bg-white hover:bg-slate-50 transition-all duration-200 group border border-slate-100 shadow-md"
                 title="Click to open pop-up window for all ${total} audit records"
               >
-                <span class="text-4xl sm:text-5xl md:text-6xl font-black font-mono text-slate-900 group-hover:text-teal-700 transition-colors leading-none">${total}</span>
-                <span class="text-[11px] sm:text-xs font-black text-slate-500 uppercase tracking-widest group-hover:text-teal-600 transition-colors mt-2">FINDINGS</span>
-                <span class="text-[9px] sm:text-[10px] font-extrabold text-teal-700 bg-teal-50 px-3 py-1 rounded-full border border-teal-200 mt-2.5 opacity-90 group-hover:opacity-100 transition-opacity">Click for data</span>
+                <span class="text-3xl sm:text-4xl md:text-5xl font-black font-mono text-slate-900 group-hover:text-teal-700 transition-colors leading-none">${total}</span>
+                <span class="text-[10px] sm:text-xs font-black text-slate-500 uppercase tracking-widest group-hover:text-teal-600 transition-colors mt-1.5">FINDINGS</span>
+                <span class="text-[8px] sm:text-[10px] font-extrabold text-teal-700 bg-teal-50 px-2.5 py-0.5 rounded-full border border-teal-200 mt-2 opacity-90 group-hover:opacity-100 transition-opacity">Click for data</span>
               </div>
             </div>
+          </div>
+        </div>
+      `;
+    },
+
+    // Interactive Legends placed at the bottom of AUDIT BREAKDOWN donut
+    renderBreakdownLegends(filteredData) {
+      const isElement = this.state.chartBreakdownMode === 'element';
+      const items = isElement ? this.getElementAggregation(filteredData) : this.getSeverityAggregation(filteredData);
+      
+      if (!items || items.length === 0) {
+        return '';
+      }
+
+      const colors = this.getBreakdownColors();
+      const activeFilter = isElement ? this.state.elementFilter : this.state.natureFilter;
+      const isFiltered = activeFilter !== 'all';
+
+      return `
+        <!-- Legends of Audit Breakdown Placed at Bottom -->
+        <div class="pt-3 border-t border-slate-100 flex flex-col space-y-2.5">
+          <div class="flex items-center justify-between gap-2 text-xs">
+            <div class="flex items-center gap-2">
+              <span class="font-extrabold text-slate-800 tracking-wider uppercase text-[11px] flex items-center gap-1.5">
+                <i data-lucide="layers" class="w-3.5 h-3.5 text-indigo-600"></i>
+                <span>${isElement ? 'PSM Elements' : 'Severity Levels'}</span>
+              </span>
+              <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-100 text-slate-600">
+                ${items.length} ${items.length === 1 ? 'Category' : 'Categories'}
+              </span>
+            </div>
+
+            <div class="flex items-center gap-2">
+              ${isFiltered ? `
+                <button
+                  type="button"
+                  onclick="event.stopPropagation(); FPCL_PSM_SUITE.${isElement ? "setElementFilter('all')" : "setNatureFilter('all')"};"
+                  class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold text-rose-700 bg-rose-50 border border-rose-200 hover:bg-rose-100 transition-colors cursor-pointer shadow-2xs"
+                  title="Clear active filter"
+                >
+                  <i data-lucide="x" class="w-3 h-3"></i>
+                  <span>Clear Filter</span>
+                </button>
+              ` : `
+                <span class="text-[11px] text-slate-400 font-medium hidden sm:inline">
+                  Click any legend to filter
+                </span>
+              `}
+            </div>
+          </div>
+
+          <!-- Legend Chips Container -->
+          <div class="flex flex-wrap items-center gap-2 max-h-40 overflow-y-auto pr-1 py-0.5">
+            ${items.map((it, i) => {
+              const color = colors[i % colors.length];
+              const isItemActive = activeFilter === it.name;
+              const safeName = it.name.replace(/'/g, "\\'");
+
+              return `
+                <button
+                  type="button"
+                  onclick="event.stopPropagation(); ${
+                    isItemActive
+                      ? (isElement ? "FPCL_PSM_SUITE.setElementFilter('all')" : "FPCL_PSM_SUITE.setNatureFilter('all')")
+                      : `FPCL_PSM_SUITE.onDonutSliceClick('${isElement ? 'element' : 'nature'}', '${safeName}')`
+                  }"
+                  onmouseenter="FPCL_PSM_SUITE.showTooltip(event, { title: '${safeName}', badge: '${isElement ? 'PSM Element' : 'Severity'}', color: '${color}', subtitle: 'Audit Breakdown Legend', metrics: [{ label: 'Count', value: '${it.count}' }, { label: 'Share', value: '${it.percentage}%' }, { label: 'Open', value: '${it.open}' }, { label: 'Closed', value: '${it.close}' }], hint: 'Click to filter and view ${it.count} findings' })"
+                  onmousemove="FPCL_PSM_SUITE.moveTooltip(event)"
+                  onmouseleave="FPCL_PSM_SUITE.hideTooltip()"
+                  class="group inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg border text-xs font-medium transition-all cursor-pointer select-none ${
+                    isItemActive
+                      ? 'bg-slate-900 text-white border-slate-900 shadow-sm ring-2 ring-indigo-400/60'
+                      : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200 shadow-2xs hover:border-slate-300'
+                  }"
+                  title="${it.name}: ${it.count} findings (${it.percentage}%)"
+                >
+                  <span class="w-2.5 h-2.5 rounded-full shrink-0 transition-transform group-hover:scale-125" style="background-color: ${color};"></span>
+                  <span class="truncate max-w-[130px] sm:max-w-[170px] font-bold text-left ${isItemActive ? 'text-white' : 'text-slate-800 group-hover:text-slate-900'}">
+                    ${it.name}
+                  </span>
+                  <span class="inline-flex items-center gap-1 font-mono text-[11px] font-bold px-1.5 py-0.5 rounded-md ${
+                    isItemActive
+                      ? 'bg-slate-800 text-slate-200'
+                      : 'bg-slate-100 text-slate-600 group-hover:bg-slate-200'
+                  }">
+                    <span>${it.count}</span>
+                    <span class="opacity-70 text-[10px]">(${it.percentage}%)</span>
+                  </span>
+                </button>
+              `;
+            }).join('')}
           </div>
         </div>
       `;
