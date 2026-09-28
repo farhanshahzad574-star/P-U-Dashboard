@@ -78,6 +78,10 @@
       .replace(/'/g, '&#039;');
   }
 
+  function getCurrentDynamicYear() {
+    return String(new Date().getFullYear());
+  }
+
   function getDefaultPlrState() {
     return {
       activeTab: 'incidents', // 'incidents' or 'recommendations'
@@ -87,7 +91,7 @@
       selectedMachine: 'all',
       selectedPriority: 'all',
       selectedDept: 'all',
-      selectedYear: 'all',
+      selectedYear: getCurrentDynamicYear(), // Dynamically defaults to current year
       selectedEntity: 'all',
       selectedStatus: 'all',
       searchQuery: '',
@@ -108,6 +112,19 @@
       focusedPlrNo: null
     };
   }
+
+  portalApp.getCurrentDynamicYear = getCurrentDynamicYear;
+
+  /**
+   * Invoked whenever PLR dashboard is opened to ensure it always defaults on current year dynamically
+   */
+  portalApp.onPlrDashboardOpened = function () {
+    const s = getPlrState();
+    s.selectedYear = getCurrentDynamicYear();
+    s.page = 1;
+    s.recPage = 1;
+    portalApp.renderPlrSuite();
+  };
 
   function getPlrState() {
     if (!window.portalApp) window.portalApp = {};
@@ -1093,6 +1110,45 @@
     return html;
   }
 
+  // Helper: Extract unique 4-digit years from incidents & recommendations, guaranteeing dynamic current year is present
+  function getAvailablePlrYearStrings() {
+    const currentYr = getCurrentDynamicYear();
+    const yearSet = new Set();
+    yearSet.add(currentYr);
+    const incs = getPlrData();
+    if (Array.isArray(incs)) {
+      incs.forEach(d => {
+        const y = String(d.year || '').trim();
+        if (/^\d{4}$/.test(y)) yearSet.add(y);
+      });
+    }
+    const recs = getPlrRecs();
+    if (Array.isArray(recs)) {
+      recs.forEach(r => {
+        const y = String(r.year || '').trim();
+        if (/^\d{4}$/.test(y)) yearSet.add(y);
+      });
+    }
+    return Array.from(yearSet).sort((a, b) => parseInt(b, 10) - parseInt(a, 10));
+  }
+
+  // Helper: Render complete <option> list for Year dropdown
+  function renderPlrYearSelectOptions(selectedYear) {
+    const years = getAvailablePlrYearStrings();
+    const sortedAsc = [...years].sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
+    const minYear = sortedAsc[0];
+    const maxYear = sortedAsc[sortedAsc.length - 1];
+    const allLabel = `All Combined (${minYear}–${maxYear})`;
+    let html = `<option value="all" ${selectedYear === 'all' ? 'selected' : ''}>${allLabel}</option>`;
+    const currentYearStr = getCurrentDynamicYear();
+    years.forEach(yr => {
+      const isCur = (yr === currentYearStr);
+      const isSel = (String(selectedYear) === String(yr));
+      html += `<option value="${yr}" ${isSel ? 'selected' : ''}>${yr}${isCur ? ' (Current Year)' : ''}</option>`;
+    });
+    return html;
+  }
+
   // Helper: Dynamically generate department recommendations breakdown for Action Recommendations Per Dept chart
   function getDeptRecsList(ignoreEntityFilter = true) {
     const raw = getPlrRecs();
@@ -1193,13 +1249,13 @@
       return true;
     });
 
-    const years = ['2017', '2018', '2019', '2020', '2021', '2022', '2023', '2024', '2025'];
+    const years = [...getAvailablePlrYearStrings()].sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
     const map = new Map();
     years.forEach(y => map.set(y, { year: y, total: 0, closed: 0, open: 0 }));
 
     filtered.forEach(r => {
       const parentPlr = plrsMap.get(String(r.plrNo || '').toUpperCase());
-      const y = String(r.year || (parentPlr ? parentPlr.year : '') || '2025');
+      const y = String(r.year || (parentPlr ? parentPlr.year : '') || getCurrentDynamicYear());
       if (map.has(y)) {
         const item = map.get(y);
         item.total++;
@@ -1307,7 +1363,7 @@
     s.selectedMachine = 'all';
     s.selectedPriority = 'all';
     s.selectedDept = 'all';
-    s.selectedYear = 'all';
+    s.selectedYear = getCurrentDynamicYear();
     s.selectedEntity = 'all';
     s.recSelectedEntity = 'all';
     s.selectedStatus = 'all';
@@ -1319,12 +1375,23 @@
     portalApp.renderPlrSuite();
   };
 
+  // State tracker to guarantee PLR dashboard always opens by default on current dynamic year
+  let plrContainerWasHidden = true;
+
   /**
    * Main Render Method for the PLR specialized container
    */
   portalApp.renderPlrSuite = function () {
     const container = document.getElementById('plr-specialized-container');
     if (!container) return;
+
+    // Detect if dashboard was just opened from a hidden/inactive state
+    const isVisible = !container.classList.contains('hidden') && container.style.display !== 'none';
+    if (plrContainerWasHidden && isVisible) {
+      const s = getPlrState();
+      s.selectedYear = getCurrentDynamicYear();
+    }
+    plrContainerWasHidden = !isVisible;
 
     // Hide description below upper Plant Loss Recommendations title
     const descEl = document.getElementById('detail-description');
@@ -1509,16 +1576,7 @@
                 onchange="portalApp.handlePlrYearChange(this.value)"
                 class="w-full text-xs sm:text-sm font-semibold px-3.5 py-2.5 rounded-xl border border-[#1e3e66] bg-[#0c2138] text-white focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 cursor-pointer shadow-inner"
               >
-                <option value="all" ${s.selectedYear === 'all' ? 'selected' : ''}>All Combined (2017–2025)</option>
-                <option value="2025" ${s.selectedYear === '2025' ? 'selected' : ''}>2025</option>
-                <option value="2024" ${s.selectedYear === '2024' ? 'selected' : ''}>2024</option>
-                <option value="2023" ${s.selectedYear === '2023' ? 'selected' : ''}>2023</option>
-                <option value="2022" ${s.selectedYear === '2022' ? 'selected' : ''}>2022</option>
-                <option value="2021" ${s.selectedYear === '2021' ? 'selected' : ''}>2021</option>
-                <option value="2020" ${s.selectedYear === '2020' ? 'selected' : ''}>2020</option>
-                <option value="2019" ${s.selectedYear === '2019' ? 'selected' : ''}>2019</option>
-                <option value="2018" ${s.selectedYear === '2018' ? 'selected' : ''}>2018</option>
-                <option value="2017" ${s.selectedYear === '2017' ? 'selected' : ''}>2017</option>
+                ${renderPlrYearSelectOptions(s.selectedYear)}
               </select>
             </div>
 
@@ -1671,6 +1729,33 @@
               <!-- SVG Donut Graphic -->
               <div id="plr-machine-donut-container" class="relative flex items-center justify-center py-2">
                 <!-- Rendered dynamically -->
+              </div>
+
+              <!-- Machine Legends of PLR by Machine visual -->
+              <div class="pt-3 border-t border-slate-100">
+                <div class="flex items-center justify-between gap-2 mb-2">
+                  <div class="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wider text-slate-600 font-mono">
+                    <i data-lucide="layers" class="w-3.5 h-3.5 text-[#2E6DA4]"></i>
+                    <span>Machine Legends</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    ${s.selectedMachine !== 'all' ? `
+                      <button
+                        type="button"
+                        onclick="(window.portalApp || portalApp).filterPlrByMachine('all')"
+                        class="px-2 py-0.5 rounded-md text-[10px] font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition-colors flex items-center gap-1 cursor-pointer shadow-2xs"
+                        title="Reset machine filter to show all machines"
+                      >
+                        <i data-lucide="x" class="w-3 h-3"></i>
+                        <span>Reset: ${escapeHtml(s.selectedMachine)}</span>
+                      </button>
+                    ` : ''}
+                    <span class="text-[10px] font-semibold text-slate-400">Click to filter</span>
+                  </div>
+                </div>
+                <div id="plr-machine-legends-container" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+                  <!-- Rendered dynamically with machine colors, names, and outage counts -->
+                </div>
               </div>
             </div>
 
@@ -1998,19 +2083,30 @@
     }
 
     // Restore center text
-    const activeMachine = machines.find(m => m.name === s.selectedMachine) || machines[0] || { name: 'STG # 4', count: 154, pct: 66, color: '#1e40af' };
+    const curTotal = getPlrData().length;
+    const activeMachine = machines.find(m => m.name === s.selectedMachine) || (curTotal > 0 ? (machines.find(m => m.count > 0) || machines[0]) : null);
     const nameEl = document.getElementById('plr-donut-center-name');
     const countEl = document.getElementById('plr-donut-center-count');
     const pctEl = document.getElementById('plr-donut-center-pct');
     const dotEl = document.getElementById('plr-donut-center-dot');
 
-    if (nameEl) {
-      nameEl.textContent = activeMachine.name;
-      nameEl.title = activeMachine.name;
+    if (activeMachine && curTotal > 0) {
+      if (nameEl) {
+        nameEl.textContent = activeMachine.name;
+        nameEl.title = activeMachine.name;
+      }
+      if (countEl) countEl.textContent = String(activeMachine.count);
+      if (pctEl) pctEl.textContent = `${activeMachine.pct}% of Total Outages`;
+      if (dotEl) dotEl.style.backgroundColor = activeMachine.color || '#1e40af';
+    } else {
+      if (nameEl) {
+        nameEl.textContent = 'PLR Status';
+        nameEl.title = 'PLR Status';
+      }
+      if (countEl) countEl.textContent = '0';
+      if (pctEl) pctEl.textContent = `0 Outages in ${s.selectedYear}`;
+      if (dotEl) dotEl.style.backgroundColor = '#94a3b8';
     }
-    if (countEl) countEl.textContent = String(activeMachine.count);
-    if (pctEl) pctEl.textContent = `${activeMachine.pct}% of Total Outages`;
-    if (dotEl) dotEl.style.backgroundColor = activeMachine.color || '#1e40af';
   };
 
   /**
@@ -2046,6 +2142,8 @@
    */
   portalApp.onCenterDonutClick = function () {
     const s = getPlrState();
+    const curTotal = getPlrData().length;
+    if (curTotal === 0) return;
     const machines = getPlrMachinesBreakdown();
     const targetMachine = s.selectedMachine !== 'all' ? s.selectedMachine : 'STG # 4';
     const m = machines.find(it => it.name === targetMachine) || machines[0] || { name: targetMachine, count: 154, pct: 66 };
@@ -2060,16 +2158,19 @@
 
   /**
    * 1. Machine Breakdown Donut (Interactive slices & center click to open incident records)
+   * With dedicated Legends for "PLR by Machine" visual
    */
   portalApp.renderMachineDonut = function () {
     const container = document.getElementById('plr-machine-donut-container');
+    const legendsContainer = document.getElementById('plr-machine-legends-container');
     const quickSelContainer = document.getElementById('plr-machine-quick-select');
     if (!container) return;
 
     const s = getPlrState();
     const machines = getPlrMachinesBreakdown();
 
-    const total = getPlrData().length || 233;
+    const rawTotal = getPlrData().length;
+    const total = rawTotal > 0 ? rawTotal : 0;
     const r = 124;
     const cx = 160;
     const cy = 160;
@@ -2078,66 +2179,69 @@
     let cumulativeAngle = -Math.PI / 2;
     const sliceGroups = [];
 
-    machines.forEach((m, idx) => {
-      const sliceAngle = (m.count / total) * 2 * Math.PI;
-      const startAngle = cumulativeAngle;
-      const endAngle = cumulativeAngle + sliceAngle;
-      cumulativeAngle += sliceAngle;
+    if (total > 0) {
+      machines.forEach((m, idx) => {
+        if (m.count === 0) return;
+        const sliceAngle = (m.count / total) * 2 * Math.PI;
+        const startAngle = cumulativeAngle;
+        const endAngle = cumulativeAngle + sliceAngle;
+        cumulativeAngle += sliceAngle;
 
-      const x1 = cx + r * Math.cos(startAngle);
-      const y1 = cy + r * Math.sin(startAngle);
-      const x2 = cx + r * Math.cos(endAngle);
-      const y2 = cy + r * Math.sin(endAngle);
-      const largeArc = sliceAngle > Math.PI ? 1 : 0;
+        const x1 = cx + r * Math.cos(startAngle);
+        const y1 = cy + r * Math.sin(startAngle);
+        const x2 = cx + r * Math.cos(endAngle);
+        const y2 = cy + r * Math.sin(endAngle);
+        const largeArc = sliceAngle > Math.PI ? 1 : 0;
 
-      const d = `M ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2}`;
-      const isSelected = s.selectedMachine === m.name;
-      const escapedMachine = m.name.replace(/'/g, "\\'");
+        const d = `M ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2}`;
+        const isSelected = s.selectedMachine === m.name;
+        const escapedMachine = m.name.replace(/'/g, "\\'");
 
-      // Using a group with an invisible wider hit-path (stroke 50px)
-      // guarantees that even the smallest slices (STG 1, Boiler 2, Other)
-      // have an expansive, effortless click & hover target.
-      sliceGroups.push(`
-        <g
-          id="plr-donut-slice-group-${idx}"
-          class="cursor-pointer"
-          data-plr-action="select-machine"
-          data-machine="${escapedMachine}"
-          onclick="(window.portalApp || portalApp).onMachineSliceClick('${escapedMachine}')"
-          onmouseenter="portalApp.onMachineSliceHover(event, '${escapedMachine}', ${idx})"
-          onmousemove="portalApp.moveTooltip(event)"
-          onmouseleave="portalApp.onMachineSliceLeave(${idx})"
-        >
-          <!-- Invisible wide hit-test path (50px stroke width) -->
-          <path
-            d="${d}"
-            fill="none"
-            stroke="transparent"
-            stroke-width="50"
-            stroke-linecap="butt"
-            style="pointer-events: stroke;"
-          />
-          <!-- Visible colored arc slice -->
-          <path
-            id="plr-donut-slice-${idx}"
-            d="${d}"
-            fill="none"
-            stroke="${m.color}"
-            stroke-width="${isSelected ? strokeWidth + 6 : strokeWidth}"
-            stroke-linecap="butt"
-            class="transition-all duration-200"
-            style="pointer-events: none; ${isSelected ? `filter: drop-shadow(0 2px 7px ${m.color}88);` : ''}"
-          />
-          <title>${m.name}: ${m.count} Outages (${m.pct}%) - Click to open records</title>
-        </g>
-      `);
-    });
+        // Using a group with an invisible wider hit-path (stroke 50px)
+        // guarantees that even the smallest slices (STG 1, Boiler 2, Other)
+        // have an expansive, effortless click & hover target.
+        sliceGroups.push(`
+          <g
+            id="plr-donut-slice-group-${idx}"
+            class="cursor-pointer"
+            data-plr-action="select-machine"
+            data-machine="${escapedMachine}"
+            onclick="(window.portalApp || portalApp).filterPlrByMachine('${escapedMachine}')"
+            onmouseenter="portalApp.onMachineSliceHover(event, '${escapedMachine}', ${idx})"
+            onmousemove="portalApp.moveTooltip(event)"
+            onmouseleave="portalApp.onMachineSliceLeave(${idx})"
+          >
+            <!-- Invisible wide hit-test path (50px stroke width) -->
+            <path
+              d="${d}"
+              fill="none"
+              stroke="transparent"
+              stroke-width="50"
+              stroke-linecap="butt"
+              style="pointer-events: stroke;"
+            />
+            <!-- Visible colored arc slice -->
+            <path
+              id="plr-donut-slice-${idx}"
+              d="${d}"
+              fill="none"
+              stroke="${m.color}"
+              stroke-width="${isSelected ? strokeWidth + 6 : strokeWidth}"
+              stroke-linecap="butt"
+              class="transition-all duration-200"
+              style="pointer-events: none; ${isSelected ? `filter: drop-shadow(0 2px 7px ${m.color}88);` : ''}"
+            />
+            <title>${m.name}: ${m.count} Outages (${m.pct}%) - Click to filter</title>
+          </g>
+        `);
+      });
+    }
 
-    const activeMachine = machines.find(m => m.name === s.selectedMachine) || machines[0] || { name: 'STG # 4', count: 154, pct: 66, color: '#1e40af' };
-    const escapedActiveMachine = activeMachine.name.replace(/'/g, "\\'");
+    const activeMachine = (s.selectedMachine !== 'all' && machines.find(m => m.name === s.selectedMachine))
+      || (total > 0 ? (machines.find(m => m.count > 0) || machines[0]) : null);
+    const escapedActiveMachine = activeMachine ? activeMachine.name.replace(/'/g, "\\'") : '';
 
     // Center interactive circle is sized to fit inside the inner hole.
-    // This strictly prevents the center overlay from covering or intercepting clicks on the donut slices!
     container.innerHTML = `
       <div class="relative w-64 h-64 min-[400px]:w-[300px] min-[400px]:h-[300px] sm:w-[320px] sm:h-[320px] max-w-full aspect-square flex items-center justify-center mx-auto">
         <svg viewBox="0 0 320 320" class="w-full h-full select-none">
@@ -2147,78 +2251,79 @@
         </svg>
         <div
           data-plr-action="donut-center"
-          onclick="(window.portalApp || portalApp).onCenterDonutClick()"
-          onmouseenter="portalApp.showTooltip(event, { title: '${escapedActiveMachine}', badge: 'Active Asset View', color: '${activeMachine.color || '#1e40af'}', subtitle: 'Incident Outages Explorer', metrics: [{ label: 'Selected Outages', value: '${activeMachine.count}' }, { label: 'Share', value: '${activeMachine.pct}%' }], hint: 'Click to open matching investigation records' })"
+          ${total > 0 && activeMachine ? `onclick="(window.portalApp || portalApp).openPlrDataModal({ type: 'incidents', title: 'Machine: ' + '${escapedActiveMachine}', badge: 'Equipment Asset', subtitle: '${activeMachine.count} Outages (${activeMachine.pct}% of total plant outages)', filterMachine: '${escapedActiveMachine}' })"` : ''}
+          ${total > 0 && activeMachine ? `onmouseenter="portalApp.showTooltip(event, { title: '${escapedActiveMachine}', badge: 'Active Asset View', color: '${activeMachine.color || '#1e40af'}', subtitle: 'Incident Outages Explorer', metrics: [{ label: 'Selected Outages', value: '${activeMachine.count}' }, { label: 'Share', value: '${activeMachine.pct}%' }], hint: 'Click to open matching investigation records' })"` : ''}
           onmousemove="portalApp.moveTooltip(event)"
           onmouseleave="portalApp.hideTooltip()"
-          class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[160px] h-[160px] min-[400px]:w-[196px] min-[400px]:h-[196px] rounded-full flex flex-col items-center justify-center cursor-pointer text-center px-2 py-1.5 font-sans bg-white/95 hover:bg-slate-50 transition-all duration-150 group z-10 select-none shadow-[inset_0_1px_3px_rgba(0,0,0,0.03)]"
-          title="Click to view outage records for ${activeMachine.name}"
+          class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[160px] h-[160px] min-[400px]:w-[196px] min-[400px]:h-[196px] rounded-full flex flex-col items-center justify-center ${total > 0 ? 'cursor-pointer hover:bg-slate-50' : 'cursor-default'} text-center px-2 py-1.5 font-sans bg-white/95 transition-all duration-150 group z-10 select-none shadow-[inset_0_1px_3px_rgba(0,0,0,0.03)]"
+          title="${total > 0 && activeMachine ? `Click to view outage records for ${activeMachine.name}` : `0 Outages in ${s.selectedYear}`}"
         >
-          <!-- Machine Name Badge (fitted cleanly into upper circular chord) -->
-          <div id="plr-donut-center-badge" class="flex items-center justify-center gap-1.5 px-3 py-1 rounded-full bg-slate-100/95 border border-slate-200/90 max-w-[164px] shadow-2xs group-hover:bg-blue-50/80 group-hover:border-blue-200 transition-all">
-            <span id="plr-donut-center-dot" class="w-2 h-2 rounded-full shrink-0 transition-colors" style="background-color: ${activeMachine.color || '#1e40af'}"></span>
-            <span id="plr-donut-center-name" class="text-[11px] sm:text-xs font-black text-slate-800 uppercase tracking-wide truncate max-w-[130px] leading-none group-hover:text-[#1e40af] transition-colors" title="${activeMachine.name}">${activeMachine.name}</span>
-          </div>
+          ${total > 0 && activeMachine ? `
+            <!-- Machine Name Badge (fitted cleanly into upper circular chord) -->
+            <div id="plr-donut-center-badge" class="flex items-center justify-center gap-1.5 px-3 py-1 rounded-full bg-slate-100/95 border border-slate-200/90 max-w-[164px] shadow-2xs group-hover:bg-blue-50/80 group-hover:border-blue-200 transition-all">
+              <span id="plr-donut-center-dot" class="w-2 h-2 rounded-full shrink-0 transition-colors" style="background-color: ${activeMachine.color || '#1e40af'}"></span>
+              <span id="plr-donut-center-name" class="text-[11px] sm:text-xs font-black text-slate-800 uppercase tracking-wide truncate max-w-[130px] leading-none group-hover:text-[#1e40af] transition-colors" title="${activeMachine.name}">${activeMachine.name}</span>
+            </div>
 
-          <!-- Outages Count in center -->
-          <span id="plr-donut-center-count" class="text-4xl sm:text-[42px] font-black text-slate-900 tracking-tight leading-none my-1 font-sans group-hover:scale-105 transition-transform">${activeMachine.count}</span>
+            <!-- Outages Count in center -->
+            <span id="plr-donut-center-count" class="text-4xl sm:text-[42px] font-black text-slate-900 tracking-tight leading-none my-1 font-sans group-hover:scale-105 transition-transform">${activeMachine.count}</span>
 
-          <!-- Outage Share Subtitle (fitted on single line with whitespace-nowrap) -->
-          <span id="plr-donut-center-pct" class="text-[11.5px] font-bold text-slate-600 font-sans tracking-tight whitespace-nowrap leading-none">${activeMachine.pct}% of Total Outages</span>
+            <!-- Outage Share Subtitle (fitted on single line with whitespace-nowrap) -->
+            <span id="plr-donut-center-pct" class="text-[11.5px] font-bold text-slate-600 font-sans tracking-tight whitespace-nowrap leading-none">${activeMachine.pct}% of Total Outages</span>
 
-          <!-- Interactive inspect action hint -->
-          <span class="text-[9.5px] font-extrabold text-[#1e40af] opacity-0 group-hover:opacity-100 transition-opacity mt-1 flex items-center gap-0.5 leading-none">
-            <span>Inspect records</span>
-            <i data-lucide="arrow-up-right" class="w-2.5 h-2.5"></i>
-          </span>
+            <!-- Interactive inspect action hint -->
+            <span class="text-[9.5px] font-extrabold text-[#1e40af] opacity-0 group-hover:opacity-100 transition-opacity mt-1 flex items-center gap-0.5 leading-none">
+              <span>Inspect records</span>
+              <i data-lucide="arrow-up-right" class="w-2.5 h-2.5"></i>
+            </span>
+          ` : `
+            <!-- Empty state when year has 0 outages -->
+            <div class="flex items-center justify-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 max-w-[164px]">
+              <span class="w-2 h-2 rounded-full bg-slate-400"></span>
+              <span class="text-[11px] sm:text-xs font-black text-slate-600 uppercase tracking-wide">PLR Status</span>
+            </div>
+            <span class="text-4xl sm:text-[42px] font-black text-slate-400 tracking-tight leading-none my-1 font-mono">0</span>
+            <span class="text-[11px] font-bold text-slate-500 font-sans tracking-tight whitespace-nowrap leading-none">0 Outages in ${s.selectedYear}</span>
+          `}
         </div>
       </div>
     `;
 
-    // Quick Select Buttons (each button also opens pop data on click)
-    if (quickSelContainer) {
-      quickSelContainer.innerHTML = machines.map(m => {
+    // Render Legends for "PLR by Machine" Visual
+    const targetLegendContainer = legendsContainer || quickSelContainer;
+    if (targetLegendContainer) {
+      targetLegendContainer.innerHTML = machines.map(m => {
         const isSel = s.selectedMachine === m.name;
         const escaped = m.name.replace(/'/g, "\\'");
         return `
           <button
+            type="button"
             data-plr-action="select-machine"
             data-machine="${escaped}"
-            onclick="(window.portalApp || portalApp).onMachineSliceClick('${escaped}')"
-            onmouseenter="portalApp.showTooltip(event, { title: '${escaped}', badge: 'Machine Asset', color: '${m.color}', subtitle: 'Outage Incident Analysis', metrics: [{ label: 'Outages', value: '${m.count}' }, { label: 'Outage Share', value: '${m.pct}%' }], hint: 'Click to select and open ${m.count} records' })"
+            onclick="(window.portalApp || portalApp).filterPlrByMachine('${escaped}')"
+            onmouseenter="portalApp.showTooltip(event, { title: '${escaped}', badge: 'Machine Asset', color: '${m.color}', subtitle: 'Outage Incident Analysis', metrics: [{ label: 'Outages', value: '${m.count}' }, { label: 'Outage Share', value: '${m.pct}%' }], hint: 'Click to filter dashboard by ${escaped}' })"
             onmousemove="portalApp.moveTooltip(event)"
             onmouseleave="portalApp.hideTooltip()"
-            class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 border ${
+            class="flex items-center gap-2 p-2 rounded-xl border text-left transition-all cursor-pointer group/legend ${
               isSel
-                ? 'bg-[#1e40af] text-white border-[#1e40af] font-black shadow-xs'
-                : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
+                ? 'bg-blue-50/90 border-[#1e40af] ring-2 ring-[#1e40af]/30 shadow-xs font-black'
+                : 'bg-slate-50/70 hover:bg-slate-100/90 border-slate-200 hover:border-slate-300'
             }"
-            title="${m.name}: ${m.count} Outages (Click to open records)"
+            title="${m.name}: ${m.count} Outages (${m.pct}%) - Click to filter"
           >
-            <span class="w-2 h-2 rounded-full shrink-0" style="background-color: ${m.color}"></span>
-            <span class="truncate">${m.name}</span>
-            <span class="font-mono font-semibold text-[11px] opacity-80">(${m.count})</span>
+            <span class="w-3 h-3 rounded-full shrink-0 shadow-2xs transition-transform group-hover/legend:scale-110" style="background-color: ${m.color}"></span>
+            <div class="min-w-0 flex-1">
+              <div class="text-[11px] font-extrabold text-slate-800 truncate leading-tight ${isSel ? 'text-[#1e40af]' : ''}">
+                ${m.name}
+              </div>
+              <div class="text-[10px] text-slate-500 font-mono flex items-center justify-between gap-1 leading-tight mt-0.5">
+                <span class="font-bold ${isSel ? 'text-[#1e40af]' : 'text-slate-700'}">${m.count}</span>
+                <span class="text-slate-400 font-normal">(${m.pct}%)</span>
+              </div>
+            </div>
           </button>
         `;
-      }).join('') + `
-        <button
-          data-plr-action="select-machine"
-          data-machine="${escapedActiveMachine}"
-          onclick="(window.portalApp || portalApp).onMachineSliceClick('${escapedActiveMachine}')"
-          class="px-2.5 py-1 rounded-lg text-xs font-bold text-[#1e40af] bg-blue-50/80 hover:bg-blue-100 border border-blue-200 cursor-pointer flex items-center gap-1"
-          title="Open modal displaying incident data for ${activeMachine.name}"
-        >
-          <i data-lucide="table" class="w-3 h-3"></i>
-          <span>Inspect Data (${activeMachine.count})</span>
-        </button>
-      ` + (s.selectedMachine !== 'all' ? `
-        <button
-          onclick="(window.portalApp || portalApp).filterPlrByMachine('all')"
-          class="px-2.5 py-1 rounded-lg text-xs font-bold text-slate-600 bg-white hover:bg-slate-50 border border-slate-300 cursor-pointer"
-        >
-          Clear Filter
-        </button>
-      ` : '');
+      }).join('');
     }
 
     if (window.lucide && typeof window.lucide.createIcons === 'function') {
@@ -2651,13 +2756,30 @@
 
     const closed = isIncidents ? dynIncClosed : dynRecClosed;
     const open = isIncidents ? dynIncOpen : dynRecOpen;
-    const total = (closed + open) || 1;
-    const closedPct = ((closed / total) * 100).toFixed(1);
-    const openPct = ((open / total) * 100).toFixed(1);
+    const labelNoun = isIncidents ? 'Outages' : 'Recs';
 
     const r = 140;
     const cx = 160;
     const cy = 160;
+
+    if (closed === 0 && open === 0) {
+      container.innerHTML = `
+        <div class="relative w-64 h-64 min-[400px]:w-[300px] min-[400px]:h-[300px] sm:w-[320px] sm:h-[320px] max-w-full aspect-square flex items-center justify-center mx-auto">
+          <svg viewBox="0 0 320 320" class="w-full h-full select-none">
+            <circle cx="${cx}" cy="${cy}" r="${r}" fill="#f8fafc" stroke="#e2e8f0" stroke-width="2" />
+          </svg>
+          <div class="absolute inset-0 flex flex-col items-center justify-center text-center p-4">
+            <span class="text-3xl sm:text-4xl font-black text-slate-400 font-mono">0</span>
+            <span class="text-xs font-bold text-slate-500 mt-1">No ${labelNoun} in ${s.selectedYear}</span>
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    const total = (closed + open) || 1;
+    const closedPct = ((closed / total) * 100).toFixed(1);
+    const openPct = ((open / total) * 100).toFixed(1);
 
     const closedAngle = (closed / total) * 2 * Math.PI;
     const startAngle = -Math.PI / 2;
@@ -2686,8 +2808,6 @@
     // Dark corporate tones
     const darkClosedColor = '#047857'; // Deep dark corporate emerald
     const darkOpenColor = '#B91C1C';   // Deep dark rich crimson
-
-    const labelNoun = isIncidents ? 'Outages' : 'Recs';
 
     container.innerHTML = `
       <div class="relative w-64 h-64 min-[400px]:w-[300px] min-[400px]:h-[300px] sm:w-[320px] sm:h-[320px] max-w-full aspect-square flex items-center justify-center mx-auto">
@@ -4586,7 +4706,7 @@
     ];
 
     // Year options with counts
-    const yearList = ['2025', '2024', '2023', '2022', '2021', '2020', '2019', '2018', '2017'];
+    const yearList = getAvailablePlrYearStrings();
     const availableYears = [
       { id: 'all', label: `All Years (${allRecords.length})` },
       ...yearList.map(yr => {

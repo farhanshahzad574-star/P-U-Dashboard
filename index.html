@@ -1296,6 +1296,26 @@
               <h3 class="text-sm sm:text-base font-black text-[#1E293B] tracking-wide flex items-center gap-2">
                 <span class="text-lg">📊</span> PROGRESS COMPARISON STATUS
               </h3>
+              <!-- Dynamic Year Filter positioned below visual name PROGRESS COMPARISON STATUS -->
+              <div class="flex items-center gap-2 mt-2 flex-wrap">
+                <label for="chart-sub-year-select" class="text-xs font-extrabold uppercase tracking-wider text-slate-600 flex items-center gap-1.5 cursor-pointer">
+                  <i data-lucide="calendar" class="w-3.5 h-3.5 text-blue-600"></i>
+                  <span>Filter by Year:</span>
+                </label>
+                <div class="relative inline-block">
+                  <select
+                    id="chart-sub-year-select"
+                    onchange="portalApp.handleOverviewYearFilter(this.value)"
+                    class="pl-3 pr-8 py-1.5 bg-white hover:bg-slate-50 focus:bg-white border border-slate-300 focus:border-blue-600 rounded-xl text-xs font-bold font-mono text-slate-800 shadow-2xs focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer outline-none appearance-none"
+                    title="Filter overview metrics and PROGRESS COMPARISON STATUS by year (Defaults dynamically to current year)"
+                  >
+                    <!-- Populated dynamically: defaults to current year -->
+                  </select>
+                  <div class="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none text-slate-400">
+                    <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
+                  </div>
+                </div>
+              </div>
             </div>
             <div class="flex flex-wrap items-center gap-2 text-xs font-mono font-bold">
               <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-blue-50 text-blue-700 border border-blue-200" title="Closed Actions completed">
@@ -1330,107 +1350,134 @@
         </div>
 
         <!-- ========================================================================= -->
-        <!-- CROSS-DASHBOARD OVERVIEW FILTERS: DEPARTMENT & OPEN/CLOSE STATUS          -->
+        <!-- CROSS-DASHBOARD OVERVIEW FILTERS: YEAR, DEPARTMENT & OPEN/CLOSE STATUS    -->
         <!-- Positioned below PROGRESS COMPARISON STATUS, applies to all summary cards -->
         <!-- ========================================================================= -->
         <div
           id="overview-cross-filters-bar"
-          class="bg-white/95 backdrop-blur-sm border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-xs mb-6 transition-all duration-300 relative overflow-hidden"
+          class="bg-white/95 backdrop-blur-sm border border-slate-200/90 rounded-2xl p-3 sm:p-5 shadow-xs mb-6 transition-all duration-300 relative overflow-hidden"
         >
           <!-- Top Accent Line -->
           <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 via-indigo-600 to-teal-500"></div>
 
-          <!-- Filter Controls & Actions Row (In the same line) -->
-          <div class="flex flex-col lg:flex-row lg:items-end gap-3.5 sm:gap-4">
-            <!-- Filter 1: Department Selector -->
-            <div class="flex-1 min-w-[220px] space-y-1.5">
-              <label for="overview-department-select" class="text-xs font-extrabold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-                <i data-lucide="building-2" class="w-3.5 h-3.5 text-blue-600"></i>
-                <span>Filter by Department</span>
-              </label>
+          <!-- Filter Controls & Actions Row: Side-by-side filters on mobile with reduced length -->
+          <div class="flex flex-col lg:flex-row lg:items-end gap-2.5 sm:gap-4">
+            <!-- 3 Filters side-by-side in mobile view with reduced length -->
+            <div class="grid grid-cols-3 gap-1.5 sm:gap-3 flex-1 min-w-0">
+              <!-- Filter 1: Year Selector (Defaults dynamically to current year) -->
+              <div class="min-w-0 space-y-1 sm:space-y-1.5">
+                <label for="overview-year-select" class="text-[10px] sm:text-xs font-extrabold uppercase tracking-wider text-slate-700 flex items-center gap-1 truncate">
+                  <i data-lucide="calendar" class="w-3 h-3 sm:w-3.5 sm:h-3.5 text-blue-600 shrink-0"></i>
+                  <span class="truncate">Year</span>
+                </label>
 
-              <div class="relative">
-                <select
-                  id="overview-department-select"
-                  onchange="portalApp.handleOverviewDeptFilter(this.value)"
-                  class="w-full pl-3.5 pr-9 py-2.5 bg-slate-50 hover:bg-white focus:bg-white border border-slate-300 focus:border-blue-600 rounded-xl text-xs sm:text-sm font-bold text-slate-800 shadow-2xs focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer outline-none appearance-none"
-                >
-                  <option value="all">All Departments (Consolidated View)</option>
-                  <option value="Mechanical">Mechanical</option>
-                  <option value="Operations">Operations</option>
-                  <option value="E&I">E&I (Electrical & Instrumentation)</option>
-                  <option value="Finance">Finance</option>
-                  <option value="HSEQ">HSEQ / HSE</option>
-                  <option value="SCM">SCM (Supply Chain Management)</option>
-                  <option value="PE">PE (Process Engineering)</option>
-                  <option value="Technical">Technical & HSE</option>
-                  <option value="Inspection">Inspection & Workshop Services</option>
-                  <option value="Reliability">Reliability</option>
-                  <option value="Planning">Planning</option>
-                  <option value="Machinery">Machinery</option>
-                  <option value="Equipment">Equipment</option>
-                  <option value="Civil">Civil</option>
-                  <option value="Admin & Security">Admin & Security</option>
-                  <option value="L&D">L&D (Learning & Development)</option>
-                  <option value="Asset Integrity & IMS">Asset Integrity & IMS</option>
-                  <option value="HCM">HCM (Human Capital)</option>
-                  <option value="Information Technology">Information Technology</option>
-                  <option value="Business Development">Business Development</option>
-                  <option value="FPCL-KE O/C">FPCL-KE O/C</option>
-                  <option value="FFBL">FFBL</option>
-                </select>
-                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
-                  <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                <div class="relative">
+                  <select
+                    id="overview-year-select"
+                    onchange="portalApp.handleOverviewYearFilter(this.value)"
+                    class="w-full pl-2 sm:pl-3.5 pr-6 sm:pr-9 py-1.5 sm:py-2.5 bg-slate-50 hover:bg-white focus:bg-white border border-slate-300 focus:border-blue-600 rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold font-mono text-slate-800 shadow-2xs focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer outline-none appearance-none truncate"
+                    title="Filter all overview cards and comparison charts by year"
+                  >
+                    <!-- Populated dynamically with Current Year selected by default -->
+                  </select>
+                  <div class="absolute inset-y-0 right-0 flex items-center pr-1.5 sm:pr-3 pointer-events-none text-slate-400">
+                    <i data-lucide="chevron-down" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <!-- Filter 2: Open / Close Status Dropdown Filter -->
-            <div class="flex-1 min-w-[240px] space-y-1.5">
-              <label for="overview-status-select" class="text-xs font-extrabold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-                <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-amber-600"></i>
-                <span>Open Close</span>
-              </label>
+              <!-- Filter 2: Department Selector -->
+              <div class="min-w-0 space-y-1 sm:space-y-1.5">
+                <label for="overview-department-select" class="text-[10px] sm:text-xs font-extrabold uppercase tracking-wider text-slate-700 flex items-center gap-1 truncate">
+                  <i data-lucide="building-2" class="w-3 h-3 sm:w-3.5 sm:h-3.5 text-blue-600 shrink-0"></i>
+                  <span class="truncate">Department</span>
+                </label>
 
-              <!-- Dropdown for Open / Close Status -->
-              <div class="relative">
-                <select
-                  id="overview-status-select"
-                  onchange="portalApp.handleOverviewOpenCloseFilter(this.value)"
-                  class="w-full appearance-none bg-slate-50 border border-slate-300 hover:border-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-slate-900 text-xs sm:text-sm font-bold rounded-xl px-3.5 py-2.5 pr-9 transition-all cursor-pointer shadow-2xs"
-                  title="Filter cross-dashboard actions by Open or Closed status"
-                >
-                  <option value="all">All (Open / Close)</option>
-                  <option value="open">Open</option>
-                  <option value="close">Close</option>
-                </select>
-                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
-                  <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                <div class="relative">
+                  <select
+                    id="overview-department-select"
+                    onchange="portalApp.handleOverviewDeptFilter(this.value)"
+                    class="w-full pl-2 sm:pl-3.5 pr-6 sm:pr-9 py-1.5 sm:py-2.5 bg-slate-50 hover:bg-white focus:bg-white border border-slate-300 focus:border-blue-600 rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold text-slate-800 shadow-2xs focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer outline-none appearance-none truncate"
+                    title="Filter by department"
+                  >
+                    <option value="all">All Depts</option>
+                    <option value="Mechanical">Mechanical</option>
+                    <option value="Operations">Operations</option>
+                    <option value="E&I">E&I (Electrical & Instrumentation)</option>
+                    <option value="Finance">Finance</option>
+                    <option value="HSEQ">HSEQ / HSE</option>
+                    <option value="SCM">SCM (Supply Chain Management)</option>
+                    <option value="PE">PE (Process Engineering)</option>
+                    <option value="Technical">Technical & HSE</option>
+                    <option value="Inspection">Inspection & Workshop Services</option>
+                    <option value="Reliability">Reliability</option>
+                    <option value="Planning">Planning</option>
+                    <option value="Machinery">Machinery</option>
+                    <option value="Equipment">Equipment</option>
+                    <option value="Civil">Civil</option>
+                    <option value="Admin & Security">Admin & Security</option>
+                    <option value="L&D">L&D (Learning & Development)</option>
+                    <option value="Asset Integrity & IMS">Asset Integrity & IMS</option>
+                    <option value="HCM">HCM (Human Capital)</option>
+                    <option value="Information Technology">Information Technology</option>
+                    <option value="Business Development">Business Development</option>
+                    <option value="FPCL-KE O/C">FPCL-KE O/C</option>
+                    <option value="FFBL">FFBL</option>
+                  </select>
+                  <div class="absolute inset-y-0 right-0 flex items-center pr-1.5 sm:pr-3 pointer-events-none text-slate-400">
+                    <i data-lucide="chevron-down" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Filter 3: Open / Close Status Dropdown Filter -->
+              <div class="min-w-0 space-y-1 sm:space-y-1.5">
+                <label for="overview-status-select" class="text-[10px] sm:text-xs font-extrabold uppercase tracking-wider text-slate-700 flex items-center gap-1 truncate">
+                  <i data-lucide="check-circle-2" class="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-600 shrink-0"></i>
+                  <span class="truncate">Status</span>
+                </label>
+
+                <!-- Dropdown for Open / Close Status -->
+                <div class="relative">
+                  <select
+                    id="overview-status-select"
+                    onchange="portalApp.handleOverviewOpenCloseFilter(this.value)"
+                    class="w-full pl-2 sm:pl-3.5 pr-6 sm:pr-9 py-1.5 sm:py-2.5 appearance-none bg-slate-50 border border-slate-300 hover:border-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-slate-900 text-xs sm:text-sm font-bold rounded-lg sm:rounded-xl transition-all cursor-pointer shadow-2xs truncate"
+                    title="Filter cross-dashboard actions by Open or Closed status"
+                  >
+                    <option value="all">All Status</option>
+                    <option value="open">Open</option>
+                    <option value="close">Close</option>
+                  </select>
+                  <div class="absolute inset-y-0 right-0 flex items-center pr-1.5 sm:pr-3 pointer-events-none text-slate-400">
+                    <i data-lucide="chevron-down" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
+                  </div>
                 </div>
               </div>
             </div>
 
             <!-- Action Buttons: Column References, Export CSV & Filter Reset in same line -->
-            <div class="flex items-center gap-2 shrink-0 self-end flex-wrap sm:flex-nowrap">
+            <div class="flex items-center gap-1.5 sm:gap-2 shrink-0 self-end w-full lg:w-auto justify-end pt-1 lg:pt-0">
               <button
                 type="button"
                 id="overview-sheet-refs-btn"
                 onclick="portalApp.openSheetColumnRefsModal()"
-                class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-slate-700 hover:text-blue-700 bg-white hover:bg-slate-50 border border-slate-300 hover:border-blue-300 shadow-2xs transition-all cursor-pointer active:scale-95 whitespace-nowrap"
+                class="flex-1 lg:flex-initial inline-flex items-center justify-center gap-1 px-2.5 sm:px-3.5 py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold text-slate-700 hover:text-blue-700 bg-white hover:bg-slate-50 border border-slate-300 hover:border-blue-300 shadow-2xs transition-all cursor-pointer active:scale-95 whitespace-nowrap"
                 title="View attached sheets and column references used for filtering"
               >
-                <i data-lucide="table-2" class="w-4 h-4 text-blue-600"></i>
-                <span>Column References</span>
+                <i data-lucide="table-2" class="w-3.5 h-3.5 text-blue-600"></i>
+                <span class="hidden xs:inline sm:inline">Column Refs</span>
+                <span class="xs:hidden sm:hidden">Refs</span>
               </button>
 
               <button
                 type="button"
                 id="overview-export-csv-btn"
                 onclick="portalApp.exportOverviewFilteredCSV()"
-                class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 transition-all cursor-pointer shadow-xs active:scale-95 whitespace-nowrap"
+                class="flex-1 lg:flex-initial inline-flex items-center justify-center gap-1 px-2.5 sm:px-4 py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 transition-all cursor-pointer shadow-xs active:scale-95 whitespace-nowrap"
                 title="Export currently filtered records to CSV based on applied filters"
               >
-                <i data-lucide="download" class="w-4 h-4"></i>
+                <i data-lucide="download" class="w-3.5 h-3.5"></i>
                 <span>Export CSV</span>
               </button>
 
@@ -1438,22 +1485,13 @@
                 id="overview-reset-filters-btn"
                 type="button"
                 onclick="portalApp.resetOverviewFilters()"
-                class="hidden items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200/80 border border-slate-200 transition-all cursor-pointer active:scale-95 shadow-2xs whitespace-nowrap"
+                class="hidden items-center gap-1 px-2 sm:px-3 py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl text-xs font-bold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200/80 border border-slate-200 transition-all cursor-pointer active:scale-95 shadow-2xs whitespace-nowrap"
                 title="Reset department and status filters to view all records"
               >
-                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5 text-slate-500"></i>
+                <i data-lucide="rotate-ccw" class="w-3 h-3 text-slate-500"></i>
                 <span>Reset</span>
               </button>
             </div>
-          </div>
-
-          <!-- Active Filter Badge (Displayed dynamically when filter is active) -->
-          <div
-            id="overview-active-filter-badge"
-            class="hidden items-center gap-2 px-3 py-1.5 mt-3 rounded-xl bg-blue-50 border border-blue-200 text-xs font-bold text-blue-900 shadow-2xs"
-          >
-            <i data-lucide="filter" class="w-3.5 h-3.5 text-blue-600"></i>
-            <span id="overview-filter-summary-text">Showing All Dashboards</span>
           </div>
         </div>
 
@@ -2829,6 +2867,7 @@
         categoryFilter: 'all', // 'all', 'Executive & Governance', etc.
         overviewDeptFilter: 'all',
         overviewOpenCloseFilter: 'all',
+        overviewYearFilter: String(new Date().getFullYear()), // Default to current year dynamically whenever opened
         hseqSelectedYear: String(new Date().getFullYear()), // Default to current year for HSEQ_KPI sheet
         activeDashboardId: null,
         connectedSheetUrl: (typeof localStorage !== 'undefined' && localStorage.getItem('FPCL_CONNECTED_SHEET_URL')) || 'https://docs.google.com/spreadsheets/d/1LJOdN8T7UUjaZbSfsCrO_Hdg1eoAgqnuE7mJDGtB8qo/export?format=csv&gid=1344438021',
@@ -3041,9 +3080,70 @@
         },
 
         /**
+         * Robust Year Matcher across overview filters
+         */
+        isYearMatch(recordYear, filterYear) {
+          if (!filterYear || filterYear === 'all') return true;
+          if (!recordYear) return false;
+          return String(recordYear).trim() === String(filterYear).trim();
+        },
+
+        /**
+         * Universal Record Year Extractor for all dashboard datasets
+         */
+        extractRecordYear(itemOrId, record) {
+          if (!record) return null;
+          const itemId = typeof itemOrId === 'string' ? itemOrId : (itemOrId && itemOrId.id ? itemOrId.id : '');
+
+          if (record.year !== undefined && record.year !== null && record.year !== '') {
+            const yStr = String(record.year).trim();
+            const m = yStr.match(/\b(20\d{2})\b/);
+            if (m) return m[1];
+          }
+          if (record.normYear !== undefined && record.normYear !== null && record.normYear !== '') {
+            const yStr = String(record.normYear).trim();
+            const m = yStr.match(/\b(20\d{2})\b/);
+            if (m) return m[1];
+          }
+          if (record.yearVal !== undefined && record.yearVal !== null && record.yearVal !== '') {
+            const yStr = String(record.yearVal).trim();
+            const m = yStr.match(/\b(20\d{2})\b/);
+            if (m) return m[1];
+          }
+          if (itemId === 'sub-hse-mech' && typeof window.extractSubHseMechYear === 'function') {
+            const y = window.extractSubHseMechYear(record.meetingDate || record.date);
+            if (y) return String(y);
+          }
+          const candidates = [
+            record.dateOfMeeting,
+            record.meetingDate,
+            record.targetDate,
+            record.dateOfInitiator,
+            record.date,
+            record.auditDate,
+            record.closureDate,
+            record.completionDate,
+            record.audit,
+            record.observationNo
+          ];
+          for (const c of candidates) {
+            if (!c) continue;
+            const str = String(c).trim();
+            const m4 = str.match(/\b(20\d{2})\b/);
+            if (m4) return m4[1];
+            const m2 = str.match(/[-/](\d{2})(?:\s|$|[^\d])/);
+            if (m2) {
+              const yr = parseInt(m2[1], 10);
+              if (yr >= 18 && yr <= 35) return String(2000 + yr);
+            }
+          }
+          return null;
+        },
+
+        /**
          * PSM Audit: Column H (actionDepartment) for department search, Column L (status) for open/close point
          */
-        getPsmAuditFilteredKpis(deptFilter, openCloseFilter) {
+        getPsmAuditFilteredKpis(deptFilter, openCloseFilter, yearFilter) {
           let raw = [];
           if (Array.isArray(window.FPCL_PSM_DATA) && window.FPCL_PSM_DATA.length > 0) {
             raw = window.FPCL_PSM_DATA;
@@ -3052,7 +3152,13 @@
             raw = window.FPCL_PSM_DATA;
           }
 
-          const deptRows = raw.filter(r => this.isDeptMatch(r.actionDepartment, deptFilter));
+          const yFilter = yearFilter || (this.state && this.state.overviewYearFilter) || String(new Date().getFullYear());
+          const deptRows = raw.filter(r => {
+            const deptOk = this.isDeptMatch(r.actionDepartment, deptFilter);
+            const rYear = this.extractRecordYear('sub-hse-psm', r) || '2026';
+            const yearOk = this.isYearMatch(rYear, yFilter);
+            return deptOk && yearOk;
+          });
           const deptTotal = deptRows.length;
           const deptClosed = deptRows.filter(r => (r.status || '').toLowerCase().includes('close')).length;
           const deptOpen = deptRows.filter(r => (r.status || '').toLowerCase() === 'open' || (r.status || '').toLowerCase() === 'overdue').length;
@@ -3104,7 +3210,7 @@
         /**
          * PSM Validation: Column F (department) for department search, Column M (openClose / status) for open/close point
          */
-        getPsmValidationFilteredKpis(deptFilter, openCloseFilter) {
+        getPsmValidationFilteredKpis(deptFilter, openCloseFilter, yearFilter) {
           let raw = [];
           if (Array.isArray(window.FPCL_PSM_VALIDATION_DATA) && window.FPCL_PSM_VALIDATION_DATA.length > 0) {
             raw = window.FPCL_PSM_VALIDATION_DATA;
@@ -3123,6 +3229,8 @@
               }
             } catch (e) {}
           }
+
+          const yFilter = yearFilter || (this.state && this.state.overviewYearFilter) || String(new Date().getFullYear());
 
           if (raw.length === 0) {
             const regEntry = Array.isArray(DASHBOARD_REGISTRY) ? DASHBOARD_REGISTRY.find(d => d.id === 'psm-validation') : null;
@@ -3143,7 +3251,12 @@
             }
           }
 
-          const deptRows = raw.filter(r => this.isDeptMatch(r.department, deptFilter));
+          const deptRows = raw.filter(r => {
+            const deptOk = this.isDeptMatch(r.department, deptFilter);
+            const rYear = this.extractRecordYear('psm-validation', r) || '2026';
+            const yearOk = this.isYearMatch(rYear, yFilter);
+            return deptOk && yearOk;
+          });
           const deptTotal = deptRows.length;
           const deptClosed = deptRows.filter(r => (r.openClose || '').toLowerCase().includes('close') || (r.status || '').toLowerCase() === 'pass').length;
           const deptOpen = deptRows.filter(r => (r.openClose || '').toLowerCase() === 'open' || (!(r.openClose || '').toLowerCase().includes('close') && (r.status || '').toLowerCase() !== 'pass')).length;
@@ -3194,7 +3307,7 @@
         /**
          * PLR Recommendations: Column F (actionBy / category) for department search, Column G (status) for open/close point
          */
-        getPlrFilteredKpis(deptFilter, openCloseFilter) {
+        getPlrFilteredKpis(deptFilter, openCloseFilter, yearFilter) {
           let raw = [];
           if (Array.isArray(window.FPCL_PLR_RECOMMENDATIONS) && window.FPCL_PLR_RECOMMENDATIONS.length > 0) {
             raw = window.FPCL_PLR_RECOMMENDATIONS;
@@ -3202,7 +3315,13 @@
             raw = getPlrRecs();
           }
 
-          const deptRows = raw.filter(r => this.isDeptMatch(r.actionBy || r.category, deptFilter));
+          const yFilter = yearFilter || (this.state && this.state.overviewYearFilter) || String(new Date().getFullYear());
+          const deptRows = raw.filter(r => {
+            const deptOk = this.isDeptMatch(r.actionBy || r.category, deptFilter);
+            const rYear = this.extractRecordYear('plr', r);
+            const yearOk = this.isYearMatch(rYear, yFilter);
+            return deptOk && yearOk;
+          });
           const deptTotal = deptRows.length;
           const deptClosed = deptRows.filter(r => (r.status || '').toLowerCase().includes('close')).length;
           const deptOpen = deptRows.filter(r => (r.status || '').toLowerCase() === 'open').length;
@@ -3253,7 +3372,7 @@
         /**
          * IMS Audits: Column F (dept) for department search, Column H (status) for open/close
          */
-        getImsAuditFilteredKpis(deptFilter, openCloseFilter) {
+        getImsAuditFilteredKpis(deptFilter, openCloseFilter, yearFilter) {
           let raw = [];
           if (Array.isArray(window.FPCL_IMS_DATA) && window.FPCL_IMS_DATA.length > 0) {
             raw = window.FPCL_IMS_DATA;
@@ -3261,7 +3380,13 @@
             raw = window.FPCL_IMS_INITIAL_DATA;
           }
 
-          const deptRows = raw.filter(r => this.isDeptMatch(r.dept, deptFilter));
+          const yFilter = yearFilter || (this.state && this.state.overviewYearFilter) || String(new Date().getFullYear());
+          const deptRows = raw.filter(r => {
+            const deptOk = this.isDeptMatch(r.dept, deptFilter);
+            const rYear = this.extractRecordYear('ims-audits', r) || '2026';
+            const yearOk = this.isYearMatch(rYear, yFilter);
+            return deptOk && yearOk;
+          });
           const deptTotal = deptRows.length;
           const deptClosed = deptRows.filter(r => (r.status || '').toLowerCase().includes('close')).length;
           const deptOpen = deptTotal - deptClosed;
@@ -3312,7 +3437,7 @@
         /**
          * PSSR: Column M (responsibility) for department search, Column O (status) for open/close
          */
-        getPssrFilteredKpis(deptFilter, openCloseFilter) {
+        getPssrFilteredKpis(deptFilter, openCloseFilter, yearFilter) {
           let raw = [];
           if (Array.isArray(window.FPCL_PSSR_DATA) && window.FPCL_PSSR_DATA.length > 0) {
             raw = window.FPCL_PSSR_DATA;
@@ -3320,7 +3445,13 @@
             raw = window.FPCL_PSSR_INITIAL_DATA;
           }
 
-          const deptRows = raw.filter(r => this.isDeptMatch(r.responsibility, deptFilter));
+          const yFilter = yearFilter || (this.state && this.state.overviewYearFilter) || String(new Date().getFullYear());
+          const deptRows = raw.filter(r => {
+            const deptOk = this.isDeptMatch(r.responsibility, deptFilter);
+            const rYear = this.extractRecordYear('pssr', r) || '2025';
+            const yearOk = this.isYearMatch(rYear, yFilter);
+            return deptOk && yearOk;
+          });
           const deptTotal = deptRows.length;
           const deptClosed = deptRows.filter(r => {
             const st = (r.status || '').toLowerCase().trim();
@@ -3375,7 +3506,7 @@
          * CAPEX: Column I (Responsible Unit) for department filter, Column R (Status _Open_Close) for open/close status
          * Sheet ID: 13ys4PbggcQq0H06Rh6cScAtdVnlrY-yyiWxA4e6dDzc, tab: CAPEX
          */
-        getCapexFilteredKpis(deptFilter, openCloseFilter) {
+        getCapexFilteredKpis(deptFilter, openCloseFilter, yearFilter) {
           let raw = [];
           if (Array.isArray(window.FPCL_CAPEX_DATA) && window.FPCL_CAPEX_DATA.length > 0) {
             raw = window.FPCL_CAPEX_DATA;
@@ -3383,9 +3514,13 @@
             raw = window.FPCL_CAPEX_INITIAL_DATA;
           }
 
+          const yFilter = yearFilter || (this.state && this.state.overviewYearFilter) || String(new Date().getFullYear());
           const deptRows = raw.filter(r => {
             const unit = r.unit || r.responsibleUnit || r.department || r.assigned || '';
-            return this.isDeptMatch(unit, deptFilter);
+            const deptOk = this.isDeptMatch(unit, deptFilter);
+            const rYear = this.extractRecordYear('capex', r) || r.year || '';
+            const yearOk = this.isYearMatch(rYear, yFilter);
+            return deptOk && yearOk;
           });
           const deptTotal = deptRows.length;
           const deptClosed = deptRows.filter(r => {
@@ -3441,7 +3576,7 @@
          * Sub HSE - P: Column G (Responsibility Department / Action by), Column H (Open Close status)
          * Sheet ID: 1hhO-goFXJlKSr32dSIHQMfEC7XRQsQly7iJCfP39Wjw, tab: Sub_HSE_P
          */
-        getSubHsePFilteredKpis(deptFilter, openCloseFilter) {
+        getSubHsePFilteredKpis(deptFilter, openCloseFilter, yearFilter) {
           let raw = [];
           if (Array.isArray(window.FPCL_SUB_HSE_P_DATA) && window.FPCL_SUB_HSE_P_DATA.length > 0) {
             raw = window.FPCL_SUB_HSE_P_DATA;
@@ -3449,9 +3584,13 @@
             raw = window.FPCL_SUB_HSE_P_INITIAL_SEED;
           }
 
+          const yFilter = yearFilter || (this.state && this.state.overviewYearFilter) || String(new Date().getFullYear());
           const deptRows = raw.filter(r => {
             const unit = r.actionBy || r.department || '';
-            return this.isDeptMatch(unit, deptFilter);
+            const deptOk = this.isDeptMatch(unit, deptFilter);
+            const rYear = this.extractRecordYear('sub-hse-p', r) || '2026';
+            const yearOk = this.isYearMatch(rYear, yFilter);
+            return deptOk && yearOk;
           });
           const deptTotal = deptRows.length;
           const deptClosed = deptRows.filter(r => {
@@ -3507,7 +3646,7 @@
          * Sub HSE – E&I: Column G (Responsibility Department / Action by), Column H (Open Close status)
          * Sheet ID: 1ZcxlHSoQk4MjHFs7m0hfujM_7ud8JNNrMQg0cLq-Ruw, tab: Sub_HSE _E&I
          */
-        getSubHseEiFilteredKpis(deptFilter, openCloseFilter) {
+        getSubHseEiFilteredKpis(deptFilter, openCloseFilter, yearFilter) {
           let raw = [];
           if (Array.isArray(window.FPCL_SUB_HSE_EI_DATA) && window.FPCL_SUB_HSE_EI_DATA.length > 0) {
             raw = window.FPCL_SUB_HSE_EI_DATA;
@@ -3515,9 +3654,149 @@
             raw = window.FPCL_SUB_HSE_EI_INITIAL_SEED;
           }
 
+          const yFilter = yearFilter || (this.state && this.state.overviewYearFilter) || String(new Date().getFullYear());
           const deptRows = raw.filter(r => {
             const unit = r.actionBy || r.department || '';
-            return this.isDeptMatch(unit, deptFilter);
+            const deptOk = this.isDeptMatch(unit, deptFilter);
+            const rYear = this.extractRecordYear('sub-hse-ei', r) || '2026';
+            const yearOk = this.isYearMatch(rYear, yFilter);
+            return deptOk && yearOk;
+          });
+          const deptTotal = deptRows.length;
+          const deptClosed = deptRows.filter(r => {
+            const st = String(r.openClose || r.status || '').toLowerCase().trim();
+            return st === 'close' || st.includes('close');
+          }).length;
+          const deptOpen = deptTotal - deptClosed;
+          const deptRate = deptTotal > 0 ? ((deptClosed / deptTotal) * 100).toFixed(1) + '%' : '0.0%';
+
+          if (openCloseFilter === 'open') {
+            return {
+              total: deptOpen,
+              closed: 0,
+              inProgress: deptOpen,
+              overdue: 0,
+              compliance: deptOpen + ' Open',
+              deptTotal,
+              deptClosed,
+              deptOpen,
+              deptRate,
+              mode: 'open'
+            };
+          } else if (openCloseFilter === 'close') {
+            return {
+              total: deptClosed,
+              closed: deptClosed,
+              inProgress: 0,
+              overdue: 0,
+              compliance: deptClosed + ' Closed',
+              deptTotal,
+              deptClosed,
+              deptOpen,
+              deptRate,
+              mode: 'close'
+            };
+          } else {
+            return {
+              total: deptTotal,
+              closed: deptClosed,
+              inProgress: deptOpen,
+              overdue: 0,
+              compliance: deptRate,
+              deptTotal,
+              deptClosed,
+              deptOpen,
+              deptRate,
+              mode: 'all'
+            };
+          }
+        },
+
+        /**
+         * Sub HSE – Mech: Action Department, Status (Closed/Open), and Meeting Date Year
+         */
+        getSubHseMechFilteredKpis(deptFilter, openCloseFilter, yearFilter) {
+          let raw = [];
+          if (Array.isArray(window.FPCL_SUB_HSE_MECH_DATA) && window.FPCL_SUB_HSE_MECH_DATA.length > 0) {
+            raw = window.FPCL_SUB_HSE_MECH_DATA;
+          } else if (Array.isArray(window.FPCL_SUB_HSE_MECH_INITIAL_SEED)) {
+            raw = window.FPCL_SUB_HSE_MECH_INITIAL_SEED;
+          }
+
+          const yFilter = yearFilter || (this.state && this.state.overviewYearFilter) || String(new Date().getFullYear());
+          const deptRows = raw.filter(r => {
+            const deptOk = this.isDeptMatch(r.action || r.department, deptFilter);
+            const rYear = this.extractRecordYear('sub-hse-mech', r) || '2026';
+            const yearOk = this.isYearMatch(rYear, yFilter);
+            return deptOk && yearOk;
+          });
+          const deptTotal = deptRows.length;
+          const deptClosed = deptRows.filter(r => {
+            const st = String(r.status || '').toLowerCase().trim();
+            return st === 'closed' || st.includes('close');
+          }).length;
+          const deptOpen = deptTotal - deptClosed;
+          const deptRate = deptTotal > 0 ? ((deptClosed / deptTotal) * 100).toFixed(1) + '%' : '0.0%';
+
+          if (openCloseFilter === 'open') {
+            return {
+              total: deptOpen,
+              closed: 0,
+              inProgress: deptOpen,
+              overdue: 0,
+              compliance: deptOpen + ' Open',
+              deptTotal,
+              deptClosed,
+              deptOpen,
+              deptRate,
+              mode: 'open'
+            };
+          } else if (openCloseFilter === 'close') {
+            return {
+              total: deptClosed,
+              closed: deptClosed,
+              inProgress: 0,
+              overdue: 0,
+              compliance: deptClosed + ' Closed',
+              deptTotal,
+              deptClosed,
+              deptOpen,
+              deptRate,
+              mode: 'close'
+            };
+          } else {
+            return {
+              total: deptTotal,
+              closed: deptClosed,
+              inProgress: deptOpen,
+              overdue: 0,
+              compliance: deptRate,
+              deptTotal,
+              deptClosed,
+              deptOpen,
+              deptRate,
+              mode: 'all'
+            };
+          }
+        },
+
+        /**
+         * EHSE: Action by (Responsibility Department), Open Close status, and Date of Meeting
+         */
+        getEhseFilteredKpis(deptFilter, openCloseFilter, yearFilter) {
+          let raw = [];
+          if (Array.isArray(window.FPCL_EHSE_DATA) && window.FPCL_EHSE_DATA.length > 0) {
+            raw = window.FPCL_EHSE_DATA;
+          } else if (Array.isArray(window.FPCL_EHSE_INITIAL_SEED)) {
+            raw = window.FPCL_EHSE_INITIAL_SEED;
+          }
+
+          const yFilter = yearFilter || (this.state && this.state.overviewYearFilter) || String(new Date().getFullYear());
+          const deptRows = raw.filter(r => {
+            const deptOk = this.isDeptMatch(r.actionBy || r.department, deptFilter);
+            const rYear = this.extractRecordYear('executive-hse-committee-ehsec', r) || '2026';
+            const yearOk = this.isYearMatch(rYear, yFilter);
+            return deptOk && yearOk;
           });
           const deptTotal = deptRows.length;
           const deptClosed = deptRows.filter(r => {
@@ -3577,33 +3856,40 @@
 
           const deptFilter = (this.state && this.state.overviewDeptFilter) || 'all';
           const openCloseFilter = (this.state && this.state.overviewOpenCloseFilter) || 'all';
+          const yearFilter = (this.state && this.state.overviewYearFilter) || String(new Date().getFullYear());
 
           if (item.id === 'sub-hse-p') {
-            return this.getSubHsePFilteredKpis(deptFilter, openCloseFilter);
+            return this.getSubHsePFilteredKpis(deptFilter, openCloseFilter, yearFilter);
           }
           if (item.id === 'sub-hse-ei') {
-            return this.getSubHseEiFilteredKpis(deptFilter, openCloseFilter);
+            return this.getSubHseEiFilteredKpis(deptFilter, openCloseFilter, yearFilter);
           }
           if (item.id === 'sub-hse-psm') {
-            return this.getPsmAuditFilteredKpis(deptFilter, openCloseFilter);
+            return this.getPsmAuditFilteredKpis(deptFilter, openCloseFilter, yearFilter);
           }
           if (item.id === 'psm-validation') {
-            return this.getPsmValidationFilteredKpis(deptFilter, openCloseFilter);
+            return this.getPsmValidationFilteredKpis(deptFilter, openCloseFilter, yearFilter);
           }
           if (item.id === 'plr') {
-            return this.getPlrFilteredKpis(deptFilter, openCloseFilter);
+            return this.getPlrFilteredKpis(deptFilter, openCloseFilter, yearFilter);
           }
           if (item.id === 'ims-audits') {
-            return this.getImsAuditFilteredKpis(deptFilter, openCloseFilter);
+            return this.getImsAuditFilteredKpis(deptFilter, openCloseFilter, yearFilter);
           }
           if (item.id === 'pssr') {
-            return this.getPssrFilteredKpis(deptFilter, openCloseFilter);
+            return this.getPssrFilteredKpis(deptFilter, openCloseFilter, yearFilter);
           }
           if (item.id === 'capex') {
-            return this.getCapexFilteredKpis(deptFilter, openCloseFilter);
+            return this.getCapexFilteredKpis(deptFilter, openCloseFilter, yearFilter);
+          }
+          if (item.id === 'sub-hse-mech') {
+            return this.getSubHseMechFilteredKpis(deptFilter, openCloseFilter, yearFilter);
+          }
+          if (item.id === 'executive-hse-committee-ehsec') {
+            return this.getEhseFilteredKpis(deptFilter, openCloseFilter, yearFilter);
           }
 
-          if (deptFilter === 'all' && openCloseFilter === 'all') {
+          if (deptFilter === 'all' && openCloseFilter === 'all' && yearFilter === 'all') {
             const k = item.kpis || { total: 0, closed: 0, inProgress: 0, overdue: 0, compliance: '0.0%' };
             return Object.assign({}, k, {
               deptTotal: k.total || 0,
@@ -3699,13 +3985,70 @@
           this.updateRollupStats();
         },
 
-        resetOverviewFilters() {
-          this.state.overviewDeptFilter = 'all';
-          this.state.overviewOpenCloseFilter = 'all';
+        handleOverviewYearFilter(year) {
+          this.state.overviewYearFilter = year || String(new Date().getFullYear());
           this.updateOverviewFilterUI();
           this.renderCards();
           this.renderComparisonChart();
           this.updateRollupStats();
+        },
+
+        resetOverviewFilters() {
+          this.state.overviewDeptFilter = 'all';
+          this.state.overviewOpenCloseFilter = 'all';
+          this.state.overviewYearFilter = String(new Date().getFullYear());
+          this.populateOverviewYearDropdown();
+          this.updateOverviewFilterUI();
+          this.renderCards();
+          this.renderComparisonChart();
+          this.updateRollupStats();
+        },
+
+        populateOverviewYearDropdown() {
+          const currentDynamicYear = String(new Date().getFullYear());
+          const currentYearNum = new Date().getFullYear();
+          const years = [currentYearNum, currentYearNum - 1, currentYearNum - 2, currentYearNum - 3];
+          
+          const addYearIfValid = (y) => {
+            const n = parseInt(y, 10);
+            if (!isNaN(n) && n >= 2018 && n <= 2035 && !years.includes(n)) {
+              years.push(n);
+            }
+          };
+          
+          if (Array.isArray(window.FPCL_PSM_DATA)) {
+            window.FPCL_PSM_DATA.forEach(r => addYearIfValid(this.extractRecordYear('sub-hse-psm', r)));
+          }
+          if (Array.isArray(window.FPCL_CAPEX_DATA)) {
+            window.FPCL_CAPEX_DATA.forEach(r => addYearIfValid(this.extractRecordYear('capex', r)));
+          }
+          if (Array.isArray(window.FPCL_PLR_RECOMMENDATIONS)) {
+            window.FPCL_PLR_RECOMMENDATIONS.forEach(r => addYearIfValid(this.extractRecordYear('plr', r)));
+          }
+          if (Array.isArray(window.FPCL_PSM_VALIDATION_DATA)) {
+            window.FPCL_PSM_VALIDATION_DATA.forEach(r => addYearIfValid(this.extractRecordYear('psm-validation', r)));
+          }
+          if (Array.isArray(window.FPCL_SUB_HSE_MECH_DATA)) {
+            window.FPCL_SUB_HSE_MECH_DATA.forEach(r => addYearIfValid(this.extractRecordYear('sub-hse-mech', r)));
+          }
+          
+          years.sort((a, b) => b - a);
+          
+          const selectedYear = (this.state && this.state.overviewYearFilter) || currentDynamicYear;
+          
+          const optionsHtml = `
+            <option value="${currentDynamicYear}" ${selectedYear === currentDynamicYear ? 'selected' : ''}>${currentDynamicYear}</option>
+            ${years.filter(y => String(y) !== currentDynamicYear).map(y => `
+              <option value="${y}" ${selectedYear === String(y) ? 'selected' : ''}>${y}</option>
+            `).join('')}
+            <option value="all" ${selectedYear === 'all' ? 'selected' : ''}>All Years</option>
+          `;
+          
+          const sel1 = document.getElementById('overview-year-select');
+          if (sel1) sel1.innerHTML = optionsHtml;
+          
+          const sel2 = document.getElementById('chart-sub-year-select');
+          if (sel2) sel2.innerHTML = optionsHtml;
         },
 
         /**
@@ -3910,8 +4253,17 @@
         },
 
         updateOverviewFilterUI() {
+          const currentDynamicYear = String(new Date().getFullYear());
+          const year = (this.state && this.state.overviewYearFilter) || currentDynamicYear;
           const dept = (this.state && this.state.overviewDeptFilter) || 'all';
           const status = (this.state && this.state.overviewOpenCloseFilter) || 'all';
+
+          // Sync year select elements
+          const yearSel = document.getElementById('overview-year-select');
+          if (yearSel) yearSel.value = year;
+
+          const chartYearSel = document.getElementById('chart-sub-year-select');
+          if (chartYearSel) chartYearSel.value = year;
 
           // Sync select elements
           const sel = document.getElementById('overview-department-select');
@@ -3941,37 +4293,14 @@
               : 'flex-1 py-2 px-2.5 rounded-lg text-xs font-extrabold transition-all text-center text-emerald-800 hover:text-emerald-950 hover:bg-emerald-100/70 cursor-pointer flex items-center justify-center gap-1.5';
           }
 
-          // Update active filter badge & reset button
-          const badge = document.getElementById('overview-active-filter-badge');
-          const summaryText = document.getElementById('overview-filter-summary-text');
+          // Update reset button visibility if non-default filters are active
           const resetBtn = document.getElementById('overview-reset-filters-btn');
-
-          const isFiltered = (dept !== 'all' || status !== 'all');
-          if (badge && summaryText && resetBtn) {
-            if (isFiltered) {
-              badge.classList.remove('hidden');
-              badge.classList.add('inline-flex');
+          const isNonDefault = (dept !== 'all' || status !== 'all' || year !== currentDynamicYear);
+          if (resetBtn) {
+            if (isNonDefault) {
               resetBtn.classList.remove('hidden');
               resetBtn.classList.add('inline-flex');
-
-              // Compute total matching across core dashboards
-              const psmK = this.getPsmAuditFilteredKpis(dept, status);
-              const valK = this.getPsmValidationFilteredKpis(dept, status);
-              const plrK = this.getPlrFilteredKpis(dept, status);
-
-              const activeCount = status === 'open'
-                ? (psmK.inProgress + valK.inProgress + plrK.inProgress)
-                : (status === 'close'
-                  ? (psmK.closed + valK.closed + plrK.closed)
-                  : (psmK.total + valK.total + plrK.total));
-
-              const statusLabel = status === 'open' ? 'Open Actions' : (status === 'close' ? 'Closed Actions' : 'Actions / Personnel');
-              const deptLabel = dept === 'all' ? 'All Departments' : (dept === 'PE' ? 'PE (Process Engineering)' : dept);
-
-              summaryText.textContent = `${deptLabel} • ${activeCount} ${statusLabel} (PSM: ${status === 'open' ? psmK.inProgress : (status === 'close' ? psmK.closed : psmK.total)}, PLR: ${status === 'open' ? plrK.inProgress : (status === 'close' ? plrK.closed : plrK.total)}, Validation: ${status === 'open' ? valK.inProgress : (status === 'close' ? valK.closed : valK.total)})`;
             } else {
-              badge.classList.add('hidden');
-              badge.classList.remove('inline-flex');
               resetBtn.classList.add('hidden');
               resetBtn.classList.remove('inline-flex');
             }
@@ -3991,6 +4320,7 @@
 
           const deptFilter = (this.state && this.state.overviewDeptFilter) || 'all';
           const openCloseFilter = (this.state && this.state.overviewOpenCloseFilter) || 'all';
+          const yearFilter = (this.state && this.state.overviewYearFilter) || String(new Date().getFullYear());
 
           // Retrieve live dynamic validation data numbers (Total personnel & Validation passed) from PSM Validation
           let valTotal = 0;
@@ -4006,13 +4336,18 @@
           }
 
           if (rawVal.length > 0) {
-            const deptMatched = rawVal.filter(r => (this.isDeptMatch ? this.isDeptMatch(r.department, deptFilter) : true));
-            valTotal = deptMatched.length;
-            valPassed = deptMatched.filter(r => (r.status || '').toLowerCase() === 'pass' || (r.openClose || '').toLowerCase().includes('close')).length;
-            valPending = deptMatched.filter(r => (r.status || '').toLowerCase() !== 'pass' && !(r.openClose || '').toLowerCase().includes('close')).length;
+            const matched = rawVal.filter(r => {
+              const deptOk = this.isDeptMatch ? this.isDeptMatch(r.department, deptFilter) : true;
+              const rYear = this.extractRecordYear ? (this.extractRecordYear('psm-validation', r) || '2026') : '2026';
+              const yearOk = this.isYearMatch ? this.isYearMatch(rYear, yearFilter) : true;
+              return deptOk && yearOk;
+            });
+            valTotal = matched.length;
+            valPassed = matched.filter(r => (r.status || '').toLowerCase() === 'pass' || (r.openClose || '').toLowerCase().includes('close')).length;
+            valPending = matched.filter(r => (r.status || '').toLowerCase() !== 'pass' && !(r.openClose || '').toLowerCase().includes('close')).length;
           } else {
             // Priority 2: Use getPsmValidationFilteredKpis
-            const valKpi = this.getPsmValidationFilteredKpis(deptFilter, openCloseFilter);
+            const valKpi = this.getPsmValidationFilteredKpis(deptFilter, openCloseFilter, yearFilter);
             valTotal = (valKpi.deptTotal !== undefined && valKpi.deptTotal > 0) ? valKpi.deptTotal : (valKpi.total || 0);
             valPassed = valKpi.deptClosed !== undefined ? valKpi.deptClosed : (valKpi.closed || 0);
             valPending = valKpi.deptOpen !== undefined ? valKpi.deptOpen : (valKpi.inProgress || 0);
@@ -4038,7 +4373,7 @@
             if (d.id === 'strategic' || d.id === 'sub-hse-eri') return;
 
             if (d.id === 'capex') {
-              const capexKpi = this.getCapexFilteredKpis(deptFilter, openCloseFilter);
+              const capexKpi = this.getCapexFilteredKpis(deptFilter, openCloseFilter, yearFilter);
               const capexClosed = (openCloseFilter === 'open') ? 0 : (capexKpi.closed || 0);
               const capexOpen = (openCloseFilter === 'close') ? 0 : (capexKpi.inProgress ?? capexKpi.deptOpen ?? 0);
               let capexTotal = (openCloseFilter === 'open') 
@@ -4059,7 +4394,7 @@
                 open: capexOpen,
                 total: capexTotal,
                 clickHandler: "portalApp.showDetailView('capex');",
-                tooltip: `CAPEX (All Years):\n• Total Projects: ${capexTotal}\n• Closed: ${capexClosed}\n• Open: ${capexOpen}\nClick to view CAPEX Dashboard`
+                tooltip: `CAPEX (${yearFilter !== 'all' ? yearFilter : 'All Years'}):\n• Total Projects: ${capexTotal}\n• Closed: ${capexClosed}\n• Open: ${capexOpen}\nClick to view CAPEX Dashboard`
               });
               return;
             }
@@ -4079,7 +4414,7 @@
                 passedPct: valPassedPct,
                 pendingPct: valPendingPct,
                 clickHandler: "portalApp.showDetailView('psm-validation');",
-                tooltip: `PSM Validation (Secondary Axis in %):\n• Qualification Rate: ${valPassedPct.toFixed(1)}%\n• Passed: ${valPassed} of ${valTotal} Personnel\n• Pending: ${valPending}\n• Total Personnel: ${valTotal}\nClick to view PSM Validation Dashboard`
+                tooltip: `PSM Validation (${yearFilter !== 'all' ? yearFilter : 'All Years'} - Secondary Axis in %):\n• Qualification Rate: ${valPassedPct.toFixed(1)}%\n• Passed: ${valPassed} of ${valTotal} Personnel\n• Pending: ${valPending}\n• Total Personnel: ${valTotal}\nClick to view PSM Validation Dashboard`
               });
               return;
             }
@@ -4111,8 +4446,8 @@
                 ? "portalApp.showDetailView('sub-hse-psm'); if(window.FPCL_PSM_SUITE && window.FPCL_PSM_SUITE.setSubDashboard) { FPCL_PSM_SUITE.setSubDashboard('audits'); }"
                 : `portalApp.showDetailView('${d.id}')`,
               tooltip: isPsmAudit
-                ? `PSM Audits:\n• Total Actions: ${totalVal}\n• Closed: ${closedVal}\n• Open: ${openVal}\nClick to view PSM Audits Dashboard`
-                : `${d.name} (${d.code}):\n• Total Actions: ${totalVal}\n• Closed: ${closedVal}\n• Open: ${openVal}\nClick to view Dashboard`
+                ? `PSM Audits (${yearFilter !== 'all' ? yearFilter : 'All Years'}):\n• Total Actions: ${totalVal}\n• Closed: ${closedVal}\n• Open: ${openVal}\nClick to view PSM Audits Dashboard`
+                : `${d.name} (${yearFilter !== 'all' ? yearFilter : 'All Years'}):\n• Total Actions: ${totalVal}\n• Closed: ${closedVal}\n• Open: ${openVal}\nClick to view Dashboard`
             });
           });
 
@@ -6299,7 +6634,9 @@
               plrContainer.hidden = false;
               plrContainer.removeAttribute('hidden');
               plrContainer.style.display = '';
-              if (window.portalApp && typeof window.portalApp.renderPlrSuite === 'function') {
+              if (window.portalApp && typeof window.portalApp.onPlrDashboardOpened === 'function') {
+                window.portalApp.onPlrDashboardOpened();
+              } else if (window.portalApp && typeof window.portalApp.renderPlrSuite === 'function') {
                 window.portalApp.renderPlrSuite();
               }
             }
@@ -6845,6 +7182,12 @@
           this.state.activeDashboardId = null;
           document.body.removeAttribute('data-active-dashboard');
 
+          // Whenever overview page is opened it should open by default on current year dynamically
+          const currentDynamicYear = String(new Date().getFullYear());
+          this.state.overviewYearFilter = currentDynamicYear;
+          this.populateOverviewYearDropdown();
+          this.updateOverviewFilterUI();
+
           // Update Navigation Menu Bar selection
           this.renderNavMenu();
 
@@ -6933,6 +7276,7 @@
           window.scrollTo({ top: 0, behavior: 'smooth' });
           this.updateRollupStats();
           this.renderCards();
+          this.renderComparisonChart();
         },
 
         /**
