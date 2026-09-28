@@ -1,51 +1,4 @@
-/**
- * FPCL Executive Operations & Compliance Portal
- * Sub HSE – Mech (Mechanical HSE Sub-Committee) Dataset & Parser
- * 
- * Target Google Sheet ID: 1Put-VhgQkpG43kAuW_l3cRtj4MH6Dl3aa2gms9IaLqQ
- * Tab: Sub_HSE_Mech
- * 
- * Strict Scope & Isolation: Leaves Strategic, PLR, PSM Audits, PSM Validation, IMS, PSSR, CAPEX, Sub HSE - P, Sub HSE – E&I, EHSE untouched.
- * 
- * Schema:
- * - Column A: ID (Meeting ID number - single meeting carrying same ID)
- * - Column B: S.# (Serial number)
- * - Column C: Reference # (Ref. Number for filter creation)
- * - Column D: Meeting Date (Filter of year from Column D Meeting Date)
- * - Column E: Issued Date
- * - Column F: Meeting Agenda
- * - Column G: Type Of Meeting
- * - Column H: MoM (Minutes of Meeting / Recommendation description)
- * - Column I: Action (Responsibility Department for filter creation & Horizontal Stacked Bar Chart)
- * - Column J: Status (Status for filter creation & KPIs: Closed vs Open. Empty cell or non-Closed is counted as Open in RED)
- * - Column K: Target Date
- * - Column L: Remarks
- */
-
-(function () {
-  'use strict';
-
-  function extractSubHseMechYear(dateStr) {
-    if (!dateStr) return '';
-    const str = String(dateStr).trim();
-    if (!str) return '';
-    const fourDigitMatch = str.match(/\b(19\d\d|20\d\d)\b/);
-    if (fourDigitMatch) return fourDigitMatch[1];
-    const twoDigitEndMatch = str.match(/(?:[-/.\s])(\d{2})$/);
-    if (twoDigitEndMatch) {
-      const yr2 = parseInt(twoDigitEndMatch[1], 10);
-      return String(yr2 >= 50 ? 1900 + yr2 : 2000 + yr2);
-    }
-    const parsedTime = Date.parse(str);
-    if (!isNaN(parsedTime)) {
-      const d = new Date(parsedTime);
-      const yr = d.getFullYear();
-      if (yr >= 1990 && yr <= 2099) return String(yr);
-    }
-    return '';
-  }
-
-  const INITIAL_SUB_HSE_MECH_OBSERVATIONS = [
+[
   {
     "sr": 1,
     "id": "1",
@@ -59,8 +12,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 2,
@@ -75,8 +27,7 @@
     "action": "PTE",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 3,
@@ -91,8 +42,7 @@
     "action": "Mechanical",
     "status": "open",
     "targetDate": "",
-    "remarks": "Currently the same is not marked on the structure",
-    "year": "2024"
+    "remarks": "Currently the same is not marked on the structure"
   },
   {
     "sr": 4,
@@ -107,8 +57,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 5,
@@ -123,8 +72,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 6,
@@ -139,8 +87,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 7,
@@ -155,8 +102,7 @@
     "action": "PTE / MM",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "The available coating material was in service life and not expired.",
-    "year": "2024"
+    "remarks": "The available coating material was in service life and not expired."
   },
   {
     "sr": 8,
@@ -171,8 +117,7 @@
     "action": "PTE / MM",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "MSDS of Durapol was available and shared with EU.",
-    "year": "2024"
+    "remarks": "MSDS of Durapol was available and shared with EU."
   },
   {
     "sr": 9,
@@ -187,8 +132,7 @@
     "action": "Workshop / Mechanical",
     "status": "On Job Action",
     "targetDate": "",
-    "remarks": "Coating was done internally by Workshop and Equipment team",
-    "year": "2024"
+    "remarks": "Coating was done internally by Workshop and Equipment team"
   },
   {
     "sr": 10,
@@ -203,8 +147,7 @@
     "action": "Inspection",
     "status": "On Job Action",
     "targetDate": "",
-    "remarks": "Complete QA during application was carried out",
-    "year": "2024"
+    "remarks": "Complete QA during application was carried out"
   },
   {
     "sr": 11,
@@ -219,8 +162,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 12,
@@ -235,8 +177,7 @@
     "action": "PTE / Civil",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "The revised package considering RCC wall was issued and approved.",
-    "year": "2024"
+    "remarks": "The revised package considering RCC wall was issued and approved."
   },
   {
     "sr": 13,
@@ -251,8 +192,7 @@
     "action": "PTE",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "The hiegth of wall was kept 1.5 Mtr",
-    "year": "2024"
+    "remarks": "The hiegth of wall was kept 1.5 Mtr"
   },
   {
     "sr": 14,
@@ -267,8 +207,7 @@
     "action": "Civil / Mech",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 15,
@@ -283,8 +222,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 16,
@@ -299,8 +237,7 @@
     "action": "PTE / Mechanical",
     "status": "open",
     "targetDate": "",
-    "remarks": "Working on revised IFR package is progress",
-    "year": "2024"
+    "remarks": "Working on revised IFR package is progress"
   },
   {
     "sr": 17,
@@ -315,8 +252,7 @@
     "action": "PTE / Mechanical",
     "status": "open",
     "targetDate": "",
-    "remarks": "Engineering is reviewing the sliding type design of platform",
-    "year": "2024"
+    "remarks": "Engineering is reviewing the sliding type design of platform"
   },
   {
     "sr": 18,
@@ -331,8 +267,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 19,
@@ -347,8 +282,7 @@
     "action": "PTE / Mechanical",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Incorporated in IFC Package",
-    "year": "2024"
+    "remarks": "Incorporated in IFC Package"
   },
   {
     "sr": 20,
@@ -363,8 +297,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 21,
@@ -379,8 +312,7 @@
     "action": "Project",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Incorporated in IFC Package",
-    "year": "2024"
+    "remarks": "Incorporated in IFC Package"
   },
   {
     "sr": 22,
@@ -395,8 +327,7 @@
     "action": "Project",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Incorporated in IFC Package",
-    "year": "2024"
+    "remarks": "Incorporated in IFC Package"
   },
   {
     "sr": 23,
@@ -411,8 +342,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 24,
@@ -427,8 +357,7 @@
     "action": "Project",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Incorporated in IFC Package",
-    "year": "2024"
+    "remarks": "Incorporated in IFC Package"
   },
   {
     "sr": 25,
@@ -443,8 +372,7 @@
     "action": "Project",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Incorporated in IFC Package through providing window on 3 side and door with glass on 4th side.",
-    "year": "2024"
+    "remarks": "Incorporated in IFC Package through providing window on 3 side and door with glass on 4th side."
   },
   {
     "sr": 26,
@@ -459,8 +387,7 @@
     "action": "Project",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Incorporated in IFC Package",
-    "year": "2024"
+    "remarks": "Incorporated in IFC Package"
   },
   {
     "sr": 27,
@@ -475,8 +402,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 28,
@@ -491,8 +417,7 @@
     "action": "Project / Mechanical",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Clading sheet was wrapped around the beams.",
-    "year": "2024"
+    "remarks": "Clading sheet was wrapped around the beams."
   },
   {
     "sr": 29,
@@ -507,8 +432,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 30,
@@ -523,8 +447,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 31,
@@ -539,8 +462,7 @@
     "action": "PE",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "IFC Process package received",
-    "year": "2024"
+    "remarks": "IFC Process package received"
   },
   {
     "sr": 32,
@@ -555,8 +477,7 @@
     "action": "Inspection to further review",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Inspection will consider the low proximity RT for those joints where PAUT is not practical",
-    "year": "2024"
+    "remarks": "Inspection will consider the low proximity RT for those joints where PAUT is not practical"
   },
   {
     "sr": 33,
@@ -571,8 +492,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 34,
@@ -587,8 +507,7 @@
     "action": "PTE",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 35,
@@ -603,8 +522,7 @@
     "action": "PTE / Mechanical",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 36,
@@ -619,8 +537,7 @@
     "action": "Mechanical",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 37,
@@ -635,8 +552,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 38,
@@ -651,8 +567,7 @@
     "action": "Mechanical",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 39,
@@ -667,8 +582,7 @@
     "action": "Mechanical",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 40,
@@ -683,8 +597,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 41,
@@ -699,8 +612,7 @@
     "action": "PTE",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Incorporated in IFC package",
-    "year": "2024"
+    "remarks": "Incorporated in IFC package"
   },
   {
     "sr": 42,
@@ -715,8 +627,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 43,
@@ -731,8 +642,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 44,
@@ -747,8 +657,7 @@
     "action": "Civil",
     "status": "On Job Action",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 45,
@@ -763,8 +672,7 @@
     "action": "PTE",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Incorporated in IFC package",
-    "year": "2024"
+    "remarks": "Incorporated in IFC package"
   },
   {
     "sr": 46,
@@ -779,8 +687,7 @@
     "action": "PTE",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Incorporated in IFC package",
-    "year": "2024"
+    "remarks": "Incorporated in IFC package"
   },
   {
     "sr": 47,
@@ -795,8 +702,7 @@
     "action": "PTE / MV Shop / Operations",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Revised drawing will be issued upon workshop request.",
-    "year": "2024"
+    "remarks": "Revised drawing will be issued upon workshop request."
   },
   {
     "sr": 48,
@@ -811,8 +717,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 49,
@@ -827,8 +732,7 @@
     "action": "PTE / Civil",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 50,
@@ -843,8 +747,7 @@
     "action": "Process / Safety",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 51,
@@ -859,8 +762,7 @@
     "action": "Operations (BE)",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 52,
@@ -875,8 +777,7 @@
     "action": "Operations (BE) / Safety",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 53,
@@ -891,8 +792,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 54,
@@ -907,8 +807,7 @@
     "action": "PTE / Mechanical",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 55,
@@ -923,8 +822,7 @@
     "action": "PTE",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Same was presented in Sub-SOC(M) dated:",
-    "year": "2024"
+    "remarks": "Same was presented in Sub-SOC(M) dated:"
   },
   {
     "sr": 56,
@@ -939,8 +837,7 @@
     "action": "PTE / Mechanical",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 57,
@@ -955,8 +852,7 @@
     "action": "Mechanical",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 58,
@@ -971,8 +867,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 59,
@@ -987,8 +882,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 60,
@@ -1003,8 +897,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 61,
@@ -1019,8 +912,7 @@
     "action": "PTE",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 62,
@@ -1035,8 +927,7 @@
     "action": "PTE",
     "status": "Dropped",
     "targetDate": "",
-    "remarks": "Screw with SS fligth was dropped as it was offered by OEM subcontractor Taekwong. However later in Sub-SOC(M) dated: 01-Aug-2024, it was decided to place order to Songling as per specifications presented",
-    "year": "2024"
+    "remarks": "Screw with SS fligth was dropped as it was offered by OEM subcontractor Taekwong. However later in Sub-SOC(M) dated: 01-Aug-2024, it was decided to place order to Songling as per specifications presented"
   },
   {
     "sr": 63,
@@ -1051,8 +942,7 @@
     "action": "PTE",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Vendor refused to provide any calculations of water flow of screw mentioning there is no need for same material of screw. Refer email dated: 27-Sep-2024",
-    "year": "2024"
+    "remarks": "Vendor refused to provide any calculations of water flow of screw mentioning there is no need for same material of screw. Refer email dated: 27-Sep-2024"
   },
   {
     "sr": 64,
@@ -1067,8 +957,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 65,
@@ -1083,8 +972,7 @@
     "action": "Workshop",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 66,
@@ -1099,8 +987,7 @@
     "action": "Workshop",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 67,
@@ -1115,8 +1002,7 @@
     "action": "Workshop",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 68,
@@ -1131,8 +1017,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 69,
@@ -1147,8 +1032,7 @@
     "action": "Mechanical",
     "status": "Dropped",
     "targetDate": "",
-    "remarks": "Order was placed to Songling later. (this was finalized in Morning Meeting)\nAlso, refer MoMs of Sub-SOC(M) dated: 01-Aug-2024",
-    "year": "2024"
+    "remarks": "Order was placed to Songling later. (this was finalized in Morning Meeting)\nAlso, refer MoMs of Sub-SOC(M) dated: 01-Aug-2024"
   },
   {
     "sr": 70,
@@ -1163,8 +1047,7 @@
     "action": "Mechanical",
     "status": "Dropped",
     "targetDate": "",
-    "remarks": "Order was placed to Songling later. (this was finalized in Morning Meeting)\nAlso, refer MoMs of Sub-SOC(M) dated: 01-Aug-2024",
-    "year": "2024"
+    "remarks": "Order was placed to Songling later. (this was finalized in Morning Meeting)\nAlso, refer MoMs of Sub-SOC(M) dated: 01-Aug-2024"
   },
   {
     "sr": 71,
@@ -1179,8 +1062,7 @@
     "action": "Mechanical",
     "status": "Dropped",
     "targetDate": "",
-    "remarks": "Order was placed to Songling later. (this was finalized in Morning Meeting)\nAlso, refer MoMs of Sub-SOC(M) dated: 01-Aug-2024",
-    "year": "2024"
+    "remarks": "Order was placed to Songling later. (this was finalized in Morning Meeting)\nAlso, refer MoMs of Sub-SOC(M) dated: 01-Aug-2024"
   },
   {
     "sr": 72,
@@ -1195,8 +1077,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 73,
@@ -1211,8 +1092,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 74,
@@ -1227,8 +1107,7 @@
     "action": "PTE",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Request email was shared with Songling dated:",
-    "year": "2024"
+    "remarks": "Request email was shared with Songling dated:"
   },
   {
     "sr": 75,
@@ -1243,8 +1122,7 @@
     "action": "PTE",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Request email was shared with Songling dated: 27-Jul-2024",
-    "year": "2024"
+    "remarks": "Request email was shared with Songling dated: 27-Jul-2024"
   },
   {
     "sr": 76,
@@ -1259,8 +1137,7 @@
     "action": "PTE",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Same was done by vendor",
-    "year": "2024"
+    "remarks": "Same was done by vendor"
   },
   {
     "sr": 77,
@@ -1275,8 +1152,7 @@
     "action": "PTE",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 78,
@@ -1291,8 +1167,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 79,
@@ -1307,8 +1182,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 80,
@@ -1323,8 +1197,7 @@
     "action": "PTE",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Incorporated in IFC package",
-    "year": "2024"
+    "remarks": "Incorporated in IFC package"
   },
   {
     "sr": 81,
@@ -1339,8 +1212,7 @@
     "action": "PTE",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Incorporated in IFC package",
-    "year": "2024"
+    "remarks": "Incorporated in IFC package"
   },
   {
     "sr": 82,
@@ -1355,8 +1227,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 83,
@@ -1371,8 +1242,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 84,
@@ -1387,8 +1257,7 @@
     "action": "PTE",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Incorporated in IFC package",
-    "year": "2024"
+    "remarks": "Incorporated in IFC package"
   },
   {
     "sr": 85,
@@ -1403,8 +1272,7 @@
     "action": "PTE/Mechanical",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 86,
@@ -1419,8 +1287,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 87,
@@ -1435,8 +1302,7 @@
     "action": "PTE",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Incorporated in IFC package",
-    "year": "2024"
+    "remarks": "Incorporated in IFC package"
   },
   {
     "sr": 88,
@@ -1451,8 +1317,7 @@
     "action": "PTE",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Incorporated in IFC package",
-    "year": "2024"
+    "remarks": "Incorporated in IFC package"
   },
   {
     "sr": 89,
@@ -1467,8 +1332,7 @@
     "action": "PTE",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Incorporated in IFC package",
-    "year": "2024"
+    "remarks": "Incorporated in IFC package"
   },
   {
     "sr": 90,
@@ -1483,8 +1347,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 91,
@@ -1499,8 +1362,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 92,
@@ -1515,8 +1377,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 93,
@@ -1531,8 +1392,7 @@
     "action": "Electrical/Inspection",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 94,
@@ -1547,8 +1407,7 @@
     "action": "Inspecttion/Elec/Operations/Safety",
     "status": "On Job Action",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 95,
@@ -1563,8 +1422,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 96,
@@ -1579,8 +1437,7 @@
     "action": "Mechanical",
     "status": "On Job Action",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 97,
@@ -1595,8 +1452,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 98,
@@ -1611,8 +1467,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 99,
@@ -1627,8 +1482,7 @@
     "action": "PTE / PE",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Incorporated in IFC package",
-    "year": "2024"
+    "remarks": "Incorporated in IFC package"
   },
   {
     "sr": 100,
@@ -1643,8 +1497,7 @@
     "action": "Safety",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 101,
@@ -1659,8 +1512,7 @@
     "action": "PE",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 102,
@@ -1675,8 +1527,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 103,
@@ -1691,8 +1542,7 @@
     "action": "PTE/Inspection",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Inspection shared the history to Mechanical and Engineering on email dated: 12-Sep-2024",
-    "year": "2024"
+    "remarks": "Inspection shared the history to Mechanical and Engineering on email dated: 12-Sep-2024"
   },
   {
     "sr": 104,
@@ -1707,8 +1557,7 @@
     "action": "PTE / PE",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Technical query was raised to HPS ES-2406",
-    "year": "2024"
+    "remarks": "Technical query was raised to HPS ES-2406"
   },
   {
     "sr": 105,
@@ -1723,8 +1572,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 106,
@@ -1739,8 +1587,7 @@
     "action": "PTE",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 107,
@@ -1755,8 +1602,7 @@
     "action": "PTE / Mechanical",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 108,
@@ -1771,8 +1617,7 @@
     "action": "PTE",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 109,
@@ -1787,8 +1632,7 @@
     "action": "PTE / Mechanical",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Local rubber is being used.",
-    "year": "2024"
+    "remarks": "Local rubber is being used."
   },
   {
     "sr": 110,
@@ -1803,8 +1647,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 111,
@@ -1819,8 +1662,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 112,
@@ -1835,8 +1677,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 113,
@@ -1851,8 +1692,7 @@
     "action": "PE",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 114,
@@ -1867,8 +1707,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 115,
@@ -1883,8 +1722,7 @@
     "action": "Workshop",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 116,
@@ -1899,8 +1737,7 @@
     "action": "Engineering",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 117,
@@ -1915,8 +1752,7 @@
     "action": "Inspection / Workshop / Engineering",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 118,
@@ -1931,8 +1767,7 @@
     "action": "Mechanical / Engineering",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 119,
@@ -1947,8 +1782,7 @@
     "action": "PTE",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "IFR package was prepared and shared with all concerned for review.",
-    "year": "2024"
+    "remarks": "IFR package was prepared and shared with all concerned for review."
   },
   {
     "sr": 120,
@@ -1963,8 +1797,7 @@
     "action": "PTE / Inspection",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Presented in Sub-SOC(M) #112 dated 9-Dec-2024",
-    "year": "2024"
+    "remarks": "Presented in Sub-SOC(M) #112 dated 9-Dec-2024"
   },
   {
     "sr": 121,
@@ -1979,8 +1812,7 @@
     "action": "Safety",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 122,
@@ -1995,8 +1827,7 @@
     "action": "Operation (FE)",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 123,
@@ -2011,8 +1842,7 @@
     "action": "Operation (FE) / PE",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 124,
@@ -2027,8 +1857,7 @@
     "action": "Operation (FE)",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 125,
@@ -2043,8 +1872,7 @@
     "action": "Mechanical / Operation (FE) / PTE",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Same was concented and agreed with HPS.",
-    "year": "2024"
+    "remarks": "Same was concented and agreed with HPS."
   },
   {
     "sr": 126,
@@ -2059,8 +1887,7 @@
     "action": "Mechanical / Engineering",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 127,
@@ -2075,8 +1902,7 @@
     "action": "PTE",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Same was comunicated to HPS and their response was received.",
-    "year": "2024"
+    "remarks": "Same was comunicated to HPS and their response was received."
   },
   {
     "sr": 128,
@@ -2091,8 +1917,7 @@
     "action": "Maintenance",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 129,
@@ -2107,8 +1932,7 @@
     "action": "Maintenance",
     "status": "Info",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 130,
@@ -2123,8 +1947,7 @@
     "action": "PTE",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "PTE send the technical query (FPCL-ES 2406) to HPS. Response received on email dated: 17-Dec-2024",
-    "year": "2024"
+    "remarks": "PTE send the technical query (FPCL-ES 2406) to HPS. Response received on email dated: 17-Dec-2024"
   },
   {
     "sr": 131,
@@ -2139,8 +1962,7 @@
     "action": "PTE",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "PTE send the technical query (FPCL-ES 2406) to HPS. Response received on email dated: 17-Dec-2024",
-    "year": "2024"
+    "remarks": "PTE send the technical query (FPCL-ES 2406) to HPS. Response received on email dated: 17-Dec-2024"
   },
   {
     "sr": 132,
@@ -2155,8 +1977,7 @@
     "action": "PTE",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Alternate material SS310 was recommended by HPS for 1 year service life in technical query FPCL-ES 2406",
-    "year": "2024"
+    "remarks": "Alternate material SS310 was recommended by HPS for 1 year service life in technical query FPCL-ES 2406"
   },
   {
     "sr": 133,
@@ -2171,8 +1992,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 134,
@@ -2187,8 +2007,7 @@
     "action": "PTE",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "PTE performed the analysis of structure including lugs using available ASTM A36 material. And same was incorporated in drawings.",
-    "year": "2024"
+    "remarks": "PTE performed the analysis of structure including lugs using available ASTM A36 material. And same was incorporated in drawings."
   },
   {
     "sr": 135,
@@ -2203,8 +2022,7 @@
     "action": "PTE",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Loading capacity of lugs and structure was mentioned in IFC drawings.",
-    "year": "2024"
+    "remarks": "Loading capacity of lugs and structure was mentioned in IFC drawings."
   },
   {
     "sr": 136,
@@ -2219,8 +2037,7 @@
     "action": "PTE",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Discussed with workshop, they will share the cost and timeline upon job completion as currently the fabrication was at underway. (these comments were mentioned on MoMs attached in IFC Pacakge)",
-    "year": "2024"
+    "remarks": "Discussed with workshop, they will share the cost and timeline upon job completion as currently the fabrication was at underway. (these comments were mentioned on MoMs attached in IFC Pacakge)"
   },
   {
     "sr": 137,
@@ -2235,8 +2052,7 @@
     "action": "PTE",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Noted",
-    "year": "2024"
+    "remarks": "Noted"
   },
   {
     "sr": 138,
@@ -2251,8 +2067,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2024"
+    "remarks": ""
   },
   {
     "sr": 139,
@@ -2267,8 +2082,7 @@
     "action": "Engineering",
     "status": "open",
     "targetDate": "",
-    "remarks": "Engineering checked the material of from following:\n1. EPTL:\n2. HUBCO:\n3. LUCKY:",
-    "year": "2024"
+    "remarks": "Engineering checked the material of from following:\n1. EPTL:\n2. HUBCO:\n3. LUCKY:"
   },
   {
     "sr": 140,
@@ -2283,8 +2097,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 141,
@@ -2299,8 +2112,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 142,
@@ -2315,8 +2127,7 @@
     "action": "Engineering/Maintenance",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "BOM and IFR drawings were shared with Maintenance on email dated: 02-Jan-2025",
-    "year": "2025"
+    "remarks": "BOM and IFR drawings were shared with Maintenance on email dated: 02-Jan-2025"
   },
   {
     "sr": 143,
@@ -2331,8 +2142,7 @@
     "action": "Engineering",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "HPS perfomed the structure analysis and recommeded few reinforcement. Same were shared in IFC mechanical pacakge (advance copy) dated: 20-Jan-2025. Later the Revision-01 of IFC Mechanical package was shared on email dated: 22-Jan-2025",
-    "year": "2025"
+    "remarks": "HPS perfomed the structure analysis and recommeded few reinforcement. Same were shared in IFC mechanical pacakge (advance copy) dated: 20-Jan-2025. Later the Revision-01 of IFC Mechanical package was shared on email dated: 22-Jan-2025"
   },
   {
     "sr": 144,
@@ -2347,8 +2157,7 @@
     "action": "Maintenance/Engineering",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Same was confirmed by Mechanical Equipment that the space between two platforms were enough.",
-    "year": "2025"
+    "remarks": "Same was confirmed by Mechanical Equipment that the space between two platforms were enough."
   },
   {
     "sr": 145,
@@ -2363,8 +2172,7 @@
     "action": "Maintenance/Engineering",
     "status": "On Job Action",
     "targetDate": "",
-    "remarks": "This was for info. PTE has reviewed and agreed upon this.",
-    "year": "2025"
+    "remarks": "This was for info. PTE has reviewed and agreed upon this."
   },
   {
     "sr": 146,
@@ -2379,8 +2187,7 @@
     "action": "Maintenance/Engineering",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Same was mentioned in on Economzer IFC package. E-P-0125-0472 Rev.1",
-    "year": "2025"
+    "remarks": "Same was mentioned in on Economzer IFC package. E-P-0125-0472 Rev.1"
   },
   {
     "sr": 147,
@@ -2395,8 +2202,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 148,
@@ -2411,8 +2217,7 @@
     "action": "PTE",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Detailed analysis was carried out by HPS at both 75km/hr and 150km/hr. Report was shared with Mainteance along with revised reinforcement drawings.",
-    "year": "2025"
+    "remarks": "Detailed analysis was carried out by HPS at both 75km/hr and 150km/hr. Report was shared with Mainteance along with revised reinforcement drawings."
   },
   {
     "sr": 149,
@@ -2427,8 +2232,7 @@
     "action": "PTE",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Query was sent to HPS. \nHPS recommended to reinstall the structure before hydrotesting.",
-    "year": "2025"
+    "remarks": "Query was sent to HPS. \nHPS recommended to reinstall the structure before hydrotesting."
   },
   {
     "sr": 150,
@@ -2443,8 +2247,7 @@
     "action": "PTE",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Query was sent to HPS on email dated: \nHPS replied on email dated:",
-    "year": "2025"
+    "remarks": "Query was sent to HPS on email dated: \nHPS replied on email dated:"
   },
   {
     "sr": 151,
@@ -2459,8 +2262,7 @@
     "action": "PTE",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "HPS shared the detailed report in email dated:",
-    "year": "2025"
+    "remarks": "HPS shared the detailed report in email dated:"
   },
   {
     "sr": 152,
@@ -2475,8 +2277,7 @@
     "action": "PTE",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Structrure removal, reinforcement and reinstallation was witnessed by PTE Engineer during ATA-2025",
-    "year": "2025"
+    "remarks": "Structrure removal, reinforcement and reinstallation was witnessed by PTE Engineer during ATA-2025"
   },
   {
     "sr": 153,
@@ -2491,8 +2292,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 154,
@@ -2507,8 +2307,7 @@
     "action": "PTE/Mech",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Job was executed as per MoMs;\nPaint applied on East side channels: New paint system\nPaint applied on West side channels: Old paint system",
-    "year": "2025"
+    "remarks": "Job was executed as per MoMs;\nPaint applied on East side channels: New paint system\nPaint applied on West side channels: Old paint system"
   },
   {
     "sr": 155,
@@ -2523,8 +2322,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 156,
@@ -2539,8 +2337,7 @@
     "action": "Mech",
     "status": "On Job Action",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 157,
@@ -2555,8 +2352,7 @@
     "action": "Mech",
     "status": "On Job Action",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 158,
@@ -2571,8 +2367,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 159,
@@ -2587,8 +2382,7 @@
     "action": "Mech",
     "status": "On Job Action",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 160,
@@ -2603,8 +2397,7 @@
     "action": "Mech",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Repair procedure was shared by BH",
-    "year": "2025"
+    "remarks": "Repair procedure was shared by BH"
   },
   {
     "sr": 161,
@@ -2619,8 +2412,7 @@
     "action": "PTE",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Repair procedure was shared by BH",
-    "year": "2025"
+    "remarks": "Repair procedure was shared by BH"
   },
   {
     "sr": 162,
@@ -2635,8 +2427,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 163,
@@ -2651,8 +2442,7 @@
     "action": "PTE",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "PTE shared the drawings on email dated: 18-Jan-2025",
-    "year": "2025"
+    "remarks": "PTE shared the drawings on email dated: 18-Jan-2025"
   },
   {
     "sr": 164,
@@ -2667,8 +2457,7 @@
     "action": "-",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Same was incoporated in drawings.",
-    "year": "2025"
+    "remarks": "Same was incoporated in drawings."
   },
   {
     "sr": 165,
@@ -2683,8 +2472,7 @@
     "action": "Mechanical (Equipment)",
     "status": "On Job Action",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 166,
@@ -2699,8 +2487,7 @@
     "action": "PTE",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Consent of Foosung refractory vendor was taken in email dated: January 15, 2025",
-    "year": "2025"
+    "remarks": "Consent of Foosung refractory vendor was taken in email dated: January 15, 2025"
   },
   {
     "sr": 167,
@@ -2715,8 +2502,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 168,
@@ -2731,8 +2517,7 @@
     "action": "PTE",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "HPS concent was taken in Technical query [FPCL-ES-2406] dated: 20-Jan-2025",
-    "year": "2025"
+    "remarks": "HPS concent was taken in Technical query [FPCL-ES-2406] dated: 20-Jan-2025"
   },
   {
     "sr": 169,
@@ -2747,8 +2532,7 @@
     "action": "PTE",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "HPS concent was taken in Technical query [FPCL-ES-2406] dated: 20-Jan-2025",
-    "year": "2025"
+    "remarks": "HPS concent was taken in Technical query [FPCL-ES-2406] dated: 20-Jan-2025"
   },
   {
     "sr": 170,
@@ -2763,8 +2547,7 @@
     "action": "PTE",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "HPS concent was taken in Technical query [FPCL-ES-2406] dated: 20-Jan-2025",
-    "year": "2025"
+    "remarks": "HPS concent was taken in Technical query [FPCL-ES-2406] dated: 20-Jan-2025"
   },
   {
     "sr": 171,
@@ -2779,8 +2562,7 @@
     "action": "Mechanical",
     "status": "On Job Action",
     "targetDate": "",
-    "remarks": "Wool Filling was not done",
-    "year": "2025"
+    "remarks": "Wool Filling was not done"
   },
   {
     "sr": 172,
@@ -2795,8 +2577,7 @@
     "action": "Mechanical/PTE",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Mechanical package was issued with drawing. (E/P/0125/0471) dated: 03-Jan-2025",
-    "year": "2025"
+    "remarks": "Mechanical package was issued with drawing. (E/P/0125/0471) dated: 03-Jan-2025"
   },
   {
     "sr": 173,
@@ -2811,8 +2592,7 @@
     "action": "Engineering/Maintenance",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "-",
-    "year": "2025"
+    "remarks": "-"
   },
   {
     "sr": 174,
@@ -2827,8 +2607,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 175,
@@ -2843,8 +2622,7 @@
     "action": "PE",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 176,
@@ -2859,8 +2637,7 @@
     "action": "Engineering",
     "status": "open",
     "targetDate": "",
-    "remarks": "Ony IFR Mechanical Pacakge is being issued by Engineering.",
-    "year": "2025"
+    "remarks": "Ony IFR Mechanical Pacakge is being issued by Engineering."
   },
   {
     "sr": 177,
@@ -2875,8 +2652,7 @@
     "action": "PTE",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "PTE issued the IFC Isometric.",
-    "year": "2025"
+    "remarks": "PTE issued the IFC Isometric."
   },
   {
     "sr": 178,
@@ -2891,8 +2667,7 @@
     "action": "Process Engineering",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "PE shared the IFC Process Pacakged dated",
-    "year": "2025"
+    "remarks": "PE shared the IFC Process Pacakged dated"
   },
   {
     "sr": 179,
@@ -2907,8 +2682,7 @@
     "action": "Operation (FE)",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 180,
@@ -2923,8 +2697,7 @@
     "action": "Equipment Maintenance",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Line was replaced with Original material in ATA-2026.",
-    "year": "2025"
+    "remarks": "Line was replaced with Original material in ATA-2026."
   },
   {
     "sr": 181,
@@ -2939,8 +2712,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 182,
@@ -2955,8 +2727,7 @@
     "action": "Equipment Maintenance",
     "status": "On Job Action",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 183,
@@ -2971,8 +2742,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 184,
@@ -2987,8 +2757,7 @@
     "action": "Mechanical (Equipment)",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Spiral wound gasket of 600# rating was installed in ATA-2025",
-    "year": "2025"
+    "remarks": "Spiral wound gasket of 600# rating was installed in ATA-2025"
   },
   {
     "sr": 185,
@@ -3003,8 +2772,7 @@
     "action": "Mechanical (Equipment)",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Box up was installed.",
-    "year": "2025"
+    "remarks": "Box up was installed."
   },
   {
     "sr": 186,
@@ -3019,8 +2787,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 187,
@@ -3035,8 +2802,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 188,
@@ -3051,8 +2817,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 189,
@@ -3067,8 +2832,7 @@
     "action": "Equipment Maintenance",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Repair was carried out as per Repair procedure received from refractory vendor Foosung. Email dated: 03-Feb-2025",
-    "year": "2025"
+    "remarks": "Repair was carried out as per Repair procedure received from refractory vendor Foosung. Email dated: 03-Feb-2025"
   },
   {
     "sr": 190,
@@ -3083,8 +2847,7 @@
     "action": "-",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "P.N: Later required gasket of DIN standard was traced in MWH and no such modification\nwas carried out.",
-    "year": "2025"
+    "remarks": "P.N: Later required gasket of DIN standard was traced in MWH and no such modification\nwas carried out."
   },
   {
     "sr": 191,
@@ -3099,8 +2862,7 @@
     "action": "Machinery Maintenance",
     "status": "On Job Action",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 192,
@@ -3115,8 +2877,7 @@
     "action": "Machinery Maintenance",
     "status": "On Job Action",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 193,
@@ -3131,8 +2892,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 194,
@@ -3147,8 +2907,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 195,
@@ -3163,8 +2922,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 196,
@@ -3179,8 +2937,7 @@
     "action": "Equipment / Engineering",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Same was concented from the Vendor on email.",
-    "year": "2025"
+    "remarks": "Same was concented from the Vendor on email."
   },
   {
     "sr": 197,
@@ -3195,8 +2952,7 @@
     "action": "Equipment Maintenance",
     "status": "Dropped",
     "targetDate": "",
-    "remarks": "Job was dropped.",
-    "year": "2025"
+    "remarks": "Job was dropped."
   },
   {
     "sr": 198,
@@ -3211,8 +2967,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 199,
@@ -3227,8 +2982,7 @@
     "action": "Equipment Maintenance",
     "status": "On Job Action",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 200,
@@ -3243,8 +2997,7 @@
     "action": "Equipment Maintenance",
     "status": "On Job Action",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 201,
@@ -3259,8 +3012,7 @@
     "action": "Equipment Maintenance",
     "status": "On Job Action",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 202,
@@ -3275,8 +3027,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 203,
@@ -3291,8 +3042,7 @@
     "action": "Engineering",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Revised layout was issued.",
-    "year": "2025"
+    "remarks": "Revised layout was issued."
   },
   {
     "sr": 204,
@@ -3307,8 +3057,7 @@
     "action": "Civil/Engineering",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Precast foundations was finalized and executed.",
-    "year": "2025"
+    "remarks": "Precast foundations was finalized and executed."
   },
   {
     "sr": 205,
@@ -3323,8 +3072,7 @@
     "action": "Civil",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 206,
@@ -3339,8 +3087,7 @@
     "action": "Civil",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 207,
@@ -3355,8 +3102,7 @@
     "action": "Engineering/Safety/PE",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "CFD is not required as same design in being followed and no fire hydrant relocation or new required.",
-    "year": "2025"
+    "remarks": "CFD is not required as same design in being followed and no fire hydrant relocation or new required."
   },
   {
     "sr": 208,
@@ -3371,8 +3117,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 209,
@@ -3387,8 +3132,7 @@
     "action": "Engineering",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Closed",
-    "year": "2025"
+    "remarks": "Closed"
   },
   {
     "sr": 210,
@@ -3403,8 +3147,7 @@
     "action": "Engineering",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 211,
@@ -3419,8 +3162,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 212,
@@ -3435,8 +3177,7 @@
     "action": "Mechanical (Equipment)",
     "status": "On Job Action",
     "targetDate": "",
-    "remarks": "Query was shared to Akzonobel, to which response email received on 28-Apr-2025. Same was comunicated to Equipment.",
-    "year": "2025"
+    "remarks": "Query was shared to Akzonobel, to which response email received on 28-Apr-2025. Same was comunicated to Equipment."
   },
   {
     "sr": 213,
@@ -3451,8 +3192,7 @@
     "action": "Info",
     "status": "On Job Action",
     "targetDate": "",
-    "remarks": "Query was shared to Akzonobel, to which response email received on 28-Apr-2025. Same was comunicated to Equipment.",
-    "year": "2025"
+    "remarks": "Query was shared to Akzonobel, to which response email received on 28-Apr-2025. Same was comunicated to Equipment."
   },
   {
     "sr": 214,
@@ -3467,8 +3207,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 215,
@@ -3483,8 +3222,7 @@
     "action": "PTE",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "OEM",
-    "year": "2025"
+    "remarks": "OEM"
   },
   {
     "sr": 216,
@@ -3499,8 +3237,7 @@
     "action": "Engineering",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "OEM was engaged by PTE to discuss the Root Cause.",
-    "year": "2025"
+    "remarks": "OEM was engaged by PTE to discuss the Root Cause."
   },
   {
     "sr": 217,
@@ -3515,8 +3252,7 @@
     "action": "Equip Maint /Inspection",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Scope was discussed and finalzed by Inspection and Equipment",
-    "year": "2025"
+    "remarks": "Scope was discussed and finalzed by Inspection and Equipment"
   },
   {
     "sr": 218,
@@ -3531,8 +3267,7 @@
     "action": "PTE/Inspection",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Package was prepared and Same was presented in Sub-HSE(M).",
-    "year": "2025"
+    "remarks": "Package was prepared and Same was presented in Sub-HSE(M)."
   },
   {
     "sr": 219,
@@ -3547,8 +3282,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 220,
@@ -3563,8 +3297,7 @@
     "action": "Machinery Maint",
     "status": "On Job Action",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 221,
@@ -3579,8 +3312,7 @@
     "action": "Machinery & PTE",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 222,
@@ -3595,8 +3327,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 223,
@@ -3611,8 +3342,7 @@
     "action": "Machinery Maint",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 224,
@@ -3627,8 +3357,7 @@
     "action": "Machinery Maint",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 225,
@@ -3643,8 +3372,7 @@
     "action": "Mach & Equip Maint",
     "status": "On Job Action",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 226,
@@ -3659,8 +3387,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": ""
+    "remarks": ""
   },
   {
     "sr": 227,
@@ -3675,8 +3402,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 228,
@@ -3691,8 +3417,7 @@
     "action": "All Concerned",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 229,
@@ -3707,8 +3432,7 @@
     "action": "Equip Maint / Engineering",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Same was evaluated and presented in Sub-HSE(M) and was approved.",
-    "year": "2025"
+    "remarks": "Same was evaluated and presented in Sub-HSE(M) and was approved."
   },
   {
     "sr": 230,
@@ -3723,8 +3447,7 @@
     "action": "Equip Maint / Engineering",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Completed and results were presented in Sub-HSE(M)",
-    "year": "2025"
+    "remarks": "Completed and results were presented in Sub-HSE(M)"
   },
   {
     "sr": 231,
@@ -3739,8 +3462,7 @@
     "action": "Equip Maint / Engineering / Inspection",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Prepared and presented in the Sub-HSE(M).",
-    "year": "2025"
+    "remarks": "Prepared and presented in the Sub-HSE(M)."
   },
   {
     "sr": 232,
@@ -3755,8 +3477,7 @@
     "action": "Equip Maint",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Same was ordered by Equipment",
-    "year": "2025"
+    "remarks": "Same was ordered by Equipment"
   },
   {
     "sr": 233,
@@ -3771,8 +3492,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 234,
@@ -3787,8 +3507,7 @@
     "action": "HSE/\nInstrument/\nOperation/\nEngineering",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Site Visit Done. Email dated: July 28, 2025 from Ops & HSE",
-    "year": "2025"
+    "remarks": "Site Visit Done. Email dated: July 28, 2025 from Ops & HSE"
   },
   {
     "sr": 235,
@@ -3803,8 +3522,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 236,
@@ -3819,8 +3537,7 @@
     "action": "HSEQ",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Site Visit Done. Email dated: July 28, 2025 from Ops & HSE",
-    "year": "2025"
+    "remarks": "Site Visit Done. Email dated: July 28, 2025 from Ops & HSE"
   },
   {
     "sr": 237,
@@ -3835,8 +3552,7 @@
     "action": "Process Engineering",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Process shared the concent. No Concern",
-    "year": "2025"
+    "remarks": "Process shared the concent. No Concern"
   },
   {
     "sr": 238,
@@ -3851,8 +3567,7 @@
     "action": "Engineering",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Package issued",
-    "year": "2025"
+    "remarks": "Package issued"
   },
   {
     "sr": 239,
@@ -3867,8 +3582,7 @@
     "action": "Engineering",
     "status": "open",
     "targetDate": "",
-    "remarks": "General Comment",
-    "year": "2025"
+    "remarks": "General Comment"
   },
   {
     "sr": 240,
@@ -3883,8 +3597,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 241,
@@ -3899,8 +3612,7 @@
     "action": "Engineering",
     "status": "open",
     "targetDate": "",
-    "remarks": "General Comment",
-    "year": "2025"
+    "remarks": "General Comment"
   },
   {
     "sr": 242,
@@ -3915,8 +3627,7 @@
     "action": "Engineering",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Note was added in the drawings",
-    "year": "2025"
+    "remarks": "Note was added in the drawings"
   },
   {
     "sr": 243,
@@ -3931,8 +3642,7 @@
     "action": "Engineering",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Note was added in the drawings",
-    "year": "2025"
+    "remarks": "Note was added in the drawings"
   },
   {
     "sr": 244,
@@ -3947,8 +3657,7 @@
     "action": "Mechanical Equipment",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Execution cost was shared by Equipment",
-    "year": "2025"
+    "remarks": "Execution cost was shared by Equipment"
   },
   {
     "sr": 245,
@@ -3963,8 +3672,7 @@
     "action": "Engineering",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "BOM of paint was added in Package",
-    "year": "2025"
+    "remarks": "BOM of paint was added in Package"
   },
   {
     "sr": 246,
@@ -3979,8 +3687,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 247,
@@ -3995,8 +3702,7 @@
     "action": "Engineering",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Civil didn’t found any Sleeve (Same is shown in layout but physically not present)",
-    "year": "2025"
+    "remarks": "Civil didn’t found any Sleeve (Same is shown in layout but physically not present)"
   },
   {
     "sr": 248,
@@ -4011,8 +3717,7 @@
     "action": "Engineering",
     "status": "open",
     "targetDate": "",
-    "remarks": "To be discussed and package to be prepared accordingly.",
-    "year": "2025"
+    "remarks": "To be discussed and package to be prepared accordingly."
   },
   {
     "sr": 249,
@@ -4027,8 +3732,7 @@
     "action": "Engineering/\nProcess\nEngineering",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "-",
-    "year": "2025"
+    "remarks": "-"
   },
   {
     "sr": 250,
@@ -4043,8 +3747,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 251,
@@ -4059,8 +3762,7 @@
     "action": "E&I",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "E&I discussed the same with OEM on email",
-    "year": "2025"
+    "remarks": "E&I discussed the same with OEM on email"
   },
   {
     "sr": 252,
@@ -4075,8 +3777,7 @@
     "action": "Process /\nEngineering",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 253,
@@ -4091,8 +3792,7 @@
     "action": "E&l/\nEngineering",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 254,
@@ -4107,8 +3807,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 255,
@@ -4123,8 +3822,7 @@
     "action": "Engineering",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Note was added in the drawings",
-    "year": "2025"
+    "remarks": "Note was added in the drawings"
   },
   {
     "sr": 256,
@@ -4139,8 +3837,7 @@
     "action": "Engineering",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Size of platform was reduced in IFC Package.",
-    "year": "2025"
+    "remarks": "Size of platform was reduced in IFC Package."
   },
   {
     "sr": 257,
@@ -4155,8 +3852,7 @@
     "action": "Mechanical\nEquipment /\nOperations",
     "status": "On Job Action",
     "targetDate": "",
-    "remarks": "Platform erection is in progress",
-    "year": "2025"
+    "remarks": "Platform erection is in progress"
   },
   {
     "sr": 258,
@@ -4171,8 +3867,7 @@
     "action": "Engineering",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Package was prepared and presented in Sub-HSE(M)",
-    "year": "2025"
+    "remarks": "Package was prepared and presented in Sub-HSE(M)"
   },
   {
     "sr": 259,
@@ -4187,8 +3882,7 @@
     "action": "Mechanical\nEquipment",
     "status": "On Job Action",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 260,
@@ -4203,8 +3897,7 @@
     "action": "Mechanical\nMachinery",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 261,
@@ -4219,8 +3912,7 @@
     "action": "HSE",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Closed",
-    "year": "2025"
+    "remarks": "Closed"
   },
   {
     "sr": 262,
@@ -4235,8 +3927,7 @@
     "action": "Electrical",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Closed",
-    "year": "2025"
+    "remarks": "Closed"
   },
   {
     "sr": 263,
@@ -4251,8 +3942,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 264,
@@ -4267,8 +3957,7 @@
     "action": "PTE / Insp.",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Metallography was preformed in ATA-2026",
-    "year": "2025"
+    "remarks": "Metallography was preformed in ATA-2026"
   },
   {
     "sr": 265,
@@ -4283,8 +3972,7 @@
     "action": "Insp. / Eqpt.\nMaint.",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Same was preformed in ATA-2026",
-    "year": "2025"
+    "remarks": "Same was preformed in ATA-2026"
   },
   {
     "sr": 266,
@@ -4299,8 +3987,7 @@
     "action": "Eqpt. Maint",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Completed at site",
-    "year": "2025"
+    "remarks": "Completed at site"
   },
   {
     "sr": 267,
@@ -4315,8 +4002,7 @@
     "action": "Insp. / Eqpt.\nMaint.",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Top 2\"x2\" portion of center pipe was replaced in Boiler-II at HCA.",
-    "year": "2025"
+    "remarks": "Top 2\"x2\" portion of center pipe was replaced in Boiler-II at HCA."
   },
   {
     "sr": 268,
@@ -4331,8 +4017,7 @@
     "action": "Eqpt. Maint",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Repiar was carried out in TA-2026",
-    "year": "2025"
+    "remarks": "Repiar was carried out in TA-2026"
   },
   {
     "sr": 269,
@@ -4347,8 +4032,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 270,
@@ -4363,8 +4047,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 271,
@@ -4379,8 +4062,7 @@
     "action": "Engineering",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Additional budget required was calculated and same was approved from the BoD.",
-    "year": "2025"
+    "remarks": "Additional budget required was calculated and same was approved from the BoD."
   },
   {
     "sr": 272,
@@ -4395,8 +4077,7 @@
     "action": "Engineering/\nInspection/\nMeeh Equipment",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 273,
@@ -4411,8 +4092,7 @@
     "action": "Engineering /\nMechanical\nEquipment",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Galvanized support cleats will be ordered",
-    "year": "2025"
+    "remarks": "Galvanized support cleats will be ordered"
   },
   {
     "sr": 274,
@@ -4427,8 +4107,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 275,
@@ -4443,8 +4122,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 276,
@@ -4459,8 +4137,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 277,
@@ -4475,8 +4152,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 278,
@@ -4491,8 +4167,7 @@
     "action": "Engineering /\nInspection",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "WPS was updated.",
-    "year": "2025"
+    "remarks": "WPS was updated."
   },
   {
     "sr": 279,
@@ -4507,8 +4182,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 280,
@@ -4523,8 +4197,7 @@
     "action": "PTE/Equip\nMaint.",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Completed at site in TA-26",
-    "year": "2025"
+    "remarks": "Completed at site in TA-26"
   },
   {
     "sr": 281,
@@ -4539,8 +4212,7 @@
     "action": "PTE",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Completed at site in TA-26",
-    "year": "2025"
+    "remarks": "Completed at site in TA-26"
   },
   {
     "sr": 282,
@@ -4555,8 +4227,7 @@
     "action": "Insp./Equip\nMaint.",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Portion was replaced",
-    "year": "2025"
+    "remarks": "Portion was replaced"
   },
   {
     "sr": 283,
@@ -4571,8 +4242,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 284,
@@ -4587,8 +4257,7 @@
     "action": "E&l/PTE",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 285,
@@ -4603,8 +4272,7 @@
     "action": "E&l/PTE",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 286,
@@ -4619,8 +4287,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 287,
@@ -4635,8 +4302,7 @@
     "action": "Engineering",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Same was prepared and shared with all concerned thru email.",
-    "year": "2025"
+    "remarks": "Same was prepared and shared with all concerned thru email."
   },
   {
     "sr": 288,
@@ -4651,8 +4317,7 @@
     "action": "Engineering",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Same was dicussed with OEM and was executed at site",
-    "year": "2025"
+    "remarks": "Same was dicussed with OEM and was executed at site"
   },
   {
     "sr": 289,
@@ -4667,8 +4332,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 290,
@@ -4683,8 +4347,7 @@
     "action": "Mechanical Equipment / Engineering",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Equipment will review the need and raised separate notification for this.",
-    "year": "2025"
+    "remarks": "Equipment will review the need and raised separate notification for this."
   },
   {
     "sr": 291,
@@ -4699,8 +4362,7 @@
     "action": "Engineering",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Same was considered in IFC Package",
-    "year": "2025"
+    "remarks": "Same was considered in IFC Package"
   },
   {
     "sr": 292,
@@ -4715,8 +4377,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 293,
@@ -4731,8 +4392,7 @@
     "action": "E&I / Civil / Mech Equipment",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Joint visit of E&I, Civil, Project & Vendor was carriedout.",
-    "year": "2025"
+    "remarks": "Joint visit of E&I, Civil, Project & Vendor was carriedout."
   },
   {
     "sr": 294,
@@ -4747,8 +4407,7 @@
     "action": "Process/ E&I",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "04 new Floor standing units were procured.",
-    "year": "2025"
+    "remarks": "04 new Floor standing units were procured."
   },
   {
     "sr": 295,
@@ -4763,8 +4422,7 @@
     "action": "Engineering",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Job planned accordingly and completed in TA-2026",
-    "year": "2025"
+    "remarks": "Job planned accordingly and completed in TA-2026"
   },
   {
     "sr": 296,
@@ -4779,8 +4437,7 @@
     "action": "Engineering",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Not possible after dicussion with vendor",
-    "year": "2025"
+    "remarks": "Not possible after dicussion with vendor"
   },
   {
     "sr": 297,
@@ -4795,8 +4452,7 @@
     "action": "Engineering",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Same was followed",
-    "year": "2025"
+    "remarks": "Same was followed"
   },
   {
     "sr": 298,
@@ -4811,8 +4467,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 299,
@@ -4827,8 +4482,7 @@
     "action": "Engineering",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 300,
@@ -4843,8 +4497,7 @@
     "action": "Process/E&l",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 301,
@@ -4859,8 +4512,7 @@
     "action": "Civil/Mechanical Eqpt/\nE&l",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 302,
@@ -4875,8 +4527,7 @@
     "action": "Process",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 303,
@@ -4891,8 +4542,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 304,
@@ -4907,8 +4557,7 @@
     "action": "Engineering",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "NPT flanges were used",
-    "year": "2025"
+    "remarks": "NPT flanges were used"
   },
   {
     "sr": 305,
@@ -4923,8 +4572,7 @@
     "action": "Engineering\n/Mechanical\nEqpt.",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "FA supports were added",
-    "year": "2025"
+    "remarks": "FA supports were added"
   },
   {
     "sr": 306,
@@ -4939,8 +4587,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 307,
@@ -4955,8 +4602,7 @@
     "action": "Engineering",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Same was considered.",
-    "year": "2025"
+    "remarks": "Same was considered."
   },
   {
     "sr": 308,
@@ -4971,8 +4617,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 309,
@@ -4987,8 +4632,7 @@
     "action": "Engineering\n/HSEQ/\nProcess",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "IFC package issued accordingly.",
-    "year": "2025"
+    "remarks": "IFC package issued accordingly."
   },
   {
     "sr": 310,
@@ -5003,8 +4647,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 311,
@@ -5019,8 +4662,7 @@
     "action": "Engineering",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 312,
@@ -5035,8 +4677,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 313,
@@ -5051,8 +4692,7 @@
     "action": "Engineering",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 314,
@@ -5067,8 +4707,7 @@
     "action": "Engineeirng",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 315,
@@ -5083,8 +4722,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 316,
@@ -5099,8 +4737,7 @@
     "action": "Process /\nHSEQ",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Same were closed by HSEQ and presented in Sub-HSE(P)",
-    "year": "2025"
+    "remarks": "Same were closed by HSEQ and presented in Sub-HSE(P)"
   },
   {
     "sr": 317,
@@ -5115,8 +4752,7 @@
     "action": "HSEQ",
     "status": "Dropped",
     "targetDate": "",
-    "remarks": "Package is represented in Sub-HSE(M) F/T/SSM/0147.",
-    "year": "2025"
+    "remarks": "Package is represented in Sub-HSE(M) F/T/SSM/0147."
   },
   {
     "sr": 318,
@@ -5131,8 +4767,7 @@
     "action": "Engineering",
     "status": "Dropped",
     "targetDate": "",
-    "remarks": "Package is represented in Sub-HSE(M) F/T/SSM/0147.",
-    "year": "2025"
+    "remarks": "Package is represented in Sub-HSE(M) F/T/SSM/0147."
   },
   {
     "sr": 319,
@@ -5147,8 +4782,7 @@
     "action": "Mechanical\nEquipment",
     "status": "On Job Action",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 320,
@@ -5163,8 +4797,7 @@
     "action": "Operation\n(CASH)",
     "status": "On Job Action",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 321,
@@ -5179,8 +4812,7 @@
     "action": "Mechanical\nEquipment",
     "status": "On Job Action",
     "targetDate": "",
-    "remarks": "",
-    "year": "2025"
+    "remarks": ""
   },
   {
     "sr": 322,
@@ -5195,8 +4827,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2026"
+    "remarks": ""
   },
   {
     "sr": 323,
@@ -5211,8 +4842,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2026"
+    "remarks": ""
   },
   {
     "sr": 324,
@@ -5227,8 +4857,7 @@
     "action": "Engineering",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "",
-    "year": "2026"
+    "remarks": ""
   },
   {
     "sr": 325,
@@ -5243,8 +4872,7 @@
     "action": "Equipment/\nInspection",
     "status": "On Job Action",
     "targetDate": "",
-    "remarks": "",
-    "year": "2026"
+    "remarks": ""
   },
   {
     "sr": 326,
@@ -5259,8 +4887,7 @@
     "action": "Inspection &\nWorkshop",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "",
-    "year": "2026"
+    "remarks": ""
   },
   {
     "sr": 327,
@@ -5275,8 +4902,7 @@
     "action": "Inspection & Workshop",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "",
-    "year": "2026"
+    "remarks": ""
   },
   {
     "sr": 328,
@@ -5291,8 +4917,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2026"
+    "remarks": ""
   },
   {
     "sr": 329,
@@ -5307,8 +4932,7 @@
     "action": "HSE",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2026"
+    "remarks": ""
   },
   {
     "sr": 330,
@@ -5323,8 +4947,7 @@
     "action": "HSE",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2026"
+    "remarks": ""
   },
   {
     "sr": 331,
@@ -5339,8 +4962,7 @@
     "action": "PTE",
     "status": "On Job Action",
     "targetDate": "",
-    "remarks": "",
-    "year": "2026"
+    "remarks": ""
   },
   {
     "sr": 332,
@@ -5355,8 +4977,7 @@
     "action": "PTE",
     "status": "On Job Action",
     "targetDate": "",
-    "remarks": "",
-    "year": "2026"
+    "remarks": ""
   },
   {
     "sr": 333,
@@ -5371,8 +4992,7 @@
     "action": "HSE, Mech\nEquipment, E&l",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2026"
+    "remarks": ""
   },
   {
     "sr": 334,
@@ -5387,8 +5007,7 @@
     "action": "PE",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Sent on Email Dated 30-Apr-2026. \nThe suction branch tie-in is shifted ~2.4 m upward on the same diameter duct without any change in routing or fittings; therefore, no significant impact on system hydraulics or baghouse operation is expected.",
-    "year": "2026"
+    "remarks": "Sent on Email Dated 30-Apr-2026. \nThe suction branch tie-in is shifted ~2.4 m upward on the same diameter duct without any change in routing or fittings; therefore, no significant impact on system hydraulics or baghouse operation is expected."
   },
   {
     "sr": 335,
@@ -5403,8 +5022,7 @@
     "action": "Operation\n(CASH), Mech\nEquipment, HSEQ",
     "status": "On Job Action",
     "targetDate": "",
-    "remarks": "",
-    "year": "2026"
+    "remarks": ""
   },
   {
     "sr": 336,
@@ -5419,8 +5037,7 @@
     "action": "PE /HSE",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2026"
+    "remarks": ""
   },
   {
     "sr": 337,
@@ -5435,8 +5052,7 @@
     "action": "Info.",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2026"
+    "remarks": ""
   },
   {
     "sr": 338,
@@ -5451,8 +5067,7 @@
     "action": "FFC-PQ Engineering",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "IFC package issued accordingly.",
-    "year": "2026"
+    "remarks": "IFC package issued accordingly."
   },
   {
     "sr": 339,
@@ -5467,8 +5082,7 @@
     "action": "E&I",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Sub-HSE(E&I) was carreied out for the Paver plant. 17-July-2026",
-    "year": "2026"
+    "remarks": "Sub-HSE(E&I) was carreied out for the Paver plant. 17-July-2026"
   },
   {
     "sr": 340,
@@ -5483,8 +5097,7 @@
     "action": "Info.",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2026"
+    "remarks": ""
   },
   {
     "sr": 341,
@@ -5499,8 +5112,7 @@
     "action": "Process",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Process shared response on email, IFC package issued",
-    "year": "2026"
+    "remarks": "Process shared response on email, IFC package issued"
   },
   {
     "sr": 342,
@@ -5515,8 +5127,7 @@
     "action": "Machinery",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2026"
+    "remarks": ""
   },
   {
     "sr": 343,
@@ -5531,8 +5142,7 @@
     "action": "Civil",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Sent on email to Civil and electrical team",
-    "year": "2026"
+    "remarks": "Sent on email to Civil and electrical team"
   },
   {
     "sr": 344,
@@ -5547,8 +5157,7 @@
     "action": "Info.",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2026"
+    "remarks": ""
   },
   {
     "sr": 345,
@@ -5563,8 +5172,7 @@
     "action": "Engineering",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Same was reviewed, Package was represented in Sub-HSE(M) dated: SSM-152 (13-Aug)",
-    "year": "2026"
+    "remarks": "Same was reviewed, Package was represented in Sub-HSE(M) dated: SSM-152 (13-Aug)"
   },
   {
     "sr": 346,
@@ -5579,8 +5187,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2026"
+    "remarks": ""
   },
   {
     "sr": 347,
@@ -5595,8 +5202,7 @@
     "action": "Info.",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2026"
+    "remarks": ""
   },
   {
     "sr": 348,
@@ -5611,8 +5217,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2026"
+    "remarks": ""
   },
   {
     "sr": 349,
@@ -5627,8 +5232,7 @@
     "action": "PTE / Mechanical Equipment / Inspection",
     "status": "On Job Action",
     "targetDate": "",
-    "remarks": "",
-    "year": "2026"
+    "remarks": ""
   },
   {
     "sr": 350,
@@ -5643,8 +5247,7 @@
     "action": "Operation / Process",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2026"
+    "remarks": ""
   },
   {
     "sr": 351,
@@ -5659,8 +5262,7 @@
     "action": "PTE",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "Package was shared on email.",
-    "year": "2026"
+    "remarks": "Package was shared on email."
   },
   {
     "sr": 352,
@@ -5675,8 +5277,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2026"
+    "remarks": ""
   },
   {
     "sr": 353,
@@ -5691,8 +5292,7 @@
     "action": "Mechanical Equipment",
     "status": "On Job Action",
     "targetDate": "",
-    "remarks": "",
-    "year": "2026"
+    "remarks": ""
   },
   {
     "sr": 354,
@@ -5707,8 +5307,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2026"
+    "remarks": ""
   },
   {
     "sr": 355,
@@ -5723,8 +5322,7 @@
     "action": "Operation / Mechanical Equipment / Process / PTE",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "",
-    "year": "2026"
+    "remarks": ""
   },
   {
     "sr": 356,
@@ -5739,8 +5337,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2026"
+    "remarks": ""
   },
   {
     "sr": 357,
@@ -5755,8 +5352,7 @@
     "action": "Process",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2026"
+    "remarks": ""
   },
   {
     "sr": 358,
@@ -5771,8 +5367,7 @@
     "action": "PTE",
     "status": "Compelted",
     "targetDate": "",
-    "remarks": "Same will be finialized in the above mentioned point",
-    "year": "2026"
+    "remarks": "Same will be finialized in the above mentioned point"
   },
   {
     "sr": 359,
@@ -5787,8 +5382,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "Process Engineering Reviewed the structure installed at Ammonia Plant.",
-    "year": "2026"
+    "remarks": "Process Engineering Reviewed the structure installed at Ammonia Plant."
   },
   {
     "sr": 360,
@@ -5803,8 +5397,7 @@
     "action": "PTE / Process",
     "status": "On Job Action",
     "targetDate": "",
-    "remarks": "",
-    "year": "2026"
+    "remarks": ""
   },
   {
     "sr": 361,
@@ -5819,8 +5412,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2026"
+    "remarks": ""
   },
   {
     "sr": 362,
@@ -5835,8 +5427,7 @@
     "action": "Electrical",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2026"
+    "remarks": ""
   },
   {
     "sr": 363,
@@ -5851,8 +5442,7 @@
     "action": "Process",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2026"
+    "remarks": ""
   },
   {
     "sr": 364,
@@ -5867,8 +5457,7 @@
     "action": "Project",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2026"
+    "remarks": ""
   },
   {
     "sr": 365,
@@ -5883,8 +5472,7 @@
     "action": "Project",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2026"
+    "remarks": ""
   },
   {
     "sr": 366,
@@ -5899,8 +5487,7 @@
     "action": "Project",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2026"
+    "remarks": ""
   },
   {
     "sr": 367,
@@ -5915,8 +5502,7 @@
     "action": "Project",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2026"
+    "remarks": ""
   },
   {
     "sr": 368,
@@ -5931,8 +5517,7 @@
     "action": "Electrical",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2026"
+    "remarks": ""
   },
   {
     "sr": 369,
@@ -5947,8 +5532,7 @@
     "action": "Project/ Execution Contractor",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2026"
+    "remarks": ""
   },
   {
     "sr": 370,
@@ -5963,8 +5547,7 @@
     "action": "Project/ Civil",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2026"
+    "remarks": ""
   },
   {
     "sr": 371,
@@ -5979,8 +5562,7 @@
     "action": "Civil / Execution Contractor",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2026"
+    "remarks": ""
   },
   {
     "sr": 372,
@@ -5995,8 +5577,7 @@
     "action": "Electrical/ Project",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2026"
+    "remarks": ""
   },
   {
     "sr": 373,
@@ -6011,8 +5592,7 @@
     "action": "Electrical/ Project",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2026"
+    "remarks": ""
   },
   {
     "sr": 374,
@@ -6027,8 +5607,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2026"
+    "remarks": ""
   },
   {
     "sr": 375,
@@ -6043,8 +5622,7 @@
     "action": "PTE / Mechanical Machinery",
     "status": "Closed",
     "targetDate": "",
-    "remarks": "",
-    "year": "2026"
+    "remarks": ""
   },
   {
     "sr": 376,
@@ -6059,8 +5637,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2026"
+    "remarks": ""
   },
   {
     "sr": 377,
@@ -6075,8 +5652,7 @@
     "action": "Mechanical Equipment",
     "status": "On Job Action",
     "targetDate": "",
-    "remarks": "",
-    "year": "2026"
+    "remarks": ""
   },
   {
     "sr": 378,
@@ -6091,8 +5667,7 @@
     "action": "Info",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2026"
+    "remarks": ""
   },
   {
     "sr": 379,
@@ -6107,8 +5682,7 @@
     "action": "PTE",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2026"
+    "remarks": ""
   },
   {
     "sr": 380,
@@ -6123,8 +5697,7 @@
     "action": "Info.",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2026"
+    "remarks": ""
   },
   {
     "sr": 381,
@@ -6139,8 +5712,7 @@
     "action": "Action",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2026"
+    "remarks": ""
   },
   {
     "sr": 382,
@@ -6155,164 +5727,6 @@
     "action": "Process",
     "status": "open",
     "targetDate": "",
-    "remarks": "",
-    "year": "2026"
+    "remarks": ""
   }
-];
-
-  /**
-   * Parse RFC 4180 CSV with quotes, newlines, and commas
-   */
-  function parseCSVLines(text) {
-    const lines = [];
-    let row = [''];
-    let inQuotes = false;
-
-    for (let i = 0; i < text.length; i++) {
-      const c = text[i];
-      const next = text[i + 1];
-
-      if (c === '"') {
-        if (inQuotes && next === '"') {
-          row[row.length - 1] += '"';
-          i++;
-        } else {
-          inQuotes = !inQuotes;
-        }
-      } else if (c === ',' && !inQuotes) {
-        row.push('');
-      } else if ((c === '\r' || c === '\n') && !inQuotes) {
-        if (c === '\r' && next === '\n') i++;
-        if (row.length > 1 || row[0] !== '') {
-          lines.push(row);
-        }
-        row = [''];
-      } else {
-        row[row.length - 1] += c;
-      }
-    }
-
-    if (row.length > 1 || row[0] !== '') {
-      lines.push(row);
-    }
-
-    return lines;
-  }
-
-  /**
-   * Live CSV Parser for Sub HSE – Mech Google Sheet
-   * Columns: ID, S.#, Reference #, Meeting Date, Issued Date, Meeting Agenda, Type Of Meeting, MoM, Action, Status, Target Date, Remarks
-   */
-  function parseSubHseMechCSV(csvText) {
-    if (!csvText || typeof csvText !== 'string') return [];
-
-    const rawRows = parseCSVLines(csvText.trim());
-    if (rawRows.length < 2) return [];
-
-    // Header index discovery
-    let headerRowIdx = 0;
-    for (let r = 0; r < Math.min(rawRows.length, 5); r++) {
-      const rowStr = rawRows[r].map(c => String(c).toLowerCase()).join(' ');
-      if (rowStr.includes('reference') || rowStr.includes('action') || rowStr.includes('status') || rowStr.includes('mom')) {
-        headerRowIdx = r;
-        break;
-      }
-    }
-
-    const header = rawRows[headerRowIdx].map(c => String(c).trim().toLowerCase());
-    const dataRows = rawRows.slice(headerRowIdx + 1);
-
-    // Dynamic column finding
-    let colId = header.findIndex(h => h === 'id' || h === 'meeting id' || h.startsWith('id'));
-    let colSNo = header.findIndex(h => h === 's.#' || h === 's#' || h === 'sr' || h === 'sr.' || h === 's.no' || h === 's no');
-    let colRef = header.findIndex(h => h.includes('reference') || h.includes('ref'));
-    let colMeetingDate = header.findIndex(h => h.includes('meeting date') || (h.includes('meeting') && h.includes('date')));
-    let colIssuedDate = header.findIndex(h => h.includes('issued date') || (h.includes('issued') && h.includes('date')));
-    let colAgenda = header.findIndex(h => h.includes('agenda'));
-    let colTypeOfMeeting = header.findIndex(h => h.includes('type of meeting') || h.includes('type'));
-    let colMoM = header.findIndex(h => h === 'mom' || h.includes('minutes') || h.includes('recommendation'));
-    let colAction = header.findIndex(h => h === 'action' || h.includes('responsibility') || h.includes('action by') || h.includes('dept'));
-    let colStatus = header.findIndex(h => h === 'status' || h.includes('open') || h.includes('close'));
-    let colTargetDate = header.findIndex(h => h.includes('target date') || h.includes('target'));
-    let colRemarks = header.findIndex(h => h.includes('remark'));
-
-    // Fallbacks to default 0-indexed positions: A=0, B=1, C=2, D=3, E=4, F=5, G=6, H=7, I=8, J=9, K=10, L=11
-    if (colId === -1) colId = 0;
-    if (colSNo === -1) colSNo = 1;
-    if (colRef === -1) colRef = 2;
-    if (colMeetingDate === -1) colMeetingDate = 3;
-    if (colIssuedDate === -1) colIssuedDate = 4;
-    if (colAgenda === -1) colAgenda = 5;
-    if (colTypeOfMeeting === -1) colTypeOfMeeting = 6;
-    if (colMoM === -1) colMoM = 7;
-    if (colAction === -1) colAction = 8;
-    if (colStatus === -1) colStatus = 9;
-    if (colTargetDate === -1) colTargetDate = 10;
-    if (colRemarks === -1) colRemarks = 11;
-
-    const parsed = [];
-    let runningSr = 1;
-
-    for (let r = 0; r < dataRows.length; r++) {
-      const row = dataRows[r];
-      if (!row || !row.some(x => x && x.trim().length > 0)) continue;
-
-      const rawId = (row[colId] || '').trim();
-      const rawSNo = (row[colSNo] || '').trim();
-      const rawRef = (row[colRef] || '').trim();
-      const rawMeetingDate = (row[colMeetingDate] || '').trim();
-      const rawIssuedDate = (row[colIssuedDate] || '').trim();
-      const rawAgenda = (row[colAgenda] || '').trim();
-      const rawTypeOfMeeting = (row[colTypeOfMeeting] || '').trim();
-      const rawMoM = (row[colMoM] || '').trim();
-      const rawAction = (row[colAction] || '').trim() || 'Info';
-      const rawStatusVal = (row[colStatus] || '').trim();
-      const rawTargetDate = (row[colTargetDate] || '').trim();
-      const rawRemarks = (row[colRemarks] || '').trim();
-
-      // Rule: Count point as open if empty cell is found or any text other than Closed is found
-      let status = 'open';
-      if (rawStatusVal) {
-        const sLower = rawStatusVal.toLowerCase();
-        if (sLower === 'closed' || sLower === 'close') {
-          status = 'Closed';
-        } else {
-          status = rawStatusVal; // e.g. "open", "On Job Action" -> Counts as Open
-        }
-      } else {
-        status = 'open';
-      }
-
-      // Ignore row if entirely empty
-      if (!rawId && !rawRef && !rawMoM && !rawAgenda) continue;
-
-      const extractedYear = extractSubHseMechYear(rawMeetingDate);
-
-      parsed.push({
-        sr: runningSr++,
-        id: rawId,
-        sNo: rawSNo,
-        refNo: rawRef,
-        meetingDate: rawMeetingDate,
-        year: extractedYear,
-        issuedDate: rawIssuedDate,
-        meetingAgenda: rawAgenda,
-        typeOfMeeting: rawTypeOfMeeting,
-        mom: rawMoM,
-        action: rawAction,
-        status: status,
-        targetDate: rawTargetDate,
-        remarks: rawRemarks
-      });
-    }
-
-    return parsed;
-  }
-
-  // Export globally
-  window.extractSubHseMechYear = extractSubHseMechYear;
-  window.FPCL_SUB_HSE_MECH_INITIAL_SEED = INITIAL_SUB_HSE_MECH_OBSERVATIONS;
-  window.FPCL_SUB_HSE_MECH_DATA = INITIAL_SUB_HSE_MECH_OBSERVATIONS;
-  window.parseSubHseMechCSV = parseSubHseMechCSV;
-
-})();
+]

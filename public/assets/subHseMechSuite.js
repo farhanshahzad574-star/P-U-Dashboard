@@ -18,6 +18,7 @@
   const subHseMechSuite = {
     state: {
       searchQuery: '',
+      yearFilter: String(new Date().getFullYear()),     // Column D: Year from Meeting Date (defaults dynamically to current year)
       refFilter: 'all',     // Column C: Reference #
       deptFilter: 'all',    // Column I: Action / Department
       statusFilter: 'all',  // Column J: Status (Closed / Open)
@@ -27,8 +28,47 @@
       isSettingsOpen: false
     },
 
+    getCurrentYear() {
+      return String(new Date().getFullYear());
+    },
+
+    extractYearFromMeetingDate(meetingDate) {
+      if (!meetingDate) return '';
+      if (typeof window.extractSubHseMechYear === 'function') {
+        const y = window.extractSubHseMechYear(meetingDate);
+        if (y) return y;
+      }
+      const str = String(meetingDate).trim();
+      if (!str) return '';
+      const fourDigitMatch = str.match(/\b(19\d\d|20\d\d)\b/);
+      if (fourDigitMatch) return fourDigitMatch[1];
+      const twoDigitEndMatch = str.match(/(?:[-/.\s])(\d{2})$/);
+      if (twoDigitEndMatch) {
+        const yr2 = parseInt(twoDigitEndMatch[1], 10);
+        return String(yr2 >= 50 ? 1900 + yr2 : 2000 + yr2);
+      }
+      const parsedTime = Date.parse(str);
+      if (!isNaN(parsedTime)) {
+        const d = new Date(parsedTime);
+        const yr = d.getFullYear();
+        if (yr >= 1990 && yr <= 2099) return String(yr);
+      }
+      return '';
+    },
+
+    getItemYear(item) {
+      if (!item) return '';
+      if (item.year) return String(item.year);
+      return this.extractYearFromMeetingDate(item.meetingDate);
+    },
+
     init() {
       window.FPCL_SUB_HSE_MECH_SUITE = this;
+
+      // Dynamic current year initialization (automatically adopts current year)
+      if (!this.state.yearFilter || this.state.yearFilter === 'all') {
+        this.state.yearFilter = this.getCurrentYear();
+      }
 
       // Cache retrieval
       try {
@@ -91,6 +131,16 @@
       const q = (s.searchQuery || '').trim().toLowerCase();
 
       return raw.filter(item => {
+        // Column D Filter: Year from Meeting Date (defaults dynamically to current year)
+        if (s.yearFilter !== 'all') {
+          const itemYear = this.getItemYear(item);
+          if (s.yearFilter === 'unknown') {
+            if (itemYear) return false;
+          } else if (itemYear !== s.yearFilter) {
+            return false;
+          }
+        }
+
         // Column C Filter: Reference #
         if (s.refFilter !== 'all' && item.refNo !== s.refFilter) {
           return false;
@@ -265,6 +315,11 @@
     },
 
     // Filter mutators - apply globally across the whole dashboard
+    setYearFilter(val) {
+      this.state.yearFilter = val;
+      this.render();
+    },
+
     setRefFilter(val) {
       this.state.refFilter = val;
       this.render();
@@ -292,12 +347,13 @@
 
     resetFilters() {
       this.state.searchQuery = '';
+      this.state.yearFilter = this.getCurrentYear();
       this.state.refFilter = 'all';
       this.state.deptFilter = 'all';
       this.state.statusFilter = 'all';
       this.render();
       if (window.portalApp && window.portalApp.showToast) {
-        window.portalApp.showToast('Filters Reset', 'All Sub HSE – Mech filters restored to default.', 'info');
+        window.portalApp.showToast('Filters Reset', `All Sub HSE – Mech filters restored to default (Year: ${this.getCurrentYear()}).`, 'info');
       }
     },
 
@@ -983,12 +1039,28 @@
         }))
         .sort((a, b) => b.total - a.total);
 
-      // Distinct options for filters from dataset (Column C, Column I, Column J)
+      const currentYear = this.getCurrentYear();
+
+      // Distinct options for filters from dataset (Column D: Meeting Date Year, Column C: Ref #, Column I: Dept)
+      const allYearsFromData = Array.from(new Set(raw.map(i => this.getItemYear(i)).filter(Boolean))).sort().reverse();
+      const yearSet = new Set(allYearsFromData);
+      yearSet.add(currentYear);
+      const allYears = Array.from(yearSet).sort().reverse();
+      const hasUnknownYear = raw.some(i => !this.getItemYear(i));
+      const unknownYearCount = raw.filter(i => !this.getItemYear(i)).length;
+
+      const yearCounts = {};
+      raw.forEach(item => {
+        const y = this.getItemYear(item);
+        if (y) yearCounts[y] = (yearCounts[y] || 0) + 1;
+      });
+
       const allRefNumbers = Array.from(new Set(raw.map(i => i.refNo).filter(Boolean))).sort();
       const allDepartments = Array.from(new Set(raw.map(i => i.action).filter(Boolean))).sort();
 
       const isAnyFilterActive =
         (s.searchQuery && s.searchQuery.trim().length > 0) ||
+        s.yearFilter !== currentYear ||
         s.refFilter !== 'all' ||
         s.deptFilter !== 'all' ||
         s.statusFilter !== 'all';
@@ -1155,37 +1227,106 @@
 
           <!-- ========================================================================= -->
           <!-- 3. FILTERS (Below KPIs, No Heading to Filter Banner as Instructed)          -->
-          <!-- Uses Column C (Reference #), Column I (Action/Dept), Column J (Status)      -->
+          <!-- Uses Column D (Meeting Date Year), Column C (Ref #), Column I (Action/Dept), Column J (Status) -->
           <!-- ========================================================================= -->
           <div class="bg-white border-2 border-sky-400/80 hover:border-sky-500 rounded-2xl p-4 sm:p-5 shadow-[0_0_16px_rgba(14,165,233,0.18)] relative overflow-hidden transition-all">
             <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-sky-500 via-blue-600 to-teal-500"></div>
 
             ${isAnyFilterActive ? `
-              <div class="flex justify-end pb-2.5">
+              <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-100 mb-3">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span class="text-[11px] font-black uppercase text-slate-400 tracking-wider">Active:</span>
+                  ${s.yearFilter !== 'all' ? `
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-cyan-100 text-cyan-900 border border-cyan-300">
+                      <span>Year: ${s.yearFilter === currentYear ? `${s.yearFilter} (Current)` : s.yearFilter}</span>
+                      <button type="button" onclick="FPCL_SUB_HSE_MECH_SUITE.setYearFilter('all')" class="hover:text-red-700 cursor-pointer ml-0.5 text-xs font-black" title="View all years">×</button>
+                    </span>
+                  ` : ''}
+                  ${s.refFilter !== 'all' ? `
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-sky-100 text-sky-900 border border-sky-300">
+                      <span>Ref: ${s.refFilter}</span>
+                      <button type="button" onclick="FPCL_SUB_HSE_MECH_SUITE.setRefFilter('all')" class="hover:text-red-700 cursor-pointer ml-0.5 text-xs font-black" title="Clear ref filter">×</button>
+                    </span>
+                  ` : ''}
+                  ${s.deptFilter !== 'all' ? `
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-100 text-blue-900 border border-blue-300">
+                      <span>Dept: ${s.deptFilter}</span>
+                      <button type="button" onclick="FPCL_SUB_HSE_MECH_SUITE.setDeptFilter('all')" class="hover:text-red-700 cursor-pointer ml-0.5 text-xs font-black" title="Clear department filter">×</button>
+                    </span>
+                  ` : ''}
+                  ${s.statusFilter !== 'all' ? `
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold ${s.statusFilter === 'Closed' ? 'bg-emerald-100 text-emerald-900 border-emerald-300' : 'bg-red-100 text-red-900 border-red-300'} border">
+                      <span>Status: ${s.statusFilter}</span>
+                      <button type="button" onclick="FPCL_SUB_HSE_MECH_SUITE.setStatusFilter('all')" class="hover:text-red-700 cursor-pointer ml-0.5 text-xs font-black" title="Clear status filter">×</button>
+                    </span>
+                  ` : ''}
+                  ${s.searchQuery ? `
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-purple-100 text-purple-900 border border-purple-300">
+                      <span>Search: "${s.searchQuery}"</span>
+                      <button type="button" onclick="FPCL_SUB_HSE_MECH_SUITE.clearSearch()" class="hover:text-red-700 cursor-pointer ml-0.5 text-xs font-black" title="Clear search">×</button>
+                    </span>
+                  ` : ''}
+                </div>
                 <button
                   type="button"
                   onclick="FPCL_SUB_HSE_MECH_SUITE.resetFilters()"
                   class="text-xs font-bold text-red-600 hover:text-red-700 flex items-center gap-1 cursor-pointer transition-colors"
+                  title="Reset to default current year view"
                 >
                   <i data-lucide="rotate-ccw" class="w-3 h-3"></i>
-                  <span>Clear All Filters</span>
+                  <span>Reset to Current Year (${currentYear})</span>
                 </button>
               </div>
             ` : ''}
 
-            <!-- 3 Filter Dropdowns: Column C, Column I, Column J -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <!-- 4 Filter Dropdowns: Column D (Meeting Date / Year), Column C (Reference #), Column I (Action/Dept), Column J (Status) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               
-              <!-- Filter 1: Column C (Reference #) -->
+              <!-- Filter 1: Column D (Meeting Date - Year Filter, defaults dynamically to current year) -->
+              <div class="space-y-1">
+                <label class="text-[11px] font-black uppercase text-slate-500 tracking-wider flex items-center justify-between">
+                  <span>Year (Col D: Meeting Date)</span>
+                  ${s.yearFilter === currentYear ? `
+                    <span class="text-cyan-800 bg-cyan-100 border border-cyan-300 px-1.5 py-0.5 rounded font-mono text-[9px] font-extrabold uppercase">Current Year</span>
+                  ` : s.yearFilter !== 'all' ? `
+                    <span class="text-blue-800 bg-blue-100 border border-blue-300 px-1.5 py-0.5 rounded font-mono text-[9px] font-extrabold uppercase">Filtered</span>
+                  ` : `
+                    <span class="text-slate-400 font-mono text-[9px] font-bold">${allYears.length} Years</span>
+                  `}
+                </label>
+                <div class="relative">
+                  <select
+                    id="sub-hse-mech-year-filter"
+                    onchange="FPCL_SUB_HSE_MECH_SUITE.setYearFilter(this.value)"
+                    class="w-full ${s.yearFilter !== 'all' ? 'bg-cyan-50/50 border-cyan-500 text-cyan-950 font-black ring-1 ring-cyan-400/50' : 'bg-slate-50 hover:bg-slate-100 border-slate-300 text-slate-800 font-bold'} border focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-3 py-2 text-xs outline-none transition-all cursor-pointer shadow-2xs"
+                  >
+                    <option value="${currentYear}" ${s.yearFilter === currentYear ? 'selected' : ''}>
+                      Current Year: ${currentYear} (${yearCounts[currentYear] || 0})
+                    </option>
+                    <option value="all" ${s.yearFilter === 'all' ? 'selected' : ''}>
+                      All Years (${raw.length})
+                    </option>
+                    ${allYears.filter(yr => yr !== currentYear).map(yr => {
+                      const count = yearCounts[yr] || 0;
+                      return `<option value="${yr}" ${s.yearFilter === yr ? 'selected' : ''}>Year ${yr} (${count})</option>`;
+                    }).join('')}
+                    ${hasUnknownYear ? `
+                      <option value="unknown" ${s.yearFilter === 'unknown' ? 'selected' : ''}>Unknown Year (${unknownYearCount})</option>
+                    ` : ''}
+                  </select>
+                </div>
+              </div>
+
+              <!-- Filter 2: Column C (Reference #) -->
               <div class="space-y-1">
                 <label class="text-[11px] font-black uppercase text-slate-500 tracking-wider flex items-center justify-between">
                   <span>Reference # (Col C)</span>
-                  <span class="text-sky-600 font-mono text-[10px]">${allRefNumbers.length} options</span>
+                  <span class="text-sky-600 font-mono text-[10px] font-bold">${allRefNumbers.length} options</span>
                 </label>
                 <div class="relative">
                   <select
                     onchange="FPCL_SUB_HSE_MECH_SUITE.setRefFilter(this.value)"
-                    class="w-full bg-slate-50 hover:bg-slate-100 border border-slate-300 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 outline-none transition-all cursor-pointer"
+                    class="w-full ${s.refFilter !== 'all' ? 'bg-sky-50/50 border-sky-500 text-sky-950 font-black ring-1 ring-sky-400/50' : 'bg-slate-50 hover:bg-slate-100 border-slate-300 text-slate-800 font-bold'} border focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 rounded-xl px-3 py-2 text-xs outline-none transition-all cursor-pointer shadow-2xs"
                   >
                     <option value="all" ${s.refFilter === 'all' ? 'selected' : ''}>All Reference Numbers (${raw.length})</option>
                     ${allRefNumbers.map(r => `
@@ -1195,16 +1336,16 @@
                 </div>
               </div>
 
-              <!-- Filter 2: Column I (Responsibility Department / Action) -->
+              <!-- Filter 3: Column I (Responsibility Department / Action) -->
               <div class="space-y-1">
                 <label class="text-[11px] font-black uppercase text-slate-500 tracking-wider flex items-center justify-between">
                   <span>Department (Col I)</span>
-                  <span class="text-sky-600 font-mono text-[10px]">${allDepartments.length} depts</span>
+                  <span class="text-sky-600 font-mono text-[10px] font-bold">${allDepartments.length} depts</span>
                 </label>
                 <div class="relative">
                   <select
                     onchange="FPCL_SUB_HSE_MECH_SUITE.setDeptFilter(this.value)"
-                    class="w-full bg-slate-50 hover:bg-slate-100 border border-slate-300 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 outline-none transition-all cursor-pointer"
+                    class="w-full ${s.deptFilter !== 'all' ? 'bg-blue-50/50 border-blue-500 text-blue-950 font-black ring-1 ring-blue-400/50' : 'bg-slate-50 hover:bg-slate-100 border-slate-300 text-slate-800 font-bold'} border focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 rounded-xl px-3 py-2 text-xs outline-none transition-all cursor-pointer shadow-2xs"
                   >
                     <option value="all" ${s.deptFilter === 'all' ? 'selected' : ''}>All Departments (${raw.length})</option>
                     ${allDepartments.map(d => `
@@ -1214,16 +1355,16 @@
                 </div>
               </div>
 
-              <!-- Filter 3: Column J (Status: Closed vs Open) -->
+              <!-- Filter 4: Column J (Status: Closed vs Open) -->
               <div class="space-y-1">
                 <label class="text-[11px] font-black uppercase text-slate-500 tracking-wider flex items-center justify-between">
                   <span>Status (Col J)</span>
-                  <span class="text-sky-600 font-mono text-[10px]">Closed / Open</span>
+                  <span class="text-sky-600 font-mono text-[10px] font-bold">Closed / Open</span>
                 </label>
                 <div class="relative">
                   <select
                     onchange="FPCL_SUB_HSE_MECH_SUITE.setStatusFilter(this.value)"
-                    class="w-full bg-slate-50 hover:bg-slate-100 border border-slate-300 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 outline-none transition-all cursor-pointer"
+                    class="w-full ${s.statusFilter !== 'all' ? 'bg-slate-100 border-indigo-500 text-slate-900 font-black ring-1 ring-indigo-400/50' : 'bg-slate-50 hover:bg-slate-100 border-slate-300 text-slate-800 font-bold'} border focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 rounded-xl px-3 py-2 text-xs outline-none transition-all cursor-pointer shadow-2xs"
                   >
                     <option value="all" ${s.statusFilter === 'all' ? 'selected' : ''}>All Statuses (${totalFiltered})</option>
                     <option value="Closed" ${s.statusFilter === 'Closed' ? 'selected' : ''}>Closed (${raw.filter(i => this.isItemClosed(i)).length})</option>

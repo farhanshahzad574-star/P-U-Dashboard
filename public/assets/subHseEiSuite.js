@@ -16,9 +16,13 @@
   const SUB_HSE_EI_SHEET_URL = `https://docs.google.com/spreadsheets/d/${SUB_HSE_EI_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SUB_HSE_EI_SHEET_TAB)}`;
 
   const subHseEiSuite = {
+    getCurrentYear() {
+      return String(new Date().getFullYear());
+    },
+
     state: {
       searchQuery: '',
-      yearFilter: 'all',    // Column C: Year from Date of Meeting
+      yearFilter: String(new Date().getFullYear()),    // Column C: Dynamically defaults to current year
       refFilter: 'all',     // Column D: Ref. #
       deptFilter: 'all',    // Column G: Responsibility Department (Action by)
       statusFilter: 'all',  // Column H: Status (Open / Close)
@@ -28,8 +32,45 @@
       isSettingsOpen: false
     },
 
+    onOpen() {
+      // Whenever Sub HSE – E&I dashboard is opened, dynamically set current year filter
+      this.state.yearFilter = this.getCurrentYear();
+      this.render();
+      if (typeof this.syncLiveFeed === 'function') {
+        this.syncLiveFeed({ silent: true });
+      }
+    },
+
+    setupVisibilityWatcher() {
+      const container = document.getElementById('sub-hse-ei-specialized-container');
+      if (!container) {
+        setTimeout(() => this.setupVisibilityWatcher(), 350);
+        return;
+      }
+
+      let wasHidden = container.classList.contains('hidden') || container.hidden;
+
+      const observer = new MutationObserver(() => {
+        const isHidden = container.classList.contains('hidden') || container.hidden;
+        if (wasHidden && !isHidden) {
+          // Dashboard was just opened: dynamically open with current year filter
+          this.state.yearFilter = this.getCurrentYear();
+          this.render();
+        }
+        wasHidden = isHidden;
+      });
+
+      observer.observe(container, { attributes: true, attributeFilter: ['class', 'hidden'] });
+    },
+
     init() {
       window.FPCL_SUB_HSE_EI_SUITE = this;
+
+      // Always dynamically default to current year
+      this.state.yearFilter = this.getCurrentYear();
+
+      // Setup watcher so whenever opened it dynamically opens with current year filter
+      this.setupVisibilityWatcher();
 
       // Fast cache retrieval
       try {
@@ -340,7 +381,7 @@
 
     resetFilters() {
       this.state.searchQuery = '';
-      this.state.yearFilter = 'all';
+      this.state.yearFilter = this.getCurrentYear();
       this.state.refFilter = 'all';
       this.state.deptFilter = 'all';
       this.state.statusFilter = 'all';
@@ -465,7 +506,7 @@
                   <span class="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-white/20 text-white border border-white/30">
                     Meeting ID: #${item.id}
                   </span>
-                  <span class="px-2.5 py-0.5 rounded-full text-xs font-bold border ${isClose ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/50' : 'bg-amber-500/20 text-amber-300 border-amber-400/50'}">
+                  <span class="px-2.5 py-0.5 rounded-full text-xs font-bold border ${isClose ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/50' : 'bg-red-500/20 text-red-300 border-red-400/50'}">
                     ${displayStatus}
                   </span>
                 </div>
@@ -491,7 +532,7 @@
                 </div>
                 <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
                   <span class="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Status (Col H)</span>
-                  <span class="font-black text-sm ${isClose ? 'text-emerald-600' : 'text-amber-600'} mt-0.5 block">${displayStatus}</span>
+                  <span class="font-black text-sm ${isClose ? 'text-emerald-600' : 'text-red-600'} mt-0.5 block">${displayStatus}</span>
                 </div>
                 <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
                   <span class="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Date of Meeting</span>
@@ -721,7 +762,7 @@
               />
             ` : ''}
 
-            <!-- Stacked Open Segment (Vibrant Amber/Orange) -->
+            <!-- Stacked Open Segment (Vibrant Red) -->
             ${d.open > 0 ? `
               <rect
                 x="${padLeft + closeW}"
@@ -729,7 +770,7 @@
                 width="${openW}"
                 height="${barH}"
                 rx="${d.close > 0 ? '0 7 7 0' : '7'}"
-                fill="#F59E0B"
+                fill="#EF4444"
                 class="transition-all opacity-95 group-hover:opacity-100"
               />
             ` : ''}
@@ -825,14 +866,14 @@
                   <title>Closed Observations: ${closedCount} (${closedPct}%)</title>
                 </circle>
               ` : ''}
-              <!-- Open Observations Arc (Amber) -->
+              <!-- Open Observations Arc (Red) -->
               ${openCount > 0 ? `
                 <circle
                   cx="${center}"
                   cy="${center}"
                   r="${radius}"
                   fill="none"
-                  stroke="#F59E0B"
+                  stroke="#EF4444"
                   stroke-width="${strokeWidth}"
                   stroke-dasharray="${openDash} ${circumference}"
                   stroke-dashoffset="${openOffset}"
@@ -905,11 +946,11 @@
             <button
               type="button"
               onclick="FPCL_SUB_HSE_EI_SUITE.setStatusFilter('${this.state.statusFilter === 'Open' ? 'all' : 'Open'}')"
-              class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl border transition-all cursor-pointer ${this.state.statusFilter === 'Open' ? 'bg-amber-50 border-amber-400 ring-2 ring-amber-500/20' : 'bg-white border-slate-200 hover:bg-slate-50'}"
+              class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl border transition-all cursor-pointer ${this.state.statusFilter === 'Open' ? 'bg-red-50 border-red-400 ring-2 ring-red-500/20' : 'bg-white border-slate-200 hover:bg-slate-50'}"
             >
-              <span class="w-3 h-3 rounded-full bg-amber-500"></span>
+              <span class="w-3 h-3 rounded-full bg-[#EF4444]"></span>
               <span class="font-bold text-slate-700">Open:</span>
-              <span class="font-mono font-black text-amber-700">${openCount}</span>
+              <span class="font-mono font-black text-red-600">${openCount}</span>
               <span class="text-slate-400 font-bold">(${openPct}%)</span>
             </button>
 
@@ -968,7 +1009,10 @@
         .sort((a, b) => b.total - a.total);
 
       // Distinct options for filters from dataset
-      const allYears = Array.from(new Set(raw.map(i => this.getItemYear(i)).filter(Boolean))).sort().reverse();
+      const currentYear = this.getCurrentYear();
+      const allYearsSet = new Set(raw.map(i => this.getItemYear(i)).filter(Boolean));
+      allYearsSet.add(currentYear);
+      const allYears = Array.from(allYearsSet).sort().reverse();
       const hasUnknownYear = raw.some(i => !this.getItemYear(i));
       const allRefNumbers = Array.from(new Set(raw.map(i => i.refNo).filter(Boolean))).sort();
       const allDepartments = Array.from(new Set(raw.map(i => i.actionBy).filter(Boolean))).sort();
@@ -1111,18 +1155,18 @@
               </div>
             </div>
 
-            <!-- KPI 3: Open Observations Column H (Unique Amber/Orange Perimeter Line) -->
+            <!-- KPI 3: Open Observations Column H (Unique Red Perimeter Line) -->
             <div
               onclick="FPCL_SUB_HSE_EI_SUITE.setStatusFilter('Open')"
-              class="bg-white border-2 border-amber-400 hover:border-amber-500 rounded-2xl p-5 relative overflow-hidden cursor-pointer shadow-[0_0_18px_rgba(251,191,36,0.22)] transition-all group flex flex-col items-center justify-center text-center min-h-[140px]"
+              class="bg-white border-2 border-red-400 hover:border-red-500 rounded-2xl p-5 relative overflow-hidden cursor-pointer shadow-[0_0_18px_rgba(239,68,68,0.22)] transition-all group flex flex-col items-center justify-center text-center min-h-[140px]"
               title="Click to filter Open observations"
             >
-              <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500"></div>
-              <div class="text-amber-950 text-xs sm:text-sm font-black tracking-wider uppercase text-center w-full">
+              <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-red-500 via-rose-500 to-orange-500"></div>
+              <div class="text-red-950 text-xs sm:text-sm font-black tracking-wider uppercase text-center w-full">
                 OPEN OBSERVATIONS
               </div>
               <div class="mt-3 text-center w-full flex items-center justify-center">
-                <span class="text-5xl sm:text-6xl font-black font-mono tracking-tight text-amber-600 text-center">${openFiltered}</span>
+                <span class="text-5xl sm:text-6xl font-black font-mono tracking-tight text-red-600 text-center">${openFiltered}</span>
               </div>
             </div>
 
@@ -1248,14 +1292,14 @@
                 </h3>
               </div>
               
-              <!-- Legend with Closed (Emerald) and Open (Amber) -->
+              <!-- Legend with Closed (Emerald) and Open (Red) -->
               <div class="flex items-center gap-4 text-xs font-bold">
                 <div class="flex items-center gap-1.5 text-slate-700">
                   <span class="w-3.5 h-3.5 rounded-xs bg-[#10B981]"></span>
                   <span>Closed</span>
                 </div>
                 <div class="flex items-center gap-1.5 text-slate-700">
-                  <span class="w-3.5 h-3.5 rounded-xs bg-[#F59E0B]"></span>
+                  <span class="w-3.5 h-3.5 rounded-xs bg-[#EF4444]"></span>
                   <span>Open</span>
                 </div>
               </div>
@@ -1470,8 +1514,8 @@
 
                         <!-- Col H: Open Close -->
                         <td class="py-3 px-3 text-center whitespace-nowrap">
-                          <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${isClose ? 'bg-emerald-50 text-emerald-800 border-emerald-300' : 'bg-amber-50 text-amber-800 border-amber-300'}">
-                            <span class="w-1.5 h-1.5 rounded-full ${isClose ? 'bg-emerald-500' : 'bg-amber-500'}"></span>
+                          <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${isClose ? 'bg-emerald-50 text-emerald-800 border-emerald-300' : 'bg-red-50 text-red-800 border-red-300'}">
+                            <span class="w-1.5 h-1.5 rounded-full ${isClose ? 'bg-emerald-500' : 'bg-red-500'}"></span>
                             ${displayStatus}
                           </span>
                         </td>

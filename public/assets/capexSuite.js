@@ -41,7 +41,11 @@
       assigned: 'Inspection',
       background: '',
       problem: '',
-      justification: ''
+      justification: '',
+      prStatus: 'Created / approved',
+      prCreatedApproved: 'Created / approved',
+      rfqFloated: 'Yes',
+      poCreated: 'Yes. Approval in process'
     },
     {
       sr: 2,
@@ -66,7 +70,11 @@
       assigned: 'Operation',
       background: '',
       problem: '',
-      justification: ''
+      justification: '',
+      prStatus: 'Created / not approved',
+      prCreatedApproved: 'Created / not approved',
+      rfqFloated: 'No',
+      poCreated: 'No'
     },
     {
       sr: 3,
@@ -91,7 +99,11 @@
       assigned: 'HSE',
       background: '',
       problem: '',
-      justification: ''
+      justification: '',
+      prStatus: 'Created / approved',
+      prCreatedApproved: 'Created / approved',
+      rfqFloated: 'Yes',
+      poCreated: 'Yes'
     },
     {
       sr: 4,
@@ -116,7 +128,11 @@
       assigned: 'PE',
       background: '',
       problem: '',
-      justification: ''
+      justification: '',
+      prStatus: 'Not created',
+      prCreatedApproved: 'Not created',
+      rfqFloated: 'No',
+      poCreated: 'No'
     }
   ];
 
@@ -558,6 +574,179 @@
     .ppt-stat.life .k { color: #0D9488; }
     .ppt-stat.life .v { color: #115E59; }
 
+    /* Eye-Catching Procurement & Execution Milestones Bar (Columns W, X, Y) */
+    .ppt-milestones {
+      display: grid;
+      grid-template-columns: 190px 1fr 1fr 1fr;
+      gap: 10px;
+      padding: 6px 28px 4px;
+      background: #FFFFFF;
+      flex-shrink: 0;
+      align-items: stretch;
+      border-bottom: 1.5px solid #E2E8F0;
+    }
+    @media (max-width: 900px) {
+      .ppt-milestones {
+        grid-template-columns: 1fr;
+        padding: 6px 14px 4px;
+        gap: 6px;
+      }
+    }
+    .ppt-milestone-lead {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 10px;
+      background: linear-gradient(135deg, #0F172A 0%, #1E1B4B 100%);
+      color: #FFFFFF;
+      border-radius: 8px;
+      border-left: 4px solid #F59E0B;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+    @media (max-width: 900px) {
+      .ppt-milestone-lead { display: none; }
+    }
+    .ppt-milestone-lead .lead-icon {
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+      background: rgba(245,158,11,0.2);
+      border: 1px solid rgba(245,158,11,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #FBBF24;
+      flex-shrink: 0;
+    }
+    .ppt-milestone-lead .lead-label {
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      color: #FBBF24;
+      line-height: 1.2;
+    }
+    .ppt-milestone-lead .lead-sub {
+      font-size: 9px;
+      color: #CBD5E1;
+      display: block;
+    }
+    .ppt-milestone-card {
+      background: #FFFFFF;
+      border-radius: 8px;
+      border: 1.5px solid #E2E8F0;
+      padding: 4px 10px 5px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-width: 0;
+      box-shadow: 0 1px 4px rgba(15,23,42,0.04);
+    }
+    .ppt-milestone-card.pr {
+      border-left: 4px solid #6366F1;
+      background: linear-gradient(180deg, #EEF2FF 0%, #FFFFFF 100%);
+    }
+    .ppt-milestone-card.rfq {
+      border-left: 4px solid #0EA5E9;
+      background: linear-gradient(180deg, #F0F9FF 0%, #FFFFFF 100%);
+    }
+    .ppt-milestone-card.po {
+      border-left: 4px solid #10B981;
+      background: linear-gradient(180deg, #ECFDF5 0%, #FFFFFF 100%);
+    }
+    .ppt-milestone-card .milestone-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      margin-bottom: 2px;
+    }
+    .ppt-milestone-card .milestone-title {
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .ppt-milestone-card.pr .milestone-title { color: #4338CA; }
+    .ppt-milestone-card.rfq .milestone-title { color: #0369A1; }
+    .ppt-milestone-card.po .milestone-title { color: #047857; }
+    .ppt-milestone-card .col-indicator {
+      font-size: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      padding: 1px 4px;
+      border-radius: 4px;
+      background: rgba(0,0,0,0.06);
+      color: #64748B;
+    }
+    .ppt-milestone-body.scrollable {
+      max-height: 44px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(100,116,139,0.4) transparent;
+      padding-right: 2px;
+      word-break: break-word;
+    }
+    .ppt-milestone-body.scrollable::-webkit-scrollbar {
+      width: 4px;
+    }
+    .ppt-milestone-body.scrollable::-webkit-scrollbar-thumb {
+      background: rgba(100,116,139,0.4);
+      border-radius: 4px;
+    }
+    .ppt-milestone-pill {
+      display: inline-flex;
+      align-items: flex-start;
+      gap: 5px;
+      padding: 2px 7px;
+      border-radius: 5px;
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1.35;
+      max-width: 100%;
+      word-break: break-word;
+    }
+    .ppt-milestone-pill.status-positive {
+      background: #D1FAE5;
+      color: #065F46;
+      border: 1px solid #A7F3D0;
+    }
+    .ppt-milestone-pill.status-negative {
+      background: #FEE2E2;
+      color: #991B1B;
+      border: 1px solid #FECACA;
+    }
+    .ppt-milestone-pill.status-process {
+      background: #FEF3C7;
+      color: #92400E;
+      border: 1px solid #FDE68A;
+    }
+    .ppt-milestone-pill.status-neutral {
+      background: #EFF6FF;
+      color: #1E40AF;
+      border: 1px solid #BFDBFE;
+    }
+    .ppt-milestone-empty {
+      font-size: 11px;
+      color: #94A3B8;
+      font-weight: 500;
+    }
+    #capex-ppt-modal-container[data-theme="navy"] .ppt-milestones,
+    #capex-ppt-modal-container[data-theme="graphite"] .ppt-milestones,
+    #capex-ppt-modal-container[data-theme="emerald"] .ppt-milestones {
+      background: var(--panel);
+      border-bottom-color: var(--line);
+    }
+    #capex-ppt-modal-container[data-theme="graphite"] .ppt-milestone-card {
+      background: #1A1D27;
+      border-color: #2D3345;
+      color: #F8FAFC;
+    }
+
     /* 5 Main Body Content Tiles in Marketing Banner Styling */
     .ppt-body-grid {
       display: grid;
@@ -843,7 +1032,7 @@
   const capexSuite = {
     state: {
       searchQuery: '',
-      yearFilter: 'all', // Defaults to 'all' so complete multi-year portfolio is visible
+      yearFilter: String(new Date().getFullYear()), // Dynamically opens with current calendar year
       statusFilter: 'all',
       categoryFilter: 'all',
       unitFilter: 'all',
@@ -864,6 +1053,22 @@
       pptActive: false,
       pptIndex: 0,
       pptTheme: 'white'
+    },
+
+    applyCurrentYearFilter() {
+      const currentYear = String(new Date().getFullYear());
+      this.state.yearFilter = currentYear;
+      this.state.page = 1;
+    },
+
+    onOpen() {
+      // Whenever CAPEX dashboard is opened, dynamically reset/open with current year filter
+      this._userManuallyChangedYear = false;
+      this.applyCurrentYearFilter();
+      this.render();
+      if (typeof this.syncLiveFeed === 'function') {
+        this.syncLiveFeed({ silent: true });
+      }
     },
 
     init() {
@@ -907,7 +1112,23 @@
         window.FPCL_CAPEX_DATA = JSON.parse(JSON.stringify(INITIAL_CAPEX_PROJECTS));
       }
 
-      this.state.yearFilter = 'all';
+      // Dynamically open with current year filter
+      this.applyCurrentYearFilter();
+
+      // Observe visibility of capex-specialized-container to auto-trigger onOpen whenever the user navigates here
+      const capexContainer = document.getElementById('capex-specialized-container');
+      if (capexContainer && window.MutationObserver && !this._visibilityObserverAttached) {
+        this._visibilityObserverAttached = true;
+        let wasHidden = capexContainer.hidden || capexContainer.classList.contains('hidden');
+        const observer = new MutationObserver(() => {
+          const isHidden = capexContainer.hidden || capexContainer.classList.contains('hidden');
+          if (wasHidden && !isHidden) {
+            this.onOpen();
+          }
+          wasHidden = isHidden;
+        });
+        observer.observe(capexContainer, { attributes: true, attributeFilter: ['class', 'hidden', 'style'] });
+      }
 
       // Immediate live sync from Google Sheet
       this.syncLiveFeed({ silent: true });
@@ -993,8 +1214,11 @@
           const matchBg = (item.background || '').toLowerCase().includes(q);
           const matchProb = (item.problem || '').toLowerCase().includes(q);
           const matchJust = (item.justification || '').toLowerCase().includes(q);
+          const matchPr = (item.prStatus || '').toLowerCase().includes(q);
+          const matchRfq = (item.rfqFloated || '').toLowerCase().includes(q);
+          const matchPo = (item.poCreated || '').toLowerCase().includes(q);
 
-          if (!matchName && !matchWbs && !matchUnit && !matchCat && !matchReason && !matchType && !matchRemarks && !matchStrategy && !matchYear && !matchBg && !matchProb && !matchJust) {
+          if (!matchName && !matchWbs && !matchUnit && !matchCat && !matchReason && !matchType && !matchRemarks && !matchStrategy && !matchYear && !matchBg && !matchProb && !matchJust && !matchPr && !matchRfq && !matchPo) {
             return false;
           }
         }
@@ -1252,9 +1476,6 @@
         if (!row || row.length < 3) continue;
 
         const getField = (colIdx, headerAliases, fallback = '') => {
-          if (colIdx !== undefined && row[colIdx] !== undefined && String(row[colIdx]).trim() !== '') {
-            return String(row[colIdx]).trim();
-          }
           if (Array.isArray(headerAliases)) {
             for (const h of headerAliases) {
               const idx = colMap[h.toLowerCase().replace(/[^a-z0-9]/g, '')];
@@ -1262,6 +1483,9 @@
                 return String(row[idx]).trim();
               }
             }
+          }
+          if (colIdx !== undefined && row[colIdx] !== undefined && String(row[colIdx]).trim() !== '') {
+            return String(row[colIdx]).trim();
           }
           return fallback;
         };
@@ -1354,6 +1578,15 @@
         // Col V (idx 21): Justification
         const justification = getField(21, ['justification', 'projectjustification', 'project_justification'], '');
 
+        // Col W (idx 22): PR_created/approved
+        const prStatus = getField(22, ['prcreatedapproved', 'prcreated/approved', 'pr_created/approved', 'pr_created_approved', 'prcreated', 'prapproved', 'prstatus'], '');
+
+        // Col X (idx 23): RFQ _Floated
+        const rfqFloated = getField(23, ['rfqfloated', 'rfq_floated', 'rfq', 'rfqfloatedyesno', 'rfq_floated_yes_no'], '');
+
+        // Col Y (idx 24): PO_created
+        const poCreated = getField(24, ['pocreated', 'po_created', 'pocreatedapproved', 'po_created_approved', 'pocreatedyes', 'po_created_yes'], '');
+
         parsedItems.push({
           sr,
           year: String(year).trim(),
@@ -1383,7 +1616,11 @@
           assigned: unit,
           background,
           problem,
-          justification
+          justification,
+          prStatus,
+          prCreatedApproved: prStatus,
+          rfqFloated,
+          poCreated
         });
       }
 
@@ -1459,6 +1696,10 @@
 
             this.state.lastSynced = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
+            if (!this._userManuallyChangedYear) {
+              this.applyCurrentYearFilter();
+            }
+
             if (!silent && window.portalApp && typeof window.portalApp.showToast === 'function') {
               window.portalApp.showToast(`CAPEX feed synchronized live with Google Sheet (${parsed.length} projects).`, 'success');
             }
@@ -1497,7 +1738,7 @@
         return;
       }
 
-      const headers = ['Sr#', 'Year', 'Project Name', 'WBS Element', 'Responsible Unit', 'Category', 'Reason / Justification', 'Type', 'MOC Required', 'CAPEX Budget (PKR)', 'Consumed (PKR)', 'Commitment (PKR)', 'Available (PKR)', 'Priority', 'Status', 'Strategy Notes', 'Remarks', 'Background', 'Problem', 'Justification'];
+      const headers = ['Sr#', 'Year', 'Project Name', 'WBS Element', 'Responsible Unit', 'Category', 'Reason / Justification', 'Type', 'MOC Required', 'CAPEX Budget (PKR)', 'Consumed (PKR)', 'Commitment (PKR)', 'Available (PKR)', 'Priority', 'Status', 'Strategy Notes', 'Remarks', 'Background', 'Problem', 'Justification', 'PR Created / Approved', 'RFQ Floated', 'PO Created'];
       const rows = dataset.map(p => [
         p.sr,
         `"${p.year}"`,
@@ -1518,7 +1759,10 @@
         `"${(p.remarks || '').replace(/"/g, '""')}"`,
         `"${(p.background || '').replace(/"/g, '""')}"`,
         `"${(p.problem || '').replace(/"/g, '""')}"`,
-        `"${(p.justification || '').replace(/"/g, '""')}"`
+        `"${(p.justification || '').replace(/"/g, '""')}"`,
+        `"${(p.prStatus || '').replace(/"/g, '""')}"`,
+        `"${(p.rfqFloated || '').replace(/"/g, '""')}"`,
+        `"${(p.poCreated || '').replace(/"/g, '""')}"`
       ]);
 
       const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
@@ -1555,7 +1799,8 @@
 
     resetFilters() {
       this.state.searchQuery = '';
-      this.state.yearFilter = 'all';
+      this._userManuallyChangedYear = false;
+      this.applyCurrentYearFilter();
       this.state.statusFilter = 'all';
       this.state.categoryFilter = 'all';
       this.state.unitFilter = 'all';
@@ -1772,6 +2017,34 @@
                 </div>
               </div>
 
+              <!-- Procurement & Commercial Status (Columns W, X, Y) -->
+              <div class="space-y-1.5">
+                <h4 class="text-[11px] font-bold uppercase tracking-wider text-[#7A8699] flex items-center gap-1.5">
+                  <i data-lucide="shopping-bag" class="w-3.5 h-3.5 text-[#0B1D3A]"></i>
+                  Procurement Milestones (Cols W, X, Y)
+                </h4>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                  <div class="p-3 rounded-md bg-white border border-[#E2E6EE] shadow-[0_1px_2px_rgba(11,29,58,0.03)]">
+                    <span class="text-[#7A8699] block text-[10px] uppercase font-bold tracking-wider mb-1">PR Created / Approved (W)</span>
+                    <div class="max-h-[60px] overflow-y-auto pr-1 text-xs">
+                      ${this.renderTableMilestoneBadge(p.prStatus, 'pr')}
+                    </div>
+                  </div>
+                  <div class="p-3 rounded-md bg-white border border-[#E2E6EE] shadow-[0_1px_2px_rgba(11,29,58,0.03)]">
+                    <span class="text-[#7A8699] block text-[10px] uppercase font-bold tracking-wider mb-1">RFQ Floated (X)</span>
+                    <div class="max-h-[60px] overflow-y-auto pr-1 text-xs">
+                      ${this.renderTableMilestoneBadge(p.rfqFloated, 'rfq')}
+                    </div>
+                  </div>
+                  <div class="p-3 rounded-md bg-white border border-[#E2E6EE] shadow-[0_1px_2px_rgba(11,29,58,0.03)]">
+                    <span class="text-[#7A8699] block text-[10px] uppercase font-bold tracking-wider mb-1">PO Created (Y)</span>
+                    <div class="max-h-[60px] overflow-y-auto pr-1 text-xs">
+                      ${this.renderTableMilestoneBadge(p.poCreated, 'po')}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               ${p.remarks ? `
               <div class="p-3 rounded-md bg-white border border-[#E2E6EE] text-xs text-[#1A1F2B] shadow-[0_1px_2px_rgba(11,29,58,0.03)]">
                 <span class="text-[#7A8699] font-bold block text-[10px] uppercase tracking-wider mb-1">Status Remarks & End-User Notes</span>
@@ -1803,9 +2076,14 @@
       const s = this.state;
       const allProjects = this.getRawData();
 
-      // Extract unique Years from Column B
-      const rawYears = [...new Set(allProjects.map(p => String(p.year || '').trim()).filter(Boolean))].sort((a, b) => b.localeCompare(a));
-      const years = rawYears.length > 0 ? rawYears : ['2027', '2026', '2025', '2024'];
+      // Extract unique Years from Column B, always ensuring current calendar year is present
+      const currentCalYear = String(new Date().getFullYear());
+      const rawYears = [...new Set(allProjects.map(p => String(p.year || '').trim()).filter(Boolean))];
+      if (!rawYears.includes(currentCalYear)) {
+        rawYears.push(currentCalYear);
+      }
+      rawYears.sort((a, b) => b.localeCompare(a));
+      const years = rawYears.length > 0 ? rawYears : [currentCalYear, '2027', '2026', '2025', '2024'];
 
       // Filtered data applies dynamically across Master Table and Visual Analytics
       const filteredData = this.getFilteredData();
@@ -1926,8 +2204,9 @@
 
             <!-- Card 2: Major CapEx (Royal Blue Gradient) -->
             <div class="bg-gradient-to-br from-[#0B1D3A] via-[#1E3A8A] to-[#172554] border border-blue-400/35 rounded-xl p-3 sm:p-5 shadow-md text-center flex flex-col items-center justify-center transition-transform hover:-translate-y-0.5">
-              <span class="text-[10px] sm:text-[11px] uppercase font-extrabold tracking-wider text-blue-200">
-                Major CapEx
+              <span class="text-[10px] sm:text-[11px] uppercase font-extrabold tracking-wider text-blue-200 flex items-center justify-center gap-1.5 flex-wrap">
+                <span>Major CapEx</span>
+                <span class="text-[9px] sm:text-[10px] font-mono font-bold text-blue-200 bg-blue-900/70 px-1.5 py-0.5 rounded-full border border-blue-400/40 normal-case">>4.5 million</span>
               </span>
               <div class="mt-1.5 sm:mt-2 text-lg sm:text-2xl lg:text-3xl font-black font-mono tracking-tight text-blue-300">
                 ${s.currencyFormat === 'M' ? `PKR ${kpis.majorBudgetMillions} M` : this.formatCurrency(kpis.majorBudget)}
@@ -1936,14 +2215,15 @@
                 PKR ${(kpis.majorBudget || 0).toLocaleString('en-US')}
               </div>
               <div class="mt-1.5 sm:mt-2 text-[10px] sm:text-[11px] font-semibold text-blue-200">
-                ${kpis.majorCount} Projects • Rep: ${kpis.majorReplacementCount} | New: ${kpis.majorNewCount}
+                ${kpis.majorCount} Projects (>4.5 million) • Rep: ${kpis.majorReplacementCount} | New: ${kpis.majorNewCount}
               </div>
             </div>
 
             <!-- Card 3: Minor CapEx (Teal Gradient) -->
             <div class="bg-gradient-to-br from-[#0F2830] via-[#134E4A] to-[#042F2E] border border-teal-400/35 rounded-xl p-3 sm:p-5 shadow-md text-center flex flex-col items-center justify-center transition-transform hover:-translate-y-0.5">
-              <span class="text-[10px] sm:text-[11px] uppercase font-extrabold tracking-wider text-teal-200">
-                Minor CapEx
+              <span class="text-[10px] sm:text-[11px] uppercase font-extrabold tracking-wider text-teal-200 flex items-center justify-center gap-1.5 flex-wrap">
+                <span>Minor CapEx</span>
+                <span class="text-[9px] sm:text-[10px] font-mono font-bold text-teal-200 bg-teal-900/70 px-1.5 py-0.5 rounded-full border border-teal-400/40 normal-case">&lt;4.5 million</span>
               </span>
               <div class="mt-1.5 sm:mt-2 text-lg sm:text-2xl lg:text-3xl font-black font-mono tracking-tight text-teal-300">
                 ${s.currencyFormat === 'M' ? `PKR ${kpis.minorBudgetMillions} M` : this.formatCurrency(kpis.minorBudget)}
@@ -1952,7 +2232,7 @@
                 PKR ${(kpis.minorBudget || 0).toLocaleString('en-US')}
               </div>
               <div class="mt-1.5 sm:mt-2 text-[10px] sm:text-[11px] font-semibold text-teal-200">
-                ${kpis.minorCount} Projects • Rep: ${kpis.minorReplacementCount} | New: ${kpis.minorNewCount}
+                ${kpis.minorCount} Projects (&lt;4.5 million) • Rep: ${kpis.minorReplacementCount} | New: ${kpis.minorNewCount}
               </div>
             </div>
 
@@ -2231,19 +2511,19 @@
                 ` : ''}
               </div>
 
-              <!-- Legend Bar -->
+              <!-- Legend Bar (Middle Aligned) -->
               <div class="flex items-center justify-center gap-6 pt-2 text-xs">
                 <div class="flex items-center gap-2">
-                  <span class="w-3.5 h-3.5 rounded-sm bg-[#1E3A8A]"></span>
+                  <span class="w-3.5 h-3.5 rounded-xs bg-[#1E3A8A]"></span>
                   <span class="font-bold text-[#1A1F2B]">Replacements</span>
                 </div>
                 <div class="flex items-center gap-2">
-                  <span class="w-3.5 h-3.5 rounded-sm bg-[#D9782D]"></span>
+                  <span class="w-3.5 h-3.5 rounded-xs bg-[#D9782D]"></span>
                   <span class="font-bold text-[#1A1F2B]">New Installations</span>
                 </div>
               </div>
 
-              <!-- Stacked Horizontal Bars -->
+              <!-- Stacked Horizontal Bars (Middle Aligned & Non-Overlapping) -->
               <div class="py-4 space-y-6">
                 
                 <!-- Row 1: Major CapEx -->
@@ -2252,41 +2532,41 @@
                     <div class="flex items-center gap-1.5 font-bold text-[#1A1F2B]">
                       <span class="w-2.5 h-2.5 rounded-xs bg-[#1E3A8A]"></span>
                       <span class="text-sm">Major CapEx</span>
-                      <span class="text-[#7A8699] font-normal">(${kpis.majorCount} Projects • >4.5M)</span>
+                      <span class="text-[#7A8699] font-medium text-[11px]">(${kpis.majorCount} Projects • &gt;4.5 million)</span>
                     </div>
                     <div class="font-mono font-bold text-[#0B1D3A] text-sm">
                       PKR ${kpis.majorBudgetMillions} M
                     </div>
                   </div>
                   
-                  ${kpis.majorCount === 0 ? `
-                    <div class="h-12 sm:h-14 w-full bg-slate-50 rounded-lg flex items-center justify-center text-xs text-slate-400 font-semibold italic border border-dashed border-slate-300">
-                      No Major Projects (>4.5M) in selected filters
+                  ${kpis.majorCount === 0 || kpis.majorBudget === 0 ? `
+                    <div class="h-12 sm:h-13 w-full bg-slate-50 rounded-xl flex items-center justify-center text-center px-3 text-xs text-slate-400 font-semibold italic border border-dashed border-slate-300">
+                      No Major Projects (>4.5 million) in current filter
                     </div>
                   ` : `
-                    <div class="h-12 sm:h-14 w-full bg-slate-100 rounded-lg overflow-hidden flex border border-[#CBD2DE] cursor-pointer shadow-inner">
-                      ${majorRepPct > 0 ? `
-                      <div
-                        onclick="window.FPCL_CAPEX_SUITE.setClassFilter('major', 'Replacement')"
-                        style="width: ${majorRepPct}%;"
-                        class="h-full bg-gradient-to-r from-[#1E3A8A] to-[#2563EB] hover:opacity-95 transition-opacity flex items-center justify-between px-2 sm:px-3 text-white font-semibold min-w-0 overflow-hidden"
-                        title="Major Replacements: PKR ${majorRepMillions} M (${majorRepPct}%)"
-                      >
-                        <span class="text-[11px] sm:text-xs truncate mr-1">Replacements</span>
-                        <span class="font-mono text-[10px] sm:text-xs font-bold bg-black/30 px-1.5 sm:px-2 py-0.5 rounded shrink-0 whitespace-nowrap">${majorRepPct}%<span class="hidden sm:inline"> • PKR ${majorRepMillions}M</span></span>
-                      </div>
-                      ` : ''}
-                      ${majorNewPct > 0 ? `
-                      <div
-                        onclick="window.FPCL_CAPEX_SUITE.setClassFilter('major', 'New')"
-                        style="width: ${majorNewPct}%;"
-                        class="h-full bg-gradient-to-r from-[#D9782D] to-[#F97316] hover:opacity-95 transition-opacity flex items-center justify-between px-2 sm:px-3 text-white font-semibold min-w-0 overflow-hidden"
-                        title="Major New Installations: PKR ${majorNewMillions} M (${majorNewPct}%)"
-                      >
-                        <span class="text-[11px] sm:text-xs truncate mr-1">New</span>
-                        <span class="font-mono text-[10px] sm:text-xs font-bold bg-black/30 px-1.5 sm:px-2 py-0.5 rounded shrink-0 whitespace-nowrap">${majorNewPct}%<span class="hidden sm:inline"> • PKR ${majorNewMillions}M</span></span>
-                      </div>
-                      ` : ''}
+                    <div class="h-12 sm:h-13 w-full bg-slate-100 rounded-xl overflow-hidden flex border border-[#CBD2DE] shadow-inner select-none">
+                      ${this.renderStackedBarSegment({
+                        cls: 'major',
+                        type: 'Replacement',
+                        label: 'Replacements',
+                        pct: majorRepPct,
+                        millions: majorRepMillions,
+                        count: kpis.majorReplacementCount,
+                        gradient: 'from-[#1E3A8A] to-[#2563EB]'
+                      })}
+                      ${this.renderStackedBarSegment({
+                        cls: 'major',
+                        type: 'New',
+                        label: 'New',
+                        pct: majorNewPct,
+                        millions: majorNewMillions,
+                        count: kpis.majorNewCount,
+                        gradient: 'from-[#D9782D] to-[#F97316]'
+                      })}
+                    </div>
+                    <div class="flex items-center justify-center gap-3 sm:gap-6 text-[11px] font-semibold text-slate-600 pt-0.5 text-center flex-wrap">
+                      ${majorRepPct > 0 ? `<span class="inline-flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-[#1E3A8A]"></span>Replacements: <strong class="text-slate-800">PKR ${majorRepMillions}M (${majorRepPct}%)</strong> • ${kpis.majorReplacementCount} Proj</span>` : ''}
+                      ${majorNewPct > 0 ? `<span class="inline-flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-[#D9782D]"></span>New: <strong class="text-slate-800">PKR ${majorNewMillions}M (${majorNewPct}%)</strong> • ${kpis.majorNewCount} Proj</span>` : ''}
                     </div>
                   `}
                 </div>
@@ -2297,41 +2577,41 @@
                     <div class="flex items-center gap-1.5 font-bold text-[#1A1F2B]">
                       <span class="w-2.5 h-2.5 rounded-xs bg-[#7A8699]"></span>
                       <span class="text-sm">Minor CapEx</span>
-                      <span class="text-[#7A8699] font-normal">(${kpis.minorCount} Projects • ≤4.5M)</span>
+                      <span class="text-[#7A8699] font-medium text-[11px]">(${kpis.minorCount} Projects • &lt;4.5 million)</span>
                     </div>
                     <div class="font-mono font-bold text-[#7A8699] text-sm">
                       PKR ${kpis.minorBudgetMillions} M
                     </div>
                   </div>
                   
-                  ${kpis.minorCount === 0 ? `
-                    <div class="h-12 sm:h-14 w-full bg-slate-50 rounded-lg flex items-center justify-center text-xs text-slate-400 font-semibold italic border border-dashed border-slate-300">
-                      No Minor Projects (≤4.5M) in selected filters
+                  ${kpis.minorCount === 0 || kpis.minorBudget === 0 ? `
+                    <div class="h-12 sm:h-13 w-full bg-slate-50 rounded-xl flex items-center justify-center text-center px-3 text-xs text-slate-400 font-semibold italic border border-dashed border-slate-300">
+                      No Minor Projects (&lt;4.5 million) in current filter
                     </div>
                   ` : `
-                    <div class="h-12 sm:h-14 w-full bg-slate-100 rounded-lg overflow-hidden flex border border-[#CBD2DE] cursor-pointer shadow-inner">
-                      ${minorRepPct > 0 ? `
-                      <div
-                        onclick="window.FPCL_CAPEX_SUITE.setClassFilter('minor', 'Replacement')"
-                        style="width: ${minorRepPct}%;"
-                        class="h-full bg-gradient-to-r from-[#1E3A8A]/90 to-[#2563EB]/90 hover:opacity-95 transition-opacity flex items-center justify-between px-2 sm:px-3 text-white font-semibold min-w-0 overflow-hidden"
-                        title="Minor Replacements: PKR ${minorRepMillions} M (${minorRepPct}%)"
-                      >
-                        <span class="text-[11px] sm:text-xs truncate mr-1">Replacements</span>
-                        <span class="font-mono text-[10px] sm:text-xs font-bold bg-black/30 px-1.5 sm:px-2 py-0.5 rounded shrink-0 whitespace-nowrap">${minorRepPct}%<span class="hidden sm:inline"> • PKR ${minorRepMillions}M</span></span>
-                      </div>
-                      ` : ''}
-                      ${minorNewPct > 0 ? `
-                      <div
-                        onclick="window.FPCL_CAPEX_SUITE.setClassFilter('minor', 'New')"
-                        style="width: ${minorNewPct}%;"
-                        class="h-full bg-gradient-to-r from-[#D9782D]/90 to-[#F97316]/90 hover:opacity-95 transition-opacity flex items-center justify-between px-2 sm:px-3 text-white font-semibold min-w-0 overflow-hidden"
-                        title="Minor New Installations: PKR ${minorNewMillions} M (${minorNewPct}%)"
-                      >
-                        <span class="text-[11px] sm:text-xs truncate mr-1">New</span>
-                        <span class="font-mono text-[10px] sm:text-xs font-bold bg-black/30 px-1.5 sm:px-2 py-0.5 rounded shrink-0 whitespace-nowrap">${minorNewPct}%<span class="hidden sm:inline"> • PKR ${minorNewMillions}M</span></span>
-                      </div>
-                      ` : ''}
+                    <div class="h-12 sm:h-13 w-full bg-slate-100 rounded-xl overflow-hidden flex border border-[#CBD2DE] shadow-inner select-none">
+                      ${this.renderStackedBarSegment({
+                        cls: 'minor',
+                        type: 'Replacement',
+                        label: 'Replacements',
+                        pct: minorRepPct,
+                        millions: minorRepMillions,
+                        count: kpis.minorReplacementCount,
+                        gradient: 'from-[#1E3A8A]/90 to-[#2563EB]/90'
+                      })}
+                      ${this.renderStackedBarSegment({
+                        cls: 'minor',
+                        type: 'New',
+                        label: 'New',
+                        pct: minorNewPct,
+                        millions: minorNewMillions,
+                        count: kpis.minorNewCount,
+                        gradient: 'from-[#D9782D]/90 to-[#F97316]/90'
+                      })}
+                    </div>
+                    <div class="flex items-center justify-center gap-3 sm:gap-6 text-[11px] font-semibold text-slate-600 pt-0.5 text-center flex-wrap">
+                      ${minorRepPct > 0 ? `<span class="inline-flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-[#1E3A8A]"></span>Replacements: <strong class="text-slate-800">PKR ${minorRepMillions}M (${minorRepPct}%)</strong> • ${kpis.minorReplacementCount} Proj</span>` : ''}
+                      ${minorNewPct > 0 ? `<span class="inline-flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-[#D9782D]"></span>New: <strong class="text-slate-800">PKR ${minorNewMillions}M (${minorNewPct}%)</strong> • ${kpis.minorNewCount} Proj</span>` : ''}
                     </div>
                   `}
                 </div>
@@ -2412,12 +2692,12 @@
               class="overflow-x-auto overflow-y-hidden border-b border-[#CBD2DE] bg-slate-100/90 py-1.5 px-1 select-none"
               title="Top Horizontal Scrollbar (drag to scroll columns horizontally)"
             >
-              <div id="capex-table-top-scroll-inner" class="h-2.5" style="width: 3200px;"></div>
+              <div id="capex-table-top-scroll-inner" class="h-2.5" style="width: 3600px;"></div>
             </div>
 
             <!-- Scrollable Responsive Master Table -->
             <div id="capex-table-scroll-body" class="overflow-x-auto max-h-[620px] overflow-y-auto">
-              <table id="capex-master-table" class="w-full text-left border-collapse text-xs min-w-[2800px]">
+              <table id="capex-master-table" class="w-full text-left border-collapse text-xs min-w-[3400px]">
                 <thead class="sticky top-0 z-20 bg-[#0B1D3A] text-white select-none">
                   <tr>
                     <th onclick="window.FPCL_CAPEX_SUITE.handleSort('sr')" class="py-3 px-3 cursor-pointer hover:bg-white/10 text-center w-14">
@@ -2486,6 +2766,15 @@
                     <th onclick="window.FPCL_CAPEX_SUITE.handleSort('justification')" class="py-3 px-3 cursor-pointer hover:bg-white/10 min-w-[240px]">
                       Justification ${this.renderSortArrow('justification')}
                     </th>
+                    <th onclick="window.FPCL_CAPEX_SUITE.handleSort('prStatus')" class="py-3 px-3 cursor-pointer hover:bg-white/10 min-w-[190px]">
+                      PR Created / Approved (Col W) ${this.renderSortArrow('prStatus')}
+                    </th>
+                    <th onclick="window.FPCL_CAPEX_SUITE.handleSort('rfqFloated')" class="py-3 px-3 cursor-pointer hover:bg-white/10 min-w-[160px]">
+                      RFQ Floated (Col X) ${this.renderSortArrow('rfqFloated')}
+                    </th>
+                    <th onclick="window.FPCL_CAPEX_SUITE.handleSort('poCreated')" class="py-3 px-3 cursor-pointer hover:bg-white/10 min-w-[190px]">
+                      PO Created (Col Y) ${this.renderSortArrow('poCreated')}
+                    </th>
                     <th class="py-3 px-3 text-center sticky right-0 bg-[#0B1D3A] z-30 w-16">
                       View
                     </th>
@@ -2494,7 +2783,7 @@
                 <tbody class="divide-y divide-[#E2E6EE] bg-white">
                   ${paginatedData.length === 0 ? `
                     <tr>
-                      <td colspan="23" class="py-12 text-center text-[#7A8699]">
+                      <td colspan="26" class="py-12 text-center text-[#7A8699]">
                         <i data-lucide="folder-search" class="w-8 h-8 mx-auto mb-2 opacity-40"></i>
                         <div class="font-bold text-sm text-[#0B1D3A]">No Projects Match Current Filters</div>
                         <div class="text-xs mt-1">Try resetting active filters or clearing the search query.</div>
@@ -2643,7 +2932,28 @@
                           ${p.justification ? `<span class="text-slate-800">${p.justification}</span>` : '<span class="text-slate-400 font-mono">-</span>'}
                         </td>
 
-                        <!-- 23. Scope Action Button (Sticky Right) -->
+                        <!-- 23. PR_created/approved (Column W) -->
+                        <td class="py-3 px-3 min-w-[190px] max-w-[240px]">
+                          <div class="max-h-[52px] overflow-y-auto overflow-x-hidden pr-1 text-xs leading-snug scrollbar-thin">
+                            ${this.renderTableMilestoneBadge(p.prStatus, 'pr')}
+                          </div>
+                        </td>
+
+                        <!-- 24. RFQ _Floated (Column X) -->
+                        <td class="py-3 px-3 min-w-[160px] max-w-[200px]">
+                          <div class="max-h-[52px] overflow-y-auto overflow-x-hidden pr-1 text-xs leading-snug scrollbar-thin">
+                            ${this.renderTableMilestoneBadge(p.rfqFloated, 'rfq')}
+                          </div>
+                        </td>
+
+                        <!-- 25. PO_created (Column Y) -->
+                        <td class="py-3 px-3 min-w-[190px] max-w-[240px]">
+                          <div class="max-h-[52px] overflow-y-auto overflow-x-hidden pr-1 text-xs leading-snug scrollbar-thin">
+                            ${this.renderTableMilestoneBadge(p.poCreated, 'po')}
+                          </div>
+                        </td>
+
+                        <!-- 26. Scope Action Button (Sticky Right) -->
                         <td class="py-3 px-3 text-center whitespace-nowrap sticky right-0 bg-white group-hover:bg-amber-50/40 z-10 shadow-[-4px_0_6px_-2px_rgba(0,0,0,0.05)]">
                           <div class="flex items-center justify-center gap-1">
                             <button onclick="event.stopPropagation(); window.FPCL_CAPEX_SUITE.openPptMode(${startIdx + idx})" class="p-1.5 rounded text-[#B4923C] hover:text-[#7A5E1E] hover:bg-amber-50 transition-colors cursor-pointer" title="View slide in PPT Mode">
@@ -2680,7 +2990,7 @@
                       <div>${this.formatCurrency(kpis.totalAvailable)}</div>
                       <div class="text-[10px] text-slate-500 font-mono font-normal">PKR ${kpis.totalAvailable.toLocaleString('en-US')}</div>
                     </td>
-                    <td colspan="16"></td>
+                    <td colspan="19"></td>
                   </tr>
                 </tfoot>
               </table>
@@ -2779,6 +3089,126 @@
         }
         isSyncingBody = false;
       };
+    },
+
+    renderTableMilestoneBadge(val, type) {
+      if (!val || String(val).trim() === '' || String(val).trim() === '-') {
+        return '<span class="text-slate-400 font-mono text-center block">-</span>';
+      }
+      const clean = String(val).trim();
+      const lower = clean.toLowerCase();
+
+      const isPositive = lower === 'yes' || lower === 'y' || lower.includes('approved') || lower.includes('completed') || lower === 'created';
+      const isNegative = lower === 'no' || lower === 'n' || lower.includes('not approved') || lower.includes('not created') || lower.includes('rejected');
+      const isProcess = lower.includes('process') || lower.includes('progress') || lower.includes('pending') || lower.includes('partial');
+
+      let colorClasses = 'bg-slate-100 text-slate-800 border-slate-300';
+      let dotColor = 'bg-slate-400';
+
+      if (isNegative) {
+        colorClasses = 'bg-rose-50 text-rose-700 border-rose-200';
+        dotColor = 'bg-rose-500';
+      } else if (isProcess) {
+        colorClasses = 'bg-amber-50 text-amber-800 border-amber-300';
+        dotColor = 'bg-amber-500';
+      } else if (isPositive) {
+        colorClasses = 'bg-emerald-50 text-emerald-800 border-emerald-300';
+        dotColor = 'bg-emerald-500';
+      } else {
+        colorClasses = 'bg-blue-50 text-blue-800 border-blue-200';
+        dotColor = 'bg-blue-500';
+      }
+
+      if (clean.length > 32) {
+        return `
+          <div class="p-1.5 rounded-md border text-[11px] leading-snug font-medium ${colorClasses}">
+            <div class="flex items-center gap-1 font-bold mb-0.5">
+              <span class="w-1.5 h-1.5 rounded-full ${dotColor} shrink-0"></span>
+              <span>Update Note</span>
+            </div>
+            <div class="text-slate-800 break-words">${escapeHtml(clean)}</div>
+          </div>
+        `;
+      }
+
+      return `
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-bold border ${colorClasses} whitespace-normal break-words leading-tight">
+          <span class="w-1.5 h-1.5 rounded-full ${dotColor} shrink-0"></span>
+          <span>${escapeHtml(clean)}</span>
+        </span>
+      `;
+    },
+
+    renderPptMilestoneBody(val, fallback) {
+      if (!val || String(val).trim() === '' || String(val).trim() === '-') {
+        return `<span class="ppt-milestone-empty italic">${escapeHtml(fallback || 'Pending')}</span>`;
+      }
+      const clean = String(val).trim();
+      const lower = clean.toLowerCase();
+
+      const isPositive = lower === 'yes' || lower === 'y' || lower.includes('approved') || lower.includes('completed') || lower === 'created';
+      const isNegative = lower === 'no' || lower === 'n' || lower.includes('not approved') || lower.includes('not created') || lower.includes('rejected');
+      const isProcess = lower.includes('process') || lower.includes('progress') || lower.includes('pending') || lower.includes('partial');
+
+      let badgeClass = 'status-neutral';
+      let dotClass = 'bg-slate-400';
+      if (isNegative) {
+        badgeClass = 'status-negative';
+        dotClass = 'bg-red-500';
+      } else if (isProcess) {
+        badgeClass = 'status-process';
+        dotClass = 'bg-amber-500';
+      } else if (isPositive) {
+        badgeClass = 'status-positive';
+        dotClass = 'bg-emerald-500';
+      }
+
+      return `
+        <div class="ppt-milestone-pill-wrap">
+          <span class="ppt-milestone-pill ${badgeClass}">
+            <span class="w-2 h-2 rounded-full ${dotClass} shrink-0 mt-0.5"></span>
+            <span class="status-text">${escapeHtml(clean)}</span>
+          </span>
+        </div>
+      `;
+    },
+
+    renderStackedBarSegment(cfg) {
+      const { cls, type, label, pct, millions, count, gradient } = cfg;
+      if (!pct || pct <= 0) return '';
+
+      const fullTitle = `${cls === 'major' ? 'Major' : 'Minor'} ${label}: PKR ${millions} M (${pct}%) • ${count} Project${count === 1 ? '' : 's'}`;
+
+      let innerContent = '';
+      if (pct < 12) {
+        innerContent = `<span class="font-mono text-[10px] font-black bg-black/40 px-1.5 py-0.5 rounded-full shrink-0 text-center">${pct}%</span>`;
+      } else if (pct < 28) {
+        const shortName = type === 'Replacement' ? 'Rep' : 'New';
+        innerContent = `
+          <div class="flex items-center justify-center gap-1 max-w-full overflow-hidden truncate px-1 text-center">
+            <span class="text-[10px] sm:text-[11px] font-bold truncate">${shortName}</span>
+            <span class="font-mono text-[10px] sm:text-[11px] font-black bg-black/35 px-1.5 py-0.5 rounded-full shrink-0">${pct}%</span>
+          </div>
+        `;
+      } else {
+        innerContent = `
+          <div class="flex items-center justify-center gap-1.5 max-w-full overflow-hidden truncate px-2 text-center">
+            <span class="text-[11px] sm:text-xs font-bold truncate">${label}</span>
+            <span class="font-mono text-[10px] sm:text-xs font-black bg-black/35 px-2 py-0.5 rounded-full shrink-0 whitespace-nowrap">${pct}% • PKR ${millions}M</span>
+          </div>
+        `;
+      }
+
+      return `
+        <div
+          onclick="window.FPCL_CAPEX_SUITE.setClassFilter('${cls}', '${type}')"
+          style="width: ${pct}%; min-width: 0;"
+          class="h-full bg-gradient-to-r ${gradient} hover:brightness-105 transition-all flex items-center justify-center text-center px-1 text-white font-semibold min-w-0 overflow-hidden cursor-pointer select-none"
+          title="${fullTitle}"
+        >
+          ${innerContent}
+        </div>
+      `;
     },
 
     renderSortArrow(col) {
@@ -3362,6 +3792,61 @@
                   <span>Service Life</span>
                 </div>
                 <div class="v">${escapeHtml(p.serviceLife || '')}</div>
+              </div>
+            </div>
+
+            <!-- Eye-Catching Procurement & Execution Milestones Bar (Columns W, X, Y) -->
+            <div class="ppt-milestones">
+              <div class="ppt-milestone-lead">
+                <div class="lead-icon">
+                  <i data-lucide="git-commit" class="w-4 h-4"></i>
+                </div>
+                <div class="lead-text">
+                  <span class="lead-label">Execution Pipeline</span>
+                  <span class="lead-sub">Procurement Milestones</span>
+                </div>
+              </div>
+
+              <!-- Milestone 1: PR Created / Approved (Column W) -->
+              <div class="ppt-milestone-card pr">
+                <div class="milestone-head">
+                  <span class="milestone-title">
+                    <i data-lucide="clipboard-check" class="w-3.5 h-3.5 text-indigo-600"></i>
+                    <span>PR Created / Approved</span>
+                  </span>
+                  <span class="col-indicator">Col W</span>
+                </div>
+                <div class="ppt-milestone-body scrollable" title="${escapeHtml(p.prStatus || 'Pending')}">
+                  ${this.renderPptMilestoneBody(p.prStatus, 'PR Pending')}
+                </div>
+              </div>
+
+              <!-- Milestone 2: RFQ Floated (Column X) -->
+              <div class="ppt-milestone-card rfq">
+                <div class="milestone-head">
+                  <span class="milestone-title">
+                    <i data-lucide="send" class="w-3.5 h-3.5 text-sky-600"></i>
+                    <span>RFQ Floated</span>
+                  </span>
+                  <span class="col-indicator">Col X</span>
+                </div>
+                <div class="ppt-milestone-body scrollable" title="${escapeHtml(p.rfqFloated || 'Pending')}">
+                  ${this.renderPptMilestoneBody(p.rfqFloated, 'RFQ Not Floated')}
+                </div>
+              </div>
+
+              <!-- Milestone 3: PO Created (Column Y) -->
+              <div class="ppt-milestone-card po">
+                <div class="milestone-head">
+                  <span class="milestone-title">
+                    <i data-lucide="shopping-bag" class="w-3.5 h-3.5 text-emerald-600"></i>
+                    <span>PO Created</span>
+                  </span>
+                  <span class="col-indicator">Col Y</span>
+                </div>
+                <div class="ppt-milestone-body scrollable" title="${escapeHtml(p.poCreated || 'Pending')}">
+                  ${this.renderPptMilestoneBody(p.poCreated, 'PO Pending')}
+                </div>
               </div>
             </div>
 

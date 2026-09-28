@@ -29,9 +29,14 @@
   const EHSE_SHEET_URL = `https://docs.google.com/spreadsheets/d/${EHSE_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${EHSE_SHEET_TAB}`;
 
   const ehseSuite = {
+    // Dynamic calculation of current year
+    getCurrentYear() {
+      return String(new Date().getFullYear());
+    },
+
     state: {
       searchQuery: '',
-      yearFilter: 'all',    // Column C: Year from Date of Meeting
+      yearFilter: String(new Date().getFullYear()),    // Column C: Year from Date of Meeting (Dynamically opens with current year)
       refFilter: 'all',     // Column D: Ref. #
       deptFilter: 'all',    // Column G: Responsibility Department (Action by)
       statusFilter: 'all',  // Column H: Status (Open / Close)
@@ -41,8 +46,17 @@
       isSettingsOpen: false
     },
 
+    // Executed whenever the EHSE dashboard is opened to dynamically ensure current year filter
+    onOpen() {
+      this.state.yearFilter = this.getCurrentYear();
+      this.render();
+    },
+
     init() {
       window.FPCL_EHSE_SUITE = this;
+
+      // Ensure initial open starts with dynamic current year filter
+      this.state.yearFilter = this.getCurrentYear();
 
       // Fast cache retrieval
       try {
@@ -126,7 +140,13 @@
     getItemYear(item) {
       if (!item) return '';
       if (item.year) return String(item.year);
-      return this.extractYearFromDate(item.dateOfMeeting);
+      const fromDate = this.extractYearFromDate(item.dateOfMeeting);
+      if (fromDate) return fromDate;
+      const fromRef = this.extractYearFromDate(item.refNo);
+      if (fromRef) return fromRef;
+      const fromSubject = this.extractYearFromDate(item.subject);
+      if (fromSubject) return fromSubject;
+      return '';
     },
 
     // Helper to evaluate item status (instruction: count point as open if empty cell is found)
@@ -356,13 +376,25 @@
 
     resetFilters() {
       this.state.searchQuery = '';
+      this.state.yearFilter = this.getCurrentYear();
+      this.state.refFilter = 'all';
+      this.state.deptFilter = 'all';
+      this.state.statusFilter = 'all';
+      this.render();
+      if (window.portalApp && window.portalApp.showToast) {
+        window.portalApp.showToast('Filters Reset', `EHSE filters restored to current year (${this.getCurrentYear()}).`, 'info');
+      }
+    },
+
+    clearAllFilters() {
+      this.state.searchQuery = '';
       this.state.yearFilter = 'all';
       this.state.refFilter = 'all';
       this.state.deptFilter = 'all';
       this.state.statusFilter = 'all';
       this.render();
       if (window.portalApp && window.portalApp.showToast) {
-        window.portalApp.showToast('Filters Reset', 'All EHSE filters restored to default.', 'info');
+        window.portalApp.showToast('All Filters Cleared', 'All EHSE filters cleared (showing all years).', 'info');
       }
     },
 
@@ -986,6 +1018,7 @@
         .sort((a, b) => b.total - a.total);
 
       // Distinct options for filters from dataset
+      const currentYear = this.getCurrentYear();
       const yearSet = new Set();
       let hasUnknownYear = false;
       raw.forEach(item => {
@@ -996,6 +1029,8 @@
           hasUnknownYear = true;
         }
       });
+      // Ensure dynamic current year is always available in filter list
+      yearSet.add(currentYear);
       const allYears = Array.from(yearSet).sort((a, b) => b.localeCompare(a));
       const allRefNumbers = Array.from(new Set(raw.map(i => i.refNo).filter(Boolean))).sort();
       const allDepartments = Array.from(new Set(raw.map(i => i.actionBy).filter(Boolean))).sort();
@@ -1178,15 +1213,54 @@
             <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-teal-600 via-cyan-600 to-blue-600"></div>
 
             ${isAnyFilterActive ? `
-              <div class="flex justify-end pb-2.5">
-                <button
-                  type="button"
-                  onclick="FPCL_EHSE_SUITE.resetFilters()"
-                  class="text-xs font-bold text-rose-600 hover:text-rose-700 flex items-center gap-1 cursor-pointer transition-colors"
-                >
-                  <i data-lucide="rotate-ccw" class="w-3 h-3"></i>
-                  <span>Clear Active Filters</span>
-                </button>
+              <div class="flex items-center justify-between pb-2.5 flex-wrap gap-2">
+                <div class="flex items-center gap-1.5 text-xs flex-wrap">
+                  <span class="text-slate-500 font-bold">Active:</span>
+                  ${s.yearFilter !== 'all' ? `
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-teal-50 text-teal-800 border border-teal-300">
+                      <span>Year: ${s.yearFilter}${s.yearFilter === currentYear ? ' (Current Year)' : ''}</span>
+                      <button type="button" onclick="FPCL_EHSE_SUITE.setYearFilter('all')" class="hover:text-red-600 cursor-pointer ml-0.5" title="Remove year filter">×</button>
+                    </span>
+                  ` : ''}
+                  ${s.refFilter !== 'all' ? `
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-teal-50 text-teal-800 border border-teal-300">
+                      <span>Ref: ${s.refFilter}</span>
+                      <button type="button" onclick="FPCL_EHSE_SUITE.setRefFilter('all')" class="hover:text-red-600 cursor-pointer ml-0.5">×</button>
+                    </span>
+                  ` : ''}
+                  ${s.deptFilter !== 'all' ? `
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-teal-50 text-teal-800 border border-teal-300">
+                      <span>Dept: ${s.deptFilter}</span>
+                      <button type="button" onclick="FPCL_EHSE_SUITE.setDeptFilter('all')" class="hover:text-red-600 cursor-pointer ml-0.5">×</button>
+                    </span>
+                  ` : ''}
+                  ${s.statusFilter !== 'all' ? `
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-extrabold ${s.statusFilter === 'Close' ? 'bg-emerald-50 text-emerald-800 border-emerald-300' : 'bg-red-50 text-red-800 border-red-300'}">
+                      <span>Status: ${s.statusFilter}</span>
+                      <button type="button" onclick="FPCL_EHSE_SUITE.setStatusFilter('all')" class="hover:text-red-600 cursor-pointer ml-0.5">×</button>
+                    </span>
+                  ` : ''}
+                </div>
+                <div class="flex items-center gap-3">
+                  ${s.yearFilter !== 'all' ? `
+                    <button
+                      type="button"
+                      onclick="FPCL_EHSE_SUITE.setYearFilter('all')"
+                      class="text-xs font-bold text-teal-700 hover:text-teal-800 flex items-center gap-1 cursor-pointer transition-colors"
+                    >
+                      <i data-lucide="layers" class="w-3 h-3"></i>
+                      <span>Show All Years</span>
+                    </button>
+                  ` : ''}
+                  <button
+                    type="button"
+                    onclick="FPCL_EHSE_SUITE.clearAllFilters()"
+                    class="text-xs font-bold text-rose-600 hover:text-rose-700 flex items-center gap-1 cursor-pointer transition-colors"
+                  >
+                    <i data-lucide="rotate-ccw" class="w-3 h-3"></i>
+                    <span>Clear All Filters</span>
+                  </button>
+                </div>
               </div>
             ` : ''}
 
@@ -1194,17 +1268,25 @@
               
               <!-- Filter 1: Column C (Year from Date of Meeting) -->
               <div class="space-y-1">
-                <label class="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">
-                  Column C: Year (Date of Meeting)
-                </label>
+                <div class="flex items-center justify-between">
+                  <label class="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">
+                    Column C: Year (Date of Meeting)
+                  </label>
+                  ${s.yearFilter === currentYear ? `
+                    <span class="text-[10px] font-extrabold text-teal-700 bg-teal-50 px-2 py-0.5 rounded-md border border-teal-200">
+                      Current Year
+                    </span>
+                  ` : ''}
+                </div>
                 <select
                   onchange="FPCL_EHSE_SUITE.setYearFilter(this.value)"
-                  class="w-full text-xs font-semibold px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer transition-colors shadow-2xs"
+                  class="w-full text-xs font-semibold px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer transition-colors shadow-2xs ${s.yearFilter === currentYear ? 'ring-1 ring-teal-500/40 bg-teal-50/20' : ''}"
                 >
-                  <option value="all" ${s.yearFilter === 'all' ? 'selected' : ''}>All Years (${allYears.length > 0 ? allYears.length : 'All'})</option>
+                  <option value="all" ${s.yearFilter === 'all' ? 'selected' : ''}>All Years (${raw.length} Total)</option>
                   ${allYears.map(yr => {
                     const yrCount = raw.filter(i => this.getItemYear(i) === yr).length;
-                    return `<option value="${yr}" ${s.yearFilter === yr ? 'selected' : ''}>${yr} (${yrCount})</option>`;
+                    const isCur = yr === currentYear;
+                    return `<option value="${yr}" ${s.yearFilter === yr ? 'selected' : ''}>${yr}${isCur ? ' (Current Year)' : ''} (${yrCount})</option>`;
                   }).join('')}
                   ${hasUnknownYear ? `
                     <option value="unknown" ${s.yearFilter === 'unknown' ? 'selected' : ''}>Unknown Year</option>
@@ -1425,15 +1507,27 @@
                     <tr>
                       <td colspan="10" class="py-12 text-center text-slate-400">
                         <i data-lucide="inbox" class="w-8 h-8 mx-auto mb-2 text-slate-300"></i>
-                        <p class="font-bold text-sm text-slate-700">No matching observations found</p>
-                        <p class="text-xs mt-1">Try clearing or adjusting your filter selection.</p>
-                        <button
-                          type="button"
-                          onclick="FPCL_EHSE_SUITE.resetFilters()"
-                          class="mt-3 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-teal-50 text-teal-700 border border-teal-200 font-bold hover:bg-teal-100 cursor-pointer"
-                        >
-                          Reset Filters
-                        </button>
+                        <p class="font-bold text-sm text-slate-700">No matching observations found ${s.yearFilter !== 'all' ? `for Year ${s.yearFilter}` : ''}</p>
+                        <p class="text-xs mt-1 text-slate-500">The EHSE dashboard dynamically opened with the current year (${currentYear}) filter.</p>
+                        <div class="mt-4 flex items-center justify-center gap-2 flex-wrap">
+                          ${s.yearFilter !== 'all' ? `
+                            <button
+                              type="button"
+                              onclick="FPCL_EHSE_SUITE.setYearFilter('all')"
+                              class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs cursor-pointer shadow-xs transition-all"
+                            >
+                              <i data-lucide="layers" class="w-3.5 h-3.5"></i>
+                              <span>Show All Years (${raw.length} Records)</span>
+                            </button>
+                          ` : ''}
+                          <button
+                            type="button"
+                            onclick="FPCL_EHSE_SUITE.clearAllFilters()"
+                            class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 font-bold text-xs cursor-pointer transition-all"
+                          >
+                            Clear All Filters
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ` : filtered.map((item, idx) => {

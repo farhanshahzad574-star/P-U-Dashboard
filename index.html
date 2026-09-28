@@ -102,10 +102,10 @@
     <script src="/assets/capexSuite.js?v=20260925a"></script>
     <!-- Sub HSE - P (Production HSE Sub-Committee) Dataset & Specialized Executive Suite -->
     <script src="/assets/subHsePData.js?v=20260926a"></script>
-    <script src="/assets/subHsePSuite.js?v=20260926a"></script>
+    <script src="/assets/subHsePSuite.js?v=20260928a"></script>
     <!-- Sub HSE – E&I (Electrical & Instrumentation HSE Sub-Committee) Dataset & Specialized Executive Suite -->
     <script src="/assets/subHseEiData.js?v=20260926b"></script>
-    <script src="/assets/subHseEiSuite.js?v=20260926b"></script>
+    <script src="/assets/subHseEiSuite.js?v=20260928a"></script>
     <!-- EHSE (Executive HSE Committee) Dataset & Specialized Executive Suite -->
     <script src="/assets/ehseData.js?v=20260926a"></script>
     <script src="/assets/ehseSuite.js?v=20260926b"></script>
@@ -4624,9 +4624,6 @@
             if (!row || row.length < 3) continue;
 
             const getField = (colIdx, aliases, fallback = '') => {
-              if (colIdx !== undefined && row[colIdx] !== undefined && String(row[colIdx]).trim() !== '') {
-                return String(row[colIdx]).trim();
-              }
               if (Array.isArray(aliases)) {
                 for (const a of aliases) {
                   const idx = colMap[a.toLowerCase().replace(/[^a-z0-9]/g, '')];
@@ -4634,6 +4631,9 @@
                     return String(row[idx]).trim();
                   }
                 }
+              }
+              if (colIdx !== undefined && row[colIdx] !== undefined && String(row[colIdx]).trim() !== '') {
+                return String(row[colIdx]).trim();
               }
               return fallback;
             };
@@ -4670,6 +4670,12 @@
             const background = getField(19, ['background', 'bg', 'projectbackground', 'project_background'], '');
             const problem = getField(20, ['problem', 'problemstatement', 'issue'], '');
             const justification = getField(21, ['justification', 'projectjustification'], '');
+            // Col W (idx 22): PR_created/approved
+            const prStatus = getField(22, ['prcreatedapproved', 'prcreated/approved', 'pr_created/approved', 'pr_created_approved', 'prcreated', 'prapproved', 'prstatus'], '');
+            // Col X (idx 23): RFQ _Floated
+            const rfqFloated = getField(23, ['rfqfloated', 'rfq_floated', 'rfq', 'rfqfloatedyesno', 'rfq_floated_yes_no'], '');
+            // Col Y (idx 24): PO_created
+            const poCreated = getField(24, ['pocreated', 'po_created', 'pocreatedapproved', 'po_created_approved', 'pocreatedyes', 'po_created_yes'], '');
 
             parsedItems.push({
               sr,
@@ -4697,7 +4703,11 @@
               assigned: unit,
               background,
               problem,
-              justification
+              justification,
+              prStatus,
+              prCreatedApproved: prStatus,
+              rfqFloated,
+              poCreated
             });
           }
           return parsedItems;
@@ -6453,7 +6463,9 @@
               capexContainer.classList.remove('hidden');
               capexContainer.hidden = false;
               if (window.FPCL_CAPEX_SUITE) {
-                if (typeof window.FPCL_CAPEX_SUITE.render === 'function') {
+                if (typeof window.FPCL_CAPEX_SUITE.onOpen === 'function') {
+                  window.FPCL_CAPEX_SUITE.onOpen();
+                } else if (typeof window.FPCL_CAPEX_SUITE.render === 'function') {
                   window.FPCL_CAPEX_SUITE.render();
                 }
                 if (typeof window.FPCL_CAPEX_SUITE.syncLiveFeed === 'function') {
@@ -6507,7 +6519,9 @@
               subHsePContainer.classList.remove('hidden');
               subHsePContainer.hidden = false;
               if (window.FPCL_SUB_HSE_P_SUITE) {
-                if (typeof window.FPCL_SUB_HSE_P_SUITE.render === 'function') {
+                if (typeof window.FPCL_SUB_HSE_P_SUITE.onOpen === 'function') {
+                  window.FPCL_SUB_HSE_P_SUITE.onOpen();
+                } else if (typeof window.FPCL_SUB_HSE_P_SUITE.render === 'function') {
                   window.FPCL_SUB_HSE_P_SUITE.render();
                 }
                 if (typeof window.FPCL_SUB_HSE_P_SUITE.syncLiveFeed === 'function') {
@@ -6558,7 +6572,9 @@
               subHseEiContainer.classList.remove('hidden');
               subHseEiContainer.hidden = false;
               if (window.FPCL_SUB_HSE_EI_SUITE) {
-                if (typeof window.FPCL_SUB_HSE_EI_SUITE.render === 'function') {
+                if (typeof window.FPCL_SUB_HSE_EI_SUITE.onOpen === 'function') {
+                  window.FPCL_SUB_HSE_EI_SUITE.onOpen();
+                } else if (typeof window.FPCL_SUB_HSE_EI_SUITE.render === 'function') {
                   window.FPCL_SUB_HSE_EI_SUITE.render();
                 }
                 if (typeof window.FPCL_SUB_HSE_EI_SUITE.syncLiveFeed === 'function') {
@@ -6609,7 +6625,9 @@
               ehseContainer.classList.remove('hidden');
               ehseContainer.hidden = false;
               if (window.FPCL_EHSE_SUITE) {
-                if (typeof window.FPCL_EHSE_SUITE.render === 'function') {
+                if (typeof window.FPCL_EHSE_SUITE.onOpen === 'function') {
+                  window.FPCL_EHSE_SUITE.onOpen();
+                } else if (typeof window.FPCL_EHSE_SUITE.render === 'function') {
                   window.FPCL_EHSE_SUITE.render();
                 }
                 if (typeof window.FPCL_EHSE_SUITE.syncLiveFeed === 'function') {
