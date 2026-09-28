@@ -2003,9 +2003,9 @@
               ` : ''}
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
+            <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
               <!-- Search Filter -->
-              <div class="relative">
+              <div class="relative col-span-2 sm:col-span-1">
                 <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-slate-400">
                   <i data-lucide="search" class="w-3.5 h-3.5"></i>
                 </div>
@@ -2030,7 +2030,7 @@
               <!-- Department Filter -->
               <div class="relative">
                 <select
-                  class="w-full py-1.5 pl-2.5 pr-7 bg-slate-50 hover:bg-white focus:bg-white text-slate-900 border ${this.state.masterFilterDept && this.state.masterFilterDept !== 'all' ? 'border-amber-500 bg-amber-50/50 text-amber-950 font-bold' : 'border-slate-300'} focus:border-amber-500 rounded-xl text-xs font-semibold outline-none transition-all cursor-pointer appearance-none"
+                  class="w-full py-1.5 pl-2.5 pr-7 bg-slate-50 hover:bg-white focus:bg-white text-slate-900 border ${this.state.masterFilterDept && this.state.masterFilterDept !== 'all' ? 'border-amber-500 bg-amber-50/50 text-amber-950 font-bold' : 'border-slate-300'} focus:border-amber-500 rounded-xl text-xs font-semibold outline-none transition-all cursor-pointer appearance-none truncate"
                   onchange="window.FPCL_STRATEGIC_SUITE.setMasterFilter('masterFilterDept', this.value)"
                 >
                   <option value="all">All Depts (${allTiles.length})</option>
@@ -2046,7 +2046,7 @@
               <!-- Column C: Action category -->
               <div class="relative">
                 <select
-                  class="w-full py-1.5 pl-2.5 pr-7 bg-slate-50 hover:bg-white focus:bg-white text-slate-900 border ${this.state.masterFilterColC && this.state.masterFilterColC !== 'all' ? 'border-amber-500 bg-amber-50/50 text-amber-950 font-bold' : 'border-slate-300'} focus:border-amber-500 rounded-xl text-xs font-semibold outline-none transition-all cursor-pointer appearance-none"
+                  class="w-full py-1.5 pl-2.5 pr-7 bg-slate-50 hover:bg-white focus:bg-white text-slate-900 border ${this.state.masterFilterColC && this.state.masterFilterColC !== 'all' ? 'border-amber-500 bg-amber-50/50 text-amber-950 font-bold' : 'border-slate-300'} focus:border-amber-500 rounded-xl text-xs font-semibold outline-none transition-all cursor-pointer appearance-none truncate"
                   onchange="window.FPCL_STRATEGIC_SUITE.setMasterFilter('masterFilterColC', this.value)"
                 >
                   <option value="all">Category [Col C]: All</option>
@@ -2062,7 +2062,7 @@
               <!-- Column D: Assigned to -->
               <div class="relative">
                 <select
-                  class="w-full py-1.5 pl-2.5 pr-7 bg-slate-50 hover:bg-white focus:bg-white text-slate-900 border ${this.state.masterFilterColD && this.state.masterFilterColD !== 'all' ? 'border-amber-500 bg-amber-50/50 text-amber-950 font-bold' : 'border-slate-300'} focus:border-amber-500 rounded-xl text-xs font-semibold outline-none transition-all cursor-pointer appearance-none"
+                  class="w-full py-1.5 pl-2.5 pr-7 bg-slate-50 hover:bg-white focus:bg-white text-slate-900 border ${this.state.masterFilterColD && this.state.masterFilterColD !== 'all' ? 'border-amber-500 bg-amber-50/50 text-amber-950 font-bold' : 'border-slate-300'} focus:border-amber-500 rounded-xl text-xs font-semibold outline-none transition-all cursor-pointer appearance-none truncate"
                   onchange="window.FPCL_STRATEGIC_SUITE.setMasterFilter('masterFilterColD', this.value)"
                 >
                   <option value="all">Assigned [Col D]: All</option>
@@ -2078,7 +2078,7 @@
               <!-- Column F: Status detail -->
               <div class="relative">
                 <select
-                  class="w-full py-1.5 pl-2.5 pr-7 bg-slate-50 hover:bg-white focus:bg-white text-slate-800 border ${this.state.masterFilterStatus && this.state.masterFilterStatus !== 'all' ? 'border-amber-500 bg-amber-50/50 text-amber-950 font-bold' : 'border-slate-300'} focus:border-amber-500 rounded-xl text-xs font-semibold outline-none transition-all cursor-pointer appearance-none shadow-2xs"
+                  class="w-full py-1.5 pl-2.5 pr-7 bg-slate-50 hover:bg-white focus:bg-white text-slate-800 border ${this.state.masterFilterStatus && this.state.masterFilterStatus !== 'all' ? 'border-amber-500 bg-amber-50/50 text-amber-950 font-bold' : 'border-slate-300'} focus:border-amber-500 rounded-xl text-xs font-semibold outline-none transition-all cursor-pointer appearance-none shadow-2xs truncate"
                   onchange="window.FPCL_STRATEGIC_SUITE.setMasterFilter('masterFilterStatus', this.value)"
                 >
                   <option value="all">Status [Col F]: All (${chartTotal})</option>
@@ -2091,9 +2091,9 @@
               </div>
 
               <!-- Column H: Ack by -->
-              <div class="relative">
+              <div class="relative col-span-2 sm:col-span-1">
                 <select
-                  class="w-full py-1.5 pl-2.5 pr-7 bg-slate-50 hover:bg-white focus:bg-white text-slate-900 border ${this.state.masterFilterColH && this.state.masterFilterColH !== 'all' ? 'border-amber-500 bg-amber-50/50 text-amber-950 font-bold' : 'border-slate-300'} focus:border-amber-500 rounded-xl text-xs font-semibold outline-none transition-all cursor-pointer appearance-none"
+                  class="w-full py-1.5 pl-2.5 pr-7 bg-slate-50 hover:bg-white focus:bg-white text-slate-900 border ${this.state.masterFilterColH && this.state.masterFilterColH !== 'all' ? 'border-amber-500 bg-amber-50/50 text-amber-950 font-bold' : 'border-slate-300'} focus:border-amber-500 rounded-xl text-xs font-semibold outline-none transition-all cursor-pointer appearance-none truncate"
                   onchange="window.FPCL_STRATEGIC_SUITE.setMasterFilter('masterFilterColH', this.value)"
                 >
                   <option value="all">Ack By [Col H]: All</option>
@@ -3093,9 +3093,9 @@
               ` : ''}
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 sm:gap-2.5">
+            <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-2 sm:gap-2.5">
               <!-- Search Filter -->
-              <div class="relative">
+              <div class="relative col-span-2 sm:col-span-1">
                 <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-slate-400">
                   <i data-lucide="search" class="w-3.5 h-3.5"></i>
                 </div>
@@ -3119,7 +3119,7 @@
               <!-- Column C: Action category -->
               <div class="relative">
                 <select
-                  class="w-full py-2 pl-2.5 pr-7 bg-slate-50 hover:bg-white focus:bg-white text-slate-800 border ${this.state.tileFilterColC && this.state.tileFilterColC !== 'all' ? 'border-purple-500 bg-purple-50/50 text-purple-900 font-bold' : 'border-slate-200'} focus:border-purple-500 rounded-xl text-xs font-semibold outline-none transition-all cursor-pointer appearance-none shadow-2xs"
+                  class="w-full py-2 pl-2.5 pr-7 bg-slate-50 hover:bg-white focus:bg-white text-slate-800 border ${this.state.tileFilterColC && this.state.tileFilterColC !== 'all' ? 'border-purple-500 bg-purple-50/50 text-purple-900 font-bold' : 'border-slate-200'} focus:border-purple-500 rounded-xl text-xs font-semibold outline-none transition-all cursor-pointer appearance-none shadow-2xs truncate"
                   onchange="window.FPCL_STRATEGIC_SUITE.setTileFilter('tileFilterColC', this.value)"
                 >
                   <option value="all">Category [Col C]: All</option>
@@ -3135,7 +3135,7 @@
               <!-- Column D: Assigned to -->
               <div class="relative">
                 <select
-                  class="w-full py-2 pl-2.5 pr-7 bg-slate-50 hover:bg-white focus:bg-white text-slate-800 border ${this.state.tileFilterColD && this.state.tileFilterColD !== 'all' ? 'border-purple-500 bg-purple-50/50 text-purple-900 font-bold' : 'border-slate-200'} focus:border-purple-500 rounded-xl text-xs font-semibold outline-none transition-all cursor-pointer appearance-none shadow-2xs"
+                  class="w-full py-2 pl-2.5 pr-7 bg-slate-50 hover:bg-white focus:bg-white text-slate-800 border ${this.state.tileFilterColD && this.state.tileFilterColD !== 'all' ? 'border-purple-500 bg-purple-50/50 text-purple-900 font-bold' : 'border-slate-200'} focus:border-purple-500 rounded-xl text-xs font-semibold outline-none transition-all cursor-pointer appearance-none shadow-2xs truncate"
                   onchange="window.FPCL_STRATEGIC_SUITE.setTileFilter('tileFilterColD', this.value)"
                 >
                   <option value="all">Assigned [Col D]: All</option>
@@ -3151,7 +3151,7 @@
               <!-- Column F: Status detail -->
               <div class="relative">
                 <select
-                  class="w-full py-2 pl-2.5 pr-7 bg-slate-50 hover:bg-white focus:bg-white text-slate-800 border ${this.state.tileFilterStatus && this.state.tileFilterStatus !== 'all' ? 'border-purple-500 bg-purple-50/50 text-purple-900 font-bold' : 'border-slate-200'} focus:border-purple-500 rounded-xl text-xs font-semibold outline-none transition-all cursor-pointer appearance-none shadow-2xs"
+                  class="w-full py-2 pl-2.5 pr-7 bg-slate-50 hover:bg-white focus:bg-white text-slate-800 border ${this.state.tileFilterStatus && this.state.tileFilterStatus !== 'all' ? 'border-purple-500 bg-purple-50/50 text-purple-900 font-bold' : 'border-slate-200'} focus:border-purple-500 rounded-xl text-xs font-semibold outline-none transition-all cursor-pointer appearance-none shadow-2xs truncate"
                   onchange="window.FPCL_STRATEGIC_SUITE.setTileFilter('tileFilterStatus', this.value)"
                 >
                   <option value="all">Status [Col F]: All (${totalActions})</option>
@@ -3164,9 +3164,9 @@
               </div>
 
               <!-- Column H: Ack by -->
-              <div class="relative">
+              <div class="relative col-span-2 sm:col-span-1">
                 <select
-                  class="w-full py-2 pl-2.5 pr-7 bg-slate-50 hover:bg-white focus:bg-white text-slate-800 border ${this.state.tileFilterColH && this.state.tileFilterColH !== 'all' ? 'border-purple-500 bg-purple-50/50 text-purple-900 font-bold' : 'border-slate-200'} focus:border-purple-500 rounded-xl text-xs font-semibold outline-none transition-all cursor-pointer appearance-none shadow-2xs"
+                  class="w-full py-2 pl-2.5 pr-7 bg-slate-50 hover:bg-white focus:bg-white text-slate-800 border ${this.state.tileFilterColH && this.state.tileFilterColH !== 'all' ? 'border-purple-500 bg-purple-50/50 text-purple-900 font-bold' : 'border-slate-200'} focus:border-purple-500 rounded-xl text-xs font-semibold outline-none transition-all cursor-pointer appearance-none shadow-2xs truncate"
                   onchange="window.FPCL_STRATEGIC_SUITE.setTileFilter('tileFilterColH', this.value)"
                 >
                   <option value="all">Ack By [Col H]: All</option>
@@ -3589,7 +3589,7 @@
 
           <!-- SCM FILTER BAR -->
           <div class="bg-white border border-slate-200 rounded-2xl p-3.5 sm:p-4 shadow-xs space-y-3">
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="grid grid-cols-2 gap-2 sm:gap-3">
               <!-- Search Filter -->
               <div class="relative">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
@@ -3599,7 +3599,7 @@
                   type="text"
                   value="${this.state.tileFilterSearch || ''}"
                   placeholder="Filter SCM deliverables, ID, remarks..."
-                  class="w-full pl-9 pr-8 py-2 bg-slate-50 hover:bg-white focus:bg-white text-slate-900 border border-slate-200 focus:border-amber-500 rounded-xl text-xs sm:text-sm font-medium outline-none transition-all"
+                  class="w-full pl-9 pr-8 py-1.5 sm:py-2 bg-slate-50 hover:bg-white focus:bg-white text-slate-900 border border-slate-200 focus:border-amber-500 rounded-xl text-xs sm:text-sm font-medium outline-none transition-all"
                   oninput="window.FPCL_STRATEGIC_SUITE.setTileFilter('tileFilterSearch', this.value)"
                 />
                 ${this.state.tileFilterSearch ? `
@@ -3616,7 +3616,7 @@
               <div class="relative">
                 <select
                   onchange="window.FPCL_STRATEGIC_SUITE.setTileFilter('tileFilterStatus', this.value)"
-                  class="w-full px-3.5 py-2 bg-slate-50 hover:bg-white focus:bg-white text-slate-800 border border-slate-200 focus:border-purple-500 rounded-xl text-xs sm:text-sm font-bold outline-none transition-all cursor-pointer"
+                  class="w-full px-2.5 sm:px-3.5 py-1.5 sm:py-2 bg-slate-50 hover:bg-white focus:bg-white text-slate-800 border border-slate-200 focus:border-purple-500 rounded-xl text-xs sm:text-sm font-bold outline-none transition-all cursor-pointer truncate"
                 >
                   <option value="all" ${this.state.tileFilterStatus === 'all' ? 'selected' : ''}>All Statuses (${totalActions})</option>
                   <option value="Open" ${this.state.tileFilterStatus === 'Open' ? 'selected' : ''}>Open Only (${openActions})</option>
@@ -4189,7 +4189,7 @@
 
           <!-- ADMIN & SECURITY FILTER BAR -->
           <div class="bg-white border border-slate-200 rounded-2xl p-3.5 sm:p-4 shadow-xs space-y-3">
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="grid grid-cols-2 gap-2 sm:gap-3">
               <!-- Search Filter -->
               <div class="relative">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
@@ -4199,7 +4199,7 @@
                   type="text"
                   value="${this.state.tileFilterSearch || ''}"
                   placeholder="Filter Admin & Security deliverables, ID, remarks..."
-                  class="w-full pl-9 pr-8 py-2 bg-slate-50 hover:bg-white focus:bg-white text-slate-900 border border-slate-200 focus:border-slate-800 rounded-xl text-xs sm:text-sm font-medium outline-none transition-all"
+                  class="w-full pl-9 pr-8 py-1.5 sm:py-2 bg-slate-50 hover:bg-white focus:bg-white text-slate-900 border border-slate-200 focus:border-slate-800 rounded-xl text-xs sm:text-sm font-medium outline-none transition-all"
                   oninput="window.FPCL_STRATEGIC_SUITE.setTileFilter('tileFilterSearch', this.value)"
                 />
                 ${this.state.tileFilterSearch ? `
@@ -4216,7 +4216,7 @@
               <div class="relative">
                 <select
                   onchange="window.FPCL_STRATEGIC_SUITE.setTileFilter('tileFilterStatus', this.value)"
-                  class="w-full px-3.5 py-2 bg-slate-50 hover:bg-white focus:bg-white text-slate-800 border border-slate-200 focus:border-slate-800 rounded-xl text-xs sm:text-sm font-bold outline-none transition-all cursor-pointer"
+                  class="w-full px-2.5 sm:px-3.5 py-1.5 sm:py-2 bg-slate-50 hover:bg-white focus:bg-white text-slate-800 border border-slate-200 focus:border-slate-800 rounded-xl text-xs sm:text-sm font-bold outline-none transition-all cursor-pointer truncate"
                 >
                   <option value="all" ${this.state.tileFilterStatus === 'all' ? 'selected' : ''}>All Statuses (${totalActions})</option>
                   <option value="Open" ${this.state.tileFilterStatus === 'Open' ? 'selected' : ''}>Open Only (${openActions})</option>

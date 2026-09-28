@@ -2212,14 +2212,14 @@
           <!-- ========================================================================= -->
           <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs space-y-3">
             <!-- Filter Controls Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-7 gap-3">
+            <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-7 gap-2 sm:gap-3">
 
               <!-- 1. Status Filter -->
               <div>
-                <label class="block text-xs sm:text-[13px] font-bold uppercase tracking-wider text-slate-600 mb-1.5">STATUS</label>
+                <label class="block text-[10px] sm:text-[13px] font-bold uppercase tracking-wider text-slate-600 mb-1 truncate">STATUS</label>
                 <select
                   onchange="FPCL_PSM_SUITE.setStatusFilter(this.value)"
-                  class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer shadow-2xs"
+                  class="w-full px-2.5 sm:px-3.5 py-2 sm:py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer shadow-2xs truncate"
                 >
                   <option value="all" ${s.statusFilter === 'all' ? 'selected' : ''}>All Statuses (${totalRaw})</option>
                   <option value="Open" ${s.statusFilter === 'Open' ? 'selected' : ''}>Open</option>
@@ -2229,46 +2229,46 @@
 
               <!-- 2. Action Department -->
               <div>
-                <label class="block text-xs sm:text-[13px] font-bold uppercase tracking-wider text-slate-600 mb-1.5">ACTION DEPT</label>
+                <label class="block text-[10px] sm:text-[13px] font-bold uppercase tracking-wider text-slate-600 mb-1 truncate">ACTION DEPT</label>
                 <select
                   onchange="FPCL_PSM_SUITE.setDeptFilter(this.value)"
-                  class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer shadow-2xs"
+                  class="w-full px-2.5 sm:px-3.5 py-2 sm:py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer shadow-2xs truncate"
                 >
-                  <option value="all" ${s.deptFilter === 'all' ? 'selected' : ''}>All Departments</option>
+                  <option value="all" ${s.deptFilter === 'all' ? 'selected' : ''}>All Depts</option>
                   ${allDepts.map(d => `<option value="${d}" ${s.deptFilter === d ? 'selected' : ''}>${d}</option>`).join('')}
                 </select>
               </div>
 
               <!-- 3. Action Unit -->
               <div>
-                <label class="block text-xs sm:text-[13px] font-bold uppercase tracking-wider text-slate-600 mb-1.5">ACTION UNIT</label>
+                <label class="block text-[10px] sm:text-[13px] font-bold uppercase tracking-wider text-slate-600 mb-1 truncate">ACTION UNIT</label>
                 <select
                   onchange="FPCL_PSM_SUITE.setUnitFilter(this.value)"
-                  class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer shadow-2xs"
+                  class="w-full px-2.5 sm:px-3.5 py-2 sm:py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer shadow-2xs truncate"
                 >
-                  <option value="all" ${s.unitFilter === 'all' ? 'selected' : ''}>All Action Units</option>
+                  <option value="all" ${s.unitFilter === 'all' ? 'selected' : ''}>All Units</option>
                   ${allUnits.map(u => `<option value="${u}" ${s.unitFilter === u ? 'selected' : ''}>${u}</option>`).join('')}
                 </select>
               </div>
 
               <!-- 4. PSM Element -->
               <div>
-                <label class="block text-xs sm:text-[13px] font-bold uppercase tracking-wider text-slate-600 mb-1.5">PSM ELEMENT</label>
+                <label class="block text-[10px] sm:text-[13px] font-bold uppercase tracking-wider text-slate-600 mb-1 truncate">PSM ELEMENT</label>
                 <select
                   onchange="FPCL_PSM_SUITE.setElementFilter(this.value)"
-                  class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer shadow-2xs"
+                  class="w-full px-2.5 sm:px-3.5 py-2 sm:py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer shadow-2xs truncate"
                 >
-                  <option value="all" ${s.elementFilter === 'all' ? 'selected' : ''}>All PSM Elements</option>
+                  <option value="all" ${s.elementFilter === 'all' ? 'selected' : ''}>All Elements</option>
                   ${allElements.map(e => `<option value="${e}" ${s.elementFilter === e ? 'selected' : ''}>${e}</option>`).join('')}
                 </select>
               </div>
 
               <!-- 5. Nature / Severity -->
               <div>
-                <label class="block text-xs sm:text-[13px] font-bold uppercase tracking-wider text-slate-600 mb-1.5">NATURE / SEVERITY</label>
+                <label class="block text-[10px] sm:text-[13px] font-bold uppercase tracking-wider text-slate-600 mb-1 truncate">SEVERITY</label>
                 <select
                   onchange="FPCL_PSM_SUITE.setNatureFilter(this.value)"
-                  class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer shadow-2xs"
+                  class="w-full px-2.5 sm:px-3.5 py-2 sm:py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer shadow-2xs truncate"
                 >
                   <option value="all" ${s.natureFilter === 'all' ? 'selected' : ''}>All Severities</option>
                   ${allNatures.map(n => `<option value="${n}" ${s.natureFilter === n ? 'selected' : ''}>${n}</option>`).join('')}
@@ -2277,29 +2277,29 @@
 
               <!-- 6. Audit No -->
               <div>
-                <label class="block text-xs sm:text-[13px] font-bold uppercase tracking-wider text-slate-600 mb-1.5">AUDIT NO</label>
+                <label class="block text-[10px] sm:text-[13px] font-bold uppercase tracking-wider text-slate-600 mb-1 truncate">AUDIT NO</label>
                 <select
                   onchange="FPCL_PSM_SUITE.setAuditFilter(this.value)"
-                  class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer shadow-2xs"
+                  class="w-full px-2.5 sm:px-3.5 py-2 sm:py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer shadow-2xs truncate"
                 >
-                  <option value="all" ${s.auditFilter === 'all' ? 'selected' : ''}>All Audit Numbers</option>
+                  <option value="all" ${s.auditFilter === 'all' ? 'selected' : ''}>All Audits</option>
                   ${allAudits.map(a => `<option value="${a}" ${s.auditFilter === a ? 'selected' : ''}>${a}</option>`).join('')}
                 </select>
               </div>
 
               <!-- 7. Year (from Column Q named Year) -->
-              <div>
-                <label class="block text-xs sm:text-[13px] font-bold uppercase tracking-wider text-slate-600 mb-1.5 flex items-center justify-between">
+              <div class="col-span-2 sm:col-span-1">
+                <label class="block text-[10px] sm:text-[13px] font-bold uppercase tracking-wider text-slate-600 mb-1 flex items-center justify-between">
                   <span>YEAR</span>
-                  ${s.yearFilter !== 'all' ? '<span class="text-[10px] text-teal-600 font-extrabold lowercase">filtered</span>' : ''}
+                  ${s.yearFilter !== 'all' ? '<span class="text-[9px] text-teal-600 font-extrabold lowercase">filtered</span>' : ''}
                 </label>
                 <select
                   id="psm-filter-year"
                   onchange="FPCL_PSM_SUITE.setYearFilter(this.value)"
-                  class="w-full px-3.5 py-2.5 bg-slate-50 border ${s.yearFilter !== 'all' ? 'border-teal-500 bg-teal-50/20 text-teal-900 font-bold' : 'border-slate-300 text-slate-800'} rounded-xl text-xs sm:text-sm font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer shadow-2xs"
+                  class="w-full px-2.5 sm:px-3.5 py-2 sm:py-2.5 bg-slate-50 border ${s.yearFilter !== 'all' ? 'border-teal-500 bg-teal-50/20 text-teal-900 font-bold' : 'border-slate-300 text-slate-800'} rounded-xl text-xs sm:text-sm font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer shadow-2xs truncate"
                 >
                   <option value="all" ${s.yearFilter === 'all' ? 'selected' : ''}>All Years ${allYears.length > 0 ? `(${allYears.join(', ')})` : ''}</option>
-                  ${allYears.map(y => `<option value="${y}" ${s.yearFilter === y ? 'selected' : ''}>${y}</option>`).join('')}
+                  ${allYears.map(y => `<option value="${y}" ${s.yearFilter === y ? 'selected' : ''}>Year ${y}</option>`).join('')}
                 </select>
               </div>
             </div>

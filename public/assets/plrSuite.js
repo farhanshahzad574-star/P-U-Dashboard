@@ -1518,31 +1518,31 @@
           <div class="absolute -left-20 -bottom-20 w-64 h-64 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
 
           <!-- The 5 Dropdown Filters + Reset Button Grid -->
-          <div class="relative z-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5 sm:gap-4 items-end">
+          <div class="relative z-10 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-4 items-end">
             
             <!-- Filter 1: MACHINE (COL G) -->
-            <div class="space-y-1.5 sm:space-y-2">
-              <div class="flex items-center gap-1.5 text-xs sm:text-[13px] font-mono font-black text-cyan-300 uppercase tracking-wider">
-                <i data-lucide="cpu" class="w-4 h-4 text-cyan-400"></i>
-                <span>MACHINE (COL G)</span>
+            <div class="space-y-1 sm:space-y-2">
+              <div class="flex items-center gap-1.5 text-[10px] sm:text-[13px] font-mono font-black text-cyan-300 uppercase tracking-wider truncate" title="MACHINE (COL G)">
+                <i data-lucide="cpu" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-cyan-400 shrink-0"></i>
+                <span class="truncate">MACHINE (COL G)</span>
               </div>
               <select
                 onchange="portalApp.handlePlrMachineChange(this.value)"
-                class="w-full text-xs sm:text-sm font-semibold px-3.5 py-2.5 rounded-xl border border-[#1e3e66] bg-[#0c2138] text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 cursor-pointer shadow-inner"
+                class="w-full text-xs sm:text-sm font-semibold px-2.5 sm:px-3.5 py-2 sm:py-2.5 rounded-xl border border-[#1e3e66] bg-[#0c2138] text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 cursor-pointer shadow-inner truncate"
               >
                 ${renderMachineSelectOptions(s.selectedMachine)}
               </select>
             </div>
 
             <!-- Filter 2: PRIORITY (COL H) -->
-            <div class="space-y-1.5 sm:space-y-2">
-              <div class="flex items-center gap-1.5 text-xs sm:text-[13px] font-mono font-black text-rose-300 uppercase tracking-wider">
-                <i data-lucide="shield-alert" class="w-4 h-4 text-rose-400"></i>
-                <span>PRIORITY (COL H)</span>
+            <div class="space-y-1 sm:space-y-2">
+              <div class="flex items-center gap-1.5 text-[10px] sm:text-[13px] font-mono font-black text-rose-300 uppercase tracking-wider truncate" title="PRIORITY (COL H)">
+                <i data-lucide="shield-alert" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-rose-400 shrink-0"></i>
+                <span class="truncate">PRIORITY (COL H)</span>
               </div>
               <select
                 onchange="portalApp.handlePlrPriorityChange(this.value)"
-                class="w-full text-xs sm:text-sm font-semibold px-3.5 py-2.5 rounded-xl border border-[#1e3e66] bg-[#0c2138] text-white focus:outline-none focus:border-rose-400 focus:ring-1 focus:ring-rose-400 cursor-pointer shadow-inner"
+                class="w-full text-xs sm:text-sm font-semibold px-2.5 sm:px-3.5 py-2 sm:py-2.5 rounded-xl border border-[#1e3e66] bg-[#0c2138] text-white focus:outline-none focus:border-rose-400 focus:ring-1 focus:ring-rose-400 cursor-pointer shadow-inner truncate"
               >
                 <option value="all" ${s.selectedPriority === 'all' ? 'selected' : ''}>All Priorities</option>
                 <option value="Critical" ${s.selectedPriority === 'Critical' ? 'selected' : ''}>Critical Priority</option>
@@ -1553,58 +1553,58 @@
             </div>
 
             <!-- Filter 3: DEPARTMENT (COL F) -->
-            <div class="space-y-1.5 sm:space-y-2">
-              <div class="flex items-center gap-1.5 text-xs sm:text-[13px] font-mono font-black text-amber-300 uppercase tracking-wider">
-                <i data-lucide="briefcase" class="w-4 h-4 text-amber-400"></i>
-                <span>DEPARTMENT (COL F)</span>
+            <div class="space-y-1 sm:space-y-2">
+              <div class="flex items-center gap-1.5 text-[10px] sm:text-[13px] font-mono font-black text-amber-300 uppercase tracking-wider truncate" title="DEPARTMENT (COL F)">
+                <i data-lucide="briefcase" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400 shrink-0"></i>
+                <span class="truncate">DEPT (COL F)</span>
               </div>
               <select
                 onchange="portalApp.handlePlrDeptChange(this.value)"
-                class="w-full text-xs sm:text-sm font-semibold px-3.5 py-2.5 rounded-xl border border-[#1e3e66] bg-[#0c2138] text-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 cursor-pointer shadow-inner"
+                class="w-full text-xs sm:text-sm font-semibold px-2.5 sm:px-3.5 py-2 sm:py-2.5 rounded-xl border border-[#1e3e66] bg-[#0c2138] text-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 cursor-pointer shadow-inner truncate"
               >
                 ${renderActionEntitySelectOptions(s.selectedDept)}
               </select>
             </div>
 
             <!-- Filter 4: YEAR FILTER -->
-            <div class="space-y-1.5 sm:space-y-2">
-              <div class="flex items-center gap-1.5 text-xs sm:text-[13px] font-mono font-black text-indigo-300 uppercase tracking-wider">
-                <i data-lucide="calendar" class="w-4 h-4 text-indigo-400"></i>
-                <span>YEAR FILTER</span>
+            <div class="space-y-1 sm:space-y-2">
+              <div class="flex items-center gap-1.5 text-[10px] sm:text-[13px] font-mono font-black text-indigo-300 uppercase tracking-wider truncate" title="YEAR FILTER">
+                <i data-lucide="calendar" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-indigo-400 shrink-0"></i>
+                <span class="truncate">YEAR FILTER</span>
               </div>
               <select
                 onchange="portalApp.handlePlrYearChange(this.value)"
-                class="w-full text-xs sm:text-sm font-semibold px-3.5 py-2.5 rounded-xl border border-[#1e3e66] bg-[#0c2138] text-white focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 cursor-pointer shadow-inner"
+                class="w-full text-xs sm:text-sm font-semibold px-2.5 sm:px-3.5 py-2 sm:py-2.5 rounded-xl border border-[#1e3e66] bg-[#0c2138] text-white focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 cursor-pointer shadow-inner truncate"
               >
                 ${renderPlrYearSelectOptions(s.selectedYear)}
               </select>
             </div>
 
             <!-- Filter 5: ACTION ENTITY -->
-            <div class="space-y-1.5 sm:space-y-2">
-              <div class="flex items-center gap-1.5 text-xs sm:text-[13px] font-mono font-black text-emerald-300 uppercase tracking-wider">
-                <i data-lucide="building-2" class="w-4 h-4 text-emerald-400"></i>
-                <span>ACTION ENTITY</span>
+            <div class="space-y-1 sm:space-y-2">
+              <div class="flex items-center gap-1.5 text-[10px] sm:text-[13px] font-mono font-black text-emerald-300 uppercase tracking-wider truncate" title="ACTION ENTITY">
+                <i data-lucide="building-2" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400 shrink-0"></i>
+                <span class="truncate">ENTITY</span>
               </div>
               <select
                 onchange="portalApp.handlePlrEntityChange(this.value)"
-                class="w-full text-xs sm:text-sm font-semibold px-3.5 py-2.5 rounded-xl border border-[#1e3e66] bg-[#0c2138] text-white focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 cursor-pointer shadow-inner"
+                class="w-full text-xs sm:text-sm font-semibold px-2.5 sm:px-3.5 py-2 sm:py-2.5 rounded-xl border border-[#1e3e66] bg-[#0c2138] text-white focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 cursor-pointer shadow-inner truncate"
               >
                 ${renderActionEntitySelectOptions(s.selectedEntity)}
               </select>
             </div>
 
             <!-- Filter 6: Reset All Button -->
-            <div class="space-y-1.5 sm:space-y-2">
-              <div class="text-xs sm:text-[13px] font-mono font-black text-slate-400 uppercase tracking-wider invisible">
+            <div class="space-y-1 sm:space-y-2">
+              <div class="text-[10px] sm:text-[13px] font-mono font-black text-slate-400 uppercase tracking-wider hidden sm:block invisible">
                 <span>ACTION</span>
               </div>
               <button
                 onclick="portalApp.resetAllPlrImageFilters()"
-                class="w-full flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-black text-white bg-[#132e4f] hover:bg-[#1a3d68] border border-[#254b77] hover:border-cyan-400 transition-all shadow-sm cursor-pointer"
+                class="w-full flex items-center justify-center gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-black text-white bg-[#132e4f] hover:bg-[#1a3d68] border border-[#254b77] hover:border-cyan-400 transition-all shadow-sm cursor-pointer"
                 title="Reset all filters back to default"
               >
-                <i data-lucide="rotate-ccw" class="w-4 h-4 text-cyan-300"></i>
+                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-cyan-300 shrink-0"></i>
                 <span>Reset All</span>
               </button>
             </div>

@@ -1205,16 +1205,16 @@
               </div>
             ` : ''}
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
               
               <!-- Filter 1: Column C (Year from Date of Meeting) -->
               <div class="space-y-1">
-                <label class="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">
-                  Column C: Year (Date of Meeting)
+                <label class="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-500 block truncate" title="Column C: Year (Date of Meeting)">
+                  Year (Meeting Date)
                 </label>
                 <select
                   onchange="FPCL_SUB_HSE_EI_SUITE.setYearFilter(this.value)"
-                  class="w-full text-xs font-semibold px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500 cursor-pointer transition-colors shadow-2xs"
+                  class="w-full text-xs font-semibold px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500 cursor-pointer transition-colors shadow-2xs truncate"
                 >
                   <option value="all" ${s.yearFilter === 'all' ? 'selected' : ''}>All Years (${allYears.length > 0 ? allYears.length : 'All'})</option>
                   ${allYears.map(yr => {
@@ -1229,12 +1229,12 @@
 
               <!-- Filter 2: Column D (Ref. #) -->
               <div class="space-y-1">
-                <label class="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">
-                  Column D: Ref. #
+                <label class="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-500 block truncate" title="Column D: Ref. #">
+                  Ref. # (Col D)
                 </label>
                 <select
                   onchange="FPCL_SUB_HSE_EI_SUITE.setRefFilter(this.value)"
-                  class="w-full text-xs font-semibold px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500 cursor-pointer transition-colors shadow-2xs"
+                  class="w-full text-xs font-semibold px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500 cursor-pointer transition-colors shadow-2xs truncate"
                 >
                   <option value="all" ${s.refFilter === 'all' ? 'selected' : ''}>All Ref. Numbers (${allRefNumbers.length})</option>
                   ${allRefNumbers.map(ref => `
@@ -1245,12 +1245,12 @@
 
               <!-- Filter 3: Column G (Responsibility Department / Action by) -->
               <div class="space-y-1">
-                <label class="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">
-                  Column G: Responsibility Dept (Action by)
+                <label class="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-500 block truncate" title="Column G: Responsibility Dept (Action by)">
+                  Dept (Action by)
                 </label>
                 <select
                   onchange="FPCL_SUB_HSE_EI_SUITE.setDeptFilter(this.value)"
-                  class="w-full text-xs font-semibold px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500 cursor-pointer transition-colors shadow-2xs"
+                  class="w-full text-xs font-semibold px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500 cursor-pointer transition-colors shadow-2xs truncate"
                 >
                   <option value="all" ${s.deptFilter === 'all' ? 'selected' : ''}>All Departments (${allDepartments.length})</option>
                   ${allDepartments.map(dept => `
@@ -1261,14 +1261,14 @@
 
               <!-- Filter 4: Column H (Status: Open / Close) -->
               <div class="space-y-1">
-                <label class="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">
-                  Column H: Status (Open Close)
+                <label class="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-500 block truncate" title="Column H: Status (Open Close)">
+                  Status (Open / Close)
                 </label>
                 <select
                   onchange="FPCL_SUB_HSE_EI_SUITE.setStatusFilter(this.value)"
-                  class="w-full text-xs font-semibold px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500 cursor-pointer transition-colors shadow-2xs"
+                  class="w-full text-xs font-semibold px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500 cursor-pointer transition-colors shadow-2xs truncate"
                 >
-                  <option value="all" ${s.statusFilter === 'all' ? 'selected' : ''}>All Statuses (Open & Close)</option>
+                  <option value="all" ${s.statusFilter === 'all' ? 'selected' : ''}>All Statuses</option>
                   <option value="Close" ${s.statusFilter === 'Close' ? 'selected' : ''}>Close (${rawClosedCount})</option>
                   <option value="Open" ${s.statusFilter === 'Open' ? 'selected' : ''}>Open (${rawOpenCount})</option>
                 </select>

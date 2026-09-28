@@ -1280,28 +1280,28 @@
             ` : ''}
 
             <!-- 4 Filter Dropdowns: Column D (Meeting Date / Year), Column C (Reference #), Column I (Action/Dept), Column J (Status) -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
               
               <!-- Filter 1: Column D (Meeting Date - Year Filter, defaults dynamically to current year) -->
               <div class="space-y-1">
-                <label class="text-[11px] font-black uppercase text-slate-500 tracking-wider flex items-center justify-between">
-                  <span>Year (Col D: Meeting Date)</span>
+                <label class="text-[10px] sm:text-[11px] font-black uppercase text-slate-500 tracking-wider flex items-center justify-between truncate" title="Year (Col D: Meeting Date)">
+                  <span class="truncate">Year (Col D)</span>
                   ${s.yearFilter === currentYear ? `
-                    <span class="text-cyan-800 bg-cyan-100 border border-cyan-300 px-1.5 py-0.5 rounded font-mono text-[9px] font-extrabold uppercase">Current Year</span>
+                    <span class="text-cyan-800 bg-cyan-100 border border-cyan-300 px-1 py-0.5 rounded font-mono text-[8px] sm:text-[9px] font-extrabold uppercase shrink-0">Current</span>
                   ` : s.yearFilter !== 'all' ? `
-                    <span class="text-blue-800 bg-blue-100 border border-blue-300 px-1.5 py-0.5 rounded font-mono text-[9px] font-extrabold uppercase">Filtered</span>
+                    <span class="text-blue-800 bg-blue-100 border border-blue-300 px-1 py-0.5 rounded font-mono text-[8px] sm:text-[9px] font-extrabold uppercase shrink-0">Filtered</span>
                   ` : `
-                    <span class="text-slate-400 font-mono text-[9px] font-bold">${allYears.length} Years</span>
+                    <span class="text-slate-400 font-mono text-[8px] sm:text-[9px] font-bold shrink-0">${allYears.length} Yrs</span>
                   `}
                 </label>
                 <div class="relative">
                   <select
                     id="sub-hse-mech-year-filter"
                     onchange="FPCL_SUB_HSE_MECH_SUITE.setYearFilter(this.value)"
-                    class="w-full ${s.yearFilter !== 'all' ? 'bg-cyan-50/50 border-cyan-500 text-cyan-950 font-black ring-1 ring-cyan-400/50' : 'bg-slate-50 hover:bg-slate-100 border-slate-300 text-slate-800 font-bold'} border focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-3 py-2 text-xs outline-none transition-all cursor-pointer shadow-2xs"
+                    class="w-full ${s.yearFilter !== 'all' ? 'bg-cyan-50/50 border-cyan-500 text-cyan-950 font-black ring-1 ring-cyan-400/50' : 'bg-slate-50 hover:bg-slate-100 border-slate-300 text-slate-800 font-bold'} border focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-2 sm:px-3 py-1.5 sm:py-2 text-xs outline-none transition-all cursor-pointer shadow-2xs truncate"
                   >
                     <option value="${currentYear}" ${s.yearFilter === currentYear ? 'selected' : ''}>
-                      Current Year: ${currentYear} (${yearCounts[currentYear] || 0})
+                      Year ${currentYear} (${yearCounts[currentYear] || 0})
                     </option>
                     <option value="all" ${s.yearFilter === 'all' ? 'selected' : ''}>
                       All Years (${raw.length})
@@ -1319,16 +1319,16 @@
 
               <!-- Filter 2: Column C (Reference #) -->
               <div class="space-y-1">
-                <label class="text-[11px] font-black uppercase text-slate-500 tracking-wider flex items-center justify-between">
-                  <span>Reference # (Col C)</span>
-                  <span class="text-sky-600 font-mono text-[10px] font-bold">${allRefNumbers.length} options</span>
+                <label class="text-[10px] sm:text-[11px] font-black uppercase text-slate-500 tracking-wider flex items-center justify-between truncate" title="Reference # (Col C)">
+                  <span class="truncate">Ref. # (Col C)</span>
+                  <span class="text-sky-600 font-mono text-[8px] sm:text-[10px] font-bold shrink-0">${allRefNumbers.length} opts</span>
                 </label>
                 <div class="relative">
                   <select
                     onchange="FPCL_SUB_HSE_MECH_SUITE.setRefFilter(this.value)"
-                    class="w-full ${s.refFilter !== 'all' ? 'bg-sky-50/50 border-sky-500 text-sky-950 font-black ring-1 ring-sky-400/50' : 'bg-slate-50 hover:bg-slate-100 border-slate-300 text-slate-800 font-bold'} border focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 rounded-xl px-3 py-2 text-xs outline-none transition-all cursor-pointer shadow-2xs"
+                    class="w-full ${s.refFilter !== 'all' ? 'bg-sky-50/50 border-sky-500 text-sky-950 font-black ring-1 ring-sky-400/50' : 'bg-slate-50 hover:bg-slate-100 border-slate-300 text-slate-800 font-bold'} border focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 rounded-xl px-2 sm:px-3 py-1.5 sm:py-2 text-xs outline-none transition-all cursor-pointer shadow-2xs truncate"
                   >
-                    <option value="all" ${s.refFilter === 'all' ? 'selected' : ''}>All Reference Numbers (${raw.length})</option>
+                    <option value="all" ${s.refFilter === 'all' ? 'selected' : ''}>All Ref. Numbers (${raw.length})</option>
                     ${allRefNumbers.map(r => `
                       <option value="${r}" ${s.refFilter === r ? 'selected' : ''}>${r}</option>
                     `).join('')}
@@ -1338,14 +1338,14 @@
 
               <!-- Filter 3: Column I (Responsibility Department / Action) -->
               <div class="space-y-1">
-                <label class="text-[11px] font-black uppercase text-slate-500 tracking-wider flex items-center justify-between">
-                  <span>Department (Col I)</span>
-                  <span class="text-sky-600 font-mono text-[10px] font-bold">${allDepartments.length} depts</span>
+                <label class="text-[10px] sm:text-[11px] font-black uppercase text-slate-500 tracking-wider flex items-center justify-between truncate" title="Department (Col I)">
+                  <span class="truncate">Dept (Col I)</span>
+                  <span class="text-sky-600 font-mono text-[8px] sm:text-[10px] font-bold shrink-0">${allDepartments.length} depts</span>
                 </label>
                 <div class="relative">
                   <select
                     onchange="FPCL_SUB_HSE_MECH_SUITE.setDeptFilter(this.value)"
-                    class="w-full ${s.deptFilter !== 'all' ? 'bg-blue-50/50 border-blue-500 text-blue-950 font-black ring-1 ring-blue-400/50' : 'bg-slate-50 hover:bg-slate-100 border-slate-300 text-slate-800 font-bold'} border focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 rounded-xl px-3 py-2 text-xs outline-none transition-all cursor-pointer shadow-2xs"
+                    class="w-full ${s.deptFilter !== 'all' ? 'bg-blue-50/50 border-blue-500 text-blue-950 font-black ring-1 ring-blue-400/50' : 'bg-slate-50 hover:bg-slate-100 border-slate-300 text-slate-800 font-bold'} border focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 rounded-xl px-2 sm:px-3 py-1.5 sm:py-2 text-xs outline-none transition-all cursor-pointer shadow-2xs truncate"
                   >
                     <option value="all" ${s.deptFilter === 'all' ? 'selected' : ''}>All Departments (${raw.length})</option>
                     ${allDepartments.map(d => `
@@ -1357,14 +1357,14 @@
 
               <!-- Filter 4: Column J (Status: Closed vs Open) -->
               <div class="space-y-1">
-                <label class="text-[11px] font-black uppercase text-slate-500 tracking-wider flex items-center justify-between">
-                  <span>Status (Col J)</span>
-                  <span class="text-sky-600 font-mono text-[10px] font-bold">Closed / Open</span>
+                <label class="text-[10px] sm:text-[11px] font-black uppercase text-slate-500 tracking-wider flex items-center justify-between truncate" title="Status (Col J)">
+                  <span class="truncate">Status (Col J)</span>
+                  <span class="text-sky-600 font-mono text-[8px] sm:text-[10px] font-bold shrink-0">Closed/Open</span>
                 </label>
                 <div class="relative">
                   <select
                     onchange="FPCL_SUB_HSE_MECH_SUITE.setStatusFilter(this.value)"
-                    class="w-full ${s.statusFilter !== 'all' ? 'bg-slate-100 border-indigo-500 text-slate-900 font-black ring-1 ring-indigo-400/50' : 'bg-slate-50 hover:bg-slate-100 border-slate-300 text-slate-800 font-bold'} border focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 rounded-xl px-3 py-2 text-xs outline-none transition-all cursor-pointer shadow-2xs"
+                    class="w-full ${s.statusFilter !== 'all' ? 'bg-slate-100 border-indigo-500 text-slate-900 font-black ring-1 ring-indigo-400/50' : 'bg-slate-50 hover:bg-slate-100 border-slate-300 text-slate-800 font-bold'} border focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 rounded-xl px-2 sm:px-3 py-1.5 sm:py-2 text-xs outline-none transition-all cursor-pointer shadow-2xs truncate"
                   >
                     <option value="all" ${s.statusFilter === 'all' ? 'selected' : ''}>All Statuses (${totalFiltered})</option>
                     <option value="Closed" ${s.statusFilter === 'Closed' ? 'selected' : ''}>Closed (${raw.filter(i => this.isItemClosed(i)).length})</option>

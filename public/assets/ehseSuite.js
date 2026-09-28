@@ -1264,29 +1264,29 @@
               </div>
             ` : ''}
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
               
               <!-- Filter 1: Column C (Year from Date of Meeting) -->
               <div class="space-y-1">
-                <div class="flex items-center justify-between">
-                  <label class="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">
-                    Column C: Year (Date of Meeting)
+                <div class="flex items-center justify-between truncate">
+                  <label class="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-500 block truncate" title="Column C: Year (Date of Meeting)">
+                    Year (Meeting)
                   </label>
                   ${s.yearFilter === currentYear ? `
-                    <span class="text-[10px] font-extrabold text-teal-700 bg-teal-50 px-2 py-0.5 rounded-md border border-teal-200">
-                      Current Year
+                    <span class="text-[8px] sm:text-[10px] font-extrabold text-teal-700 bg-teal-50 px-1.5 py-0.5 rounded-md border border-teal-200 shrink-0">
+                      Current
                     </span>
                   ` : ''}
                 </div>
                 <select
                   onchange="FPCL_EHSE_SUITE.setYearFilter(this.value)"
-                  class="w-full text-xs font-semibold px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer transition-colors shadow-2xs ${s.yearFilter === currentYear ? 'ring-1 ring-teal-500/40 bg-teal-50/20' : ''}"
+                  class="w-full text-xs font-semibold px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer transition-colors shadow-2xs truncate ${s.yearFilter === currentYear ? 'ring-1 ring-teal-500/40 bg-teal-50/20' : ''}"
                 >
                   <option value="all" ${s.yearFilter === 'all' ? 'selected' : ''}>All Years (${raw.length} Total)</option>
                   ${allYears.map(yr => {
                     const yrCount = raw.filter(i => this.getItemYear(i) === yr).length;
                     const isCur = yr === currentYear;
-                    return `<option value="${yr}" ${s.yearFilter === yr ? 'selected' : ''}>${yr}${isCur ? ' (Current Year)' : ''} (${yrCount})</option>`;
+                    return `<option value="${yr}" ${s.yearFilter === yr ? 'selected' : ''}>Year ${yr}${isCur ? ' (Current)' : ''} (${yrCount})</option>`;
                   }).join('')}
                   ${hasUnknownYear ? `
                     <option value="unknown" ${s.yearFilter === 'unknown' ? 'selected' : ''}>Unknown Year</option>
@@ -1296,12 +1296,12 @@
 
               <!-- Filter 2: Column D (Ref. #) -->
               <div class="space-y-1">
-                <label class="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">
-                  Column D: Ref. #
+                <label class="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-500 block truncate" title="Column D: Ref. #">
+                  Ref. # (Col D)
                 </label>
                 <select
                   onchange="FPCL_EHSE_SUITE.setRefFilter(this.value)"
-                  class="w-full text-xs font-semibold px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer transition-colors shadow-2xs"
+                  class="w-full text-xs font-semibold px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer transition-colors shadow-2xs truncate"
                 >
                   <option value="all" ${s.refFilter === 'all' ? 'selected' : ''}>All Ref. Numbers (${allRefNumbers.length})</option>
                   ${allRefNumbers.map(ref => `
@@ -1312,12 +1312,12 @@
 
               <!-- Filter 3: Column G (Responsibility Department / Action by) -->
               <div class="space-y-1">
-                <label class="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">
-                  Column G: Responsibility Dept (Action by)
+                <label class="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-500 block truncate" title="Column G: Responsibility Dept (Action by)">
+                  Dept (Action by)
                 </label>
                 <select
                   onchange="FPCL_EHSE_SUITE.setDeptFilter(this.value)"
-                  class="w-full text-xs font-semibold px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer transition-colors shadow-2xs"
+                  class="w-full text-xs font-semibold px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer transition-colors shadow-2xs truncate"
                 >
                   <option value="all" ${s.deptFilter === 'all' ? 'selected' : ''}>All Departments (${allDepartments.length})</option>
                   ${allDepartments.map(dept => `
@@ -1328,14 +1328,14 @@
 
               <!-- Filter 4: Column H (Status: Open / Close) -->
               <div class="space-y-1">
-                <label class="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">
-                  Column H: Status (Open Close)
+                <label class="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-500 block truncate" title="Column H: Status (Open Close)">
+                  Status (Open / Close)
                 </label>
                 <select
                   onchange="FPCL_EHSE_SUITE.setStatusFilter(this.value)"
-                  class="w-full text-xs font-semibold px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer transition-colors shadow-2xs"
+                  class="w-full text-xs font-semibold px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer transition-colors shadow-2xs truncate"
                 >
-                  <option value="all" ${s.statusFilter === 'all' ? 'selected' : ''}>All Statuses (Open & Close)</option>
+                  <option value="all" ${s.statusFilter === 'all' ? 'selected' : ''}>All Statuses</option>
                   <option value="Close" ${s.statusFilter === 'Close' ? 'selected' : ''}>Close (${rawClosedCount})</option>
                   <option value="Open" ${s.statusFilter === 'Open' ? 'selected' : ''}>Open (${rawOpenCount})</option>
                 </select>

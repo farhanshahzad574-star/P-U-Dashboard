@@ -1366,19 +1366,19 @@
               </div>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 pt-1">
+            <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 pt-1">
               
               <!-- Filter 1: Year (Date_of_Initiator) -->
               <div class="space-y-1">
-                <label class="block text-[11px] font-extrabold text-slate-600 uppercase tracking-wider flex items-center gap-1">
-                  <i data-lucide="calendar" class="w-3 h-3 text-teal-600"></i>
-                  <span>Year (Date_of_Initiator)</span>
+                <label class="block text-[10px] sm:text-[11px] font-extrabold text-slate-600 uppercase tracking-wider flex items-center gap-1 truncate" title="Year (Date_of_Initiator)">
+                  <i data-lucide="calendar" class="w-3 h-3 text-teal-600 shrink-0"></i>
+                  <span class="truncate">Year (Initiator)</span>
                 </label>
                 <div class="relative">
                   <select
                     id="filter-pssr-year"
                     onchange="FPCL_PSSR_SUITE.setYearFilter(this.value)"
-                    class="w-full bg-slate-50 hover:bg-slate-100 border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer transition-all"
+                    class="w-full bg-slate-50 hover:bg-slate-100 border border-slate-300 rounded-xl px-2 sm:px-3 py-1.5 sm:py-2 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer transition-all truncate"
                   >
                     <option value="all" ${s.yearFilter === 'all' ? 'selected' : ''}>All Years (${years.length})</option>
                     ${years.map(y => `<option value="${y}" ${s.yearFilter === y ? 'selected' : ''}>Year ${y}${y === currentYear ? ' (Current)' : ''}</option>`).join('')}
@@ -1388,14 +1388,14 @@
 
               <!-- Filter 2: Column C (Area) -->
               <div class="space-y-1">
-                <label class="block text-[11px] font-extrabold text-slate-600 uppercase tracking-wider">
-                  Area (Column C)
+                <label class="block text-[10px] sm:text-[11px] font-extrabold text-slate-600 uppercase tracking-wider truncate" title="Area (Column C)">
+                  Area (Col C)
                 </label>
                 <div class="relative">
                   <select
                     id="filter-pssr-area"
                     onchange="FPCL_PSSR_SUITE.setAreaFilter(this.value)"
-                    class="w-full bg-slate-50 hover:bg-slate-100 border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer transition-all"
+                    class="w-full bg-slate-50 hover:bg-slate-100 border border-slate-300 rounded-xl px-2 sm:px-3 py-1.5 sm:py-2 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer transition-all truncate"
                   >
                     <option value="all" ${s.areaFilter === 'all' ? 'selected' : ''}>All Areas (${areas.length})</option>
                     ${areas.map(a => `<option value="${a.replace(/"/g, '&quot;')}" ${s.areaFilter === a ? 'selected' : ''}>${a}</option>`).join('')}
@@ -1405,16 +1405,16 @@
 
               <!-- Filter 3: Column M (Responsibility / Department) -->
               <div class="space-y-1">
-                <label class="block text-[11px] font-extrabold text-slate-600 uppercase tracking-wider">
-                  Responsibility (Column M)
+                <label class="block text-[10px] sm:text-[11px] font-extrabold text-slate-600 uppercase tracking-wider truncate" title="Responsibility (Column M)">
+                  Resp. (Col M)
                 </label>
                 <div class="relative">
                   <select
                     id="filter-pssr-dept"
                     onchange="FPCL_PSSR_SUITE.setDeptFilter(this.value)"
-                    class="w-full bg-slate-50 hover:bg-slate-100 border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer transition-all"
+                    class="w-full bg-slate-50 hover:bg-slate-100 border border-slate-300 rounded-xl px-2 sm:px-3 py-1.5 sm:py-2 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer transition-all truncate"
                   >
-                    <option value="all" ${s.deptFilter === 'all' ? 'selected' : ''}>All Departments (${depts.length})</option>
+                    <option value="all" ${s.deptFilter === 'all' ? 'selected' : ''}>All Depts (${depts.length})</option>
                     ${depts.map(d => `<option value="${d.replace(/"/g, '&quot;')}" ${s.deptFilter === d ? 'selected' : ''}>${d}</option>`).join('')}
                   </select>
                 </div>
@@ -1422,14 +1422,14 @@
 
               <!-- Filter 4: Column O (Status Open/Close) -->
               <div class="space-y-1">
-                <label class="block text-[11px] font-extrabold text-slate-600 uppercase tracking-wider">
-                  Status (Column O)
+                <label class="block text-[10px] sm:text-[11px] font-extrabold text-slate-600 uppercase tracking-wider truncate" title="Status (Column O)">
+                  Status (Col O)
                 </label>
                 <div class="relative">
                   <select
                     id="filter-pssr-status"
                     onchange="FPCL_PSSR_SUITE.setStatusFilter(this.value)"
-                    class="w-full bg-slate-50 hover:bg-slate-100 border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer transition-all"
+                    class="w-full bg-slate-50 hover:bg-slate-100 border border-slate-300 rounded-xl px-2 sm:px-3 py-1.5 sm:py-2 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer transition-all truncate"
                   >
                     <option value="all" ${s.statusFilter === 'all' ? 'selected' : ''}>All Statuses</option>
                     <option value="Close" ${s.statusFilter === 'Close' ? 'selected' : ''}>Closed (${raw.filter(i => this.isClosedStatus(i.status)).length})</option>
@@ -1440,8 +1440,8 @@
               </div>
 
               <!-- Filter 5: Text Search & Quick Reset -->
-              <div class="space-y-1">
-                <label class="block text-[11px] font-extrabold text-slate-600 uppercase tracking-wider">
+              <div class="space-y-1 col-span-2 sm:col-span-1">
+                <label class="block text-[10px] sm:text-[11px] font-extrabold text-slate-600 uppercase tracking-wider">
                   Search Filter
                 </label>
                 <div class="flex items-center gap-1.5">
@@ -1451,17 +1451,17 @@
                       placeholder="Keyword / ID / Defect..."
                       value="${s.searchQuery ? s.searchQuery.replace(/"/g, '&quot;') : ''}"
                       oninput="FPCL_PSSR_SUITE.setSearch(this.value)"
-                      class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-1.5 sm:py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     ${s.searchQuery ? `
-                    <button onclick="FPCL_PSSR_SUITE.setSearch('')" class="absolute right-2 top-2.5 text-slate-400 hover:text-slate-600">
+                    <button onclick="FPCL_PSSR_SUITE.setSearch('')" class="absolute right-2 top-2 text-slate-400 hover:text-slate-600">
                       <i data-lucide="x" class="w-3.5 h-3.5"></i>
                     </button>
                     ` : ''}
                   </div>
                   <button
                     onclick="FPCL_PSSR_SUITE.resetFilters()"
-                    class="px-3 py-2 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 transition-all cursor-pointer shrink-0"
+                    class="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 transition-all cursor-pointer shrink-0"
                     title="Reset all filters"
                   >
                     Reset

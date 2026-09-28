@@ -2376,17 +2376,17 @@
               ` : ''}
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 pt-1">
+            <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 pt-1">
               
               <!-- Search Input -->
-              <div class="relative">
+              <div class="relative col-span-2 sm:col-span-1">
                 <i data-lucide="search" class="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-[#7A8699]"></i>
                 <input
                   type="text"
-                  placeholder="Search project name, WBS, unit..."
+                  placeholder="Search project, WBS, unit..."
                   value="${s.searchQuery}"
                   oninput="window.FPCL_CAPEX_SUITE.state.searchQuery = this.value; window.FPCL_CAPEX_SUITE.state.page = 1; window.FPCL_CAPEX_SUITE.render();"
-                  class="w-full pl-8 pr-7 py-2 rounded-lg text-xs bg-slate-50 border border-[#CBD2DE] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B1D3A]/20 text-[#1A1F2B] font-medium"
+                  class="w-full pl-8 pr-7 py-1.5 sm:py-2 rounded-lg text-xs bg-slate-50 border border-[#CBD2DE] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B1D3A]/20 text-[#1A1F2B] font-medium"
                 />
                 ${s.searchQuery ? `
                   <button onclick="window.FPCL_CAPEX_SUITE.state.searchQuery = ''; window.FPCL_CAPEX_SUITE.render();" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#7A8699] hover:text-[#1A1F2B]">
@@ -2399,7 +2399,7 @@
               <div>
                 <select
                   onchange="window.FPCL_CAPEX_SUITE.state.yearFilter = this.value; window.FPCL_CAPEX_SUITE.state.page = 1; window.FPCL_CAPEX_SUITE.render();"
-                  class="w-full py-2 px-3 rounded-lg text-xs bg-slate-50 border border-[#CBD2DE] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B1D3A]/20 text-[#1A1F2B] font-semibold"
+                  class="w-full py-1.5 sm:py-2 px-2.5 sm:px-3 rounded-lg text-xs bg-slate-50 border border-[#CBD2DE] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B1D3A]/20 text-[#1A1F2B] font-semibold truncate"
                 >
                   <option value="all" ${s.yearFilter === 'all' ? 'selected' : ''}>All Years (${allProjects.length})</option>
                   ${years.map(yr => {
@@ -2413,9 +2413,9 @@
               <div>
                 <select
                   onchange="window.FPCL_CAPEX_SUITE.state.statusFilter = this.value; window.FPCL_CAPEX_SUITE.state.page = 1; window.FPCL_CAPEX_SUITE.render();"
-                  class="w-full py-2 px-3 rounded-lg text-xs bg-slate-50 border border-[#CBD2DE] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B1D3A]/20 text-[#1A1F2B] font-semibold"
+                  class="w-full py-1.5 sm:py-2 px-2.5 sm:px-3 rounded-lg text-xs bg-slate-50 border border-[#CBD2DE] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B1D3A]/20 text-[#1A1F2B] font-semibold truncate"
                 >
-                  <option value="all" ${s.statusFilter === 'all' ? 'selected' : ''}>All Statuses (Col R)</option>
+                  <option value="all" ${s.statusFilter === 'all' ? 'selected' : ''}>All Statuses</option>
                   <option value="open" ${s.statusFilter === 'open' ? 'selected' : ''}>Open / In-Progress</option>
                   <option value="close" ${s.statusFilter === 'close' ? 'selected' : ''}>Closed / Completed</option>
                 </select>
@@ -2425,9 +2425,9 @@
               <div>
                 <select
                   onchange="window.FPCL_CAPEX_SUITE.state.categoryFilter = this.value; window.FPCL_CAPEX_SUITE.state.page = 1; window.FPCL_CAPEX_SUITE.render();"
-                  class="w-full py-2 px-3 rounded-lg text-xs bg-slate-50 border border-[#CBD2DE] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B1D3A]/20 text-[#1A1F2B] font-semibold"
+                  class="w-full py-1.5 sm:py-2 px-2.5 sm:px-3 rounded-lg text-xs bg-slate-50 border border-[#CBD2DE] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B1D3A]/20 text-[#1A1F2B] font-semibold truncate"
                 >
-                  <option value="all" ${s.categoryFilter === 'all' ? 'selected' : ''}>All Categories (Col O)</option>
+                  <option value="all" ${s.categoryFilter === 'all' ? 'selected' : ''}>All Categories</option>
                   ${dynamicCategories.map(c => `<option value="${c}" ${s.categoryFilter === c ? 'selected' : ''}>${c}</option>`).join('')}
                 </select>
               </div>
@@ -2436,9 +2436,9 @@
               <div>
                 <select
                   onchange="window.FPCL_CAPEX_SUITE.state.unitFilter = this.value; window.FPCL_CAPEX_SUITE.state.page = 1; window.FPCL_CAPEX_SUITE.render();"
-                  class="w-full py-2 px-3 rounded-lg text-xs bg-slate-50 border border-[#CBD2DE] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B1D3A]/20 text-[#1A1F2B] font-semibold"
+                  class="w-full py-1.5 sm:py-2 px-2.5 sm:px-3 rounded-lg text-xs bg-slate-50 border border-[#CBD2DE] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B1D3A]/20 text-[#1A1F2B] font-semibold truncate"
                 >
-                  <option value="all" ${s.unitFilter === 'all' ? 'selected' : ''}>All Units (Col I)</option>
+                  <option value="all" ${s.unitFilter === 'all' ? 'selected' : ''}>All Units</option>
                   ${units.map(u => `<option value="${u}" ${s.unitFilter === u ? 'selected' : ''}>${u}</option>`).join('')}
                 </select>
               </div>

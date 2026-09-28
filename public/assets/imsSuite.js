@@ -771,19 +771,19 @@
           <!-- ========================================================================= -->
           <!-- 3. GLOBAL FILTER BAR (Matching Reference Image)                           -->
           <!-- ========================================================================= -->
-          <div class="bg-white rounded-xl border border-slate-200/90 shadow-xs p-4">
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 items-end">
+          <div class="bg-white rounded-xl border border-slate-200/90 shadow-xs p-3.5 sm:p-4">
+            <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 items-end">
               
               <!-- YEAR Filter (Column C: Audit time) -->
               <div>
-                <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1 flex items-center gap-1">
-                  <i data-lucide="calendar" class="w-3 h-3 text-teal-600"></i>
-                  Audit Year
+                <label class="block text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1 flex items-center gap-1 truncate" title="Audit Year">
+                  <i data-lucide="calendar" class="w-3 h-3 text-teal-600 shrink-0"></i>
+                  <span class="truncate">Audit Year</span>
                 </label>
                 <select
                   id="ims-year-filter"
                   onchange="FPCL_IMS_SUITE.setYearFilter(this.value)"
-                  class="w-full py-2 px-3 text-xs rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white font-medium text-slate-800 shadow-2xs"
+                  class="w-full py-1.5 sm:py-2 px-2 sm:px-3 text-xs rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white font-medium text-slate-800 shadow-2xs truncate"
                 >
                   <option value="all" ${s.yearFilter === 'all' ? 'selected' : ''}>All Years (${raw.length})</option>
                   ${allYears.map(yr => {
@@ -796,10 +796,10 @@
 
               <!-- STATUS Filter -->
               <div>
-                <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Status</label>
+                <label class="block text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1 truncate">Status</label>
                 <select
                   onchange="FPCL_IMS_SUITE.setStatusFilter(this.value)"
-                  class="w-full py-2 px-3 text-xs rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white font-medium text-slate-800 shadow-2xs"
+                  class="w-full py-1.5 sm:py-2 px-2 sm:px-3 text-xs rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white font-medium text-slate-800 shadow-2xs truncate"
                 >
                   <option value="all" ${s.statusFilter === 'all' ? 'selected' : ''}>All Statuses (${raw.length})</option>
                   <option value="Close" ${s.statusFilter === 'Close' ? 'selected' : ''}>Closed (${raw.filter(i => i.status === 'Close').length})</option>
@@ -809,12 +809,12 @@
 
               <!-- ACTION DEPT Filter -->
               <div>
-                <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Action Dept</label>
+                <label class="block text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1 truncate">Action Dept</label>
                 <select
                   onchange="FPCL_IMS_SUITE.setDeptFilter(this.value)"
-                  class="w-full py-2 px-3 text-xs rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white font-medium text-slate-800 shadow-2xs"
+                  class="w-full py-1.5 sm:py-2 px-2 sm:px-3 text-xs rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white font-medium text-slate-800 shadow-2xs truncate"
                 >
-                  <option value="all" ${s.deptFilter === 'all' ? 'selected' : ''}>All Departments (${allDepts.length})</option>
+                  <option value="all" ${s.deptFilter === 'all' ? 'selected' : ''}>All Depts (${allDepts.length})</option>
                   ${allDepts.map(d => {
                     const count = raw.filter(i => i.dept === d).length;
                     return `<option value="${d}" ${s.deptFilter === d ? 'selected' : ''}>${d} (${count})</option>`;
@@ -824,12 +824,12 @@
 
               <!-- STANDARDS Filter -->
               <div>
-                <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Standards</label>
+                <label class="block text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1 truncate">Standards</label>
                 <select
                   onchange="FPCL_IMS_SUITE.setStandardFilter(this.value)"
-                  class="w-full py-2 px-3 text-xs rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white font-medium text-slate-800 shadow-2xs"
+                  class="w-full py-1.5 sm:py-2 px-2 sm:px-3 text-xs rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white font-medium text-slate-800 shadow-2xs truncate"
                 >
-                  <option value="all" ${s.standardFilter === 'all' ? 'selected' : ''}>All ISO Standards</option>
+                  <option value="all" ${s.standardFilter === 'all' ? 'selected' : ''}>All Standards</option>
                   ${allStandards.map(std => {
                     const count = raw.filter(i => i.standards === std).length;
                     return `<option value="${std}" ${s.standardFilter === std ? 'selected' : ''}>${std} (${count})</option>`;
@@ -838,8 +838,8 @@
               </div>
 
               <!-- QUICK SEARCH Input -->
-              <div>
-                <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Quick Search</label>
+              <div class="col-span-2 sm:col-span-1">
+                <label class="block text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Quick Search</label>
                 <div class="relative">
                   <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
                   <input
@@ -848,7 +848,7 @@
                     placeholder="Search gap, rec, dept..."
                     value="${s.searchQuery}"
                     oninput="FPCL_IMS_SUITE.state.searchQuery = this.value; FPCL_IMS_SUITE.state.page = 1; FPCL_IMS_SUITE.render();"
-                    class="w-full pl-9 pr-8 py-2 text-xs rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white font-medium text-slate-800 shadow-2xs"
+                    class="w-full pl-9 pr-8 py-1.5 sm:py-2 text-xs rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white font-medium text-slate-800 shadow-2xs"
                   />
                   ${s.searchQuery ? `
                     <button
