@@ -1348,17 +1348,17 @@
               </div>
             </div>
             <div class="flex flex-wrap items-center gap-2 text-xs font-mono font-bold">
-              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-blue-50 text-blue-700 border border-blue-200" title="Closed Actions completed">
-                <span class="w-2.5 h-2.5 rounded-sm bg-blue-600"></span>
-                <span>Closed Actions</span>
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-blue-50 text-blue-700 border border-blue-200" title="Total Actions / Personnel count">
+                <span class="w-2.5 h-2.5 rounded-sm bg-gradient-to-b from-blue-500 to-blue-700"></span>
+                <span>Total</span>
               </span>
-              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-amber-50 text-amber-800 border border-amber-200" title="Open Actions pending closure">
-                <span class="w-2.5 h-2.5 rounded-sm bg-amber-500"></span>
-                <span>Open Actions</span>
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200" title="Closed Actions completed / Validation passed">
+                <span class="w-2.5 h-2.5 rounded-sm bg-gradient-to-b from-emerald-500 to-emerald-700"></span>
+                <span>Closed / Validation Passed</span>
               </span>
-              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200" title="Personnel who passed PSM qualification validation (Plotted on Secondary Y-Axis in %)">
-                <span class="w-2.5 h-2.5 rounded-sm bg-emerald-600"></span>
-                <span>Validation Passed (%)</span>
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-amber-50 text-amber-800 border border-amber-200" title="Open Actions pending closure / Validation pending">
+                <span class="w-2.5 h-2.5 rounded-sm bg-gradient-to-b from-amber-500 to-orange-600"></span>
+                <span>Open / Pending</span>
               </span>
             </div>
           </div>
@@ -4498,11 +4498,15 @@
           const maxVal = Math.max(...primaryItems.map(i => i.total), 10);
           const yMax = maxVal > 300 ? Math.ceil((maxVal * 1.34) / 50) * 50 : Math.max(20, Math.ceil((maxVal * 1.36) / 10) * 10);
 
-          // Gradients definition for Closed, Open, and Validation Passed/Pending stacked segments
+          // Gradients definition for Total (Blue), Closed/Validation Passed (Green), and Open/Pending (Amber/Orange)
           const defsGradients = `
-            <linearGradient id="cmp-col-closed" x1="0%" y1="0%" x2="0%" y2="100%">
+            <linearGradient id="cmp-col-total" x1="0%" y1="0%" x2="0%" y2="100%">
               <stop offset="0%" stop-color="#3B82F6"/>
               <stop offset="100%" stop-color="#1D4ED8"/>
+            </linearGradient>
+            <linearGradient id="cmp-col-closed" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#10B981"/>
+              <stop offset="100%" stop-color="#059669"/>
             </linearGradient>
             <linearGradient id="cmp-col-open" x1="0%" y1="0%" x2="0%" y2="100%">
               <stop offset="0%" stop-color="#FB923C"/>
@@ -4513,13 +4517,17 @@
               <stop offset="100%" stop-color="#059669"/>
             </linearGradient>
             <linearGradient id="cmp-col-pending" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stop-color="#38BDF8"/>
-              <stop offset="100%" stop-color="#0284C7"/>
+              <stop offset="0%" stop-color="#FB923C"/>
+              <stop offset="100%" stop-color="#EA580C"/>
             </linearGradient>
             <!-- Backward compatibility aliases -->
             <linearGradient id="cmp-bar-total" x1="0%" y1="0%" x2="0%" y2="100%">
               <stop offset="0%" stop-color="#3B82F6"/>
               <stop offset="100%" stop-color="#1D4ED8"/>
+            </linearGradient>
+            <linearGradient id="cmp-bar-closed" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#10B981"/>
+              <stop offset="100%" stop-color="#059669"/>
             </linearGradient>
             <linearGradient id="cmp-bar-open" x1="0%" y1="0%" x2="0%" y2="100%">
               <stop offset="0%" stop-color="#FB923C"/>
@@ -4528,6 +4536,10 @@
             <linearGradient id="cmp-bar-passed" x1="0%" y1="0%" x2="0%" y2="100%">
               <stop offset="0%" stop-color="#10B981"/>
               <stop offset="100%" stop-color="#059669"/>
+            </linearGradient>
+            <linearGradient id="cmp-bar-pending" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#FB923C"/>
+              <stop offset="100%" stop-color="#EA580C"/>
             </linearGradient>
             <filter id="colShadow" x="-10%" y="-10%" width="120%" height="120%">
               <feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.16"/>
@@ -4605,9 +4617,9 @@
             const hasData = isVal ? (itemTotalPersonnel > 0) : (totalVal > 0);
             const badgeY = (hasData ? Math.max(10, yOpen - badgeH - 8) : (baseY - badgeH - 9));
 
-            const closedLabelColor = isVal ? '#047857' : '#1D4ED8';
+            const closedLabelColor = '#059669';
             const openLabelColor = '#C2410C';
-            const totalLabelColor = hasData ? '#0F172A' : '#64748B';
+            const totalLabelColor = hasData ? '#1D4ED8' : '#64748B';
             const badgeBg = hasData ? '#FFFFFF' : '#F8FAFC';
             const badgeBorder = hasData ? '#CBD5E1' : '#E2E8F0';
             const subOpenColor = hasData ? openLabelColor : '#94A3B8';
@@ -4619,9 +4631,9 @@
               const pendingRateStr = itemPendingPct.toFixed(1) + '%';
 
               let line1 = `Passed: ${passedRateStr}`;
-              let line1Color = '#047857';
+              let line1Color = '#059669';
               let line2 = `Total: ${itemTotalPersonnel} Pers.`;
-              let line2Color = '#0F172A';
+              let line2Color = '#1D4ED8';
               let line3 = `Passed: ${itemPassedPersonnel}`;
               let line3Color = '#059669';
 
@@ -4629,29 +4641,29 @@
                 line1 = `Pending: ${pendingRateStr}`;
                 line1Color = '#C2410C';
                 line2 = `Total: ${itemTotalPersonnel} Pers.`;
-                line2Color = '#0F172A';
+                line2Color = '#1D4ED8';
                 line3 = `Pending: ${itemPendingPersonnel}`;
                 line3Color = '#EA580C';
               } else if (openCloseFilter === 'close') {
                 line1 = `Passed: ${passedRateStr}`;
-                line1Color = '#047857';
+                line1Color = '#059669';
                 line2 = `Total: ${itemTotalPersonnel} Pers.`;
-                line2Color = '#0F172A';
+                line2Color = '#1D4ED8';
                 line3 = `Passed: ${itemPassedPersonnel}`;
                 line3Color = '#059669';
               } else {
                 if (itemPendingPersonnel > 0) {
                   line1 = `Passed: ${passedRateStr}`;
-                  line1Color = '#047857';
+                  line1Color = '#059669';
                   line2 = `Passed: ${itemPassedPersonnel} / ${itemTotalPersonnel}`;
-                  line2Color = '#0F172A';
+                  line2Color = '#1D4ED8';
                   line3 = `Pending: ${itemPendingPersonnel} (${pendingRateStr})`;
-                  line3Color = '#0284C7';
+                  line3Color = '#EA580C';
                 } else {
                   line1 = `Passed: ${passedRateStr}`;
-                  line1Color = '#047857';
+                  line1Color = '#059669';
                   line2 = `Total: ${itemTotalPersonnel} Pers.`;
-                  line2Color = '#0F172A';
+                  line2Color = '#1D4ED8';
                   line3 = `Passed: ${itemPassedPersonnel}`;
                   line3Color = '#059669';
                 }
@@ -4661,6 +4673,8 @@
                 <!-- Professional KPI Callout Badge (PSM Validation on Secondary Axis in %) -->
                 <g class="transition-transform duration-200 group-hover:-translate-y-0.5" pointer-events="none">
                   <rect x="${badgeX}" y="${badgeY}" width="${badgeW}" height="${badgeH}" rx="6" fill="${badgeBg}" stroke="${badgeBorder}" stroke-width="${hasData ? '1.2' : '1'}" ${hasData ? 'filter="url(#colShadow)"' : ''} class="transition-colors group-hover:stroke-emerald-500"/>
+                  <!-- Top accent bar in gradient blue representing Total -->
+                  <rect x="${badgeX + 1}" y="${badgeY + 1}" width="${badgeW - 2}" height="2.5" rx="1.2" fill="url(#cmp-col-total)"/>
                   <!-- Callout pointer arrow -->
                   <polygon points="${centerX - 4},${badgeY + badgeH} ${centerX + 4},${badgeY + badgeH} ${centerX},${badgeY + badgeH + 4}" fill="${badgeBg}" stroke="${badgeBorder}" stroke-width="1"/>
                   <line x1="${centerX - 3.2}" y1="${badgeY + badgeH}" x2="${centerX + 3.2}" y2="${badgeY + badgeH}" stroke="${badgeBg}" stroke-width="1.5"/>
@@ -4674,17 +4688,19 @@
               `;
             } else {
               kpiBadgeSvg = `
-                <!-- Professional KPI Callout Badge (Total, Open, Closed) Above Bar -->
+                <!-- Professional KPI Callout Badge (Total: Blue, Open: Orange, Closed: Green) Above Bar -->
                 <g class="transition-transform duration-200 group-hover:-translate-y-0.5" pointer-events="none">
                   <rect x="${badgeX}" y="${badgeY}" width="${badgeW}" height="${badgeH}" rx="6" fill="${badgeBg}" stroke="${badgeBorder}" stroke-width="${hasData ? '1.2' : '1'}" ${hasData ? 'filter="url(#colShadow)"' : ''} class="transition-colors group-hover:stroke-blue-500"/>
+                  <!-- Top accent bar in gradient blue representing Total -->
+                  <rect x="${badgeX + 1}" y="${badgeY + 1}" width="${badgeW - 2}" height="2.5" rx="1.2" fill="url(#cmp-col-total)"/>
                   <!-- Callout pointer arrow -->
                   <polygon points="${centerX - 4},${badgeY + badgeH} ${centerX + 4},${badgeY + badgeH} ${centerX},${badgeY + badgeH + 4}" fill="${badgeBg}" stroke="${badgeBorder}" stroke-width="1"/>
                   <line x1="${centerX - 3.2}" y1="${badgeY + badgeH}" x2="${centerX + 3.2}" y2="${badgeY + badgeH}" stroke="${badgeBg}" stroke-width="1.5"/>
-                  <!-- Total KPI Value -->
+                  <!-- Total KPI Value (Gradient Blue) -->
                   <text x="${centerX}" y="${badgeY + 12.5}" fill="${totalLabelColor}" font-size="10.5" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="900" text-anchor="middle">Total: ${totalVal}</text>
-                  <!-- Open KPI Value -->
+                  <!-- Open KPI Value (Gradient Amber/Orange) -->
                   <text x="${centerX}" y="${badgeY + 25}" fill="${subOpenColor}" font-size="9.5" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" text-anchor="middle">Open: ${openVal}</text>
-                  <!-- Closed KPI Value -->
+                  <!-- Closed KPI Value (Gradient Green) -->
                   <text x="${centerX}" y="${badgeY + 36.5}" fill="${subClosedColor}" font-size="9.5" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" text-anchor="middle">Closed: ${closedVal}</text>
                 </g>
               `;
