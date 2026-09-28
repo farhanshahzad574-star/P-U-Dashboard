@@ -25,6 +25,7 @@
       searchQuery: '',
       yearFilter: String(new Date().getFullYear()),       // Year from Date_of_Initiator (dynamically current year by default)
       areaFilter: 'all',       // Column C
+      unitFilter: 'all',       // Column D (Initiator_Unit)
       deptFilter: 'all',       // Column M (Responsibility)
       statusFilter: 'all',     // Column O (Status)
       page: 1,
@@ -37,6 +38,7 @@
       isTargetDatesModalOpen: false,
       targetDatesModalSearch: '',
       targetDatesModalYear: String(new Date().getFullYear()),
+      targetDatesModalUnit: 'all',
       targetDatesModalDept: 'all',
       targetDatesModalArea: 'all'
     },
@@ -49,7 +51,7 @@
 
       // Fast-paint from localStorage cache if present
       try {
-        const cached = localStorage.getItem('FPCL_PSSR_DATA_CACHE');
+        const cached = localStorage.getItem('FPCL_PSSR_DATA_CACHE_V2');
         if (cached) {
           const parsed = JSON.parse(cached);
           if (Array.isArray(parsed) && parsed.length > 0) {
@@ -149,12 +151,14 @@
     },
 
     /**
-     * Normalizes department name (e.g. "P.E" -> "PE", "-" -> "Unassigned")
+     * Normalizes department / responsibility name from Column M.
+     * Correctly picks data from cells which are filled.
+     * Only marks those cells unassigned which are empty.
      */
     normalizeDept(dept) {
-      if (!dept || dept.trim() === '' || dept.trim() === '-') return 'Unassigned';
-      const clean = dept.trim();
-      if (clean.toLowerCase() === 'p.e') return 'PE';
+      if (dept === null || dept === undefined) return 'Unassigned';
+      const clean = String(dept).trim();
+      if (!clean) return 'Unassigned';
       return clean;
     },
 
@@ -197,7 +201,7 @@
     },
 
     /**
-     * Filters dataset by Year (Date_of_Initiator), Area (Col C), Responsibility (Col M), Status (Col O), and Search Query
+     * Filters dataset by Year (Date_of_Initiator), Unit (Col D), Area (Col C), Responsibility (Col M), Status (Col O), and Search Query
      */
     getFilteredData() {
       const raw = this.getRawData();
@@ -213,6 +217,15 @@
           }
         }
 
+        // Unit filter (Column D - Initiator_Unit)
+        if (s.unitFilter && s.unitFilter !== 'all') {
+          const itemUnit = (item.initiatorUnit || '').trim().toLowerCase();
+          const targetUnit = s.unitFilter.trim().toLowerCase();
+          if (itemUnit !== targetUnit) {
+            return false;
+          }
+        }
+
         // Area filter (Column C)
         if (s.areaFilter !== 'all') {
           if ((item.area || '').toLowerCase() !== s.areaFilter.toLowerCase()) {
@@ -223,7 +236,9 @@
         // Responsibility / Department filter (Column M)
         if (s.deptFilter !== 'all') {
           const dept = this.normalizeDept(item.responsibility);
-          if (dept.toLowerCase() !== s.deptFilter.toLowerCase()) {
+          const filterNorm = s.deptFilter.toLowerCase().replace(/[^a-z0-9]/g, '');
+          const deptNorm = dept.toLowerCase().replace(/[^a-z0-9]/g, '');
+          if (dept.toLowerCase() !== s.deptFilter.toLowerCase() && deptNorm !== filterNorm) {
             return false;
           }
         }
@@ -433,7 +448,10 @@
       const colMap = {};
       headers.forEach((h, idx) => {
         const key = String(h || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-        colMap[key] = idx;
+        // Retain FIRST occurrence of key so subsequent duplicates (like second Responsibility) do not overwrite
+        if (colMap[key] === undefined) {
+          colMap[key] = idx;
+        }
       });
 
       const getColIdx = (keys, fallbackIdx) => {
@@ -447,7 +465,17 @@
       const idIdx = getColIdx(['id'], 0);
       const facilityIdx = getColIdx(['facilitydescription', 'facility_description'], 1);
       const areaIdx = getColIdx(['area'], 2);
-      const unitIdx = getColIdx(['initiatorunit', 'initiator_unit'], 3);
+
+      // Specifically ensure Initiator_Unit is Col D (index 3)
+      let unitIdx = 3;
+      for (let c = 0; c < headers.length; c++) {
+        const clean = String(headers[c] || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        if (clean.includes('initiatorunit') || clean.includes('initiator_unit') || clean === 'unit') {
+          unitIdx = c;
+          break;
+        }
+      }
+
       const dateInitIdx = getColIdx(['dateofinitiator', 'date_of_initiator', 'dateinitiator', 'date_initiator'], 4);
       const areaOwnerIdx = getColIdx(['areaowner', 'area_owner'], 5);
       const formIdx = getColIdx(['shortlongform', 'short_long_form'], 6);
@@ -456,7 +484,24 @@
       const signDateIdx = getColIdx(['signingdateofauthorization', 'signingdateauth'], 9);
       const numAcIdx = getColIdx(['numberofacpoints', 'numacpoints'], 10);
       const acDefIdx = getColIdx(['acdeficiencies', 'ac_deficiencies'], 11);
-      const respIdx = getColIdx(['responsibility'], 12);
+
+      // Specifically ensure Responsibility Col M is the FIRST occurrence of Responsibility (index 12)
+      // and Responsibility 2 is the second occurrence (Col V, index 21)
+      let respIdx = 12;
+      let resp2Idx = 21;
+      let respCount = 0;
+      for (let c = 0; c < headers.length; c++) {
+        const clean = String(headers[c] || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        if (clean === 'responsibility' || clean.includes('responsib')) {
+          respCount++;
+          if (respCount === 1) {
+            respIdx = c;
+          } else if (respCount === 2) {
+            resp2Idx = c;
+          }
+        }
+      }
+
       const targetDateIdx = getColIdx(['targetdate', 'target_date'], 13);
       const statusIdx = getColIdx(['statusopenclose', 'status'], 14);
       const ext1Idx = getColIdx(['targetdate1stextensions', 'targetdate1stext'], 15);
@@ -465,35 +510,34 @@
       const compDateIdx = getColIdx(['completiondate', 'completion_date'], 18);
       const compRemarksIdx = getColIdx(['completionremarks', 'completion_remarks'], 19);
       const clarIdx = getColIdx(['clarification'], 20);
-      const resp2Idx = getColIdx(['responsibility2'], 21);
       const remarksIdx = getColIdx(['remarks'], 22);
 
       const dataRows = rows.slice(1);
       return dataRows.map((r, idx) => ({
         rowIdx: idx + 1,
-        id: (r[idIdx] || '').trim(),
-        facilityDescription: (r[facilityIdx] || '').trim(),
-        area: (r[areaIdx] || '').trim(),
-        initiatorUnit: (r[unitIdx] || '').trim(),
-        dateOfInitiator: (r[dateInitIdx] || '').trim(),
-        areaOwner: (r[areaOwnerIdx] || '').trim(),
-        shortLongForm: (r[formIdx] || '').trim(),
-        bcPoints: (r[bcPointsIdx] || '').trim(),
-        commissioningAuth: (r[commAuthIdx] || '').trim(),
-        signingDateAuth: (r[signDateIdx] || '').trim(),
-        numAcPoints: (r[numAcIdx] || '').trim(),
-        acDeficiencies: (r[acDefIdx] || '').trim(),
-        responsibility: (r[respIdx] || '').trim(),
-        targetDate: (r[targetDateIdx] || '').trim(),
-        status: (r[statusIdx] || '').trim(),
-        targetDate1stExt: (r[ext1Idx] || '').trim(),
-        targetDate2ndExt: (r[ext2Idx] || '').trim(),
-        targetDate3rdExt: (r[ext3Idx] || '').trim(),
-        completionDate: (r[compDateIdx] || '').trim(),
-        completionRemarks: (r[compRemarksIdx] || '').trim(),
-        clarification: (r[clarIdx] || '').trim(),
-        responsibility2: (r[resp2Idx] || '').trim(),
-        remarks: (r[remarksIdx] || '').trim()
+        id: (r[idIdx] !== undefined ? String(r[idIdx]) : '').trim(),
+        facilityDescription: (r[facilityIdx] !== undefined ? String(r[facilityIdx]) : '').trim(),
+        area: (r[areaIdx] !== undefined ? String(r[areaIdx]) : '').trim(),
+        initiatorUnit: (r[unitIdx] !== undefined ? String(r[unitIdx]) : '').trim(),
+        dateOfInitiator: (r[dateInitIdx] !== undefined ? String(r[dateInitIdx]) : '').trim(),
+        areaOwner: (r[areaOwnerIdx] !== undefined ? String(r[areaOwnerIdx]) : '').trim(),
+        shortLongForm: (r[formIdx] !== undefined ? String(r[formIdx]) : '').trim(),
+        bcPoints: (r[bcPointsIdx] !== undefined ? String(r[bcPointsIdx]) : '').trim(),
+        commissioningAuth: (r[commAuthIdx] !== undefined ? String(r[commAuthIdx]) : '').trim(),
+        signingDateAuth: (r[signDateIdx] !== undefined ? String(r[signDateIdx]) : '').trim(),
+        numAcPoints: (r[numAcIdx] !== undefined ? String(r[numAcIdx]) : '').trim(),
+        acDeficiencies: (r[acDefIdx] !== undefined ? String(r[acDefIdx]) : '').trim(),
+        responsibility: (r[respIdx] !== undefined ? String(r[respIdx]) : '').trim(),
+        targetDate: (r[targetDateIdx] !== undefined ? String(r[targetDateIdx]) : '').trim(),
+        status: (r[statusIdx] !== undefined ? String(r[statusIdx]) : '').trim(),
+        targetDate1stExt: (r[ext1Idx] !== undefined ? String(r[ext1Idx]) : '').trim(),
+        targetDate2ndExt: (r[ext2Idx] !== undefined ? String(r[ext2Idx]) : '').trim(),
+        targetDate3rdExt: (r[ext3Idx] !== undefined ? String(r[ext3Idx]) : '').trim(),
+        completionDate: (r[compDateIdx] !== undefined ? String(r[compDateIdx]) : '').trim(),
+        completionRemarks: (r[compRemarksIdx] !== undefined ? String(r[compRemarksIdx]) : '').trim(),
+        clarification: (r[clarIdx] !== undefined ? String(r[clarIdx]) : '').trim(),
+        responsibility2: (r[resp2Idx] !== undefined ? String(r[resp2Idx]) : '').trim(),
+        remarks: (r[remarksIdx] !== undefined ? String(r[remarksIdx]) : '').trim()
       }));
     },
 
@@ -575,7 +619,7 @@
           if (Array.isArray(parsed) && parsed.length > 0) {
             window.FPCL_PSSR_DATA = parsed;
             try {
-              localStorage.setItem('FPCL_PSSR_DATA_CACHE', JSON.stringify(parsed));
+              localStorage.setItem('FPCL_PSSR_DATA_CACHE_V2', JSON.stringify(parsed));
             } catch (e) {}
 
             this.state.lastSynced = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -702,6 +746,7 @@
     resetFilters() {
       this.state.searchQuery = '';
       this.state.yearFilter = this.getCurrentYear();
+      this.state.unitFilter = 'all';
       this.state.areaFilter = 'all';
       this.state.deptFilter = 'all';
       this.state.statusFilter = 'all';
@@ -723,6 +768,12 @@
 
     setYearFilter(val) {
       this.state.yearFilter = val;
+      this.state.page = 1;
+      this.render();
+    },
+
+    setUnitFilter(val) {
+      this.state.unitFilter = val;
       this.state.page = 1;
       this.render();
     },
@@ -753,6 +804,7 @@
       this.state.isTargetDatesModalOpen = true;
       this.state.targetDatesModalSearch = '';
       this.state.targetDatesModalYear = this.state.yearFilter !== 'all' ? this.state.yearFilter : 'all';
+      this.state.targetDatesModalUnit = this.state.unitFilter !== 'all' ? this.state.unitFilter : 'all';
       this.state.targetDatesModalDept = this.state.deptFilter !== 'all' ? this.state.deptFilter : 'all';
       this.state.targetDatesModalArea = this.state.areaFilter !== 'all' ? this.state.areaFilter : 'all';
       this.render();
@@ -783,6 +835,11 @@
       this.renderTargetDatesModalBodyOnly();
     },
 
+    setTargetDatesUnit(unit) {
+      this.state.targetDatesModalUnit = unit;
+      this.renderTargetDatesModalBodyOnly();
+    },
+
     setTargetDatesDept(dept) {
       this.state.targetDatesModalDept = dept;
       this.renderTargetDatesModalBodyOnly();
@@ -797,6 +854,7 @@
       const raw = this.getRawData();
       const search = (this.state.targetDatesModalSearch || '').toLowerCase().trim();
       const yr = this.state.targetDatesModalYear || 'all';
+      const unit = (this.state.targetDatesModalUnit || 'all').toLowerCase();
       const dept = (this.state.targetDatesModalDept || 'all').toLowerCase();
       const area = (this.state.targetDatesModalArea || 'all').toLowerCase();
 
@@ -810,10 +868,18 @@
           if (itemYr !== yr) return false;
         }
 
-        // Dept filter
+        // Unit filter (Column D - Initiator_Unit)
+        if (unit !== 'all') {
+          const itemUnit = (item.initiatorUnit || '').trim().toLowerCase();
+          if (itemUnit !== unit) return false;
+        }
+
+        // Dept filter (Column M - Responsibility)
         if (dept !== 'all') {
           const itemDept = this.normalizeDept(item.responsibility).toLowerCase();
-          if (itemDept !== dept) return false;
+          const filterNorm = dept.replace(/[^a-z0-9]/g, '');
+          const itemNorm = itemDept.replace(/[^a-z0-9]/g, '');
+          if (itemDept !== dept && itemNorm !== filterNorm) return false;
         }
 
         // Area filter
@@ -1166,6 +1232,7 @@
         rawYears.push(currentYear);
       }
       const years = rawYears.sort();
+      const units = Array.from(new Set(raw.map(i => (i.initiatorUnit || '').trim()).filter(Boolean))).sort();
       const areas = Array.from(new Set(raw.map(i => i.area).filter(Boolean))).sort();
       const depts = Array.from(new Set(raw.map(i => this.normalizeDept(i.responsibility)).filter(Boolean))).sort();
       const statuses = ['Close', 'Open', 'Extension'];
@@ -1343,30 +1410,9 @@
 
           <!-- ========================================================================= -->
           <!-- 3. UNIVERSAL FILTERS BAR (DIRECTLY BELOW KPIS)                            -->
-          <!-- Universal Filters (Year: Date_of_Initiator • Area • Responsibility • Status) -->
           <!-- ========================================================================= -->
-          <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-sm space-y-3">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-2 border-b border-slate-100 gap-2">
-              <div class="flex items-center gap-2">
-                <i data-lucide="filter" class="w-4 h-4 text-blue-600"></i>
-                <span class="text-xs sm:text-sm font-black text-slate-800 uppercase tracking-wider">
-                  Universal Filters (Year: Date_of_Initiator • Column C: Area • Column M: Responsibility • Column O: Status)
-                </span>
-              </div>
-              <div class="flex items-center gap-2 text-xs font-bold text-slate-500">
-                <button
-                  onclick="FPCL_PSSR_SUITE.openTargetDatesModal()"
-                  class="px-2.5 py-1 rounded-xl text-xs font-bold text-rose-800 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition-all cursor-pointer flex items-center gap-1 shrink-0"
-                  title="View Open Observations Target Dates (Column N, P, Q, U, R)"
-                >
-                  <i data-lucide="calendar" class="w-3.5 h-3.5 text-rose-600"></i>
-                  <span>Target Dates (Col N, P, Q, U, R)</span>
-                </button>
-                <span>Active: <span class="text-blue-700 font-mono font-black">${filtered.length}</span> of ${raw.length}</span>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 pt-1">
+          <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-sm">
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
               
               <!-- Filter 1: Year (Date_of_Initiator) -->
               <div class="space-y-1">
@@ -1386,7 +1432,24 @@
                 </div>
               </div>
 
-              <!-- Filter 2: Column C (Area) -->
+              <!-- Filter 2: Column D (Unit - Initiator_Unit) -->
+              <div class="space-y-1">
+                <label class="block text-[10px] sm:text-[11px] font-extrabold text-slate-600 uppercase tracking-wider truncate" title="Unit (Column D: Initiator_Unit)">
+                  Unit (Col D)
+                </label>
+                <div class="relative">
+                  <select
+                    id="filter-pssr-unit"
+                    onchange="FPCL_PSSR_SUITE.setUnitFilter(this.value)"
+                    class="w-full bg-slate-50 hover:bg-slate-100 border border-slate-300 rounded-xl px-2 sm:px-3 py-1.5 sm:py-2 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer transition-all truncate"
+                  >
+                    <option value="all" ${s.unitFilter === 'all' ? 'selected' : ''}>All Units (${units.length})</option>
+                    ${units.map(u => `<option value="${u.replace(/"/g, '&quot;')}" ${s.unitFilter === u ? 'selected' : ''}>${u}</option>`).join('')}
+                  </select>
+                </div>
+              </div>
+
+              <!-- Filter 3: Column C (Area) -->
               <div class="space-y-1">
                 <label class="block text-[10px] sm:text-[11px] font-extrabold text-slate-600 uppercase tracking-wider truncate" title="Area (Column C)">
                   Area (Col C)
@@ -1403,7 +1466,7 @@
                 </div>
               </div>
 
-              <!-- Filter 3: Column M (Responsibility / Department) -->
+              <!-- Filter 4: Column M (Responsibility / Department) -->
               <div class="space-y-1">
                 <label class="block text-[10px] sm:text-[11px] font-extrabold text-slate-600 uppercase tracking-wider truncate" title="Responsibility (Column M)">
                   Resp. (Col M)
@@ -1420,7 +1483,7 @@
                 </div>
               </div>
 
-              <!-- Filter 4: Column O (Status Open/Close) -->
+              <!-- Filter 5: Column O (Status Open/Close) -->
               <div class="space-y-1">
                 <label class="block text-[10px] sm:text-[11px] font-extrabold text-slate-600 uppercase tracking-wider truncate" title="Status (Column O)">
                   Status (Col O)
@@ -1439,7 +1502,7 @@
                 </div>
               </div>
 
-              <!-- Filter 5: Text Search & Quick Reset -->
+              <!-- Filter 6: Text Search & Quick Reset -->
               <div class="space-y-1 col-span-2 sm:col-span-1">
                 <label class="block text-[10px] sm:text-[11px] font-extrabold text-slate-600 uppercase tracking-wider">
                   Search Filter
@@ -1884,6 +1947,14 @@
                 >
                   <option value="all" ${s.targetDatesModalYear === 'all' ? 'selected' : ''}>All Years (${years.length})</option>
                   ${years.map(y => `<option value="${y}" ${s.targetDatesModalYear === y ? 'selected' : ''}>Year ${y}${y === currentYear ? ' (Current)' : ''}</option>`).join('')}
+                </select>
+
+                <select
+                  onchange="FPCL_PSSR_SUITE.setTargetDatesUnit(this.value)"
+                  class="bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-500 cursor-pointer shadow-2xs flex-1 sm:flex-initial"
+                >
+                  <option value="all" ${s.targetDatesModalUnit === 'all' ? 'selected' : ''}>All Units (${units.length})</option>
+                  ${units.map(u => `<option value="${u.replace(/"/g, '&quot;')}" ${s.targetDatesModalUnit === u ? 'selected' : ''}>${u}</option>`).join('')}
                 </select>
 
                 <select
