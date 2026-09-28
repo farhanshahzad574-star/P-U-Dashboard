@@ -28,7 +28,7 @@
       elementFilter: 'all',    // PSM Element (MC, RA&PHA, MOC-F, PSI, General)
       natureFilter: 'all',     // Severity / Nature (Major, Minor, Suggestion, PSG)
       auditFilter: 'all',      // Audit No
-      yearFilter: 'all',       // Year from Column Q (Audit Year)
+      yearFilter: String(new Date().getFullYear()), // Dynamic current year by default (Column Q Audit Year)
       chartBreakdownMode: 'element', // 'element' | 'severity'
       page: 1,
       pageSize: 15,
@@ -50,7 +50,7 @@
         cadreFilter: 'all',       // 'all' | 'Mngt' | 'JMC' | 'Staff'
         moduleFilter: 'all',      // 'all' | 'T&D'
         unitFilter: 'all',        // Unit
-        yearFilter: 'all',        // 'all' | '2026' | '2025' | '2024' (Column N Validation Year)
+        yearFilter: String(new Date().getFullYear()), // Dynamic current year by default (Column N Validation Year)
         deptBarViewMode: 'chart', // 'chart' | 'table' | 'split'
         trendMode: 'dept',        // 'dept' | 'cadre'
         trendViewType: 'side-by-side', // 'side-by-side' | 'trend' | 'stacked'
@@ -62,8 +62,71 @@
       }
     },
 
+    /**
+     * Returns dynamic 4-digit current calendar year string (e.g. '2026')
+     */
+    getCurrentYear() {
+      return String(new Date().getFullYear());
+    },
+
+    /**
+     * Handler invoked whenever PSM Audits dashboard is opened.
+     * Enforces default filter on current year dynamically.
+     */
+    onOpenAuditsDashboard() {
+      this.state.yearFilter = this.getCurrentYear();
+      this.state.page = 1;
+      this.render();
+    },
+
+    /**
+     * Handler invoked whenever PSM Validation dashboard is opened.
+     * Enforces default filter on current year dynamically.
+     */
+    onOpenValidationDashboard() {
+      if (!this.state.validationState) {
+        this.state.validationState = {};
+      }
+      this.state.validationState.yearFilter = this.getCurrentYear();
+      this.state.validationState.page = 1;
+      this.render();
+    },
+
+    setupValidationVisibilityWatcher() {
+      const container = document.getElementById('psm-specialized-container');
+      if (!container) {
+        setTimeout(() => this.setupValidationVisibilityWatcher(), 400);
+        return;
+      }
+
+      let wasHidden = container.classList.contains('hidden') || container.hidden;
+
+      const observer = new MutationObserver(() => {
+        const isHidden = container.classList.contains('hidden') || container.hidden;
+        if (wasHidden && !isHidden) {
+          if (this.state.activeSubDashboard === 'validation') {
+            if (!this.state.validationState) this.state.validationState = {};
+            this.state.validationState.yearFilter = this.getCurrentYear();
+            this.render();
+          } else {
+            this.state.yearFilter = this.getCurrentYear();
+            this.render();
+          }
+        }
+        wasHidden = isHidden;
+      });
+
+      observer.observe(container, { attributes: true, attributeFilter: ['class', 'hidden'] });
+    },
+
     init() {
       window.FPCL_PSM_SUITE = this;
+
+      // Ensure PSM Audits & PSM Validation default dynamically to current calendar year
+      this.state.yearFilter = this.getCurrentYear();
+      if (!this.state.validationState) this.state.validationState = {};
+      this.state.validationState.yearFilter = this.getCurrentYear();
+      this.setupValidationVisibilityWatcher();
 
       // Permanently lock hardcoded Google Sheet CSV URL so connection never breaks
       window.FPCL_PSM_SHEET_URL = HARDCODED_PSM_SHEET_URL;
@@ -459,6 +522,10 @@
       const headerSearchInput = document.getElementById('psm-header-search-input');
 
       if (this.state.activeSubDashboard === 'audits') {
+        // Whenever PSM Audits dashboard is opened, dynamically default to current year
+        this.state.yearFilter = this.getCurrentYear();
+        this.state.page = 1;
+
         if (headerCard) headerCard.classList.remove('hidden');
         if (breadcrumbEl) breadcrumbEl.textContent = 'PSM / PSM Audits';
         if (titleEl) {
@@ -480,6 +547,11 @@
           sheetKeyEl.title = 'Live Google Sheets: PSM Audit Phase 1 June 2026';
         }
       } else {
+        // Whenever PSM Validation dashboard is opened, dynamically default to current year
+        if (!this.state.validationState) this.state.validationState = {};
+        this.state.validationState.yearFilter = this.getCurrentYear();
+        this.state.validationState.page = 1;
+
         // Remove the top PSM banner bar on PSM Validation dashboard
         if (headerCard) headerCard.classList.add('hidden');
         if (breadcrumbEl) breadcrumbEl.textContent = 'PSM / PSM Validation';
@@ -577,11 +649,13 @@
 
         // Validation Year filter (Column N named Validation Year)
         if (vs.yearFilter && vs.yearFilter !== 'all') {
+          const currentYear = (typeof this.getCurrentYear === 'function') ? this.getCurrentYear() : String(new Date().getFullYear());
           const itemYear = String(item.validationYear || item.year || '').trim();
           if (vs.yearFilter === 'unassigned') {
             if (itemYear !== '') return false;
           } else {
-            if (itemYear !== String(vs.yearFilter).trim()) return false;
+            const effectiveYear = itemYear || currentYear;
+            if (effectiveYear !== String(vs.yearFilter).trim()) return false;
           }
         }
 
@@ -609,7 +683,7 @@
       this.state.validationState.cadreFilter = 'all';
       this.state.validationState.moduleFilter = 'all';
       this.state.validationState.unitFilter = 'all';
-      this.state.validationState.yearFilter = 'all';
+      this.state.validationState.yearFilter = this.getCurrentYear();
       this.state.validationState.page = 1;
 
       const headerSearch = document.getElementById('psm-header-search-input');
@@ -619,7 +693,7 @@
 
       this.render();
       if (window.portalApp && window.portalApp.showToast) {
-        window.portalApp.showToast('Filters Cleared', 'Reset all PSM Validation filters to show all personnel.', 'info');
+        window.portalApp.showToast('Filters Cleared', `Reset all PSM Validation filters (defaulted to current year ${this.getCurrentYear()}).`, 'info');
       }
     },
 
@@ -833,7 +907,7 @@
       this.state.elementFilter = 'all';
       this.state.natureFilter = 'all';
       this.state.auditFilter = 'all';
-      this.state.yearFilter = 'all';
+      this.state.yearFilter = this.getCurrentYear();
       this.state.page = 1;
       const headerSearch = document.getElementById('psm-header-search-input');
       if (headerSearch && this.state.activeSubDashboard === 'audits') {
@@ -841,7 +915,7 @@
       }
       this.render();
       if (window.portalApp && window.portalApp.showToast) {
-        window.portalApp.showToast('Filters Cleared', 'Reset all PSM Audits filters to show all findings.', 'info');
+        window.portalApp.showToast('Filters Cleared', `Reset all PSM Audits filters (defaulted to current year ${this.getCurrentYear()}).`, 'info');
       }
     },
 
@@ -1176,12 +1250,13 @@
       if (allModules.length === 0) allModules.push('T&D');
 
       // Distinct Validation Years from Column N named Validation Year
+      const currentYear = (typeof this.getCurrentYear === 'function') ? this.getCurrentYear() : String(new Date().getFullYear());
       const dataYears = Array.from(new Set(raw.map(i => String(i.validationYear || i.year || '').trim()).filter(Boolean)))
         .sort((a, b) => String(b).localeCompare(String(a), undefined, { numeric: true }));
 
-      // Candidate operational years so user always has immediate filter options even prior to sheet population
-      const candidateYears = ['2026', '2025', '2024'];
-      const allYears = Array.from(new Set([...dataYears, ...(dataYears.length === 0 ? candidateYears : [])]))
+      // Candidate operational years ensuring dynamic current year is always available
+      const candidateYears = [currentYear, '2025', '2024'];
+      const allYears = Array.from(new Set([currentYear, ...dataYears, ...candidateYears]))
         .sort((a, b) => String(b).localeCompare(String(a), undefined, { numeric: true }));
 
       // Department Aggregations for Interactive Breakdown
@@ -1444,23 +1519,27 @@
             </div>
 
             <!-- Dropdown Filters Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3 text-xs">
+            <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-2 sm:gap-3 text-xs">
               
               <!-- 1. Validation Year (from Column N named Validation Year) -->
-              <div class="space-y-1">
-                <label class="font-bold text-slate-600 uppercase text-[10px] tracking-wider block flex items-center justify-between">
-                  <span>Validation Year</span>
-                  ${vs.yearFilter && vs.yearFilter !== 'all' ? '<span class="text-[9px] text-teal-600 font-extrabold lowercase">filtered</span>' : ''}
+              <div class="space-y-0.5 sm:space-y-1">
+                <label class="font-bold text-slate-600 uppercase text-[9px] sm:text-[10px] tracking-wider block flex items-center justify-between truncate">
+                  <span class="truncate">Validation Year</span>
+                  ${vs.yearFilter && vs.yearFilter !== 'all' ? '<span class="text-[8px] sm:text-[9px] text-teal-600 font-extrabold lowercase shrink-0">filtered</span>' : ''}
                 </label>
                 <select
                   id="psm-validation-filter-year"
                   onchange="FPCL_PSM_SUITE.setValidationFilter('yearFilter', this.value)"
-                  class="w-full ${vs.yearFilter && vs.yearFilter !== 'all' ? 'border-teal-500 bg-teal-50/50 text-teal-900 font-bold ring-1 ring-teal-400' : 'bg-slate-50 hover:bg-slate-100 text-slate-800'} focus:bg-white border border-slate-200 rounded-xl px-2.5 py-2 font-semibold focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer text-xs"
+                  class="w-full ${vs.yearFilter && vs.yearFilter !== 'all' ? 'border-teal-500 bg-teal-50/50 text-teal-900 font-bold ring-1 ring-teal-400' : 'bg-slate-50 hover:bg-slate-100 text-slate-800'} focus:bg-white border border-slate-200 rounded-lg sm:rounded-xl px-2 py-1.5 sm:px-2.5 sm:py-2 font-semibold focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer text-[11px] sm:text-xs truncate shadow-2xs"
                 >
-                  <option value="all" ${vs.yearFilter === 'all' ? 'selected' : ''}>All Years ${dataYears.length > 0 ? `(${dataYears.join(', ')})` : ''}</option>
+                  <option value="all" ${vs.yearFilter === 'all' ? 'selected' : ''}>All Years</option>
                   ${allYears.map(y => {
-                    const cnt = raw.filter(r => String(r.validationYear || r.year || '').trim() === y).length;
-                    return `<option value="${y}" ${vs.yearFilter === y ? 'selected' : ''}>${y} ${cnt > 0 ? `(${cnt})` : ''}</option>`;
+                    const cnt = raw.filter(r => {
+                      const yr = String(r.validationYear || r.year || '').trim();
+                      return (yr === y) || (!yr && y === currentYear);
+                    }).length;
+                    const isCur = y === currentYear ? ' (Current Year)' : '';
+                    return `<option value="${y}" ${vs.yearFilter === y ? 'selected' : ''}>Year ${y}${isCur} ${cnt > 0 ? `(${cnt})` : ''}</option>`;
                   }).join('')}
                   ${(raw.some(r => !String(r.validationYear || r.year || '').trim()) && dataYears.length > 0) ? `
                     <option value="unassigned" ${vs.yearFilter === 'unassigned' ? 'selected' : ''}>Unassigned (${raw.filter(r => !String(r.validationYear || r.year || '').trim()).length})</option>
@@ -1469,13 +1548,13 @@
               </div>
 
               <!-- 2. Department -->
-              <div class="space-y-1">
-                <label class="font-bold text-slate-600 uppercase text-[10px] tracking-wider block">Department</label>
+              <div class="space-y-0.5 sm:space-y-1">
+                <label class="font-bold text-slate-600 uppercase text-[9px] sm:text-[10px] tracking-wider block truncate">Department</label>
                 <select
                   onchange="FPCL_PSM_SUITE.setValidationFilter('deptFilter', this.value)"
-                  class="w-full bg-slate-50 hover:bg-slate-100 focus:bg-white border border-slate-200 rounded-xl px-2.5 py-2 font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer text-xs"
+                  class="w-full bg-slate-50 hover:bg-slate-100 focus:bg-white border border-slate-200 rounded-lg sm:rounded-xl px-2 py-1.5 sm:px-2.5 sm:py-2 font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer text-[11px] sm:text-xs truncate shadow-2xs"
                 >
-                  <option value="all" ${vs.deptFilter === 'all' ? 'selected' : ''}>All Departments (${raw.length})</option>
+                  <option value="all" ${vs.deptFilter === 'all' ? 'selected' : ''}>All Depts (${raw.length})</option>
                   ${allDepts.map(d => {
                     const c = raw.filter(r => r.department === d).length;
                     return `<option value="${d}" ${vs.deptFilter === d ? 'selected' : ''}>${d} (${c})</option>`;
@@ -1484,11 +1563,11 @@
               </div>
 
               <!-- 3. Cadre -->
-              <div class="space-y-1">
-                <label class="font-bold text-slate-600 uppercase text-[10px] tracking-wider block">Cadre</label>
+              <div class="space-y-0.5 sm:space-y-1">
+                <label class="font-bold text-slate-600 uppercase text-[9px] sm:text-[10px] tracking-wider block truncate">Cadre</label>
                 <select
                   onchange="FPCL_PSM_SUITE.setValidationFilter('cadreFilter', this.value)"
-                  class="w-full bg-slate-50 hover:bg-slate-100 focus:bg-white border border-slate-200 rounded-xl px-2.5 py-2 font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer text-xs"
+                  class="w-full bg-slate-50 hover:bg-slate-100 focus:bg-white border border-slate-200 rounded-lg sm:rounded-xl px-2 py-1.5 sm:px-2.5 sm:py-2 font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer text-[11px] sm:text-xs truncate shadow-2xs"
                 >
                   <option value="all" ${vs.cadreFilter === 'all' ? 'selected' : ''}>All Cadres (${raw.length})</option>
                   ${allCadres.map(c => {
@@ -1499,24 +1578,24 @@
               </div>
 
               <!-- 4. Training Status -->
-              <div class="space-y-1">
-                <label class="font-bold text-slate-600 uppercase text-[10px] tracking-wider block">Training Status</label>
+              <div class="space-y-0.5 sm:space-y-1">
+                <label class="font-bold text-slate-600 uppercase text-[9px] sm:text-[10px] tracking-wider block truncate">Training Status</label>
                 <select
                   onchange="FPCL_PSM_SUITE.setValidationFilter('trainingFilter', this.value)"
-                  class="w-full bg-slate-50 hover:bg-slate-100 focus:bg-white border border-slate-200 rounded-xl px-2.5 py-2 font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer text-xs"
+                  class="w-full bg-slate-50 hover:bg-slate-100 focus:bg-white border border-slate-200 rounded-lg sm:rounded-xl px-2 py-1.5 sm:px-2.5 sm:py-2 font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer text-[11px] sm:text-xs truncate shadow-2xs"
                 >
                   <option value="all" ${vs.trainingFilter === 'all' ? 'selected' : ''}>All Training (${raw.length})</option>
-                  <option value="Yes" ${vs.trainingFilter === 'Yes' ? 'selected' : ''}>Training: Yes (${raw.filter(i => (i.training||'').toLowerCase() === 'yes').length})</option>
-                  <option value="No" ${vs.trainingFilter === 'No' ? 'selected' : ''}>Training: No (${raw.filter(i => (i.training||'').toLowerCase() === 'no').length})</option>
+                  <option value="Yes" ${vs.trainingFilter === 'Yes' ? 'selected' : ''}>Yes (${raw.filter(i => (i.training||'').toLowerCase() === 'yes').length})</option>
+                  <option value="No" ${vs.trainingFilter === 'No' ? 'selected' : ''}>No (${raw.filter(i => (i.training||'').toLowerCase() === 'no').length})</option>
                 </select>
               </div>
 
               <!-- 5. Validation Result -->
-              <div class="space-y-1">
-                <label class="font-bold text-slate-600 uppercase text-[10px] tracking-wider block">Validation Result</label>
+              <div class="space-y-0.5 sm:space-y-1">
+                <label class="font-bold text-slate-600 uppercase text-[9px] sm:text-[10px] tracking-wider block truncate">Validation Result</label>
                 <select
                   onchange="FPCL_PSM_SUITE.setValidationFilter('statusFilter', this.value)"
-                  class="w-full bg-slate-50 hover:bg-slate-100 focus:bg-white border border-slate-200 rounded-xl px-2.5 py-2 font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer text-xs"
+                  class="w-full bg-slate-50 hover:bg-slate-100 focus:bg-white border border-slate-200 rounded-lg sm:rounded-xl px-2 py-1.5 sm:px-2.5 sm:py-2 font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer text-[11px] sm:text-xs truncate shadow-2xs"
                 >
                   <option value="all" ${vs.statusFilter === 'all' ? 'selected' : ''}>All Results (${raw.length})</option>
                   <option value="Pass" ${vs.statusFilter === 'Pass' ? 'selected' : ''}>Pass (${raw.filter(i => (i.status||'').toLowerCase() === 'pass').length})</option>
@@ -1525,11 +1604,11 @@
               </div>
 
               <!-- 6. PSM Module -->
-              <div class="space-y-1">
-                <label class="font-bold text-slate-600 uppercase text-[10px] tracking-wider block">PSM Module</label>
+              <div class="space-y-0.5 sm:space-y-1">
+                <label class="font-bold text-slate-600 uppercase text-[9px] sm:text-[10px] tracking-wider block truncate">PSM Module</label>
                 <select
                   onchange="FPCL_PSM_SUITE.setValidationFilter('moduleFilter', this.value)"
-                  class="w-full bg-slate-50 hover:bg-slate-100 focus:bg-white border border-slate-200 rounded-xl px-2.5 py-2 font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer text-xs"
+                  class="w-full bg-slate-50 hover:bg-slate-100 focus:bg-white border border-slate-200 rounded-lg sm:rounded-xl px-2 py-1.5 sm:px-2.5 sm:py-2 font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer text-[11px] sm:text-xs truncate shadow-2xs"
                 >
                   <option value="all" ${vs.moduleFilter === 'all' ? 'selected' : ''}>All Modules (${raw.length})</option>
                   ${allModules.map(m => {
@@ -1540,22 +1619,22 @@
               </div>
 
               <!-- 7. Search Personnel -->
-              <div class="space-y-1">
-                <label class="font-bold text-slate-600 uppercase text-[10px] tracking-wider block">Search Personnel</label>
+              <div class="space-y-0.5 sm:space-y-1 col-span-2 sm:col-span-1">
+                <label class="font-bold text-slate-600 uppercase text-[9px] sm:text-[10px] tracking-wider block truncate">Search Personnel</label>
                 <div class="relative">
                   <input
                     type="text"
                     value="${vs.searchQuery || ''}"
                     oninput="FPCL_PSM_SUITE.setValidationFilter('searchQuery', this.value)"
                     placeholder="Name, P.No, Unit..."
-                    class="w-full pl-7 pr-7 py-2 bg-slate-50 hover:bg-slate-100 focus:bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    class="w-full pl-7 pr-7 py-1.5 sm:py-2 bg-slate-50 hover:bg-slate-100 focus:bg-white border border-slate-200 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 shadow-2xs"
                   />
-                  <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5 pointer-events-none"></i>
+                  <i data-lucide="search" class="w-3 sm:w-3.5 h-3 sm:h-3.5 text-slate-400 absolute left-2.5 top-2 sm:top-2.5 pointer-events-none"></i>
                   ${vs.searchQuery ? `
                     <button
                       type="button"
                       onclick="FPCL_PSM_SUITE.setValidationFilter('searchQuery', '')"
-                      class="absolute right-2 top-2 text-slate-400 hover:text-slate-700 cursor-pointer"
+                      class="absolute right-2 top-1.5 sm:top-2 text-slate-400 hover:text-slate-700 cursor-pointer"
                     >
                       <i data-lucide="x" class="w-3.5 h-3.5"></i>
                     </button>
@@ -1572,7 +1651,7 @@
                 
                 ${vs.yearFilter && vs.yearFilter !== 'all' ? `
                   <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-teal-50 text-teal-800 border border-teal-200 font-bold">
-                    Validation Year: ${vs.yearFilter}
+                    Validation Year: ${vs.yearFilter}${vs.yearFilter === currentYear ? ' (Current Year)' : ''}
                     <button onclick="FPCL_PSM_SUITE.setValidationFilter('yearFilter', 'all')" class="hover:text-rose-600 cursor-pointer"><i data-lucide="x" class="w-3 h-3"></i></button>
                   </span>
                 ` : ''}
@@ -1623,7 +1702,7 @@
           </div>
 
           <!-- 4. Analytical Breakdown Section (Department Training Matrix & Module Validation Matrix) -->
-          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             
             <!-- Left 6 Cols: Department Training Compliance Matrix -->
             <div class="lg:col-span-6 bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-xs flex flex-col justify-between space-y-4">
@@ -1667,8 +1746,8 @@
               </div>
             </div>
 
-            <!-- Right 6 Cols: Module Validation Compliance Matrix (Pass / Fail Bar Chart) -->
-            <div class="lg:col-span-6 bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-xs flex flex-col justify-between space-y-4">
+            <!-- Right 6 Cols: Module Validation Compliance Matrix (Pass / Fail Bar Chart - Top Aligned) -->
+            <div id="psm-val-module-compliance-card" class="lg:col-span-6 self-start bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-xs flex flex-col justify-start space-y-4">
               <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
                 <div>
                   <h3 class="text-lg font-black tracking-wider text-slate-900 flex items-center gap-2.5 uppercase">
@@ -1678,8 +1757,8 @@
                 </div>
               </div>
 
-              <!-- Horizontal SVG Bar Chart (Module Validation Compliance Matrix) -->
-              <div id="psm-val-module-bar-chart" class="w-full overflow-x-auto">
+              <!-- Horizontal SVG Bar Chart (Module Validation Compliance Matrix - Top Aligned) -->
+              <div id="psm-val-module-bar-chart" class="w-full overflow-x-auto self-start">
                 ${this.renderValidationModuleBarChart(moduleBreakdown)}
               </div>
 
@@ -1742,7 +1821,7 @@
                     class="bg-slate-50 border ${vs.yearFilter && vs.yearFilter !== 'all' ? 'border-teal-500 bg-teal-50 text-teal-900 font-bold' : 'border-slate-200 text-slate-700'} rounded-lg px-2 py-1 font-semibold focus:outline-none focus:ring-1 focus:ring-teal-500 cursor-pointer text-xs"
                   >
                     <option value="all" ${vs.yearFilter === 'all' ? 'selected' : ''}>All</option>
-                    ${allYears.map(y => `<option value="${y}" ${vs.yearFilter === y ? 'selected' : ''}>${y}</option>`).join('')}
+                    ${allYears.map(y => `<option value="${y}" ${vs.yearFilter === y ? 'selected' : ''}>${y}${y === currentYear ? ' (Current)' : ''}</option>`).join('')}
                     ${(raw.some(r => !String(r.validationYear || r.year || '').trim()) && dataYears.length > 0) ? `
                       <option value="unassigned" ${vs.yearFilter === 'unassigned' ? 'selected' : ''}>Unassigned</option>
                     ` : ''}

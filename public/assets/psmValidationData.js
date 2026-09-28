@@ -77,11 +77,13 @@ window.parseValidationCSV = function(csvText) {
   }
 
   const parsedRecords = [];
+  const currentDynamicYear = String(new Date().getFullYear());
   for (let i = 1; i < rows.length; i++) {
     const r = rows[i];
     if (!r || r.length < 2) continue;
     if (!r[colPNo] && !r[colName]) continue;
-    const yearVal = (colYear !== -1 && r[colYear] !== undefined) ? String(r[colYear] || '').trim() : '';
+    const rawYear = (colYear !== -1 && r[colYear] !== undefined) ? String(r[colYear] || '').trim() : '';
+    const yearVal = rawYear || currentDynamicYear;
     const stat = (colStatus !== -1 && r[colStatus]) ? String(r[colStatus]).trim() : 'Pending';
     parsedRecords.push({
       sr: parseInt(r[colSr], 10) || i,
@@ -55747,3 +55749,15 @@ window.FPCL_PSM_VALIDATION_DATA = [
     "year": ""
   }
 ];
+
+// Ensure baseline records dynamically default to current year when unspecified in sheet
+(function() {
+  const currentCalendarYear = String(new Date().getFullYear());
+  if (Array.isArray(window.FPCL_PSM_VALIDATION_DATA)) {
+    window.FPCL_PSM_VALIDATION_DATA.forEach(r => {
+      if (!r.validationYear) r.validationYear = currentCalendarYear;
+      if (!r.year) r.year = r.validationYear;
+    });
+  }
+})();
+

@@ -86,13 +86,13 @@
       available: 60,
       wbs: 'FL-2024-0002-PRO-01',
       unit: 'HSE',
-      reason: 'Plant Reliability Sustenance',
-      serviceLife: '5 Years',
-      moc: 'No',
-      priority: 'B',
-      type: 'Replacement',
-      category: 'HSEQ',
-      quantity: '6',
+      reason: '',
+      serviceLife: '',
+      moc: '',
+      priority: '',
+      type: '',
+      category: '',
+      quantity: '',
       strategy: 'To be executed in ATA 2027',
       status: 'Close',
       remarks: 'completed',
@@ -100,10 +100,10 @@
       background: '',
       problem: '',
       justification: '',
-      prStatus: 'Created / approved',
-      prCreatedApproved: 'Created / approved',
-      rfqFloated: 'Yes',
-      poCreated: 'Yes'
+      prStatus: '',
+      prCreatedApproved: '',
+      rfqFloated: '',
+      poCreated: ''
     },
     {
       sr: 4,
@@ -1090,15 +1090,14 @@
         document.body.appendChild(modalContainer);
       }
 
-      // Purge any stale cache that contained mock/dummy projects
+      // Purge any stale cache that contained mock/dummy projects or old assumptions
       try {
         const cached = localStorage.getItem('FPCL_CAPEX_DATA_CACHE');
         if (cached) {
           const parsed = JSON.parse(cached);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            const hasDummy = parsed.some(p => (p.name || '').includes('Boiler Tubes Thermal') || (p.name || '').includes('SAP Rise'));
-            const hasNewColumns = parsed.some(p => p.background !== undefined || p.problem !== undefined || p.justification !== undefined);
-            if (!hasDummy && hasNewColumns) {
+            const hasMock = parsed.some(p => (p.name || '').toLowerCase().startsWith('econ -') || (p.name || '').toLowerCase().startsWith('econ-'));
+            if (!hasMock && parsed.length >= 5) {
               window.FPCL_CAPEX_DATA = parsed;
             } else {
               localStorage.removeItem('FPCL_CAPEX_DATA_CACHE');
@@ -1318,9 +1317,10 @@
           minorCount++;
         }
 
-        // Replacement or New from Column N
-        const typeStr = String(item.type || '').toLowerCase();
-        const isNew = typeStr.includes('new');
+        // Replacement or New from Column N (Exact match from Google Sheet - do not assume if empty)
+        const typeStr = String(item.type || '').trim().toLowerCase();
+        const isNew = typeStr === 'new' || typeStr.includes('new');
+        const isReplacement = typeStr === 'replacement' || typeStr.includes('replace') || typeStr === 'rep';
         if (isNew) {
           newBudget += b;
           newCount++;
@@ -1331,7 +1331,7 @@
             minorNewBudget += b;
             minorNewCount++;
           }
-        } else {
+        } else if (isReplacement) {
           replacementBudget += b;
           replacementCount++;
           if (isMajor) {
@@ -1342,18 +1342,23 @@
             minorReplacementCount++;
           }
         }
+        // If neither isNew nor isReplacement (e.g. empty cell), do NOT increment replacement or new!
 
         // MOC required or not from Column L
         const isMoc = String(item.moc || '').toLowerCase().includes('yes') || String(item.moc || '').toLowerCase() === 'y' || String(item.moc || '').toLowerCase().includes('req');
         if (isMoc) {
           mocCount++;
           if (isNew) mocNewCount++;
-          else mocReplacementCount++;
+          else if (isReplacement) mocReplacementCount++;
         }
 
-        // Category from Column O
-        const cat = String(item.category || 'Others/Admin').trim() || 'Others/Admin';
-        categories[cat] = (categories[cat] || 0) + b;
+        // Category from Column O (Exact match from Google Sheet - do not assume Others/Admin if empty)
+        const cat = String(item.category || '').trim();
+        if (cat) {
+          categories[cat] = (categories[cat] || 0) + b;
+        } else {
+          categories['(Not Specified)'] = (categories['(Not Specified)'] || 0) + b;
+        }
       });
 
       const majorTotal = majorBudget;
@@ -1367,6 +1372,10 @@
       const replacementSharePct = totalBudget > 0 ? ((replacementBudget / totalBudget) * 100).toFixed(1) : '0.0';
       const newSharePct = totalBudget > 0 ? ((newBudget / totalBudget) * 100).toFixed(1) : '0.0';
       const majorSharePct = totalBudget > 0 ? ((majorBudget / totalBudget) * 100).toFixed(1) : '0.0';
+
+      const unspecifiedCount = Math.max(0, totalProjects - replacementCount - newCount);
+      const majorUnspecifiedCount = Math.max(0, majorCount - majorReplacementCount - majorNewCount);
+      const minorUnspecifiedCount = Math.max(0, minorCount - minorReplacementCount - minorNewCount);
 
       return {
         totalProjects,
@@ -1390,6 +1399,9 @@
         newBudgetMillions: (newBudget / 1000000).toFixed(1),
         newCount,
         newSharePct,
+        unspecifiedCount,
+        majorUnspecifiedCount,
+        minorUnspecifiedCount,
         mocCount,
         mocReplacementCount,
         mocNewCount,
@@ -1480,12 +1492,14 @@
             for (const h of headerAliases) {
               const idx = colMap[h.toLowerCase().replace(/[^a-z0-9]/g, '')];
               if (idx !== undefined && row[idx] !== undefined && String(row[idx]).trim() !== '') {
-                return String(row[idx]).trim();
+                const val = String(row[idx]).trim();
+                return (val === '-' || val.toLowerCase() === 'n/a') ? '' : val;
               }
             }
           }
           if (colIdx !== undefined && row[colIdx] !== undefined && String(row[colIdx]).trim() !== '') {
-            return String(row[colIdx]).trim();
+            const val = String(row[colIdx]).trim();
+            return (val === '-' || val.toLowerCase() === 'n/a') ? '' : val;
           }
           return fallback;
         };
@@ -1501,7 +1515,7 @@
         const sr = parseInt(srRaw) || (parsedItems.length + 1);
 
         // Col B (idx 1): Year
-        const year = getField(1, ['year', 'yr'], '2027');
+        const year = getField(1, ['year', 'yr'], '');
 
         // Col C (idx 2): Projects (Project Name)
         const projectName = getField(2, ['projects', 'project', 'projectname', 'initiative', 'item'], '');
@@ -1523,8 +1537,8 @@
           available = Math.max(0, budget - consumed - commitment);
         }
 
-        // Col H (idx 7): WBS Elements
-        const wbs = getField(7, ['wbselements', 'wbs', 'wbselement'], `FL-${year}-${String(parsedItems.length + 1).padStart(4, '0')}`);
+        // Col H (idx 7): WBS Elements (Keep empty if cell is empty in Google Sheet)
+        const wbs = getField(7, ['wbselements', 'wbs', 'wbselement'], '');
 
         // Col I (idx 8): Responsible Unit
         const unit = getField(8, ['responsibleunit', 'unit', 'department', 'respunit'], '');
@@ -1543,18 +1557,13 @@
         }
 
         // Col M (idx 12): Priority
-        const priorityRaw = getField(12, ['priority', 'prio'], '');
-        const priority = priorityRaw.trim();
+        const priority = getField(12, ['priority', 'prio'], '').trim();
 
-        // Col N (idx 13): Replacement_New
-        const rawType = getField(13, ['replacementnew', 'replacement_new', 'type', 'nature'], '').trim();
-        let type = rawType;
-        if (!type && projectName.toLowerCase().includes('new')) {
-          type = 'New';
-        }
+        // Col N (idx 13): Replacement_New (Exact match - keep empty if cell is empty in Google Sheet)
+        const type = getField(13, ['replacementnew', 'replacement_new', 'type', 'nature'], '').trim();
 
-        // Col O (idx 14): Category
-        let category = getField(14, ['category', 'cat', 'classification'], '').trim();
+        // Col O (idx 14): Category (Exact match - keep empty if cell is empty in Google Sheet)
+        const category = getField(14, ['category', 'cat', 'classification'], '').trim();
 
         // Col P (idx 15): Quantity
         const quantity = getField(15, ['quantity', 'qty'], '');
@@ -1898,9 +1907,11 @@
                     <span class="px-2 py-0.5 rounded-sm text-[11px] font-bold ${isMajor ? 'bg-[#2E5EAA]/10 text-[#2E5EAA] border border-[#2E5EAA]/30' : 'bg-[#7A8699]/10 text-[#7A8699] border border-[#7A8699]/30'}">
                       ${isMajor ? 'Major (>4.5M)' : 'Minor (≤4.5M)'}
                     </span>
-                    <span class="px-2 py-0.5 rounded-sm text-[11px] font-bold ${p.type === 'Replacement' ? 'bg-[#2E5EAA]/10 text-[#2E5EAA] border border-[#2E5EAA]/30' : 'bg-[#D9782D]/10 text-[#D9782D] border border-[#D9782D]/30'}">
-                      ${p.type}
-                    </span>
+                    ${p.type ? `
+                      <span class="px-2 py-0.5 rounded-sm text-[11px] font-bold ${p.type.toLowerCase().includes('replace') || p.type.toLowerCase() === 'rep' ? 'bg-[#2E5EAA]/10 text-[#2E5EAA] border border-[#2E5EAA]/30' : 'bg-[#D9782D]/10 text-[#D9782D] border border-[#D9782D]/30'}">
+                        ${escapeHtml(p.type)}
+                      </span>
+                    ` : '<span class="px-2 py-0.5 rounded-sm text-[11px] text-[#7A8699] font-mono bg-slate-100 border border-[#CBD2DE]">-</span>'}
                   </div>
                 </div>
               </div>
@@ -1928,7 +1939,7 @@
                   Technical Justification & Operational Reason
                 </h4>
                 <div class="p-3.5 rounded-md bg-white border border-[#E2E6EE] text-xs text-[#1A1F2B] leading-relaxed shadow-[0_1px_2px_rgba(11,29,58,0.03)] font-medium">
-                  ${p.reason || 'Plant Reliability Sustenance & Operational Integrity'}
+                  ${p.reason ? escapeHtml(p.reason) : '<span class="text-[#7A8699] font-mono">-</span>'}
                 </div>
               </div>
 
@@ -1978,7 +1989,7 @@
                   Execution Strategy & Milestones
                 </h4>
                 <div class="p-3.5 rounded-md bg-white border border-[#E2E6EE] text-xs text-[#1A1F2B] leading-relaxed shadow-[0_1px_2px_rgba(11,29,58,0.03)] font-medium">
-                  ${p.strategy || 'To be executed per capital portfolio schedule and corporate governance oversight.'}
+                  ${p.strategy ? escapeHtml(p.strategy) : '<span class="text-[#7A8699] font-mono">-</span>'}
                 </div>
               </div>
 
@@ -1989,10 +2000,10 @@
                 </div>
                 <div>
                   <div class="text-xs font-bold ${isMoc ? 'text-[#C0392B]' : 'text-[#1A1F2B]'}">
-                    Management of Change (MOC): <strong>${isMoc ? 'Mandatory Statutory Compliance' : 'Not Required'}</strong>
+                    Management of Change (MOC): <strong>${isMoc ? 'Mandatory Statutory Compliance' : (p.moc ? 'Not Required' : '-')}</strong>
                   </div>
                   <div class="text-[11px] text-[#7A8699] mt-0.5">
-                    ${isMoc ? 'Requires Process Safety Management (PSM) sign-off, Process Hazard Analysis (PHA), and Pre-Startup Safety Review (PSSR).' : 'Standard routine asset maintenance without facility process envelope modification.'}
+                    ${isMoc ? 'Requires Process Safety Management (PSM) sign-off, Process Hazard Analysis (PHA), and Pre-Startup Safety Review (PSSR).' : (p.moc ? 'Standard routine asset maintenance without facility process envelope modification.' : 'No MOC requirement status specified in sheet.')}
                   </div>
                 </div>
               </div>
@@ -2001,19 +2012,19 @@
               <div class="grid grid-cols-2 gap-3 text-xs">
                 <div class="p-3 rounded-md bg-white border border-[#E2E6EE] shadow-[0_1px_2px_rgba(11,29,58,0.03)]">
                   <span class="text-[#7A8699] block text-[10px] uppercase font-bold tracking-wider">Strategic Category</span>
-                  <span class="font-bold text-[#1A1F2B] mt-1 block">${p.category}</span>
+                  <span class="font-bold text-[#1A1F2B] mt-1 block">${p.category ? escapeHtml(p.category) : '<span class="text-[#7A8699] font-mono">-</span>'}</span>
                 </div>
                 <div class="p-3 rounded-md bg-white border border-[#E2E6EE] shadow-[0_1px_2px_rgba(11,29,58,0.03)]">
                   <span class="text-[#7A8699] block text-[10px] uppercase font-bold tracking-wider">Expected Service Life</span>
-                  <span class="font-bold text-[#1A1F2B] mt-1 block">${p.serviceLife || '5 Years'}</span>
+                  <span class="font-bold text-[#1A1F2B] mt-1 block">${p.serviceLife ? escapeHtml(p.serviceLife) : '<span class="text-[#7A8699] font-mono">-</span>'}</span>
                 </div>
                 <div class="p-3 rounded-md bg-white border border-[#E2E6EE] shadow-[0_1px_2px_rgba(11,29,58,0.03)]">
                   <span class="text-[#7A8699] block text-[10px] uppercase font-bold tracking-wider">Quantity / Scope</span>
-                  <span class="font-bold text-[#1A1F2B] mt-1 block">${p.quantity || '1 Lot'}</span>
+                  <span class="font-bold text-[#1A1F2B] mt-1 block">${p.quantity ? escapeHtml(p.quantity) : '<span class="text-[#7A8699] font-mono">-</span>'}</span>
                 </div>
                 <div class="p-3 rounded-md bg-white border border-[#E2E6EE] shadow-[0_1px_2px_rgba(11,29,58,0.03)]">
                   <span class="text-[#7A8699] block text-[10px] uppercase font-bold tracking-wider">Responsible Lead</span>
-                  <span class="font-bold text-[#1A1F2B] mt-1 block">${p.assigned || p.unit}</span>
+                  <span class="font-bold text-[#1A1F2B] mt-1 block">${(p.assigned || p.unit) ? escapeHtml(p.assigned || p.unit) : '<span class="text-[#7A8699] font-mono">-</span>'}</span>
                 </div>
               </div>
 
@@ -2198,7 +2209,7 @@
                 PKR ${(kpis.totalBudget || 0).toLocaleString('en-US')}
               </div>
               <div class="mt-1.5 sm:mt-2 text-[10px] sm:text-[11px] font-semibold text-slate-300">
-                ${kpis.totalProjects} Projects • Rep: ${kpis.replacementCount} | New: ${kpis.newCount}
+                ${kpis.totalProjects} Projects • Rep: ${kpis.replacementCount} | New: ${kpis.newCount}${kpis.unspecifiedCount > 0 ? ` | Empty: ${kpis.unspecifiedCount}` : ''}
               </div>
             </div>
 
@@ -2215,7 +2226,7 @@
                 PKR ${(kpis.majorBudget || 0).toLocaleString('en-US')}
               </div>
               <div class="mt-1.5 sm:mt-2 text-[10px] sm:text-[11px] font-semibold text-blue-200">
-                ${kpis.majorCount} Projects (>4.5 million) • Rep: ${kpis.majorReplacementCount} | New: ${kpis.majorNewCount}
+                ${kpis.majorCount} Projects (>4.5 million) • Rep: ${kpis.majorReplacementCount} | New: ${kpis.majorNewCount}${kpis.majorUnspecifiedCount > 0 ? ` | Empty: ${kpis.majorUnspecifiedCount}` : ''}
               </div>
             </div>
 
@@ -2232,7 +2243,7 @@
                 PKR ${(kpis.minorBudget || 0).toLocaleString('en-US')}
               </div>
               <div class="mt-1.5 sm:mt-2 text-[10px] sm:text-[11px] font-semibold text-teal-200">
-                ${kpis.minorCount} Projects (&lt;4.5 million) • Rep: ${kpis.minorReplacementCount} | New: ${kpis.minorNewCount}
+                ${kpis.minorCount} Projects (&lt;4.5 million) • Rep: ${kpis.minorReplacementCount} | New: ${kpis.minorNewCount}${kpis.minorUnspecifiedCount > 0 ? ` | Empty: ${kpis.minorUnspecifiedCount}` : ''}
               </div>
             </div>
 
@@ -2484,7 +2495,7 @@
                       ${kpis.totalProjects} Projects
                     </span>
                     <span class="text-[10px] sm:text-[11px] font-semibold text-[#2E5EAA] mt-1">
-                      Rep: ${kpis.replacementCount} • New: ${kpis.newCount}
+                      Rep: ${kpis.replacementCount} • New: ${kpis.newCount}${kpis.unspecifiedCount > 0 ? ` • Empty: ${kpis.unspecifiedCount}` : ''}
                     </span>
                   </div>
                 </div>
@@ -2543,7 +2554,7 @@
                     <div class="h-12 sm:h-13 w-full bg-slate-50 rounded-xl flex items-center justify-center text-center px-3 text-xs text-slate-400 font-semibold italic border border-dashed border-slate-300">
                       No Major Projects (>4.5 million) in current filter
                     </div>
-                  ` : `
+                  ` : (parseFloat(majorRepPct) > 0 || parseFloat(majorNewPct) > 0) ? `
                     <div class="h-12 sm:h-13 w-full bg-slate-100 rounded-xl overflow-hidden flex border border-[#CBD2DE] shadow-inner select-none">
                       ${this.renderStackedBarSegment({
                         cls: 'major',
@@ -2567,6 +2578,11 @@
                     <div class="flex items-center justify-center gap-3 sm:gap-6 text-[11px] font-semibold text-slate-600 pt-0.5 text-center flex-wrap">
                       ${majorRepPct > 0 ? `<span class="inline-flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-[#1E3A8A]"></span>Replacements: <strong class="text-slate-800">PKR ${majorRepMillions}M (${majorRepPct}%)</strong> • ${kpis.majorReplacementCount} Proj</span>` : ''}
                       ${majorNewPct > 0 ? `<span class="inline-flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-[#D9782D]"></span>New: <strong class="text-slate-800">PKR ${majorNewMillions}M (${majorNewPct}%)</strong> • ${kpis.majorNewCount} Proj</span>` : ''}
+                      ${kpis.majorUnspecifiedCount > 0 ? `<span class="inline-flex items-center gap-1.5 text-slate-500 font-medium"><span class="w-2 h-2 rounded-full bg-slate-300"></span>Empty/Not Specified: <strong class="text-slate-700">${kpis.majorUnspecifiedCount} Proj</strong></span>` : ''}
+                    </div>
+                  ` : `
+                    <div class="h-12 sm:h-13 w-full bg-slate-50 rounded-xl flex items-center justify-center text-center px-3 text-xs text-slate-500 font-semibold italic border border-dashed border-slate-300">
+                      Type (Replacement / New) cell is empty in Google Sheet (${kpis.majorCount} Major Projects)
                     </div>
                   `}
                 </div>
@@ -2588,7 +2604,7 @@
                     <div class="h-12 sm:h-13 w-full bg-slate-50 rounded-xl flex items-center justify-center text-center px-3 text-xs text-slate-400 font-semibold italic border border-dashed border-slate-300">
                       No Minor Projects (&lt;4.5 million) in current filter
                     </div>
-                  ` : `
+                  ` : (parseFloat(minorRepPct) > 0 || parseFloat(minorNewPct) > 0) ? `
                     <div class="h-12 sm:h-13 w-full bg-slate-100 rounded-xl overflow-hidden flex border border-[#CBD2DE] shadow-inner select-none">
                       ${this.renderStackedBarSegment({
                         cls: 'minor',
@@ -2612,6 +2628,11 @@
                     <div class="flex items-center justify-center gap-3 sm:gap-6 text-[11px] font-semibold text-slate-600 pt-0.5 text-center flex-wrap">
                       ${minorRepPct > 0 ? `<span class="inline-flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-[#1E3A8A]"></span>Replacements: <strong class="text-slate-800">PKR ${minorRepMillions}M (${minorRepPct}%)</strong> • ${kpis.minorReplacementCount} Proj</span>` : ''}
                       ${minorNewPct > 0 ? `<span class="inline-flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-[#D9782D]"></span>New: <strong class="text-slate-800">PKR ${minorNewMillions}M (${minorNewPct}%)</strong> • ${kpis.minorNewCount} Proj</span>` : ''}
+                      ${kpis.minorUnspecifiedCount > 0 ? `<span class="inline-flex items-center gap-1.5 text-slate-500 font-medium"><span class="w-2 h-2 rounded-full bg-slate-300"></span>Empty/Not Specified: <strong class="text-slate-700">${kpis.minorUnspecifiedCount} Proj</strong></span>` : ''}
+                    </div>
+                  ` : `
+                    <div class="h-12 sm:h-13 w-full bg-slate-50 rounded-xl flex items-center justify-center text-center px-3 text-xs text-slate-500 font-semibold italic border border-dashed border-slate-300">
+                      Type (Replacement / New) cell is empty in Google Sheet (${kpis.minorCount} Minor Projects)
                     </div>
                   `}
                 </div>
@@ -2853,40 +2874,48 @@
 
                         <!-- 9. Responsible Unit -->
                         <td class="py-3 px-3 whitespace-nowrap">
-                          <span class="inline-block px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 text-[#1A1F2B] border border-[#CBD2DE]">
-                            ${p.unit}
-                          </span>
+                          ${p.unit ? `
+                            <span class="inline-block px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 text-[#1A1F2B] border border-[#CBD2DE]">
+                              ${escapeHtml(p.unit)}
+                            </span>
+                          ` : '<span class="text-[#7A8699] font-mono text-[11px]">-</span>'}
                         </td>
 
                         <!-- 10. Reason -->
                         <td class="py-3 px-3 text-[11px] text-slate-600 max-w-xs truncate" title="${p.reason || '-'}">
-                          ${p.reason || '-'}
+                          ${p.reason ? escapeHtml(p.reason) : '<span class="text-[#7A8699] font-mono text-[11px]">-</span>'}
                         </td>
 
                         <!-- 11. Service life -->
                         <td class="py-3 px-3 text-center whitespace-nowrap text-[11px] font-mono text-slate-600">
-                          ${p.serviceLife || '-'}
+                          ${p.serviceLife ? escapeHtml(p.serviceLife) : '<span class="text-[#7A8699] font-mono text-[11px]">-</span>'}
                         </td>
 
                         <!-- 12. MOC required -->
                         <td class="py-3 px-3 text-center whitespace-nowrap">
-                          <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold ${isMoc ? 'bg-[#C0392B]/10 text-[#C0392B] border border-[#C0392B]/30' : 'bg-slate-100 text-[#7A8699] border border-[#CBD2DE]'}">
-                            ${p.moc}
-                          </span>
+                          ${p.moc ? `
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold ${isMoc ? 'bg-[#C0392B]/10 text-[#C0392B] border border-[#C0392B]/30' : 'bg-slate-100 text-[#7A8699] border border-[#CBD2DE]'}">
+                              ${escapeHtml(p.moc)}
+                            </span>
+                          ` : '<span class="text-[#7A8699] font-mono text-[11px]">-</span>'}
                         </td>
 
                         <!-- 13. Priority -->
                         <td class="py-3 px-3 text-center whitespace-nowrap">
-                          <span class="inline-flex items-center justify-center w-5 h-5 rounded-xs text-[10px] font-bold ${p.priority === 'A' ? 'bg-[#C0392B] text-white' : p.priority === 'B' ? 'bg-[#2E5EAA] text-white' : 'bg-[#7A8699] text-white'}">
-                            ${p.priority}
-                          </span>
+                          ${p.priority ? `
+                            <span class="inline-flex items-center justify-center w-5 h-5 rounded-xs text-[10px] font-bold ${p.priority === 'A' ? 'bg-[#C0392B] text-white' : p.priority === 'B' ? 'bg-[#2E5EAA] text-white' : 'bg-[#7A8699] text-white'}">
+                              ${escapeHtml(p.priority)}
+                            </span>
+                          ` : '<span class="text-[#7A8699] font-mono text-[11px]">-</span>'}
                         </td>
 
                         <!-- 14. Replacement_New -->
                         <td class="py-3 px-3 whitespace-nowrap">
-                          <span class="inline-block px-2 py-0.5 rounded text-[11px] font-bold ${p.type === 'Replacement' ? 'bg-[#2E5EAA]/10 text-[#2E5EAA] border border-[#2E5EAA]/25' : 'bg-[#D9782D]/10 text-[#D9782D] border border-[#D9782D]/25'}">
-                            ${p.type}
-                          </span>
+                          ${p.type ? `
+                            <span class="inline-block px-2 py-0.5 rounded text-[11px] font-bold ${p.type.toLowerCase().includes('replace') || p.type.toLowerCase() === 'rep' ? 'bg-[#2E5EAA]/10 text-[#2E5EAA] border border-[#2E5EAA]/25' : 'bg-[#D9782D]/10 text-[#D9782D] border border-[#D9782D]/25'}">
+                              ${escapeHtml(p.type)}
+                            </span>
+                          ` : '<span class="text-[#7A8699] font-mono text-[11px]">-</span>'}
                         </td>
 
                         <!-- 15. Category -->
@@ -2896,7 +2925,7 @@
 
                         <!-- 16. Quantity -->
                         <td class="py-3 px-3 whitespace-nowrap text-[11px] font-mono text-slate-600">
-                          ${p.quantity || '1 Lot'}
+                          ${p.quantity ? escapeHtml(p.quantity) : '<span class="text-[#7A8699] font-mono text-[11px]">-</span>'}
                         </td>
 
                         <!-- 17. Actions Assigned -->

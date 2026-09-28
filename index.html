@@ -97,7 +97,7 @@
     <script src="/assets/imsSuite.js?v=20260926g"></script>
     <!-- PSSR (Pre-Startup Safety Review) Dataset & Specialized Executive Suite -->
     <script src="/assets/pssrData.js?v=20260923b"></script>
-    <script src="/assets/pssrSuite.js?v=20260926f"></script>
+    <script src="/assets/pssrSuite.js?v=20260928b"></script>
     <!-- CAPEX (Capital Expenditure) Specialized Executive Suite -->
     <script src="/assets/capexSuite.js?v=20260925a"></script>
     <!-- Sub HSE - P (Production HSE Sub-Committee) Dataset & Specialized Executive Suite -->
@@ -4628,12 +4628,14 @@
                 for (const a of aliases) {
                   const idx = colMap[a.toLowerCase().replace(/[^a-z0-9]/g, '')];
                   if (idx !== undefined && row[idx] !== undefined && String(row[idx]).trim() !== '') {
-                    return String(row[idx]).trim();
+                    const val = String(row[idx]).trim();
+                    return (val === '-' || val.toLowerCase() === 'n/a') ? '' : val;
                   }
                 }
               }
               if (colIdx !== undefined && row[colIdx] !== undefined && String(row[colIdx]).trim() !== '') {
-                return String(row[colIdx]).trim();
+                const val = String(row[colIdx]).trim();
+                return (val === '-' || val.toLowerCase() === 'n/a') ? '' : val;
               }
               return fallback;
             };
@@ -4645,7 +4647,7 @@
             };
 
             const sr = parseInt(getField(0, ['sr', 'sr#', 'sno', 'id'], String(parsedItems.length + 1))) || (parsedItems.length + 1);
-            const year = getField(1, ['year', 'yr'], '2026');
+            const year = getField(1, ['year', 'yr'], '');
             const name = getField(2, ['projects', 'project', 'projectname', 'initiative', 'item'], '');
             if (!name) continue;
 
@@ -4653,15 +4655,15 @@
             const consumed = parseNum(getField(4, ['consumedpkr', 'consumed', 'actual', 'spent'], '0'));
             const commitment = parseNum(getField(5, ['commitmentpkr', 'commitment', 'committed'], '0'));
             const available = parseNum(getField(6, ['availablepkr', 'available', 'balance'], '0'));
-            const wbs = getField(7, ['wbselements', 'wbs', 'wbselement'], `FL-${year}-${String(parsedItems.length + 1).padStart(4, '0')}`);
-            const unit = getField(8, ['responsibleunit', 'unit', 'department', 'respunit'], 'Maintenance');
+            const wbs = getField(7, ['wbselements', 'wbs', 'wbselement'], '');
+            const unit = getField(8, ['responsibleunit', 'unit', 'department', 'respunit'], '');
             const reason = getField(9, ['reason', 'justification'], '');
             const serviceLife = getField(10, ['servicelife', 'life'], '');
-            const moc = getField(11, ['mocrequired', 'moc'], 'No');
-            const priority = getField(12, ['priority', 'prio'], 'B');
-            const type = getField(13, ['replacementnew', 'replacement_new', 'type'], 'Replacement');
-            const category = getField(14, ['category', 'cat', 'classification'], 'Others/Admin');
-            const quantity = getField(15, ['quantity', 'qty'], '1');
+            const moc = getField(11, ['mocrequired', 'moc'], '');
+            const priority = getField(12, ['priority', 'prio'], '');
+            const type = getField(13, ['replacementnew', 'replacement_new', 'type'], '');
+            const category = getField(14, ['category', 'cat', 'classification'], '');
+            const quantity = getField(15, ['quantity', 'qty'], '');
             const strategy = getField(16, ['actionsassigned', 'strategy', 'execution'], '');
             // Column R (index 17): Status _Open_Close
             const rawStatus = getField(17, ['statusopenclose', 'status', 'status_open_close', 'state'], 'Open');
@@ -6328,6 +6330,9 @@
               psmContainer.hidden = false;
               const targetSub = (dashboardId === 'psm-validation') ? 'validation' : 'audits';
               if (window.FPCL_PSM_SUITE) {
+                if (targetSub === 'validation' && typeof window.FPCL_PSM_SUITE.onOpenValidationDashboard === 'function') {
+                  window.FPCL_PSM_SUITE.onOpenValidationDashboard();
+                }
                 if (typeof window.FPCL_PSM_SUITE.setSubDashboard === 'function') {
                   window.FPCL_PSM_SUITE.setSubDashboard(targetSub);
                 } else {
@@ -6385,7 +6390,9 @@
               imsContainer.classList.remove('hidden');
               imsContainer.hidden = false;
               if (window.FPCL_IMS_SUITE) {
-                if (typeof window.FPCL_IMS_SUITE.render === 'function') {
+                if (typeof window.FPCL_IMS_SUITE.onOpenDashboard === 'function') {
+                  window.FPCL_IMS_SUITE.onOpenDashboard();
+                } else if (typeof window.FPCL_IMS_SUITE.render === 'function') {
                   window.FPCL_IMS_SUITE.render();
                 }
                 if (typeof window.FPCL_IMS_SUITE.syncLiveFeed === 'function') {
@@ -6424,7 +6431,9 @@
               pssrContainer.classList.remove('hidden');
               pssrContainer.hidden = false;
               if (window.FPCL_PSSR_SUITE) {
-                if (typeof window.FPCL_PSSR_SUITE.render === 'function') {
+                if (typeof window.FPCL_PSSR_SUITE.openDashboard === 'function') {
+                  window.FPCL_PSSR_SUITE.openDashboard();
+                } else if (typeof window.FPCL_PSSR_SUITE.render === 'function') {
                   window.FPCL_PSSR_SUITE.render();
                 }
                 if (typeof window.FPCL_PSSR_SUITE.syncLiveFeed === 'function') {

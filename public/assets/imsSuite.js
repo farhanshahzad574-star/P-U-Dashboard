@@ -41,7 +41,7 @@
       deptFilter: 'all',
       statusFilter: 'all', // 'all' | 'Close' | 'Open'
       standardFilter: 'all',
-      yearFilter: 'all', // Filter by Year from column C (Audit time)
+      yearFilter: String(new Date().getFullYear()), // Dynamic current year by default
       breakdownTab: 'status', // 'status' | 'standards'
       deptSortBy: 'total_desc', // 'total_desc' | 'name_asc'
       page: 1,
@@ -51,8 +51,30 @@
       selectedFinding: null
     },
 
+    /**
+     * Returns current 4-digit calendar year dynamically as string (e.g. '2026')
+     */
+    getCurrentYear() {
+      return String(new Date().getFullYear());
+    },
+
+    getDefaultYear() {
+      return this.getCurrentYear();
+    },
+
+    /**
+     * Handler invoked whenever IMS Audits dashboard is opened.
+     * Enforces default filter on current year dynamically.
+     */
+    onOpenDashboard() {
+      this.state.yearFilter = this.getDefaultYear();
+      this.state.page = 1;
+      this.render();
+    },
+
     init() {
       window.FPCL_IMS_SUITE = this;
+      this.state.yearFilter = this.getDefaultYear();
 
       // Fast-paint from localStorage cache if present
       try {
@@ -362,11 +384,11 @@
       this.state.deptFilter = 'all';
       this.state.statusFilter = 'all';
       this.state.standardFilter = 'all';
-      this.state.yearFilter = 'all';
+      this.state.yearFilter = this.getDefaultYear();
       this.state.page = 1;
       this.render();
       if (window.portalApp && typeof window.portalApp.showToast === 'function') {
-        window.portalApp.showToast('Filters Reset', 'All IMS Audit dashboard filters cleared.', 'info');
+        window.portalApp.showToast('Filters Reset', 'All IMS Audit dashboard filters cleared (defaulted to current year).', 'info');
       }
     },
 
@@ -552,14 +574,21 @@
       const filtered = this.getFilteredData();
       const s = this.state;
 
-      // Extract unique years from column C (Audit time)
-      const allYears = Array.from(
-        new Set(
-          raw
-            .map(i => this.getYearFromAuditTime(i.auditTime))
-            .filter(Boolean)
-        )
-      ).sort((a, b) => b.localeCompare(a));
+      // Extract unique years from column C (Audit time) and ensure dynamic current year is available
+      const currentYear = this.getCurrentYear();
+      const rawYears = raw
+        .map(i => this.getYearFromAuditTime(i.auditTime))
+        .filter(Boolean);
+      const yearSet = new Set(rawYears);
+      if (currentYear) {
+        yearSet.add(currentYear);
+      }
+      const allYears = Array.from(yearSet).sort((a, b) => b.localeCompare(a));
+
+      // Guard: Ensure yearFilter defaults to current year dynamically if unset
+      if (!s.yearFilter) {
+        s.yearFilter = currentYear;
+      }
 
       // Extract unique departments and standards for filter dropdowns
       const allDepts = Array.from(new Set(raw.map(i => i.dept).filter(Boolean))).sort();
@@ -758,8 +787,9 @@
                 >
                   <option value="all" ${s.yearFilter === 'all' ? 'selected' : ''}>All Years (${raw.length})</option>
                   ${allYears.map(yr => {
-                    const count = raw.filter(i => FPCL_IMS_SUITE.getYearFromAuditTime(i.auditTime) === yr).length;
-                    return `<option value="${yr}" ${s.yearFilter === yr ? 'selected' : ''}>Year ${yr} (${count})</option>`;
+                    const count = raw.filter(i => this.getYearFromAuditTime(i.auditTime) === yr).length;
+                    const isCurrent = yr === currentYear ? ' (Current Year)' : '';
+                    return `<option value="${yr}" ${s.yearFilter === yr ? 'selected' : ''}>Year ${yr}${isCurrent} (${count})</option>`;
                   }).join('')}
                 </select>
               </div>
@@ -839,7 +869,7 @@
                 <span class="text-slate-400 font-bold mr-1">Active:</span>
                 ${s.yearFilter !== 'all' ? `
                   <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-teal-50 text-teal-800 border border-teal-200 font-medium">
-                    Year: ${s.yearFilter}
+                    Year: ${s.yearFilter}${s.yearFilter === currentYear ? ' (Current Year)' : ''}
                     <button onclick="FPCL_IMS_SUITE.setYearFilter('all');"><i data-lucide="x" class="w-3 h-3"></i></button>
                   </span>
                 ` : ''}

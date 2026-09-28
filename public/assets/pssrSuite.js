@@ -14,9 +14,16 @@
   const HARDCODED_PSSR_SHEET_URL = `https://docs.google.com/spreadsheets/d/${HARDCODED_PSSR_SHEET_ID}/export?format=csv&sheet=${HARDCODED_PSSR_SHEET_TAB}`;
 
   const pssrSuite = {
+    /**
+     * Dynamically determines current 4-digit calendar year (e.g. "2026")
+     */
+    getCurrentYear() {
+      return String(new Date().getFullYear());
+    },
+
     state: {
       searchQuery: '',
-      yearFilter: 'all',       // Year from Date_of_Initiator
+      yearFilter: String(new Date().getFullYear()),       // Year from Date_of_Initiator (dynamically current year by default)
       areaFilter: 'all',       // Column C
       deptFilter: 'all',       // Column M (Responsibility)
       statusFilter: 'all',     // Column O (Status)
@@ -29,13 +36,16 @@
       barSortMode: 'total',    // 'total' | 'open' | 'closed' | 'alpha'
       isTargetDatesModalOpen: false,
       targetDatesModalSearch: '',
-      targetDatesModalYear: 'all',
+      targetDatesModalYear: String(new Date().getFullYear()),
       targetDatesModalDept: 'all',
       targetDatesModalArea: 'all'
     },
 
     init() {
       window.FPCL_PSSR_SUITE = this;
+
+      // Ensure default filter is dynamic current year on startup
+      this.state.yearFilter = this.getCurrentYear();
 
       // Fast-paint from localStorage cache if present
       try {
@@ -58,6 +68,9 @@
       // Sync stats to overview
       this.syncStatsToOverview();
 
+      // Setup mutation observer so whenever PSSR container becomes visible, it defaults to current year dynamically
+      this.setupOpenObserver();
+
       // Background live sync on load
       setTimeout(() => {
         this.syncLiveFeed({ silent: true });
@@ -68,6 +81,52 @@
         this._autoSyncTimer = setInterval(() => {
           this.syncLiveFeed({ silent: true });
         }, 60000);
+      }
+    },
+
+    /**
+     * Invoked whenever PSSR dashboard is opened
+     * Resets filter to current year dynamically
+     */
+    openDashboard() {
+      const currentYear = this.getCurrentYear();
+      this.state.yearFilter = currentYear;
+      this.state.page = 1;
+      this.render();
+    },
+
+    /**
+     * Observes visibility transitions of #pssr-specialized-container
+     * Whenever dashboard is opened, automatically defaults to current year dynamically
+     */
+    setupOpenObserver() {
+      const attachObserver = () => {
+        const container = document.getElementById('pssr-specialized-container');
+        if (!container || this._openObserverAttached) return;
+        this._openObserverAttached = true;
+        let wasHidden = container.classList.contains('hidden') || container.hidden;
+
+        const observer = new MutationObserver(() => {
+          const isHidden = container.classList.contains('hidden') || container.hidden;
+          if (wasHidden && !isHidden) {
+            // Dashboard just opened!
+            const currentYear = this.getCurrentYear();
+            if (this.state.yearFilter !== currentYear) {
+              this.state.yearFilter = currentYear;
+              this.state.page = 1;
+              this.render();
+            }
+          }
+          wasHidden = isHidden;
+        });
+
+        observer.observe(container, { attributes: true, attributeFilter: ['class', 'hidden'] });
+      };
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', attachObserver);
+      } else {
+        attachObserver();
       }
     },
 
@@ -638,11 +697,11 @@
     },
 
     /**
-     * Resets all filters
+     * Resets all filters (defaulting year to current year dynamically)
      */
     resetFilters() {
       this.state.searchQuery = '';
-      this.state.yearFilter = 'all';
+      this.state.yearFilter = this.getCurrentYear();
       this.state.areaFilter = 'all';
       this.state.deptFilter = 'all';
       this.state.statusFilter = 'all';
@@ -652,7 +711,7 @@
       this.render();
 
       if (window.portalApp && typeof window.portalApp.showToast === 'function') {
-        window.portalApp.showToast('All filters have been reset.', 'info');
+        window.portalApp.showToast(`Filters reset to current year (${this.getCurrentYear()}).`, 'info');
       }
     },
 
@@ -1101,7 +1160,12 @@
       const deptSummary = this.getDepartmentSummary(filtered);
 
       // Collect unique filter options from raw dataset
-      const years = Array.from(new Set(raw.map(i => this.extractYear(i.dateOfInitiator)).filter(Boolean))).sort();
+      const currentYear = this.getCurrentYear();
+      const rawYears = Array.from(new Set(raw.map(i => this.extractYear(i.dateOfInitiator)).filter(Boolean)));
+      if (!rawYears.includes(currentYear)) {
+        rawYears.push(currentYear);
+      }
+      const years = rawYears.sort();
       const areas = Array.from(new Set(raw.map(i => i.area).filter(Boolean))).sort();
       const depts = Array.from(new Set(raw.map(i => this.normalizeDept(i.responsibility)).filter(Boolean))).sort();
       const statuses = ['Close', 'Open', 'Extension'];
@@ -1317,7 +1381,7 @@
                     class="w-full bg-slate-50 hover:bg-slate-100 border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer transition-all"
                   >
                     <option value="all" ${s.yearFilter === 'all' ? 'selected' : ''}>All Years (${years.length})</option>
-                    ${years.map(y => `<option value="${y}" ${s.yearFilter === y ? 'selected' : ''}>Year ${y}</option>`).join('')}
+                    ${years.map(y => `<option value="${y}" ${s.yearFilter === y ? 'selected' : ''}>Year ${y}${y === currentYear ? ' (Current)' : ''}</option>`).join('')}
                   </select>
                 </div>
               </div>
@@ -1819,7 +1883,7 @@
                   class="bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-500 cursor-pointer shadow-2xs flex-1 sm:flex-initial"
                 >
                   <option value="all" ${s.targetDatesModalYear === 'all' ? 'selected' : ''}>All Years (${years.length})</option>
-                  ${years.map(y => `<option value="${y}" ${s.targetDatesModalYear === y ? 'selected' : ''}>Year ${y}</option>`).join('')}
+                  ${years.map(y => `<option value="${y}" ${s.targetDatesModalYear === y ? 'selected' : ''}>Year ${y}${y === currentYear ? ' (Current)' : ''}</option>`).join('')}
                 </select>
 
                 <select
