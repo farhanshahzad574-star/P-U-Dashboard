@@ -883,41 +883,55 @@
           </div>
 
           <!-- Clickable Navigation Menus (Moved to Top), Search & Sync Utilities -->
-          <div class="flex flex-wrap items-center gap-2 flex-1 xl:justify-end pt-1">
+          <div class="flex flex-wrap items-center gap-2 flex-1 xl:justify-end pt-1 max-w-full">
             <!-- All Clickable Dashboard Buttons -->
-            <div id="nav-menu-links-container" class="flex flex-wrap items-center gap-2">
+            <div id="nav-menu-links-container" class="flex flex-wrap items-center gap-1.5 sm:gap-2 max-w-full">
               <!-- Dynamically populated via portalApp.renderNavMenu() -->
             </div>
 
-            <!-- Top Search Bar (In line with dashboard menu, same size as dashboard buttons) -->
-            <div class="relative w-32 sm:w-36 lg:w-44 shrink-0">
-              <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none text-slate-400">
-                <i data-lucide="search" class="w-3 h-3"></i>
+            <!-- Top Search Bar & Sync Action Group -->
+            <div class="flex items-center gap-1.5 shrink-0">
+              <!-- Search Bar -->
+              <div class="relative w-32 sm:w-36 lg:w-44 shrink-0">
+                <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none text-slate-400">
+                  <i data-lucide="search" class="w-3 h-3"></i>
+                </div>
+                <input
+                  id="search-input"
+                  type="text"
+                  placeholder="Search dashboards..."
+                  class="w-full pl-7 pr-7 py-1 bg-slate-50 hover:bg-white focus:bg-white border border-slate-300 rounded-[7px] text-[10px] sm:text-[11px] font-medium text-[#2B2E33] placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2E6DA4] focus:border-transparent transition-all shadow-2xs leading-tight"
+                  oninput="portalApp.handleSearch(this.value)"
+                />
+                <div class="absolute inset-y-0 right-0 pr-1.5 flex items-center gap-1">
+                  <button
+                    id="btn-clear-search"
+                    onclick="portalApp.clearSearch()"
+                    class="hidden p-0.5 text-slate-400 hover:text-slate-600 rounded transition-colors cursor-pointer"
+                    title="Clear search"
+                  >
+                    <i data-lucide="x" class="w-2.5 h-2.5"></i>
+                  </button>
+                  <span class="hidden sm:inline-block px-1 py-0.2 text-[8px] font-mono text-slate-400 bg-white border border-slate-200 rounded">
+                    /
+                  </span>
+                </div>
               </div>
-              <input
-                id="search-input"
-                type="text"
-                placeholder="Search dashboards..."
-                class="w-full pl-7 pr-7 py-1 bg-slate-50 hover:bg-white focus:bg-white border border-slate-300 rounded-[7px] text-[11px] font-medium text-[#2B2E33] placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2E6DA4] focus:border-transparent transition-all shadow-2xs leading-tight"
-                oninput="portalApp.handleSearch(this.value)"
-              />
-              <div class="absolute inset-y-0 right-0 pr-1.5 flex items-center gap-1">
-                <button
-                  id="btn-clear-search"
-                  onclick="portalApp.clearSearch()"
-                  class="hidden p-0.5 text-slate-400 hover:text-slate-600 rounded transition-colors cursor-pointer"
-                  title="Clear search"
-                >
-                  <i data-lucide="x" class="w-2.5 h-2.5"></i>
-                </button>
-                <span class="hidden sm:inline-block px-1 py-0.2 text-[8px] font-mono text-slate-400 bg-white border border-slate-200 rounded">
-                  /
-                </span>
-              </div>
+
+              <!-- Header Quick Actions: Sync Registry -->
+              <button
+                id="btn-refresh-portal"
+                onclick="portalApp.refreshPortalData()"
+                class="inline-flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-[7px] text-[10px] sm:text-[11px] font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 hover:border-slate-400 transition-colors shadow-2xs cursor-pointer shrink-0"
+                title="Sync & refresh dashboard registry"
+              >
+                <i data-lucide="refresh-cw" class="w-3 h-3 text-slate-600"></i>
+                <span class="hidden sm:inline">Sync Registry</span>
+              </button>
             </div>
 
-            <!-- External Enterprise Portals: Colorful Buttons in line with Search Bar -->
-            <div id="overview-quick-links-bar" class="flex flex-wrap items-center gap-1.5 shrink-0 pl-1 sm:pl-2 sm:border-l sm:border-slate-200">
+            <!-- External Enterprise Portals & Directory: Responsive for Mobile & Desktop -->
+            <div id="overview-quick-links-bar" class="w-full sm:w-auto max-w-full flex flex-wrap items-center gap-1 sm:gap-1.5 pl-0 sm:pl-2 sm:border-l sm:border-slate-200">
               <!-- 1. FFC Apps -->
               <a
                 id="link-btn-ffc-apps"
@@ -925,7 +939,7 @@
                 target="_blank"
                 rel="noopener noreferrer"
                 onclick="event.stopPropagation();"
-                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[7px] text-[11px] font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 border border-emerald-500/40 shadow-2xs hover:shadow-xs transition-all cursor-pointer whitespace-nowrap select-none"
+                class="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-[7px] text-[10px] sm:text-[11px] font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 border border-emerald-500/40 shadow-2xs hover:shadow-xs transition-all cursor-pointer whitespace-nowrap select-none"
                 title="FFC Apps • https://pqapps.ffc.com.pk/staff-login"
               >
                 <i data-lucide="layout-grid" class="w-3 h-3 text-white shrink-0"></i>
@@ -940,7 +954,7 @@
                 target="_blank"
                 rel="noopener noreferrer"
                 onclick="event.stopPropagation();"
-                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[7px] text-[11px] font-bold text-white bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:from-amber-600 hover:via-orange-600 hover:to-rose-600 border border-orange-500/40 shadow-2xs hover:shadow-xs transition-all cursor-pointer whitespace-nowrap select-none"
+                class="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-[7px] text-[10px] sm:text-[11px] font-bold text-white bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:from-amber-600 hover:via-orange-600 hover:to-rose-600 border border-orange-500/40 shadow-2xs hover:shadow-xs transition-all cursor-pointer whitespace-nowrap select-none"
                 title="Travel requests • SAP Traveler Management Portal"
               >
                 <i data-lucide="plane" class="w-3 h-3 text-white shrink-0"></i>
@@ -955,7 +969,7 @@
                 target="_blank"
                 rel="noopener noreferrer"
                 onclick="event.stopPropagation();"
-                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[7px] text-[11px] font-bold text-white bg-gradient-to-r from-indigo-600 via-purple-600 to-violet-600 hover:from-indigo-700 hover:via-purple-700 hover:to-violet-700 border border-indigo-500/40 shadow-2xs hover:shadow-xs transition-all cursor-pointer whitespace-nowrap select-none"
+                class="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-[7px] text-[10px] sm:text-[11px] font-bold text-white bg-gradient-to-r from-indigo-600 via-purple-600 to-violet-600 hover:from-indigo-700 hover:via-purple-700 hover:to-violet-700 border border-indigo-500/40 shadow-2xs hover:shadow-xs transition-all cursor-pointer whitespace-nowrap select-none"
                 title="Netweaver • https://ffcportal.ffc.com.pk/irj/portal#Shell-home"
               >
                 <i data-lucide="globe" class="w-3 h-3 text-white shrink-0"></i>
@@ -970,7 +984,7 @@
                 target="_blank"
                 rel="noopener noreferrer"
                 onclick="event.stopPropagation();"
-                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[7px] text-[11px] font-bold text-white bg-gradient-to-r from-blue-600 via-sky-600 to-cyan-600 hover:from-blue-700 hover:via-sky-700 hover:to-cyan-700 border border-blue-500/40 shadow-2xs hover:shadow-xs transition-all cursor-pointer whitespace-nowrap select-none"
+                class="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-[7px] text-[10px] sm:text-[11px] font-bold text-white bg-gradient-to-r from-blue-600 via-sky-600 to-cyan-600 hover:from-blue-700 hover:via-sky-700 hover:to-cyan-700 border border-blue-500/40 shadow-2xs hover:shadow-xs transition-all cursor-pointer whitespace-nowrap select-none"
                 title="FPCL web • https://www.fpcl.com/"
               >
                 <i data-lucide="globe" class="w-3 h-3 text-white shrink-0"></i>
@@ -985,21 +999,44 @@
                 target="_blank"
                 rel="noopener noreferrer"
                 onclick="event.stopPropagation();"
-                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[7px] text-[11px] font-bold text-white bg-gradient-to-r from-teal-600 via-emerald-600 to-green-600 hover:from-teal-700 hover:via-emerald-700 hover:to-green-700 border border-emerald-500/40 shadow-2xs hover:shadow-xs transition-all cursor-pointer whitespace-nowrap select-none"
+                class="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-[7px] text-[10px] sm:text-[11px] font-bold text-white bg-gradient-to-r from-teal-600 via-emerald-600 to-green-600 hover:from-teal-700 hover:via-emerald-700 hover:to-green-700 border border-emerald-500/40 shadow-2xs hover:shadow-xs transition-all cursor-pointer whitespace-nowrap select-none"
                 title="FFC web • https://ffc.com.pk/"
               >
                 <i data-lucide="globe" class="w-3 h-3 text-white shrink-0"></i>
                 <span>FFC web</span>
                 <i data-lucide="external-link" class="w-2.5 h-2.5 text-emerald-100/90 shrink-0"></i>
               </a>
-            </div>
 
-            <!-- Header Quick Actions: Sync Registry in line with Search Bar (same size as dashboard buttons) -->
-            <div class="flex items-center shrink-0 gap-2 pl-1 sm:pl-2 sm:border-l sm:border-slate-200">
-              <button id="btn-refresh-portal" onclick="portalApp.refreshPortalData()" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[7px] text-[11px] font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 hover:border-slate-400 transition-colors shadow-2xs cursor-pointer" title="Sync & refresh dashboard registry">
-                <i data-lucide="refresh-cw" class="w-3 h-3 text-slate-600"></i>
-                <span class="hidden sm:inline">Sync Registry</span>
+              <!-- 6. Contacts -->
+              <button
+                id="link-btn-contacts"
+                data-name="contacts"
+                data-alias="contacts"
+                type="button"
+                onclick="event.stopPropagation(); portalApp.openContactsModal(event);"
+                class="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-[7px] text-[10px] sm:text-[11px] font-bold text-white bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 hover:from-rose-700 hover:via-pink-700 hover:to-fuchsia-700 border border-rose-500/40 shadow-2xs hover:shadow-xs transition-all cursor-pointer whitespace-nowrap select-none"
+                title="Contacts • Executive &amp; Plant Directory"
+              >
+                <i data-lucide="phone-call" class="w-3 h-3 text-white shrink-0"></i>
+                <span>Contacts</span>
+                <i data-lucide="arrow-up-right" class="w-2.5 h-2.5 text-rose-100/90 shrink-0"></i>
               </button>
+
+              <!-- 7. Responsibility -->
+              <button
+                id="link-btn-responsibility"
+                data-name="responsibilty"
+                data-alias="responsibilty"
+                type="button"
+                onclick="event.stopPropagation(); portalApp.openResponsibilityModal(event);"
+                class="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-[7px] text-[10px] sm:text-[11px] font-bold text-white bg-gradient-to-r from-cyan-600 via-teal-600 to-emerald-600 hover:from-cyan-700 hover:via-teal-700 hover:to-emerald-700 border border-cyan-500/40 shadow-2xs hover:shadow-xs transition-all cursor-pointer whitespace-nowrap select-none"
+                title="Responsibility • Department Scope &amp; Governance Matrix"
+              >
+                <i data-lucide="shield-check" class="w-3 h-3 text-white shrink-0"></i>
+                <span>Responsibility</span>
+                <i data-lucide="arrow-up-right" class="w-2.5 h-2.5 text-cyan-100/90 shrink-0"></i>
+              </button>
+              <span id="link-btn-responsibilty" class="hidden" aria-hidden="true" onclick="portalApp.openResponsibilityModal(event)"></span>
             </div>
           </div>
 
@@ -2322,6 +2359,521 @@
       </div>
     </div>
 
+    <!-- Contacts & Emergency Directory Modal -->
+    <div
+      id="contacts-modal"
+      onclick="if(event.target === this) portalApp.closeContactsModal()"
+      class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs hidden items-center justify-center p-3 sm:p-4 overflow-y-auto"
+    >
+      <div class="bg-white border border-slate-200 rounded-2xl max-w-4xl w-full p-4 sm:p-6 shadow-2xl space-y-4 max-h-[92vh] flex flex-col">
+        <!-- Header -->
+        <div class="flex items-center justify-between pb-3 border-b border-slate-200 shrink-0">
+          <div class="flex items-center gap-2.5">
+            <span class="p-2 sm:p-2.5 rounded-xl bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 text-white shadow-xs">
+              <i data-lucide="phone-call" class="w-5 h-5"></i>
+            </span>
+            <div>
+              <h3 class="text-sm sm:text-base font-bold text-[#1E293B]">FPCL Key Contacts &amp; Emergency Directory</h3>
+              <p class="text-[11px] sm:text-xs text-slate-500">FFBL Power Company Limited • Site Phone Extensions &amp; Department Points of Contact</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onclick="portalApp.closeContactsModal()"
+            class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+            title="Close directory"
+          >
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <!-- Emergency Speed Dial Banner -->
+        <div class="bg-gradient-to-r from-rose-50 via-amber-50 to-orange-50 border border-rose-200/80 rounded-xl p-3 shrink-0">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-1.5 text-xs font-black text-rose-800 uppercase tracking-wider">
+              <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-600"></i>
+              <span>Site Emergency Speed Dial (24/7 Active)</span>
+            </div>
+            <span class="text-[10px] font-mono text-rose-600 bg-white px-2 py-0.5 rounded-full border border-rose-200 font-bold">Priority Lines</span>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+            <div class="bg-white p-2 rounded-lg border border-rose-200/70 shadow-2xs flex flex-col justify-between">
+              <span class="text-[10px] font-bold text-slate-500 uppercase">Fire &amp; Emergency</span>
+              <div class="flex items-center justify-between mt-1">
+                <strong class="font-mono text-xs sm:text-sm text-rose-700 font-black">Ext 1122 / 2222</strong>
+                <button type="button" onclick="portalApp.copyContactInfo('Ext 1122 / 2222 (+92-21-34720022)', this)" class="p-1 hover:bg-rose-50 rounded text-rose-600 transition-colors cursor-pointer" title="Copy"><i data-lucide="copy" class="w-3 h-3"></i></button>
+              </div>
+            </div>
+            <div class="bg-white p-2 rounded-lg border border-amber-200/70 shadow-2xs flex flex-col justify-between">
+              <span class="text-[10px] font-bold text-slate-500 uppercase">Medical Center</span>
+              <div class="flex items-center justify-between mt-1">
+                <strong class="font-mono text-xs sm:text-sm text-amber-700 font-black">Ext 3333</strong>
+                <button type="button" onclick="portalApp.copyContactInfo('Ext 3333 (+92-21-34720033)', this)" class="p-1 hover:bg-amber-50 rounded text-amber-600 transition-colors cursor-pointer" title="Copy"><i data-lucide="copy" class="w-3 h-3"></i></button>
+              </div>
+            </div>
+            <div class="bg-white p-2 rounded-lg border border-blue-200/70 shadow-2xs flex flex-col justify-between">
+              <span class="text-[10px] font-bold text-slate-500 uppercase">Security Main Gate</span>
+              <div class="flex items-center justify-between mt-1">
+                <strong class="font-mono text-xs sm:text-sm text-blue-700 font-black">Ext 4444 / 4445</strong>
+                <button type="button" onclick="portalApp.copyContactInfo('Ext 4444 / 4445 (+92-21-34720044)', this)" class="p-1 hover:bg-blue-50 rounded text-blue-600 transition-colors cursor-pointer" title="Copy"><i data-lucide="copy" class="w-3 h-3"></i></button>
+              </div>
+            </div>
+            <div class="bg-white p-2 rounded-lg border border-emerald-200/70 shadow-2xs flex flex-col justify-between">
+              <span class="text-[10px] font-bold text-slate-500 uppercase">Control Room (CCR)</span>
+              <div class="flex items-center justify-between mt-1">
+                <strong class="font-mono text-xs sm:text-sm text-emerald-700 font-black">Ext 2100</strong>
+                <button type="button" onclick="portalApp.copyContactInfo('Ext 2100 (+92-21-34720010)', this)" class="p-1 hover:bg-emerald-50 rounded text-emerald-600 transition-colors cursor-pointer" title="Copy"><i data-lucide="copy" class="w-3 h-3"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter Search Bar -->
+        <div class="relative shrink-0">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+            <i data-lucide="search" class="w-4 h-4"></i>
+          </div>
+          <input
+            id="contacts-modal-search"
+            type="text"
+            placeholder="Search contacts by department, role, name, or extension..."
+            class="w-full pl-9 pr-4 py-2 bg-slate-50 hover:bg-white focus:bg-white border border-slate-300 rounded-xl text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-all shadow-2xs"
+            oninput="portalApp.filterContactsModal(this.value)"
+          />
+        </div>
+
+        <!-- Contact Cards List (Scrollable) -->
+        <div class="overflow-y-auto flex-1 pr-1 space-y-4 text-xs">
+          <!-- 1. Operations & Control Room -->
+          <div class="contact-directory-card space-y-2" data-search-text="operations shift engineer ccr central control room cash psg water treatment boiler turbine 2101 2100 2110 2120 2130">
+            <div class="flex items-center gap-2 pb-1 border-b border-slate-100">
+              <span class="p-1 rounded-md bg-blue-50 text-blue-600"><i data-lucide="zap" class="w-3.5 h-3.5"></i></span>
+              <h4 class="font-bold text-slate-800 text-xs uppercase tracking-wide">Operations &amp; Central Control Room</h4>
+              <span class="text-[10px] text-slate-400 ml-auto font-mono">5 Desk Units</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+              <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-blue-200 transition-all shadow-2xs">
+                <div class="text-[11px] font-bold text-slate-800">Shift Operations Incharge (Shift Engineer)</div>
+                <div class="text-[10px] text-slate-500">24/7 Plant Operational Control</div>
+                <div class="mt-2 flex items-center justify-between font-mono">
+                  <span class="px-2 py-0.5 rounded bg-blue-100 text-blue-800 font-bold text-[11px]">Ext: 2101</span>
+                  <button type="button" onclick="portalApp.copyContactInfo('Ext: 2101', this)" class="text-slate-500 hover:text-blue-600 text-[10px] font-sans flex items-center gap-1 cursor-pointer"><i data-lucide="copy" class="w-3 h-3"></i> Copy</button>
+                </div>
+              </div>
+              <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-blue-200 transition-all shadow-2xs">
+                <div class="text-[11px] font-bold text-slate-800">Central Control Room (CCR) Main Desk</div>
+                <div class="text-[10px] text-slate-500">DCS Operators &amp; Grid Dispatch</div>
+                <div class="mt-2 flex items-center justify-between font-mono">
+                  <span class="px-2 py-0.5 rounded bg-blue-100 text-blue-800 font-bold text-[11px]">Ext: 2100</span>
+                  <button type="button" onclick="portalApp.copyContactInfo('Ext: 2100', this)" class="text-slate-500 hover:text-blue-600 text-[10px] font-sans flex items-center gap-1 cursor-pointer"><i data-lucide="copy" class="w-3 h-3"></i> Copy</button>
+                </div>
+              </div>
+              <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-blue-200 transition-all shadow-2xs">
+                <div class="text-[11px] font-bold text-slate-800">Operations CASH Desk</div>
+                <div class="text-[10px] text-slate-500">Coal Unloading &amp; Ash Handling</div>
+                <div class="mt-2 flex items-center justify-between font-mono">
+                  <span class="px-2 py-0.5 rounded bg-blue-100 text-blue-800 font-bold text-[11px]">Ext: 2110</span>
+                  <button type="button" onclick="portalApp.copyContactInfo('Ext: 2110', this)" class="text-slate-500 hover:text-blue-600 text-[10px] font-sans flex items-center gap-1 cursor-pointer"><i data-lucide="copy" class="w-3 h-3"></i> Copy</button>
+                </div>
+              </div>
+              <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-blue-200 transition-all shadow-2xs">
+                <div class="text-[11px] font-bold text-slate-800">Operations PSG Desk</div>
+                <div class="text-[10px] text-slate-500">Power &amp; Steam Generation Units</div>
+                <div class="mt-2 flex items-center justify-between font-mono">
+                  <span class="px-2 py-0.5 rounded bg-blue-100 text-blue-800 font-bold text-[11px]">Ext: 2120</span>
+                  <button type="button" onclick="portalApp.copyContactInfo('Ext: 2120', this)" class="text-slate-500 hover:text-blue-600 text-[10px] font-sans flex items-center gap-1 cursor-pointer"><i data-lucide="copy" class="w-3 h-3"></i> Copy</button>
+                </div>
+              </div>
+              <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-blue-200 transition-all shadow-2xs">
+                <div class="text-[11px] font-bold text-slate-800">Water Treatment Plant (WTP)</div>
+                <div class="text-[10px] text-slate-500">Demineralization &amp; Water Chemistry</div>
+                <div class="mt-2 flex items-center justify-between font-mono">
+                  <span class="px-2 py-0.5 rounded bg-blue-100 text-blue-800 font-bold text-[11px]">Ext: 2130</span>
+                  <button type="button" onclick="portalApp.copyContactInfo('Ext: 2130', this)" class="text-slate-500 hover:text-blue-600 text-[10px] font-sans flex items-center gap-1 cursor-pointer"><i data-lucide="copy" class="w-3 h-3"></i> Copy</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. Technical Services & Maintenance -->
+          <div class="contact-directory-card space-y-2" data-search-text="maintenance technical services mechanical e&i electrical instrumentation pte inspection reliability workshop 2201 2202 2203 2204 2205">
+            <div class="flex items-center gap-2 pb-1 border-b border-slate-100">
+              <span class="p-1 rounded-md bg-amber-50 text-amber-600"><i data-lucide="wrench" class="w-3.5 h-3.5"></i></span>
+              <h4 class="font-bold text-slate-800 text-xs uppercase tracking-wide">Maintenance &amp; Technical Services</h4>
+              <span class="text-[10px] text-slate-400 ml-auto font-mono">5 Desk Units</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+              <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-amber-200 transition-all shadow-2xs">
+                <div class="text-[11px] font-bold text-slate-800">Mechanical Maintenance Lead</div>
+                <div class="text-[10px] text-slate-500">Turbine, Boiler &amp; Rotating Machinery</div>
+                <div class="mt-2 flex items-center justify-between font-mono">
+                  <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-800 font-bold text-[11px]">Ext: 2201</span>
+                  <button type="button" onclick="portalApp.copyContactInfo('Ext: 2201', this)" class="text-slate-500 hover:text-amber-600 text-[10px] font-sans flex items-center gap-1 cursor-pointer"><i data-lucide="copy" class="w-3 h-3"></i> Copy</button>
+                </div>
+              </div>
+              <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-amber-200 transition-all shadow-2xs">
+                <div class="text-[11px] font-bold text-slate-800">Electrical &amp; Instrumentation (E&amp;I) Lead</div>
+                <div class="text-[10px] text-slate-500">DCS, Switchyard, Substation &amp; Sensors</div>
+                <div class="mt-2 flex items-center justify-between font-mono">
+                  <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-800 font-bold text-[11px]">Ext: 2202</span>
+                  <button type="button" onclick="portalApp.copyContactInfo('Ext: 2202', this)" class="text-slate-500 hover:text-amber-600 text-[10px] font-sans flex items-center gap-1 cursor-pointer"><i data-lucide="copy" class="w-3 h-3"></i> Copy</button>
+                </div>
+              </div>
+              <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-amber-200 transition-all shadow-2xs">
+                <div class="text-[11px] font-bold text-slate-800">Inspection &amp; Reliability Unit</div>
+                <div class="text-[10px] text-slate-500">NDT, Vibration Analysis &amp; Asset Integrity</div>
+                <div class="mt-2 flex items-center justify-between font-mono">
+                  <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-800 font-bold text-[11px]">Ext: 2203</span>
+                  <button type="button" onclick="portalApp.copyContactInfo('Ext: 2203', this)" class="text-slate-500 hover:text-amber-600 text-[10px] font-sans flex items-center gap-1 cursor-pointer"><i data-lucide="copy" class="w-3 h-3"></i> Copy</button>
+                </div>
+              </div>
+              <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-amber-200 transition-all shadow-2xs">
+                <div class="text-[11px] font-bold text-slate-800">Plant Technical Evaluation (PTE)</div>
+                <div class="text-[10px] text-slate-500">Process Engineering &amp; Modifications</div>
+                <div class="mt-2 flex items-center justify-between font-mono">
+                  <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-800 font-bold text-[11px]">Ext: 2204</span>
+                  <button type="button" onclick="portalApp.copyContactInfo('Ext: 2204', this)" class="text-slate-500 hover:text-amber-600 text-[10px] font-sans flex items-center gap-1 cursor-pointer"><i data-lucide="copy" class="w-3 h-3"></i> Copy</button>
+                </div>
+              </div>
+              <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-amber-200 transition-all shadow-2xs">
+                <div class="text-[11px] font-bold text-slate-800">Maintenance Planning &amp; Workshop</div>
+                <div class="text-[10px] text-slate-500">Work Orders, Spares &amp; Overhauls</div>
+                <div class="mt-2 flex items-center justify-between font-mono">
+                  <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-800 font-bold text-[11px]">Ext: 2205</span>
+                  <button type="button" onclick="portalApp.copyContactInfo('Ext: 2205', this)" class="text-slate-500 hover:text-amber-600 text-[10px] font-sans flex items-center gap-1 cursor-pointer"><i data-lucide="copy" class="w-3 h-3"></i> Copy</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. HSEQ & Compliance -->
+          <div class="contact-directory-card space-y-2" data-search-text="hseq compliance health safety environment quality psm process safety audit pssr 2301 2302 2303 2304 2305">
+            <div class="flex items-center gap-2 pb-1 border-b border-slate-100">
+              <span class="p-1 rounded-md bg-emerald-50 text-emerald-600"><i data-lucide="shield-check" class="w-3.5 h-3.5"></i></span>
+              <h4 class="font-bold text-slate-800 text-xs uppercase tracking-wide">HSEQ &amp; Process Safety Management</h4>
+              <span class="text-[10px] text-slate-400 ml-auto font-mono">5 Desk Units</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+              <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-emerald-200 transition-all shadow-2xs">
+                <div class="text-[11px] font-bold text-slate-800">Head of HSEQ Department</div>
+                <div class="text-[10px] text-slate-500">Corporate Safety &amp; Environmental Policy</div>
+                <div class="mt-2 flex items-center justify-between font-mono">
+                  <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold text-[11px]">Ext: 2301</span>
+                  <button type="button" onclick="portalApp.copyContactInfo('Ext: 2301', this)" class="text-slate-500 hover:text-emerald-600 text-[10px] font-sans flex items-center gap-1 cursor-pointer"><i data-lucide="copy" class="w-3 h-3"></i> Copy</button>
+                </div>
+              </div>
+              <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-emerald-200 transition-all shadow-2xs">
+                <div class="text-[11px] font-bold text-slate-800">Process Safety Management (PSM) Lead</div>
+                <div class="text-[10px] text-slate-500">PHA, MOC, PSSR &amp; 14 PSM Elements</div>
+                <div class="mt-2 flex items-center justify-between font-mono">
+                  <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold text-[11px]">Ext: 2303</span>
+                  <button type="button" onclick="portalApp.copyContactInfo('Ext: 2303', this)" class="text-slate-500 hover:text-emerald-600 text-[10px] font-sans flex items-center gap-1 cursor-pointer"><i data-lucide="copy" class="w-3 h-3"></i> Copy</button>
+                </div>
+              </div>
+              <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-emerald-200 transition-all shadow-2xs">
+                <div class="text-[11px] font-bold text-slate-800">Occupational Safety Specialist</div>
+                <div class="text-[10px] text-slate-500">Permit to Work (PTW) &amp; Field Audits</div>
+                <div class="mt-2 flex items-center justify-between font-mono">
+                  <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold text-[11px]">Ext: 2302</span>
+                  <button type="button" onclick="portalApp.copyContactInfo('Ext: 2302', this)" class="text-slate-500 hover:text-emerald-600 text-[10px] font-sans flex items-center gap-1 cursor-pointer"><i data-lucide="copy" class="w-3 h-3"></i> Copy</button>
+                </div>
+              </div>
+              <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-emerald-200 transition-all shadow-2xs">
+                <div class="text-[11px] font-bold text-slate-800">Environmental Compliance Specialist</div>
+                <div class="text-[10px] text-slate-500">Stack Emissions, Effluent &amp; EPA Reports</div>
+                <div class="mt-2 flex items-center justify-between font-mono">
+                  <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold text-[11px]">Ext: 2304</span>
+                  <button type="button" onclick="portalApp.copyContactInfo('Ext: 2304', this)" class="text-slate-500 hover:text-emerald-600 text-[10px] font-sans flex items-center gap-1 cursor-pointer"><i data-lucide="copy" class="w-3 h-3"></i> Copy</button>
+                </div>
+              </div>
+              <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-emerald-200 transition-all shadow-2xs">
+                <div class="text-[11px] font-bold text-slate-800">IMS Audit &amp; Documentation Coordinator</div>
+                <div class="text-[10px] text-slate-500">ISO 9001 / 14001 / 45001 Compliance</div>
+                <div class="mt-2 flex items-center justify-between font-mono">
+                  <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold text-[11px]">Ext: 2305</span>
+                  <button type="button" onclick="portalApp.copyContactInfo('Ext: 2305', this)" class="text-slate-500 hover:text-emerald-600 text-[10px] font-sans flex items-center gap-1 cursor-pointer"><i data-lucide="copy" class="w-3 h-3"></i> Copy</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4. Executive, Administration & ICT -->
+          <div class="contact-directory-card space-y-2" data-search-text="executive administration it ict helpdesk sap hr general manager coo supply chain store 1001 1002 1111 1201 1301">
+            <div class="flex items-center gap-2 pb-1 border-b border-slate-100">
+              <span class="p-1 rounded-md bg-purple-50 text-purple-600"><i data-lucide="building-2" class="w-3.5 h-3.5"></i></span>
+              <h4 class="font-bold text-slate-800 text-xs uppercase tracking-wide">Executive, Administration &amp; ICT</h4>
+              <span class="text-[10px] text-slate-400 ml-auto font-mono">5 Desk Units</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+              <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-purple-200 transition-all shadow-2xs">
+                <div class="text-[11px] font-bold text-slate-800">General Manager / Plant Incharge</div>
+                <div class="text-[10px] text-slate-500">Executive Site Management</div>
+                <div class="mt-2 flex items-center justify-between font-mono">
+                  <span class="px-2 py-0.5 rounded bg-purple-100 text-purple-800 font-bold text-[11px]">Ext: 1001</span>
+                  <button type="button" onclick="portalApp.copyContactInfo('Ext: 1001', this)" class="text-slate-500 hover:text-purple-600 text-[10px] font-sans flex items-center gap-1 cursor-pointer"><i data-lucide="copy" class="w-3 h-3"></i> Copy</button>
+                </div>
+              </div>
+              <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-purple-200 transition-all shadow-2xs">
+                <div class="text-[11px] font-bold text-slate-800">COO Executive Office</div>
+                <div class="text-[10px] text-slate-500">Corporate Operations Office</div>
+                <div class="mt-2 flex items-center justify-between font-mono">
+                  <span class="px-2 py-0.5 rounded bg-purple-100 text-purple-800 font-bold text-[11px]">Ext: 1002</span>
+                  <button type="button" onclick="portalApp.copyContactInfo('Ext: 1002', this)" class="text-slate-500 hover:text-purple-600 text-[10px] font-sans flex items-center gap-1 cursor-pointer"><i data-lucide="copy" class="w-3 h-3"></i> Copy</button>
+                </div>
+              </div>
+              <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-purple-200 transition-all shadow-2xs">
+                <div class="text-[11px] font-bold text-slate-800">ICT Helpdesk &amp; SAP Support</div>
+                <div class="text-[10px] text-slate-500">Network, Email, SAP &amp; Systems</div>
+                <div class="mt-2 flex items-center justify-between font-mono">
+                  <span class="px-2 py-0.5 rounded bg-purple-100 text-purple-800 font-bold text-[11px]">Ext: 1111</span>
+                  <button type="button" onclick="portalApp.copyContactInfo('Ext: 1111 (helpdesk@fpcl.com)', this)" class="text-slate-500 hover:text-purple-600 text-[10px] font-sans flex items-center gap-1 cursor-pointer"><i data-lucide="copy" class="w-3 h-3"></i> Copy</button>
+                </div>
+              </div>
+              <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-purple-200 transition-all shadow-2xs">
+                <div class="text-[11px] font-bold text-slate-800">HR &amp; General Administration</div>
+                <div class="text-[10px] text-slate-500">Personnel, Transport &amp; Camp Services</div>
+                <div class="mt-2 flex items-center justify-between font-mono">
+                  <span class="px-2 py-0.5 rounded bg-purple-100 text-purple-800 font-bold text-[11px]">Ext: 1201</span>
+                  <button type="button" onclick="portalApp.copyContactInfo('Ext: 1201', this)" class="text-slate-500 hover:text-purple-600 text-[10px] font-sans flex items-center gap-1 cursor-pointer"><i data-lucide="copy" class="w-3 h-3"></i> Copy</button>
+                </div>
+              </div>
+              <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-purple-200 transition-all shadow-2xs">
+                <div class="text-[11px] font-bold text-slate-800">Supply Chain &amp; Central Stores</div>
+                <div class="text-[10px] text-slate-500">Material Procurement &amp; Inventory</div>
+                <div class="mt-2 flex items-center justify-between font-mono">
+                  <span class="px-2 py-0.5 rounded bg-purple-100 text-purple-800 font-bold text-[11px]">Ext: 1301</span>
+                  <button type="button" onclick="portalApp.copyContactInfo('Ext: 1301', this)" class="text-slate-500 hover:text-purple-600 text-[10px] font-sans flex items-center gap-1 cursor-pointer"><i data-lucide="copy" class="w-3 h-3"></i> Copy</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="contacts-no-matches" class="hidden text-center py-8 text-slate-400">
+            <i data-lucide="search-x" class="w-8 h-8 mx-auto mb-2 text-slate-300"></i>
+            <div class="font-bold text-slate-600">No matching contacts found</div>
+            <p class="text-[11px] text-slate-400 mt-0.5">Try searching with a different name, department, role, or extension.</p>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="flex items-center justify-between pt-3 border-t border-slate-200 text-xs shrink-0">
+          <span class="text-slate-500 text-[11px] font-mono">FPCL Internal PBX Extension Directory</span>
+          <button
+            type="button"
+            onclick="portalApp.closeContactsModal()"
+            class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors cursor-pointer"
+          >
+            Close Directory
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Responsibility & Governance Matrix Modal -->
+    <div
+      id="responsibility-modal"
+      onclick="if(event.target === this) portalApp.closeResponsibilityModal()"
+      class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs hidden items-center justify-center p-3 sm:p-4 overflow-y-auto"
+    >
+      <div class="bg-white border border-slate-200 rounded-2xl max-w-4xl w-full p-4 sm:p-6 shadow-2xl space-y-4 max-h-[92vh] flex flex-col">
+        <!-- Header -->
+        <div class="flex items-center justify-between pb-3 border-b border-slate-200 shrink-0">
+          <div class="flex items-center gap-2.5">
+            <span class="p-2 sm:p-2.5 rounded-xl bg-gradient-to-r from-cyan-600 via-teal-600 to-emerald-600 text-white shadow-xs">
+              <i data-lucide="shield-check" class="w-5 h-5"></i>
+            </span>
+            <div>
+              <h3 class="text-sm sm:text-base font-bold text-[#1E293B]">FPCL Department Responsibility &amp; Governance Matrix</h3>
+              <p class="text-[11px] sm:text-xs text-slate-500">Operational Scopes, Action Ownership &amp; Oversight Committee Mandates</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onclick="portalApp.closeResponsibilityModal()"
+            class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+            title="Close matrix"
+          >
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <!-- Filter Search Bar -->
+        <div class="relative shrink-0">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+            <i data-lucide="search" class="w-4 h-4"></i>
+          </div>
+          <input
+            id="responsibility-modal-search"
+            type="text"
+            placeholder="Search responsibility by department, dashboard name, or operational scope..."
+            class="w-full pl-9 pr-4 py-2 bg-slate-50 hover:bg-white focus:bg-white border border-slate-300 rounded-xl text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all shadow-2xs"
+            oninput="portalApp.filterResponsibilityModal(this.value)"
+          />
+        </div>
+
+        <!-- Responsibility Cards List (Scrollable) -->
+        <div class="overflow-y-auto flex-1 pr-1 space-y-3 text-xs">
+          <!-- 1. HSEQ -->
+          <div class="responsibility-matrix-card p-3 rounded-xl border border-emerald-200 bg-emerald-50/30 space-y-2 hover:bg-emerald-50/60 transition-colors" data-search-text="hseq health safety environment quality psm audits psm validation ims ehse overview pha moc pssr investigations">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+                <span class="font-bold text-slate-800 text-xs uppercase tracking-wide">Health, Safety, Environment &amp; Quality (HSEQ)</span>
+              </div>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">Primary Governance</span>
+            </div>
+            <div class="text-[11px] text-slate-600 leading-relaxed">
+              <strong>Core Responsibilities:</strong> Oversight of Process Safety Management (PSM 14 elements), Environmental statutory reporting (SEQS / EPA), Integrated Management Systems (IMS audits), Pre-Startup Safety Reviews (PSSR), and Occupational incident reporting and investigation.
+            </div>
+            <div class="flex flex-wrap items-center gap-1.5 pt-1 text-[10px] font-mono">
+              <span class="text-slate-400 font-sans">Associated Dashboards:</span>
+              <span class="px-1.5 py-0.5 rounded bg-white border border-emerald-200 text-emerald-800">PSM Audits</span>
+              <span class="px-1.5 py-0.5 rounded bg-white border border-emerald-200 text-emerald-800">PSM Validation</span>
+              <span class="px-1.5 py-0.5 rounded bg-white border border-emerald-200 text-emerald-800">IMS</span>
+              <span class="px-1.5 py-0.5 rounded bg-white border border-emerald-200 text-emerald-800">EHSE</span>
+              <span class="px-1.5 py-0.5 rounded bg-white border border-emerald-200 text-emerald-800">Overview HSEQ KPIs</span>
+            </div>
+          </div>
+
+          <!-- 2. Operations (PSG & CASH) -->
+          <div class="responsibility-matrix-card p-3 rounded-xl border border-blue-200 bg-blue-50/30 space-y-2 hover:bg-blue-50/60 transition-colors" data-search-text="operations psg cash power steam generation coal ash handling sub hse p strategic dashboard plr ccr boiler turbine grid">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
+                <span class="font-bold text-slate-800 text-xs uppercase tracking-wide">Plant Operations (PSG &amp; CASH)</span>
+              </div>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800">Plant Operations</span>
+            </div>
+            <div class="text-[11px] text-slate-600 leading-relaxed">
+              <strong>Core Responsibilities:</strong> Continuous execution of power and steam dispatch, safe combustion in pulverized coal boilers, STG turbine operation, coal conveyor receipt/bunkering, dense-phase ash extraction, demineralized water chemistry, and Sub HSE Committee (Production) action fulfillment.
+            </div>
+            <div class="flex flex-wrap items-center gap-1.5 pt-1 text-[10px] font-mono">
+              <span class="text-slate-400 font-sans">Associated Dashboards:</span>
+              <span class="px-1.5 py-0.5 rounded bg-white border border-blue-200 text-blue-800">Sub HSE – P</span>
+              <span class="px-1.5 py-0.5 rounded bg-white border border-blue-200 text-blue-800">Strategic Dashboard</span>
+              <span class="px-1.5 py-0.5 rounded bg-white border border-blue-200 text-blue-800">PLR (Loss Reports)</span>
+            </div>
+          </div>
+
+          <!-- 3. Mechanical Maintenance -->
+          <div class="responsibility-matrix-card p-3 rounded-xl border border-amber-200 bg-amber-50/30 space-y-2 hover:bg-amber-50/60 transition-colors" data-search-text="mechanical maintenance sub hse mech capex plr rotating equipment boiler tubes pumps compressors sootblowers valves">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-amber-600"></span>
+                <span class="font-bold text-slate-800 text-xs uppercase tracking-wide">Mechanical Maintenance Department</span>
+              </div>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800">Asset Maintenance</span>
+            </div>
+            <div class="text-[11px] text-slate-600 leading-relaxed">
+              <strong>Core Responsibilities:</strong> Overhauls of major rotating equipment, boiler pressure part inspections, steam turbine stop/governor valves, coal crushers, fans, electrostatic precipitator (ESP) mechanical components, vibration issue rectification, and mechanical CAPEX installations.
+            </div>
+            <div class="flex flex-wrap items-center gap-1.5 pt-1 text-[10px] font-mono">
+              <span class="text-slate-400 font-sans">Associated Dashboards:</span>
+              <span class="px-1.5 py-0.5 rounded bg-white border border-amber-200 text-amber-800">Sub HSE – Mech</span>
+              <span class="px-1.5 py-0.5 rounded bg-white border border-amber-200 text-amber-800">CAPEX Projects</span>
+              <span class="px-1.5 py-0.5 rounded bg-white border border-amber-200 text-amber-800">PLR Mechanical Failures</span>
+            </div>
+          </div>
+
+          <!-- 4. Electrical & Instrumentation (E&I) -->
+          <div class="responsibility-matrix-card p-3 rounded-xl border border-indigo-200 bg-indigo-50/30 space-y-2 hover:bg-indigo-50/60 transition-colors" data-search-text="e&i electrical instrumentation sub hse e&i pssr dcs scada switchyard transformers interlocks esd trips calibration">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-indigo-600"></span>
+                <span class="font-bold text-slate-800 text-xs uppercase tracking-wide">Electrical &amp; Instrumentation (E&amp;I)</span>
+              </div>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-100 text-indigo-800">Controls &amp; Power</span>
+            </div>
+            <div class="text-[11px] text-slate-600 leading-relaxed">
+              <strong>Core Responsibilities:</strong> Management of Distributed Control Systems (DCS), safety instrumented systems (SIS) and ESD trips, 132kV switchyard maintenance, grid transformers, motor control centers (MCC), field sensor calibration, loop checks, and PSSR electrical verifications.
+            </div>
+            <div class="flex flex-wrap items-center gap-1.5 pt-1 text-[10px] font-mono">
+              <span class="text-slate-400 font-sans">Associated Dashboards:</span>
+              <span class="px-1.5 py-0.5 rounded bg-white border border-indigo-200 text-indigo-800">Sub HSE – E&amp;I</span>
+              <span class="px-1.5 py-0.5 rounded bg-white border border-indigo-200 text-indigo-800">PSSR Reviews</span>
+              <span class="px-1.5 py-0.5 rounded bg-white border border-indigo-200 text-indigo-800">Strategic E&amp;I</span>
+            </div>
+          </div>
+
+          <!-- 5. Plant Technical Evaluation (PTE) & Inspection -->
+          <div class="responsibility-matrix-card p-3 rounded-xl border border-teal-200 bg-teal-50/30 space-y-2 hover:bg-teal-50/60 transition-colors" data-search-text="pte inspection plant technical evaluation reliability ndt metallurgy vibration rla life assessment rcfa plr psm validation">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-teal-600"></span>
+                <span class="font-bold text-slate-800 text-xs uppercase tracking-wide">Plant Technical Evaluation (PTE) &amp; Inspection</span>
+              </div>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-teal-100 text-teal-800">Technical Assurance</span>
+            </div>
+            <div class="text-[11px] text-slate-600 leading-relaxed">
+              <strong>Core Responsibilities:</strong> Non-Destructive Testing (NDT), metallurgical evaluations, vibration spectral analysis, root-cause failure analysis (RCFA) for loss events, equipment remaining useful life assessments, and technical evaluation of engineering modifications (MOC).
+            </div>
+            <div class="flex flex-wrap items-center gap-1.5 pt-1 text-[10px] font-mono">
+              <span class="text-slate-400 font-sans">Associated Dashboards:</span>
+              <span class="px-1.5 py-0.5 rounded bg-white border border-teal-200 text-teal-800">PLR Root Cause Analysis</span>
+              <span class="px-1.5 py-0.5 rounded bg-white border border-teal-200 text-teal-800">PSM Validation</span>
+              <span class="px-1.5 py-0.5 rounded bg-white border border-teal-200 text-teal-800">IMS Reliability</span>
+            </div>
+          </div>
+
+          <!-- 6. CAPEX & Capital Projects -->
+          <div class="responsibility-matrix-card p-3 rounded-xl border border-cyan-200 bg-cyan-50/30 space-y-2 hover:bg-cyan-50/60 transition-colors" data-search-text="capex capital projects wbs elements budget procurement milestone engineering modifications vendor contracts">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-cyan-600"></span>
+                <span class="font-bold text-slate-800 text-xs uppercase tracking-wide">Capital Expenditure (CAPEX) &amp; Projects Committee</span>
+              </div>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-100 text-cyan-800">Projects &amp; Upgrades</span>
+            </div>
+            <div class="text-[11px] text-slate-600 leading-relaxed">
+              <strong>Core Responsibilities:</strong> Execution of capital projects across plant assets, tracking of WBS elements, expenditure and available budget monitoring, vendor contract compliance, commissioning safety sign-offs, and technical delivery of plant enhancements.
+            </div>
+            <div class="flex flex-wrap items-center gap-1.5 pt-1 text-[10px] font-mono">
+              <span class="text-slate-400 font-sans">Associated Dashboards:</span>
+              <span class="px-1.5 py-0.5 rounded bg-white border border-cyan-200 text-cyan-800">CAPEX Dashboard</span>
+              <span class="px-1.5 py-0.5 rounded bg-white border border-cyan-200 text-cyan-800">Strategic Projects</span>
+            </div>
+          </div>
+
+          <!-- 7. Administration, Security & ICT -->
+          <div class="responsibility-matrix-card p-3 rounded-xl border border-slate-300 bg-slate-50/60 space-y-2 hover:bg-slate-100/60 transition-colors" data-search-text="admin security ict it helpdesk sap site security gate passes emergency logistics visitor cards hr">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-slate-700"></span>
+                <span class="font-bold text-slate-800 text-xs uppercase tracking-wide">Administration, Site Security &amp; ICT</span>
+              </div>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-200 text-slate-800">Corporate &amp; Site Security</span>
+            </div>
+            <div class="text-[11px] text-slate-600 leading-relaxed">
+              <strong>Core Responsibilities:</strong> Physical plant security, security gate access control, visitor safety cards, site emergency evacuation muster logistics, corporate IT infrastructure, SAP and intranet portals uptime, and employee logistics services.
+            </div>
+            <div class="flex flex-wrap items-center gap-1.5 pt-1 text-[10px] font-mono">
+              <span class="text-slate-400 font-sans">Associated Dashboards:</span>
+              <span class="px-1.5 py-0.5 rounded bg-white border border-slate-300 text-slate-800">IMS Audit (Security Gate)</span>
+              <span class="px-1.5 py-0.5 rounded bg-white border border-slate-300 text-slate-800">Strategic Admin &amp; Security</span>
+            </div>
+          </div>
+
+          <div id="responsibility-no-matches" class="hidden text-center py-8 text-slate-400">
+            <i data-lucide="search-x" class="w-8 h-8 mx-auto mb-2 text-slate-300"></i>
+            <div class="font-bold text-slate-600">No matching department found</div>
+            <p class="text-[11px] text-slate-400 mt-0.5">Try searching with a different term such as Operations, HSEQ, Mechanical, E&amp;I, or CAPEX.</p>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="flex items-center justify-between pt-3 border-t border-slate-200 text-xs shrink-0">
+          <span class="text-slate-500 text-[11px] font-mono">FPCL Governance &amp; RACI Architecture</span>
+          <button
+            type="button"
+            onclick="portalApp.closeResponsibilityModal()"
+            class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors cursor-pointer"
+          >
+            Close Matrix
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Active Workload & Actions Modal (46 In-Progress List) -->
     <div id="actions-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs hidden items-center justify-center p-4">
       <div class="bg-white border border-slate-200 rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-4 max-h-[85vh] flex flex-col">
@@ -2853,6 +3405,60 @@
           punchList: { open: 9, closed: 4, total: 13, rate: '30.8%' },
           dataReadiness: { master: '100%', signoff: '100%' },
           statusComment: 'Live Google Sheets: Sub_HSE_Mech Tab (1Put-VhgQkpG43kAuW_l3cRtj4MH6Dl3aa2gms9IaLqQ)',
+          actions: []
+        },
+        {
+          id: 'psi',
+          name: 'PSI',
+          code: 'PSI',
+          icon: 'gauge',
+          status: 'Awaiting Data',
+          hasSheetLink: false,
+          category: 'Process Safety',
+          department: 'Process Safety Management (PSM)',
+          cadence: 'Live Sync / Google Sheet',
+          description: 'Process Safety Information & Indicators (PSI) Dashboard • Google Sheets dataset connection will be linked.',
+          color: {
+            bg: '#FFF1F2',
+            primary: '#E11D48',
+            secondary: '#FDA4AF',
+            text: '#881337'
+          },
+          gradient: 'from-rose-600 via-pink-600 to-red-600',
+          gradientStop1: '#E11D48',
+          gradientStop2: '#BE123C',
+          tagStyle: 'bg-rose-50 text-rose-800 border-rose-200',
+          kpis: { total: 0, closed: 0, inProgress: 0, overdue: 0, compliance: '0.0%' },
+          punchList: { open: 0, closed: 0, total: 0, rate: '0.0%' },
+          dataReadiness: { master: '0%', signoff: '0%' },
+          statusComment: 'Google Sheets dataset will be linked soon.',
+          actions: []
+        },
+        {
+          id: 'safety-talks',
+          name: 'Safety talks',
+          code: 'Safety Talks',
+          icon: 'messages-square',
+          status: 'Awaiting Data',
+          hasSheetLink: false,
+          category: 'Safety Culture & Engagement',
+          department: 'HSEQ Directorate',
+          cadence: 'Live Sync / Google Sheet',
+          description: 'Safety Talks & Toolbox Safety Conversations Dashboard • Google Sheets dataset connection will be linked.',
+          color: {
+            bg: '#ECFDF5',
+            primary: '#059669',
+            secondary: '#A7F3D0',
+            text: '#064E3B'
+          },
+          gradient: 'from-emerald-600 via-teal-600 to-green-600',
+          gradientStop1: '#059669',
+          gradientStop2: '#0D9488',
+          tagStyle: 'bg-emerald-50 text-emerald-800 border-emerald-200',
+          kpis: { total: 0, closed: 0, inProgress: 0, overdue: 0, compliance: '0.0%' },
+          punchList: { open: 0, closed: 0, total: 0, rate: '0.0%' },
+          dataReadiness: { master: '0%', signoff: '0%' },
+          statusComment: 'Google Sheets dataset will be linked soon.',
           actions: []
         },
         {
@@ -4399,8 +5005,8 @@
           // Build comparison items: Includes all modules, labeling PSM as PSM Audits, plotting PSM Validation on secondary axis, and plotting PSSR and CAPEX next to IMS
           const chartItems = [];
           DASHBOARD_REGISTRY.forEach(d => {
-            // Exclude strategic and sub-hse-eri from the Overview Progress Comparison Status
-            if (d.id === 'strategic' || d.id === 'sub-hse-eri') return;
+            // Exclude strategic, sub-hse-eri, psi, and safety-talks from the Overview Progress Comparison Status
+            if (d.id === 'strategic' || d.id === 'sub-hse-eri' || d.id === 'psi' || d.id === 'safety-talks') return;
 
             if (d.id === 'capex') {
               const capexKpi = this.getCapexFilteredKpis(deptFilter, openCloseFilter, yearFilter);
@@ -5646,7 +6252,7 @@
           const container = document.getElementById('action-scenarios-container');
           if (!container) return;
 
-          container.innerHTML = DASHBOARD_REGISTRY.map(item => `
+          container.innerHTML = DASHBOARD_REGISTRY.filter(item => item.id !== 'psi' && item.id !== 'safety-talks').map(item => `
             <div class="p-3 bg-white hover:bg-slate-50 border border-slate-200/90 rounded-xl space-y-2 transition-all group">
               <div class="flex items-center justify-between gap-2">
                 <div class="flex items-center gap-2 min-w-0 flex-1">
@@ -5684,7 +6290,7 @@
           const tbody = document.getElementById('punch-list-tbody');
           if (!tbody) return;
 
-          tbody.innerHTML = DASHBOARD_REGISTRY.map(item => `
+          tbody.innerHTML = DASHBOARD_REGISTRY.filter(item => item.id !== 'psi' && item.id !== 'safety-talks').map(item => `
             <tr class="hover:bg-slate-50 transition-colors">
               <td class="py-2.5 pr-2">
                 <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${item.tagStyle}">${item.code}</span>
@@ -5716,7 +6322,7 @@
           const tbody = document.getElementById('data-readiness-tbody');
           if (!tbody) return;
 
-          tbody.innerHTML = DASHBOARD_REGISTRY.map(item => `
+          tbody.innerHTML = DASHBOARD_REGISTRY.filter(item => item.id !== 'psi' && item.id !== 'safety-talks').map(item => `
             <tr class="hover:bg-slate-50 transition-colors">
               <td class="py-2.5 pr-2">
                 <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${item.tagStyle}">${item.code}</span>
@@ -5880,8 +6486,8 @@
 
           const query = this.state.searchQuery.toLowerCase().trim();
           const filtered = DASHBOARD_REGISTRY.filter(item => {
-            // Exclude strategic and sub-hse-eri from the Overview Department Card Grid
-            if (item.id === 'strategic' || item.id === 'sub-hse-eri') return false;
+            // Exclude strategic, sub-hse-eri, psi, and safety-talks from the Overview Department Card Grid
+            if (item.id === 'strategic' || item.id === 'sub-hse-eri' || item.id === 'psi' || item.id === 'safety-talks') return false;
 
             const matchesQuery = !query || 
               item.name.toLowerCase().includes(query) ||
@@ -6147,7 +6753,7 @@
          * Update badge counts
          */
         updateCounts() {
-          const overviewItems = DASHBOARD_REGISTRY.filter(d => d.id !== 'strategic' && d.id !== 'sub-hse-eri');
+          const overviewItems = DASHBOARD_REGISTRY.filter(d => d.id !== 'strategic' && d.id !== 'sub-hse-eri' && d.id !== 'psi' && d.id !== 'safety-talks');
           const total = overviewItems.length;
           const active = overviewItems.filter(d => d.status === 'Active').length;
           const awaiting = overviewItems.filter(d => d.status.includes('Awaiting')).length;
@@ -7085,6 +7691,10 @@
               strategicContainer.hidden = true;
               strategicContainer.style.marginTop = '';
             }
+            if (subHseMechContainer) {
+              subHseMechContainer.classList.add('hidden');
+              subHseMechContainer.hidden = true;
+            }
             if (stdContainer) { stdContainer.classList.remove('hidden'); stdContainer.hidden = false; }
             if (sheetKeyEl) {
               sheetKeyEl.textContent = dashboard.hasSheetLink ? 'Connected' : (dashboard.statusComment || 'Data will be provided later');
@@ -7159,7 +7769,22 @@
           // Populate Action Items Table
           const tbody = document.getElementById('detail-actions-tbody');
           if (tbody) {
-            tbody.innerHTML = dashboard.actions.map(action => {
+            if (!dashboard.actions || dashboard.actions.length === 0) {
+              tbody.innerHTML = `
+                <tr>
+                  <td colspan="6" class="py-12 text-center text-slate-400 font-medium">
+                    <div class="flex flex-col items-center justify-center gap-2">
+                      <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
+                        <i data-lucide="file-spreadsheet" class="w-5 h-5"></i>
+                      </div>
+                      <p class="text-sm font-bold text-slate-600">Awaiting Google Sheets Dataset</p>
+                      <p class="text-xs text-slate-400 max-w-md">Google Sheets for this dashboard will be linked soon. Records and live KPIs will synchronize automatically.</p>
+                    </div>
+                  </td>
+                </tr>
+              `;
+            } else {
+              tbody.innerHTML = dashboard.actions.map(action => {
               const prioColors = {
                 'Critical': 'bg-rose-50 text-rose-700 border-rose-200',
                 'High': 'bg-amber-50 text-amber-700 border-amber-200',
@@ -7194,6 +7819,7 @@
                 </tr>
               `;
             }).join('');
+            }
           }
 
           // Refresh icons
@@ -7448,11 +8074,125 @@
           }
         },
 
+        /**
+         * Contacts Directory Modal Handlers
+         */
+        openContactsModal(event) {
+          if (event && event.stopPropagation) event.stopPropagation();
+          const modal = document.getElementById('contacts-modal');
+          if (modal) {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            const searchInput = document.getElementById('contacts-modal-search');
+            if (searchInput) {
+              searchInput.value = '';
+              this.filterContactsModal('');
+              setTimeout(() => searchInput.focus(), 80);
+            }
+            if (window.lucide && typeof window.lucide.createIcons === 'function') {
+              window.lucide.createIcons();
+            }
+          }
+        },
+
+        closeContactsModal() {
+          const modal = document.getElementById('contacts-modal');
+          if (modal) {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+          }
+        },
+
+        filterContactsModal(query) {
+          const q = (query || '').toLowerCase().trim();
+          const cards = document.querySelectorAll('.contact-directory-card');
+          let visibleCount = 0;
+          cards.forEach(card => {
+            const text = (card.getAttribute('data-search-text') || card.innerText || '').toLowerCase();
+            const matches = !q || text.includes(q);
+            card.style.display = matches ? '' : 'none';
+            if (matches) visibleCount++;
+          });
+          const noMatchEl = document.getElementById('contacts-no-matches');
+          if (noMatchEl) {
+            noMatchEl.style.display = visibleCount === 0 ? 'block' : 'none';
+          }
+        },
+
+        copyContactInfo(text, btnElement) {
+          if (!text) return;
+          const copyToClipboard = () => {
+            if (btnElement) {
+              const originalHtml = btnElement.innerHTML;
+              btnElement.innerHTML = `<i data-lucide="check" class="w-3 h-3 text-emerald-600 inline"></i> <span class="text-emerald-700 font-bold text-[10px]">Copied!</span>`;
+              if (window.lucide) window.lucide.createIcons();
+              setTimeout(() => {
+                btnElement.innerHTML = originalHtml;
+                if (window.lucide) window.lucide.createIcons();
+              }, 1600);
+            }
+            this.showToast('Copied to Clipboard', text, 'success');
+          };
+
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(copyToClipboard).catch(() => {
+              this.showToast('Contact Info', text, 'info');
+            });
+          } else {
+            copyToClipboard();
+          }
+        },
+
+        /**
+         * Responsibility & Governance Matrix Modal Handlers
+         */
+        openResponsibilityModal(event) {
+          if (event && event.stopPropagation) event.stopPropagation();
+          const modal = document.getElementById('responsibility-modal');
+          if (modal) {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            const searchInput = document.getElementById('responsibility-modal-search');
+            if (searchInput) {
+              searchInput.value = '';
+              this.filterResponsibilityModal('');
+              setTimeout(() => searchInput.focus(), 80);
+            }
+            if (window.lucide && typeof window.lucide.createIcons === 'function') {
+              window.lucide.createIcons();
+            }
+          }
+        },
+
+        closeResponsibilityModal() {
+          const modal = document.getElementById('responsibility-modal');
+          if (modal) {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+          }
+        },
+
+        filterResponsibilityModal(query) {
+          const q = (query || '').toLowerCase().trim();
+          const cards = document.querySelectorAll('.responsibility-matrix-card');
+          let visibleCount = 0;
+          cards.forEach(card => {
+            const text = (card.getAttribute('data-search-text') || card.innerText || '').toLowerCase();
+            const matches = !q || text.includes(q);
+            card.style.display = matches ? '' : 'none';
+            if (matches) visibleCount++;
+          });
+          const noMatchEl = document.getElementById('responsibility-no-matches');
+          if (noMatchEl) {
+            noMatchEl.style.display = visibleCount === 0 ? 'block' : 'none';
+          }
+        },
+
         renderPaletteSpecs() {
           const container = document.getElementById('palette-specs-grid');
           if (!container) return;
 
-          container.innerHTML = DASHBOARD_REGISTRY.map((d, index) => `
+          container.innerHTML = DASHBOARD_REGISTRY.filter(item => item.id !== 'psi' && item.id !== 'safety-talks').map((d, index) => `
             <div class="p-3 rounded-xl border flex flex-col justify-between" style="background-color: ${d.color.bg}; border-color: ${d.color.secondary}; color: ${d.color.text};">
               <div class="font-bold text-xs mb-1.5 flex items-center justify-between">
                 <span>${index + 1}. ${d.name}</span>
@@ -7533,6 +8273,8 @@
                 this.closeIntegrationModal();
                 this.closePaletteModal();
                 this.closeSheetColumnRefsModal();
+                this.closeContactsModal();
+                this.closeResponsibilityModal();
               }
             }
           });
