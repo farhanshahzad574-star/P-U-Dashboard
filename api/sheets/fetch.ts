@@ -88,6 +88,8 @@ export default async function handler(req: any, res: any) {
 
       if (normalizedTileId && STRATEGIC_TILE_REGISTRY[normalizedTileId]) {
         url = getSheetUrlForTile(normalizedTileId);
+      } else if (sLower === 'contacts' || sLower.includes('contact')) {
+        url = 'https://docs.google.com/spreadsheets/d/1mI5WbcNBYtJc1fQjG0ZYQ1PKQzAHp5Sm3gyi9MibW-g/gviz/tq?tqx=out:csv&sheet=Contacts';
       } else if (sLower === 'scm' || sLower.includes('scm') || normalizedTileId === 'scm') {
         url = getSheetUrlForTile('scm');
       } else if (normalizedTileId.includes('admin') || normalizedTileId.includes('security') || sLower.includes('admin') || sLower.includes('security')) {

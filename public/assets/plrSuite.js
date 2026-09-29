@@ -1110,19 +1110,25 @@
     return html;
   }
 
+  // Provide alias getPlrIncidents for getPlrData to guard against ReferenceError
+  function getPlrIncidents() {
+    return typeof getPlrData === 'function' ? getPlrData() : [];
+  }
+  window.getPlrIncidents = getPlrIncidents;
+
   // Helper: Extract unique 4-digit years from incidents & recommendations, guaranteeing dynamic current year is present
   function getAvailablePlrYearStrings() {
     const currentYr = getCurrentDynamicYear();
     const yearSet = new Set();
     yearSet.add(currentYr);
-    const incs = getPlrData();
+    const incs = typeof getPlrData === 'function' ? getPlrData() : (typeof getPlrIncidents === 'function' ? getPlrIncidents() : []);
     if (Array.isArray(incs)) {
       incs.forEach(d => {
         const y = String(d.year || '').trim();
         if (/^\d{4}$/.test(y)) yearSet.add(y);
       });
     }
-    const recs = getPlrRecs();
+    const recs = typeof getPlrRecs === 'function' ? getPlrRecs() : [];
     if (Array.isArray(recs)) {
       recs.forEach(r => {
         const y = String(r.year || '').trim();

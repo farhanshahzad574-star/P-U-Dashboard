@@ -889,48 +889,7 @@
               <!-- Dynamically populated via portalApp.renderNavMenu() -->
             </div>
 
-            <!-- Top Search Bar & Sync Action Group -->
-            <div class="flex items-center gap-1.5 shrink-0">
-              <!-- Search Bar -->
-              <div class="relative w-32 sm:w-36 lg:w-44 shrink-0">
-                <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none text-slate-400">
-                  <i data-lucide="search" class="w-3 h-3"></i>
-                </div>
-                <input
-                  id="search-input"
-                  type="text"
-                  placeholder="Search dashboards..."
-                  class="w-full pl-7 pr-7 py-1 bg-slate-50 hover:bg-white focus:bg-white border border-slate-300 rounded-[7px] text-[10px] sm:text-[11px] font-medium text-[#2B2E33] placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2E6DA4] focus:border-transparent transition-all shadow-2xs leading-tight"
-                  oninput="portalApp.handleSearch(this.value)"
-                />
-                <div class="absolute inset-y-0 right-0 pr-1.5 flex items-center gap-1">
-                  <button
-                    id="btn-clear-search"
-                    onclick="portalApp.clearSearch()"
-                    class="hidden p-0.5 text-slate-400 hover:text-slate-600 rounded transition-colors cursor-pointer"
-                    title="Clear search"
-                  >
-                    <i data-lucide="x" class="w-2.5 h-2.5"></i>
-                  </button>
-                  <span class="hidden sm:inline-block px-1 py-0.2 text-[8px] font-mono text-slate-400 bg-white border border-slate-200 rounded">
-                    /
-                  </span>
-                </div>
-              </div>
-
-              <!-- Header Quick Actions: Sync Registry -->
-              <button
-                id="btn-refresh-portal"
-                onclick="portalApp.refreshPortalData()"
-                class="inline-flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-[7px] text-[10px] sm:text-[11px] font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 hover:border-slate-400 transition-colors shadow-2xs cursor-pointer shrink-0"
-                title="Sync & refresh dashboard registry"
-              >
-                <i data-lucide="refresh-cw" class="w-3 h-3 text-slate-600"></i>
-                <span class="hidden sm:inline">Sync Registry</span>
-              </button>
-            </div>
-
-            <!-- External Enterprise Portals & Directory: Responsive for Mobile & Desktop -->
+            <!-- External Enterprise Portals, Directory, Search Bar & Sync Registry Row -->
             <div id="overview-quick-links-bar" class="w-full sm:w-auto max-w-full flex flex-wrap items-center gap-1 sm:gap-1.5 pl-0 sm:pl-2 sm:border-l sm:border-slate-200">
               <!-- 1. FFC Apps -->
               <a
@@ -1007,36 +966,77 @@
                 <i data-lucide="external-link" class="w-2.5 h-2.5 text-emerald-100/90 shrink-0"></i>
               </a>
 
-              <!-- 6. Contacts -->
+              <!-- 6. Responsibility Matrix -->
               <button
                 id="link-btn-contacts"
                 data-name="contacts"
-                data-alias="contacts"
+                data-alias="contacts responsibility matrix responsibilty matrix"
                 type="button"
                 onclick="event.stopPropagation(); portalApp.openContactsModal(event);"
                 class="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-[7px] text-[10px] sm:text-[11px] font-bold text-white bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 hover:from-rose-700 hover:via-pink-700 hover:to-fuchsia-700 border border-rose-500/40 shadow-2xs hover:shadow-xs transition-all cursor-pointer whitespace-nowrap select-none"
-                title="Contacts • Executive &amp; Plant Directory"
+                title="Responsibility Matrix • Contacts &amp; Department Directory"
               >
                 <i data-lucide="phone-call" class="w-3 h-3 text-white shrink-0"></i>
-                <span>Contacts</span>
+                <span>Responsibility Matrix</span>
                 <i data-lucide="arrow-up-right" class="w-2.5 h-2.5 text-rose-100/90 shrink-0"></i>
               </button>
 
-              <!-- 7. Responsibility -->
+              <!-- 7. FPCL Directory -->
               <button
                 id="link-btn-responsibility"
-                data-name="responsibilty"
-                data-alias="responsibilty"
+                data-name="fpcl-directory"
+                data-alias="fpcl directory directory responsibility responsibilty governance"
                 type="button"
                 onclick="event.stopPropagation(); portalApp.openResponsibilityModal(event);"
                 class="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-[7px] text-[10px] sm:text-[11px] font-bold text-white bg-gradient-to-r from-cyan-600 via-teal-600 to-emerald-600 hover:from-cyan-700 hover:via-teal-700 hover:to-emerald-700 border border-cyan-500/40 shadow-2xs hover:shadow-xs transition-all cursor-pointer whitespace-nowrap select-none"
-                title="Responsibility • Department Scope &amp; Governance Matrix"
+                title="FPCL Directory • Department Scope &amp; Governance Matrix"
               >
-                <i data-lucide="shield-check" class="w-3 h-3 text-white shrink-0"></i>
-                <span>Responsibility</span>
+                <i data-lucide="book-open" class="w-3 h-3 text-white shrink-0"></i>
+                <span>FPCL Directory</span>
                 <i data-lucide="arrow-up-right" class="w-2.5 h-2.5 text-cyan-100/90 shrink-0"></i>
               </button>
               <span id="link-btn-responsibilty" class="hidden" aria-hidden="true" onclick="portalApp.openResponsibilityModal(event)"></span>
+
+              <!-- Subtle Divider Separator -->
+              <div class="h-4 w-px bg-slate-300 mx-0.5 hidden sm:block shrink-0"></div>
+
+              <!-- Top Search Bar (In line with buttons) -->
+              <div class="relative w-32 sm:w-36 lg:w-44 shrink-0">
+                <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none text-slate-400">
+                  <i data-lucide="search" class="w-3 h-3"></i>
+                </div>
+                <input
+                  id="search-input"
+                  type="text"
+                  placeholder="Search dashboards..."
+                  class="w-full pl-7 pr-7 py-1 bg-slate-50 hover:bg-white focus:bg-white border border-slate-300 rounded-[7px] text-[10px] sm:text-[11px] font-medium text-[#2B2E33] placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2E6DA4] focus:border-transparent transition-all shadow-2xs leading-tight"
+                  oninput="portalApp.handleSearch(this.value)"
+                />
+                <div class="absolute inset-y-0 right-0 pr-1.5 flex items-center gap-1">
+                  <button
+                    id="btn-clear-search"
+                    onclick="portalApp.clearSearch()"
+                    class="hidden p-0.5 text-slate-400 hover:text-slate-600 rounded transition-colors cursor-pointer"
+                    title="Clear search"
+                  >
+                    <i data-lucide="x" class="w-2.5 h-2.5"></i>
+                  </button>
+                  <span class="hidden sm:inline-block px-1 py-0.2 text-[8px] font-mono text-slate-400 bg-white border border-slate-200 rounded">
+                    /
+                  </span>
+                </div>
+              </div>
+
+              <!-- Header Quick Actions: Sync Registry (In line with buttons) -->
+              <button
+                id="btn-refresh-portal"
+                onclick="portalApp.refreshPortalData()"
+                class="inline-flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-[7px] text-[10px] sm:text-[11px] font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 hover:border-slate-400 transition-colors shadow-2xs cursor-pointer shrink-0"
+                title="Sync & refresh dashboard registry"
+              >
+                <i data-lucide="refresh-cw" class="w-3 h-3 text-slate-600"></i>
+                <span class="hidden sm:inline">Sync Registry</span>
+              </button>
             </div>
           </div>
 
@@ -1357,7 +1357,7 @@
         <!-- ========================================================================= -->
         <!-- PROGRESS COMPARISON STATUS (Stacked Column Chart)                         -->
         <!-- ========================================================================= -->
-        <div class="bg-gradient-to-b from-white to-slate-50/90 border border-slate-200/90 rounded-2xl p-4 sm:p-6 shadow-xs space-y-3">
+        <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 space-y-3">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-2.5 border-b border-slate-100 gap-2">
             <div>
               <h3 class="text-sm sm:text-base font-black text-[#1E293B] tracking-wide flex items-center gap-2">
@@ -1385,16 +1385,16 @@
               </div>
             </div>
             <div class="flex flex-wrap items-center gap-2 text-xs font-mono font-bold">
-              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-blue-50 text-blue-700 border border-blue-200" title="Total Actions / Personnel count">
-                <span class="w-2.5 h-2.5 rounded-sm bg-gradient-to-b from-blue-500 to-blue-700"></span>
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-blue-50 text-[#1E3A8A] border border-blue-200" title="Total Actions / Personnel count">
+                <span class="w-2.5 h-2.5 rounded-xs bg-[#1D4ED8]"></span>
                 <span>Total</span>
               </span>
-              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200" title="Closed Actions completed / Validation passed">
-                <span class="w-2.5 h-2.5 rounded-sm bg-gradient-to-b from-emerald-500 to-emerald-700"></span>
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 text-[#0B8A5A] border border-emerald-200" title="Closed Actions completed / Validation passed">
+                <span class="w-2.5 h-2.5 rounded-xs bg-[#0B8A5A]"></span>
                 <span>Closed / Validation Passed</span>
               </span>
-              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-amber-50 text-amber-800 border border-amber-200" title="Open Actions pending closure / Validation pending">
-                <span class="w-2.5 h-2.5 rounded-sm bg-gradient-to-b from-amber-500 to-orange-600"></span>
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-red-50 text-[#DC2626] border border-red-200" title="Open Actions pending closure / Validation pending">
+                <span class="w-2.5 h-2.5 rounded-xs bg-[#DC2626]"></span>
                 <span>Open / Pending</span>
               </span>
             </div>
@@ -2359,311 +2359,114 @@
       </div>
     </div>
 
-    <!-- Contacts & Emergency Directory Modal -->
+    <!-- Contacts Directory Full-Screen Modal (Synchronized with Google Sheets ID 1mI5WbcNBYtJc1fQjG0ZYQ1PKQzAHp5Sm3gyi9MibW-g, Tab: Contacts) -->
     <div
       id="contacts-modal"
       onclick="if(event.target === this) portalApp.closeContactsModal()"
-      class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs hidden items-center justify-center p-3 sm:p-4 overflow-y-auto"
+      class="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-md hidden flex-col p-2 sm:p-4 md:p-6 w-screen h-screen transition-opacity duration-200"
     >
-      <div class="bg-white border border-slate-200 rounded-2xl max-w-4xl w-full p-4 sm:p-6 shadow-2xl space-y-4 max-h-[92vh] flex flex-col">
-        <!-- Header -->
-        <div class="flex items-center justify-between pb-3 border-b border-slate-200 shrink-0">
-          <div class="flex items-center gap-2.5">
-            <span class="p-2 sm:p-2.5 rounded-xl bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 text-white shadow-xs">
-              <i data-lucide="phone-call" class="w-5 h-5"></i>
+      <div class="bg-white border border-slate-200 rounded-2xl w-full h-full flex flex-col shadow-2xl overflow-hidden">
+        <!-- Full-Screen Modal Header -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between px-4 sm:px-6 py-3.5 bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 text-white shrink-0 border-b border-slate-700/60 gap-3">
+          <div class="flex items-center gap-3">
+            <span class="p-2 sm:p-2.5 rounded-xl bg-gradient-to-tr from-rose-500 via-pink-500 to-amber-400 text-white shadow-md shadow-rose-900/30 shrink-0">
+              <i data-lucide="phone-call" class="w-5 h-5 sm:w-6 sm:h-6"></i>
             </span>
             <div>
-              <h3 class="text-sm sm:text-base font-bold text-[#1E293B]">FPCL Key Contacts &amp; Emergency Directory</h3>
-              <p class="text-[11px] sm:text-xs text-slate-500">FFBL Power Company Limited • Site Phone Extensions &amp; Department Points of Contact</p>
+              <div class="flex items-center gap-2 flex-wrap">
+                <h3 class="text-base sm:text-lg font-black tracking-tight text-white m-0">FPCL Responsibility Matrix</h3>
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                  Google Sheets Live
+                </span>
+              </div>
             </div>
+          </div>
+
+          <!-- Actions Group: Search, Refresh, Close -->
+          <div class="flex items-center gap-2 sm:gap-3 self-end sm:self-auto shrink-0">
+            <!-- Search Input -->
+            <div class="relative w-48 sm:w-64 md:w-72">
+              <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-slate-400">
+                <i data-lucide="search" class="w-4 h-4"></i>
+              </div>
+              <input
+                id="contacts-modal-search"
+                type="text"
+                placeholder="Search contacts..."
+                class="w-full pl-8 pr-3 py-1.5 bg-white/10 hover:bg-white/15 focus:bg-white text-white focus:text-slate-900 placeholder-slate-400 focus:placeholder-slate-500 border border-white/20 focus:border-white rounded-lg text-xs font-medium focus:outline-none transition-all shadow-inner"
+                oninput="portalApp.filterContactsModal(this.value)"
+              />
+            </div>
+
+            <!-- Sync / Refresh Button -->
+            <button
+              id="contacts-sync-btn"
+              type="button"
+              onclick="portalApp.fetchContactsData(true)"
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white/10 hover:bg-white/20 text-white border border-white/20 hover:border-white/30 transition-all cursor-pointer shadow-xs select-none"
+              title="Refresh contacts from Google Sheet"
+            >
+              <i id="contacts-sync-icon" data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+              <span class="hidden md:inline">Sync</span>
+            </button>
+
+            <!-- Close Button -->
+            <button
+              type="button"
+              onclick="portalApp.closeContactsModal()"
+              class="p-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/15 transition-colors cursor-pointer"
+              title="Close contacts table (Esc)"
+            >
+              <i data-lucide="x" class="w-5 h-5 sm:w-6 sm:h-6"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Full-Screen Table Body -->
+        <div class="flex-1 overflow-auto bg-slate-50/70 p-3 sm:p-5">
+          <div class="bg-white rounded-xl border border-slate-200/90 shadow-sm overflow-hidden min-w-[760px]">
+            <table class="w-full border-collapse text-left">
+              <thead>
+                <tr class="bg-gradient-to-r from-slate-100 via-slate-50 to-slate-100 border-b border-slate-200 text-[11px] sm:text-xs font-black text-slate-700 uppercase tracking-wider select-none sticky top-0 z-10 shadow-2xs">
+                  <th class="py-3.5 px-4 w-12 text-center">#</th>
+                  <th class="py-3.5 px-4">Dashboard Name</th>
+                  <th class="py-3.5 px-4">Responsibility</th>
+                  <th class="py-3.5 px-4">Designation</th>
+                  <th class="py-3.5 px-4">Email</th>
+                  <th class="py-3.5 px-4">Mobile No</th>
+                  <th class="py-3.5 px-4 text-center">Extension</th>
+                </tr>
+              </thead>
+              <tbody id="contacts-table-body" class="divide-y divide-slate-100 text-xs font-medium">
+                <!-- Dynamically rendered rows from Google Sheets -->
+              </tbody>
+            </table>
+
+            <!-- No Matches Container -->
+            <div id="contacts-no-matches" class="hidden text-center py-14 px-4">
+              <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center">
+                <i data-lucide="search-x" class="w-6 h-6"></i>
+              </div>
+              <h4 class="text-sm font-bold text-slate-800">No matching contacts found</h4>
+              <p class="text-xs text-slate-500 mt-1">Try searching with a different keyword, dashboard, or name.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Full-Screen Modal Footer -->
+        <div class="px-4 sm:px-6 py-2.5 bg-white border-t border-slate-200 flex items-center justify-between text-xs text-slate-500 shrink-0">
+          <div class="flex items-center gap-2">
+            <span id="contacts-count-label" class="font-bold text-slate-800">12 Contacts</span>
+            <span class="text-slate-300">•</span>
+            <span class="text-[11px] text-slate-500 hidden sm:inline">Google Sheet Tab: Contacts (Sheet ID: 1mI5WbcNBYtJc1fQjG0ZYQ1PKQzAHp5Sm3gyi9MibW-g)</span>
           </div>
           <button
             type="button"
             onclick="portalApp.closeContactsModal()"
-            class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
-            title="Close directory"
+            class="px-4 py-1.5 rounded-lg text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer"
           >
-            <i data-lucide="x" class="w-5 h-5"></i>
-          </button>
-        </div>
-
-        <!-- Emergency Speed Dial Banner -->
-        <div class="bg-gradient-to-r from-rose-50 via-amber-50 to-orange-50 border border-rose-200/80 rounded-xl p-3 shrink-0">
-          <div class="flex items-center justify-between mb-2">
-            <div class="flex items-center gap-1.5 text-xs font-black text-rose-800 uppercase tracking-wider">
-              <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-600"></i>
-              <span>Site Emergency Speed Dial (24/7 Active)</span>
-            </div>
-            <span class="text-[10px] font-mono text-rose-600 bg-white px-2 py-0.5 rounded-full border border-rose-200 font-bold">Priority Lines</span>
-          </div>
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-            <div class="bg-white p-2 rounded-lg border border-rose-200/70 shadow-2xs flex flex-col justify-between">
-              <span class="text-[10px] font-bold text-slate-500 uppercase">Fire &amp; Emergency</span>
-              <div class="flex items-center justify-between mt-1">
-                <strong class="font-mono text-xs sm:text-sm text-rose-700 font-black">Ext 1122 / 2222</strong>
-                <button type="button" onclick="portalApp.copyContactInfo('Ext 1122 / 2222 (+92-21-34720022)', this)" class="p-1 hover:bg-rose-50 rounded text-rose-600 transition-colors cursor-pointer" title="Copy"><i data-lucide="copy" class="w-3 h-3"></i></button>
-              </div>
-            </div>
-            <div class="bg-white p-2 rounded-lg border border-amber-200/70 shadow-2xs flex flex-col justify-between">
-              <span class="text-[10px] font-bold text-slate-500 uppercase">Medical Center</span>
-              <div class="flex items-center justify-between mt-1">
-                <strong class="font-mono text-xs sm:text-sm text-amber-700 font-black">Ext 3333</strong>
-                <button type="button" onclick="portalApp.copyContactInfo('Ext 3333 (+92-21-34720033)', this)" class="p-1 hover:bg-amber-50 rounded text-amber-600 transition-colors cursor-pointer" title="Copy"><i data-lucide="copy" class="w-3 h-3"></i></button>
-              </div>
-            </div>
-            <div class="bg-white p-2 rounded-lg border border-blue-200/70 shadow-2xs flex flex-col justify-between">
-              <span class="text-[10px] font-bold text-slate-500 uppercase">Security Main Gate</span>
-              <div class="flex items-center justify-between mt-1">
-                <strong class="font-mono text-xs sm:text-sm text-blue-700 font-black">Ext 4444 / 4445</strong>
-                <button type="button" onclick="portalApp.copyContactInfo('Ext 4444 / 4445 (+92-21-34720044)', this)" class="p-1 hover:bg-blue-50 rounded text-blue-600 transition-colors cursor-pointer" title="Copy"><i data-lucide="copy" class="w-3 h-3"></i></button>
-              </div>
-            </div>
-            <div class="bg-white p-2 rounded-lg border border-emerald-200/70 shadow-2xs flex flex-col justify-between">
-              <span class="text-[10px] font-bold text-slate-500 uppercase">Control Room (CCR)</span>
-              <div class="flex items-center justify-between mt-1">
-                <strong class="font-mono text-xs sm:text-sm text-emerald-700 font-black">Ext 2100</strong>
-                <button type="button" onclick="portalApp.copyContactInfo('Ext 2100 (+92-21-34720010)', this)" class="p-1 hover:bg-emerald-50 rounded text-emerald-600 transition-colors cursor-pointer" title="Copy"><i data-lucide="copy" class="w-3 h-3"></i></button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Filter Search Bar -->
-        <div class="relative shrink-0">
-          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-            <i data-lucide="search" class="w-4 h-4"></i>
-          </div>
-          <input
-            id="contacts-modal-search"
-            type="text"
-            placeholder="Search contacts by department, role, name, or extension..."
-            class="w-full pl-9 pr-4 py-2 bg-slate-50 hover:bg-white focus:bg-white border border-slate-300 rounded-xl text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-all shadow-2xs"
-            oninput="portalApp.filterContactsModal(this.value)"
-          />
-        </div>
-
-        <!-- Contact Cards List (Scrollable) -->
-        <div class="overflow-y-auto flex-1 pr-1 space-y-4 text-xs">
-          <!-- 1. Operations & Control Room -->
-          <div class="contact-directory-card space-y-2" data-search-text="operations shift engineer ccr central control room cash psg water treatment boiler turbine 2101 2100 2110 2120 2130">
-            <div class="flex items-center gap-2 pb-1 border-b border-slate-100">
-              <span class="p-1 rounded-md bg-blue-50 text-blue-600"><i data-lucide="zap" class="w-3.5 h-3.5"></i></span>
-              <h4 class="font-bold text-slate-800 text-xs uppercase tracking-wide">Operations &amp; Central Control Room</h4>
-              <span class="text-[10px] text-slate-400 ml-auto font-mono">5 Desk Units</span>
-            </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-              <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-blue-200 transition-all shadow-2xs">
-                <div class="text-[11px] font-bold text-slate-800">Shift Operations Incharge (Shift Engineer)</div>
-                <div class="text-[10px] text-slate-500">24/7 Plant Operational Control</div>
-                <div class="mt-2 flex items-center justify-between font-mono">
-                  <span class="px-2 py-0.5 rounded bg-blue-100 text-blue-800 font-bold text-[11px]">Ext: 2101</span>
-                  <button type="button" onclick="portalApp.copyContactInfo('Ext: 2101', this)" class="text-slate-500 hover:text-blue-600 text-[10px] font-sans flex items-center gap-1 cursor-pointer"><i data-lucide="copy" class="w-3 h-3"></i> Copy</button>
-                </div>
-              </div>
-              <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-blue-200 transition-all shadow-2xs">
-                <div class="text-[11px] font-bold text-slate-800">Central Control Room (CCR) Main Desk</div>
-                <div class="text-[10px] text-slate-500">DCS Operators &amp; Grid Dispatch</div>
-                <div class="mt-2 flex items-center justify-between font-mono">
-                  <span class="px-2 py-0.5 rounded bg-blue-100 text-blue-800 font-bold text-[11px]">Ext: 2100</span>
-                  <button type="button" onclick="portalApp.copyContactInfo('Ext: 2100', this)" class="text-slate-500 hover:text-blue-600 text-[10px] font-sans flex items-center gap-1 cursor-pointer"><i data-lucide="copy" class="w-3 h-3"></i> Copy</button>
-                </div>
-              </div>
-              <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-blue-200 transition-all shadow-2xs">
-                <div class="text-[11px] font-bold text-slate-800">Operations CASH Desk</div>
-                <div class="text-[10px] text-slate-500">Coal Unloading &amp; Ash Handling</div>
-                <div class="mt-2 flex items-center justify-between font-mono">
-                  <span class="px-2 py-0.5 rounded bg-blue-100 text-blue-800 font-bold text-[11px]">Ext: 2110</span>
-                  <button type="button" onclick="portalApp.copyContactInfo('Ext: 2110', this)" class="text-slate-500 hover:text-blue-600 text-[10px] font-sans flex items-center gap-1 cursor-pointer"><i data-lucide="copy" class="w-3 h-3"></i> Copy</button>
-                </div>
-              </div>
-              <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-blue-200 transition-all shadow-2xs">
-                <div class="text-[11px] font-bold text-slate-800">Operations PSG Desk</div>
-                <div class="text-[10px] text-slate-500">Power &amp; Steam Generation Units</div>
-                <div class="mt-2 flex items-center justify-between font-mono">
-                  <span class="px-2 py-0.5 rounded bg-blue-100 text-blue-800 font-bold text-[11px]">Ext: 2120</span>
-                  <button type="button" onclick="portalApp.copyContactInfo('Ext: 2120', this)" class="text-slate-500 hover:text-blue-600 text-[10px] font-sans flex items-center gap-1 cursor-pointer"><i data-lucide="copy" class="w-3 h-3"></i> Copy</button>
-                </div>
-              </div>
-              <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-blue-200 transition-all shadow-2xs">
-                <div class="text-[11px] font-bold text-slate-800">Water Treatment Plant (WTP)</div>
-                <div class="text-[10px] text-slate-500">Demineralization &amp; Water Chemistry</div>
-                <div class="mt-2 flex items-center justify-between font-mono">
-                  <span class="px-2 py-0.5 rounded bg-blue-100 text-blue-800 font-bold text-[11px]">Ext: 2130</span>
-                  <button type="button" onclick="portalApp.copyContactInfo('Ext: 2130', this)" class="text-slate-500 hover:text-blue-600 text-[10px] font-sans flex items-center gap-1 cursor-pointer"><i data-lucide="copy" class="w-3 h-3"></i> Copy</button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 2. Technical Services & Maintenance -->
-          <div class="contact-directory-card space-y-2" data-search-text="maintenance technical services mechanical e&i electrical instrumentation pte inspection reliability workshop 2201 2202 2203 2204 2205">
-            <div class="flex items-center gap-2 pb-1 border-b border-slate-100">
-              <span class="p-1 rounded-md bg-amber-50 text-amber-600"><i data-lucide="wrench" class="w-3.5 h-3.5"></i></span>
-              <h4 class="font-bold text-slate-800 text-xs uppercase tracking-wide">Maintenance &amp; Technical Services</h4>
-              <span class="text-[10px] text-slate-400 ml-auto font-mono">5 Desk Units</span>
-            </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-              <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-amber-200 transition-all shadow-2xs">
-                <div class="text-[11px] font-bold text-slate-800">Mechanical Maintenance Lead</div>
-                <div class="text-[10px] text-slate-500">Turbine, Boiler &amp; Rotating Machinery</div>
-                <div class="mt-2 flex items-center justify-between font-mono">
-                  <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-800 font-bold text-[11px]">Ext: 2201</span>
-                  <button type="button" onclick="portalApp.copyContactInfo('Ext: 2201', this)" class="text-slate-500 hover:text-amber-600 text-[10px] font-sans flex items-center gap-1 cursor-pointer"><i data-lucide="copy" class="w-3 h-3"></i> Copy</button>
-                </div>
-              </div>
-              <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-amber-200 transition-all shadow-2xs">
-                <div class="text-[11px] font-bold text-slate-800">Electrical &amp; Instrumentation (E&amp;I) Lead</div>
-                <div class="text-[10px] text-slate-500">DCS, Switchyard, Substation &amp; Sensors</div>
-                <div class="mt-2 flex items-center justify-between font-mono">
-                  <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-800 font-bold text-[11px]">Ext: 2202</span>
-                  <button type="button" onclick="portalApp.copyContactInfo('Ext: 2202', this)" class="text-slate-500 hover:text-amber-600 text-[10px] font-sans flex items-center gap-1 cursor-pointer"><i data-lucide="copy" class="w-3 h-3"></i> Copy</button>
-                </div>
-              </div>
-              <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-amber-200 transition-all shadow-2xs">
-                <div class="text-[11px] font-bold text-slate-800">Inspection &amp; Reliability Unit</div>
-                <div class="text-[10px] text-slate-500">NDT, Vibration Analysis &amp; Asset Integrity</div>
-                <div class="mt-2 flex items-center justify-between font-mono">
-                  <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-800 font-bold text-[11px]">Ext: 2203</span>
-                  <button type="button" onclick="portalApp.copyContactInfo('Ext: 2203', this)" class="text-slate-500 hover:text-amber-600 text-[10px] font-sans flex items-center gap-1 cursor-pointer"><i data-lucide="copy" class="w-3 h-3"></i> Copy</button>
-                </div>
-              </div>
-              <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-amber-200 transition-all shadow-2xs">
-                <div class="text-[11px] font-bold text-slate-800">Plant Technical Evaluation (PTE)</div>
-                <div class="text-[10px] text-slate-500">Process Engineering &amp; Modifications</div>
-                <div class="mt-2 flex items-center justify-between font-mono">
-                  <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-800 font-bold text-[11px]">Ext: 2204</span>
-                  <button type="button" onclick="portalApp.copyContactInfo('Ext: 2204', this)" class="text-slate-500 hover:text-amber-600 text-[10px] font-sans flex items-center gap-1 cursor-pointer"><i data-lucide="copy" class="w-3 h-3"></i> Copy</button>
-                </div>
-              </div>
-              <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-amber-200 transition-all shadow-2xs">
-                <div class="text-[11px] font-bold text-slate-800">Maintenance Planning &amp; Workshop</div>
-                <div class="text-[10px] text-slate-500">Work Orders, Spares &amp; Overhauls</div>
-                <div class="mt-2 flex items-center justify-between font-mono">
-                  <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-800 font-bold text-[11px]">Ext: 2205</span>
-                  <button type="button" onclick="portalApp.copyContactInfo('Ext: 2205', this)" class="text-slate-500 hover:text-amber-600 text-[10px] font-sans flex items-center gap-1 cursor-pointer"><i data-lucide="copy" class="w-3 h-3"></i> Copy</button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 3. HSEQ & Compliance -->
-          <div class="contact-directory-card space-y-2" data-search-text="hseq compliance health safety environment quality psm process safety audit pssr 2301 2302 2303 2304 2305">
-            <div class="flex items-center gap-2 pb-1 border-b border-slate-100">
-              <span class="p-1 rounded-md bg-emerald-50 text-emerald-600"><i data-lucide="shield-check" class="w-3.5 h-3.5"></i></span>
-              <h4 class="font-bold text-slate-800 text-xs uppercase tracking-wide">HSEQ &amp; Process Safety Management</h4>
-              <span class="text-[10px] text-slate-400 ml-auto font-mono">5 Desk Units</span>
-            </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-              <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-emerald-200 transition-all shadow-2xs">
-                <div class="text-[11px] font-bold text-slate-800">Head of HSEQ Department</div>
-                <div class="text-[10px] text-slate-500">Corporate Safety &amp; Environmental Policy</div>
-                <div class="mt-2 flex items-center justify-between font-mono">
-                  <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold text-[11px]">Ext: 2301</span>
-                  <button type="button" onclick="portalApp.copyContactInfo('Ext: 2301', this)" class="text-slate-500 hover:text-emerald-600 text-[10px] font-sans flex items-center gap-1 cursor-pointer"><i data-lucide="copy" class="w-3 h-3"></i> Copy</button>
-                </div>
-              </div>
-              <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-emerald-200 transition-all shadow-2xs">
-                <div class="text-[11px] font-bold text-slate-800">Process Safety Management (PSM) Lead</div>
-                <div class="text-[10px] text-slate-500">PHA, MOC, PSSR &amp; 14 PSM Elements</div>
-                <div class="mt-2 flex items-center justify-between font-mono">
-                  <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold text-[11px]">Ext: 2303</span>
-                  <button type="button" onclick="portalApp.copyContactInfo('Ext: 2303', this)" class="text-slate-500 hover:text-emerald-600 text-[10px] font-sans flex items-center gap-1 cursor-pointer"><i data-lucide="copy" class="w-3 h-3"></i> Copy</button>
-                </div>
-              </div>
-              <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-emerald-200 transition-all shadow-2xs">
-                <div class="text-[11px] font-bold text-slate-800">Occupational Safety Specialist</div>
-                <div class="text-[10px] text-slate-500">Permit to Work (PTW) &amp; Field Audits</div>
-                <div class="mt-2 flex items-center justify-between font-mono">
-                  <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold text-[11px]">Ext: 2302</span>
-                  <button type="button" onclick="portalApp.copyContactInfo('Ext: 2302', this)" class="text-slate-500 hover:text-emerald-600 text-[10px] font-sans flex items-center gap-1 cursor-pointer"><i data-lucide="copy" class="w-3 h-3"></i> Copy</button>
-                </div>
-              </div>
-              <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-emerald-200 transition-all shadow-2xs">
-                <div class="text-[11px] font-bold text-slate-800">Environmental Compliance Specialist</div>
-                <div class="text-[10px] text-slate-500">Stack Emissions, Effluent &amp; EPA Reports</div>
-                <div class="mt-2 flex items-center justify-between font-mono">
-                  <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold text-[11px]">Ext: 2304</span>
-                  <button type="button" onclick="portalApp.copyContactInfo('Ext: 2304', this)" class="text-slate-500 hover:text-emerald-600 text-[10px] font-sans flex items-center gap-1 cursor-pointer"><i data-lucide="copy" class="w-3 h-3"></i> Copy</button>
-                </div>
-              </div>
-              <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-emerald-200 transition-all shadow-2xs">
-                <div class="text-[11px] font-bold text-slate-800">IMS Audit &amp; Documentation Coordinator</div>
-                <div class="text-[10px] text-slate-500">ISO 9001 / 14001 / 45001 Compliance</div>
-                <div class="mt-2 flex items-center justify-between font-mono">
-                  <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold text-[11px]">Ext: 2305</span>
-                  <button type="button" onclick="portalApp.copyContactInfo('Ext: 2305', this)" class="text-slate-500 hover:text-emerald-600 text-[10px] font-sans flex items-center gap-1 cursor-pointer"><i data-lucide="copy" class="w-3 h-3"></i> Copy</button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 4. Executive, Administration & ICT -->
-          <div class="contact-directory-card space-y-2" data-search-text="executive administration it ict helpdesk sap hr general manager coo supply chain store 1001 1002 1111 1201 1301">
-            <div class="flex items-center gap-2 pb-1 border-b border-slate-100">
-              <span class="p-1 rounded-md bg-purple-50 text-purple-600"><i data-lucide="building-2" class="w-3.5 h-3.5"></i></span>
-              <h4 class="font-bold text-slate-800 text-xs uppercase tracking-wide">Executive, Administration &amp; ICT</h4>
-              <span class="text-[10px] text-slate-400 ml-auto font-mono">5 Desk Units</span>
-            </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-              <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-purple-200 transition-all shadow-2xs">
-                <div class="text-[11px] font-bold text-slate-800">General Manager / Plant Incharge</div>
-                <div class="text-[10px] text-slate-500">Executive Site Management</div>
-                <div class="mt-2 flex items-center justify-between font-mono">
-                  <span class="px-2 py-0.5 rounded bg-purple-100 text-purple-800 font-bold text-[11px]">Ext: 1001</span>
-                  <button type="button" onclick="portalApp.copyContactInfo('Ext: 1001', this)" class="text-slate-500 hover:text-purple-600 text-[10px] font-sans flex items-center gap-1 cursor-pointer"><i data-lucide="copy" class="w-3 h-3"></i> Copy</button>
-                </div>
-              </div>
-              <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-purple-200 transition-all shadow-2xs">
-                <div class="text-[11px] font-bold text-slate-800">COO Executive Office</div>
-                <div class="text-[10px] text-slate-500">Corporate Operations Office</div>
-                <div class="mt-2 flex items-center justify-between font-mono">
-                  <span class="px-2 py-0.5 rounded bg-purple-100 text-purple-800 font-bold text-[11px]">Ext: 1002</span>
-                  <button type="button" onclick="portalApp.copyContactInfo('Ext: 1002', this)" class="text-slate-500 hover:text-purple-600 text-[10px] font-sans flex items-center gap-1 cursor-pointer"><i data-lucide="copy" class="w-3 h-3"></i> Copy</button>
-                </div>
-              </div>
-              <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-purple-200 transition-all shadow-2xs">
-                <div class="text-[11px] font-bold text-slate-800">ICT Helpdesk &amp; SAP Support</div>
-                <div class="text-[10px] text-slate-500">Network, Email, SAP &amp; Systems</div>
-                <div class="mt-2 flex items-center justify-between font-mono">
-                  <span class="px-2 py-0.5 rounded bg-purple-100 text-purple-800 font-bold text-[11px]">Ext: 1111</span>
-                  <button type="button" onclick="portalApp.copyContactInfo('Ext: 1111 (helpdesk@fpcl.com)', this)" class="text-slate-500 hover:text-purple-600 text-[10px] font-sans flex items-center gap-1 cursor-pointer"><i data-lucide="copy" class="w-3 h-3"></i> Copy</button>
-                </div>
-              </div>
-              <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-purple-200 transition-all shadow-2xs">
-                <div class="text-[11px] font-bold text-slate-800">HR &amp; General Administration</div>
-                <div class="text-[10px] text-slate-500">Personnel, Transport &amp; Camp Services</div>
-                <div class="mt-2 flex items-center justify-between font-mono">
-                  <span class="px-2 py-0.5 rounded bg-purple-100 text-purple-800 font-bold text-[11px]">Ext: 1201</span>
-                  <button type="button" onclick="portalApp.copyContactInfo('Ext: 1201', this)" class="text-slate-500 hover:text-purple-600 text-[10px] font-sans flex items-center gap-1 cursor-pointer"><i data-lucide="copy" class="w-3 h-3"></i> Copy</button>
-                </div>
-              </div>
-              <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-purple-200 transition-all shadow-2xs">
-                <div class="text-[11px] font-bold text-slate-800">Supply Chain &amp; Central Stores</div>
-                <div class="text-[10px] text-slate-500">Material Procurement &amp; Inventory</div>
-                <div class="mt-2 flex items-center justify-between font-mono">
-                  <span class="px-2 py-0.5 rounded bg-purple-100 text-purple-800 font-bold text-[11px]">Ext: 1301</span>
-                  <button type="button" onclick="portalApp.copyContactInfo('Ext: 1301', this)" class="text-slate-500 hover:text-purple-600 text-[10px] font-sans flex items-center gap-1 cursor-pointer"><i data-lucide="copy" class="w-3 h-3"></i> Copy</button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div id="contacts-no-matches" class="hidden text-center py-8 text-slate-400">
-            <i data-lucide="search-x" class="w-8 h-8 mx-auto mb-2 text-slate-300"></i>
-            <div class="font-bold text-slate-600">No matching contacts found</div>
-            <p class="text-[11px] text-slate-400 mt-0.5">Try searching with a different name, department, role, or extension.</p>
-          </div>
-        </div>
-
-        <!-- Footer -->
-        <div class="flex items-center justify-between pt-3 border-t border-slate-200 text-xs shrink-0">
-          <span class="text-slate-500 text-[11px] font-mono">FPCL Internal PBX Extension Directory</span>
-          <button
-            type="button"
-            onclick="portalApp.closeContactsModal()"
-            class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors cursor-pointer"
-          >
-            Close Directory
+            Close
           </button>
         </div>
       </div>
@@ -2683,7 +2486,7 @@
               <i data-lucide="shield-check" class="w-5 h-5"></i>
             </span>
             <div>
-              <h3 class="text-sm sm:text-base font-bold text-[#1E293B]">FPCL Department Responsibility &amp; Governance Matrix</h3>
+              <h3 class="text-sm sm:text-base font-bold text-[#1E293B]">FPCL Directory &amp; Governance Matrix</h3>
               <p class="text-[11px] sm:text-xs text-slate-500">Operational Scopes, Action Ownership &amp; Oversight Committee Mandates</p>
             </div>
           </div>
@@ -3533,6 +3336,8 @@
       window.FPCL_PLR_SUITE = portalApp;
       Object.assign(portalApp, {
         init() {
+          if (this._initialized) return;
+          this._initialized = true;
           try {
             document.documentElement.style.zoom = '75%';
           } catch (e) {}
@@ -5104,53 +4909,14 @@
           const maxVal = Math.max(...primaryItems.map(i => i.total), 10);
           const yMax = maxVal > 300 ? Math.ceil((maxVal * 1.34) / 50) * 50 : Math.max(20, Math.ceil((maxVal * 1.36) / 10) * 10);
 
-          // Gradients definition for Total (Blue), Closed/Validation Passed (Green), and Open/Pending (Amber/Orange)
-          const defsGradients = `
-            <linearGradient id="cmp-col-total" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stop-color="#3B82F6"/>
-              <stop offset="100%" stop-color="#1D4ED8"/>
-            </linearGradient>
-            <linearGradient id="cmp-col-closed" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stop-color="#10B981"/>
-              <stop offset="100%" stop-color="#059669"/>
-            </linearGradient>
-            <linearGradient id="cmp-col-open" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stop-color="#FB923C"/>
-              <stop offset="100%" stop-color="#EA580C"/>
-            </linearGradient>
-            <linearGradient id="cmp-col-passed" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stop-color="#10B981"/>
-              <stop offset="100%" stop-color="#059669"/>
-            </linearGradient>
-            <linearGradient id="cmp-col-pending" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stop-color="#FB923C"/>
-              <stop offset="100%" stop-color="#EA580C"/>
-            </linearGradient>
-            <!-- Backward compatibility aliases -->
-            <linearGradient id="cmp-bar-total" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stop-color="#3B82F6"/>
-              <stop offset="100%" stop-color="#1D4ED8"/>
-            </linearGradient>
-            <linearGradient id="cmp-bar-closed" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stop-color="#10B981"/>
-              <stop offset="100%" stop-color="#059669"/>
-            </linearGradient>
-            <linearGradient id="cmp-bar-open" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stop-color="#FB923C"/>
-              <stop offset="100%" stop-color="#EA580C"/>
-            </linearGradient>
-            <linearGradient id="cmp-bar-passed" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stop-color="#10B981"/>
-              <stop offset="100%" stop-color="#059669"/>
-            </linearGradient>
-            <linearGradient id="cmp-bar-pending" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stop-color="#FB923C"/>
-              <stop offset="100%" stop-color="#EA580C"/>
-            </linearGradient>
-            <filter id="colShadow" x="-10%" y="-10%" width="120%" height="120%">
-              <feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.16"/>
-            </filter>
-          `;
+          // Flat, solid colors only (no gradients, no shadows, no glossy effects):
+          // Closed/Validation Passed = solid green #0B8A5A
+          // Open/Pending = solid red #DC2626
+          // Total = solid blue #1D4ED8, with navy #1E3A8A for text
+          const COLOR_CLOSED = '#0B8A5A';
+          const COLOR_OPEN = '#DC2626';
+          const COLOR_TOTAL = '#1D4ED8';
+          const COLOR_NAVY = '#1E3A8A';
 
           // Number grid lines dynamically calculated (Primary Y-Axis: Action counts)
           const stepDelta = yMax <= 30 ? 5 : (yMax <= 80 ? 10 : (yMax <= 200 ? 25 : (yMax <= 400 ? 50 : 100)));
@@ -5160,10 +4926,11 @@
           }
           if (gridSteps[gridSteps.length - 1] < yMax) gridSteps.push(yMax);
 
+          // Light grey dashed horizontal gridlines on a plain white background
           const gridSvg = gridSteps.map(v => {
             const yPos = pad.top + plotH - (v / yMax) * plotH;
             return `
-              <line x1="${pad.left}" y1="${yPos}" x2="${width - pad.right}" y2="${yPos}" stroke="#E2E8F0" stroke-width="1.5" stroke-dasharray="4 4"/>
+              <line x1="${pad.left}" y1="${yPos}" x2="${width - pad.right}" y2="${yPos}" stroke="#E2E8F0" stroke-width="1.2" stroke-dasharray="4 4"/>
               <text x="${pad.left - 12}" y="${yPos + 4.5}" fill="#64748B" font-size="12" font-family="'Plus Jakarta Sans', monospace, sans-serif" font-weight="bold" text-anchor="end">${v}</text>
             `;
           }).join('');
@@ -5185,6 +4952,9 @@
             let itemPassedPersonnel = 0;
             let itemPendingPersonnel = 0;
 
+            let closedPct = 0;
+            let openPct = 0;
+
             if (isVal) {
               // Plotted on Secondary Y-Axis in Percentage (0% - 100%)
               itemTotalPersonnel = item.totalPersonnel || valTotal || 0;
@@ -5194,6 +4964,9 @@
               itemPassedPct = itemTotalPersonnel > 0 ? (itemPassedPersonnel / itemTotalPersonnel) * 100 : 0;
               itemPendingPct = itemTotalPersonnel > 0 ? (itemPendingPersonnel / itemTotalPersonnel) * 100 : 0;
 
+              closedPct = itemPassedPct;
+              openPct = itemPendingPct;
+
               closedH = (itemPassedPct / 100) * plotH;
               openH = (itemPendingPct / 100) * plotH;
               totalH = closedH + openH;
@@ -5202,6 +4975,10 @@
               closedH = yMax > 0 ? (closedVal / yMax) * plotH : 0;
               openH = yMax > 0 ? (openVal / yMax) * plotH : 0;
               totalH = closedH + openH;
+
+              const sum = closedVal + openVal;
+              closedPct = sum > 0 ? (closedVal / sum) * 100 : 0;
+              openPct = sum > 0 ? (openVal / sum) * 100 : 0;
             }
 
             const slotX = pad.left + (i * slotW);
@@ -5211,144 +4988,98 @@
             const yClosed = baseY - closedH;
             const yOpen = baseY - totalH;
 
-            const closedFill = isVal ? 'url(#cmp-col-passed)' : 'url(#cmp-col-closed)';
-            const openFill = isVal ? 'url(#cmp-col-pending)' : 'url(#cmp-col-open)';
-
             const displayLabel = item.code;
 
-            // Metric Callout Badge Geometry
-            const badgeW = isVal ? 76 : 64;
-            const badgeH = 43;
+            // White rounded tooltip geometry with blue top border
+            const badgeW = isVal ? 82 : 72;
+            const badgeH = 46;
             const badgeX = centerX - (badgeW / 2);
             const hasData = isVal ? (itemTotalPersonnel > 0) : (totalVal > 0);
-            const badgeY = (hasData ? Math.max(10, yOpen - badgeH - 8) : (baseY - badgeH - 9));
+            const badgeY = (hasData ? Math.max(8, yOpen - badgeH - 9) : (baseY - badgeH - 9));
 
-            const closedLabelColor = '#059669';
-            const openLabelColor = '#C2410C';
-            const totalLabelColor = hasData ? '#1D4ED8' : '#64748B';
-            const badgeBg = hasData ? '#FFFFFF' : '#F8FAFC';
-            const badgeBorder = hasData ? '#CBD5E1' : '#E2E8F0';
-            const subOpenColor = hasData ? openLabelColor : '#94A3B8';
-            const subClosedColor = hasData ? closedLabelColor : '#94A3B8';
-
-            let kpiBadgeSvg = '';
+            // Tooltip markup: White rounded tooltip with a blue top border showing Total (navy), Open (red), and Closed (green)
+            let tooltipContent = '';
             if (isVal) {
-              const passedRateStr = itemPassedPct.toFixed(1) + '%';
-              const pendingRateStr = itemPendingPct.toFixed(1) + '%';
+              const totalCount = itemTotalPersonnel;
+              const pendingCount = itemPendingPersonnel;
+              const passedCount = itemPassedPersonnel;
 
-              let line1 = `Passed: ${passedRateStr}`;
-              let line1Color = '#059669';
-              let line2 = `Total: ${itemTotalPersonnel} Pers.`;
-              let line2Color = '#1D4ED8';
-              let line3 = `Passed: ${itemPassedPersonnel}`;
-              let line3Color = '#059669';
-
-              if (openCloseFilter === 'open') {
-                line1 = `Pending: ${pendingRateStr}`;
-                line1Color = '#C2410C';
-                line2 = `Total: ${itemTotalPersonnel} Pers.`;
-                line2Color = '#1D4ED8';
-                line3 = `Pending: ${itemPendingPersonnel}`;
-                line3Color = '#EA580C';
-              } else if (openCloseFilter === 'close') {
-                line1 = `Passed: ${passedRateStr}`;
-                line1Color = '#059669';
-                line2 = `Total: ${itemTotalPersonnel} Pers.`;
-                line2Color = '#1D4ED8';
-                line3 = `Passed: ${itemPassedPersonnel}`;
-                line3Color = '#059669';
-              } else {
-                if (itemPendingPersonnel > 0) {
-                  line1 = `Passed: ${passedRateStr}`;
-                  line1Color = '#059669';
-                  line2 = `Passed: ${itemPassedPersonnel} / ${itemTotalPersonnel}`;
-                  line2Color = '#1D4ED8';
-                  line3 = `Pending: ${itemPendingPersonnel} (${pendingRateStr})`;
-                  line3Color = '#EA580C';
-                } else {
-                  line1 = `Passed: ${passedRateStr}`;
-                  line1Color = '#059669';
-                  line2 = `Total: ${itemTotalPersonnel} Pers.`;
-                  line2Color = '#1D4ED8';
-                  line3 = `Passed: ${itemPassedPersonnel}`;
-                  line3Color = '#059669';
-                }
-              }
-
-              kpiBadgeSvg = `
-                <!-- Professional KPI Callout Badge (PSM Validation on Secondary Axis in %) -->
-                <g class="transition-transform duration-200 group-hover:-translate-y-0.5" pointer-events="none">
-                  <rect x="${badgeX}" y="${badgeY}" width="${badgeW}" height="${badgeH}" rx="6" fill="${badgeBg}" stroke="${badgeBorder}" stroke-width="${hasData ? '1.2' : '1'}" ${hasData ? 'filter="url(#colShadow)"' : ''} class="transition-colors group-hover:stroke-emerald-500"/>
-                  <!-- Top accent bar in gradient blue representing Total -->
-                  <rect x="${badgeX + 1}" y="${badgeY + 1}" width="${badgeW - 2}" height="2.5" rx="1.2" fill="url(#cmp-col-total)"/>
-                  <!-- Callout pointer arrow -->
-                  <polygon points="${centerX - 4},${badgeY + badgeH} ${centerX + 4},${badgeY + badgeH} ${centerX},${badgeY + badgeH + 4}" fill="${badgeBg}" stroke="${badgeBorder}" stroke-width="1"/>
-                  <line x1="${centerX - 3.2}" y1="${badgeY + badgeH}" x2="${centerX + 3.2}" y2="${badgeY + badgeH}" stroke="${badgeBg}" stroke-width="1.5"/>
-                  <!-- Validation Rate (%) -->
-                  <text x="${centerX}" y="${badgeY + 12.5}" fill="${line1Color}" font-size="10" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="900" text-anchor="middle">${line1}</text>
-                  <!-- Total / Ratio -->
-                  <text x="${centerX}" y="${badgeY + 24.5}" fill="${line2Color}" font-size="9" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" text-anchor="middle">${line2}</text>
-                  <!-- Count / Pending -->
-                  <text x="${centerX}" y="${badgeY + 36.5}" fill="${line3Color}" font-size="8.8" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" text-anchor="middle">${line3}</text>
-                </g>
+              tooltipContent = `
+                <!-- Total (navy #1E3A8A) -->
+                <text x="${centerX}" y="${badgeY + 14}" fill="${COLOR_NAVY}" font-size="10" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="900" text-anchor="middle">Total: ${totalCount} Pers.</text>
+                <!-- Open (red #DC2626) -->
+                <text x="${centerX}" y="${badgeY + 26}" fill="${COLOR_OPEN}" font-size="9.5" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" text-anchor="middle">Open: ${pendingCount}</text>
+                <!-- Closed (green #0B8A5A) -->
+                <text x="${centerX}" y="${badgeY + 38}" fill="${COLOR_CLOSED}" font-size="9.5" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" text-anchor="middle">Closed: ${passedCount}</text>
               `;
             } else {
-              kpiBadgeSvg = `
-                <!-- Professional KPI Callout Badge (Total: Blue, Open: Orange, Closed: Green) Above Bar -->
-                <g class="transition-transform duration-200 group-hover:-translate-y-0.5" pointer-events="none">
-                  <rect x="${badgeX}" y="${badgeY}" width="${badgeW}" height="${badgeH}" rx="6" fill="${badgeBg}" stroke="${badgeBorder}" stroke-width="${hasData ? '1.2' : '1'}" ${hasData ? 'filter="url(#colShadow)"' : ''} class="transition-colors group-hover:stroke-blue-500"/>
-                  <!-- Top accent bar in gradient blue representing Total -->
-                  <rect x="${badgeX + 1}" y="${badgeY + 1}" width="${badgeW - 2}" height="2.5" rx="1.2" fill="url(#cmp-col-total)"/>
-                  <!-- Callout pointer arrow -->
-                  <polygon points="${centerX - 4},${badgeY + badgeH} ${centerX + 4},${badgeY + badgeH} ${centerX},${badgeY + badgeH + 4}" fill="${badgeBg}" stroke="${badgeBorder}" stroke-width="1"/>
-                  <line x1="${centerX - 3.2}" y1="${badgeY + badgeH}" x2="${centerX + 3.2}" y2="${badgeY + badgeH}" stroke="${badgeBg}" stroke-width="1.5"/>
-                  <!-- Total KPI Value (Gradient Blue) -->
-                  <text x="${centerX}" y="${badgeY + 12.5}" fill="${totalLabelColor}" font-size="10.5" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="900" text-anchor="middle">Total: ${totalVal}</text>
-                  <!-- Open KPI Value (Gradient Amber/Orange) -->
-                  <text x="${centerX}" y="${badgeY + 25}" fill="${subOpenColor}" font-size="9.5" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" text-anchor="middle">Open: ${openVal}</text>
-                  <!-- Closed KPI Value (Gradient Green) -->
-                  <text x="${centerX}" y="${badgeY + 36.5}" fill="${subClosedColor}" font-size="9.5" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" text-anchor="middle">Closed: ${closedVal}</text>
-                </g>
+              tooltipContent = `
+                <!-- Total (navy #1E3A8A) -->
+                <text x="${centerX}" y="${badgeY + 14}" fill="${COLOR_NAVY}" font-size="10.5" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="900" text-anchor="middle">Total: ${totalVal}</text>
+                <!-- Open (red #DC2626) -->
+                <text x="${centerX}" y="${badgeY + 26}" fill="${COLOR_OPEN}" font-size="9.5" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" text-anchor="middle">Open: ${openVal}</text>
+                <!-- Closed (green #0B8A5A) -->
+                <text x="${centerX}" y="${badgeY + 38}" fill="${COLOR_CLOSED}" font-size="9.5" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" text-anchor="middle">Closed: ${closedVal}</text>
               `;
             }
 
-            let columnContent = '';
+            const kpiBadgeSvg = `
+              <!-- White rounded tooltip with a blue top border showing Total (navy), Open (red), and Closed (green) -->
+              <g class="transition-transform duration-200 group-hover:-translate-y-0.5" pointer-events="none">
+                <!-- White rounded background with subtle border -->
+                <rect x="${badgeX}" y="${badgeY}" width="${badgeW}" height="${badgeH}" rx="6" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1"/>
+                <!-- Solid blue top border (#1D4ED8) -->
+                <path d="M ${badgeX + 2},${badgeY} H ${badgeX + badgeW - 2}" stroke="${COLOR_TOTAL}" stroke-width="3" stroke-linecap="round"/>
+                <!-- Bottom callout pointer arrow -->
+                <polygon points="${centerX - 4},${badgeY + badgeH} ${centerX + 4},${badgeY + badgeH} ${centerX},${badgeY + badgeH + 4}" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1"/>
+                <line x1="${centerX - 3.2}" y1="${badgeY + badgeH}" x2="${centerX + 3.2}" y2="${badgeY + badgeH}" stroke="#FFFFFF" stroke-width="1.5"/>
+                ${tooltipContent}
+              </g>
+            `;
 
-            if (totalVal === 0) {
-              // Subtle zero indicator at baseline with KPI badge above
+            let columnContent = '';
+            const cornerR = 4;
+
+            if (totalVal === 0 && (!isVal || itemTotalPersonnel === 0)) {
+              // Subtle flat zero indicator at baseline with tooltip above
               columnContent = `
-                <rect x="${colX + colW * 0.15}" y="${baseY - 3}" width="${colW * 0.7}" height="3" rx="1.5" fill="#CBD5E1"/>
+                <rect x="${colX + colW * 0.15}" y="${baseY - 2}" width="${colW * 0.7}" height="2" fill="#E2E8F0"/>
                 ${kpiBadgeSvg}
               `;
             } else {
-              // Stacked Column Construction
+              // Stacked column: Green (closed) at the bottom, red (open) on top, with slightly rounded top corners
               if (closedH > 0 && openH > 0) {
-                // Dual Stack: Closed/Passed at bottom, Open/Pending on top
+                const r = Math.min(cornerR, openH, colW / 2);
+                // Top segment: Open (red #DC2626) with slightly rounded top corners
+                const topPath = `M ${colX},${yOpen + r} a ${r},${r} 0 0 1 ${r},-${r} h ${colW - 2 * r} a ${r},${r} 0 0 1 ${r},${r} v ${openH - r} h -${colW} z`;
+
                 columnContent = `
-                  <!-- Bottom Segment: Closed Actions / Validation Passed -->
-                  <rect x="${colX}" y="${yClosed}" width="${colW}" height="${closedH}" rx="3" fill="${closedFill}" filter="url(#colShadow)" class="transition-all group-hover:brightness-105"/>
-                  ${isVal && closedH >= 18 ? `<text x="${centerX}" y="${yClosed + closedH / 2 + 4}" fill="#FFFFFF" font-size="10" font-weight="900" text-anchor="middle" pointer-events="none" filter="drop-shadow(0 1px 2px rgba(0,0,0,0.45))">${itemPassedPct.toFixed(0)}%</text>` : ''}
-                  <!-- Segment Boundary Line -->
-                  <line x1="${colX}" y1="${yClosed}" x2="${colX + colW}" y2="${yClosed}" stroke="#FFFFFF" stroke-width="1.5" stroke-opacity="0.85"/>
-                  <!-- Top Segment: Open Actions / Validation Pending -->
-                  <rect x="${colX}" y="${yOpen}" width="${colW}" height="${openH}" rx="3" fill="${openFill}" filter="url(#colShadow)" class="transition-all group-hover:brightness-105"/>
-                  ${isVal && openH >= 18 ? `<text x="${centerX}" y="${yOpen + openH / 2 + 4}" fill="#FFFFFF" font-size="10" font-weight="900" text-anchor="middle" pointer-events="none" filter="drop-shadow(0 1px 2px rgba(0,0,0,0.45))">${itemPendingPct.toFixed(0)}%</text>` : ''}
+                  <!-- Bottom Segment: Closed / Passed (Solid Green #0B8A5A) -->
+                  <rect x="${colX}" y="${yClosed}" width="${colW}" height="${closedH}" fill="${COLOR_CLOSED}" class="transition-opacity group-hover:opacity-90"/>
+                  ${closedH >= 15 && closedPct > 0 ? `<text x="${centerX}" y="${yClosed + closedH / 2 + 4}" fill="#FFFFFF" font-size="10.5" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" text-anchor="middle" pointer-events="none">${Math.round(closedPct)}%</text>` : ''}
+                  <!-- Top Segment: Open / Pending (Solid Red #DC2626 with slightly rounded top corners) -->
+                  <path d="${topPath}" fill="${COLOR_OPEN}" class="transition-opacity group-hover:opacity-90"/>
+                  ${openH >= 15 && openPct > 0 ? `<text x="${centerX}" y="${yOpen + openH / 2 + 4}" fill="#FFFFFF" font-size="10.5" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" text-anchor="middle" pointer-events="none">${Math.round(openPct)}%</text>` : ''}
                 `;
               } else if (closedH > 0) {
-                // Only closed/passed segment
+                // Only closed segment: sits on top, so slightly rounded top corners
+                const r = Math.min(cornerR, closedH, colW / 2);
+                const path = `M ${colX},${yClosed + r} a ${r},${r} 0 0 1 ${r},-${r} h ${colW - 2 * r} a ${r},${r} 0 0 1 ${r},${r} v ${closedH - r} h -${colW} z`;
                 columnContent = `
-                  <rect x="${colX}" y="${yClosed}" width="${colW}" height="${closedH}" rx="5" fill="${closedFill}" filter="url(#colShadow)" class="transition-all group-hover:brightness-105"/>
-                  ${isVal && closedH >= 18 ? `<text x="${centerX}" y="${yClosed + closedH / 2 + 4}" fill="#FFFFFF" font-size="10.5" font-weight="900" text-anchor="middle" pointer-events="none" filter="drop-shadow(0 1px 2px rgba(0,0,0,0.45))">${itemPassedPct.toFixed(0)}%</text>` : ''}
+                  <path d="${path}" fill="${COLOR_CLOSED}" class="transition-opacity group-hover:opacity-90"/>
+                  ${closedH >= 15 && closedPct > 0 ? `<text x="${centerX}" y="${yClosed + closedH / 2 + 4}" fill="#FFFFFF" font-size="10.5" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" text-anchor="middle" pointer-events="none">${Math.round(closedPct)}%</text>` : ''}
                 `;
               } else if (openH > 0) {
-                // Only open segment
+                // Only open segment: slightly rounded top corners
+                const r = Math.min(cornerR, openH, colW / 2);
+                const path = `M ${colX},${yOpen + r} a ${r},${r} 0 0 1 ${r},-${r} h ${colW - 2 * r} a ${r},${r} 0 0 1 ${r},${r} v ${openH - r} h -${colW} z`;
                 columnContent = `
-                  <rect x="${colX}" y="${yOpen}" width="${colW}" height="${openH}" rx="5" fill="${openFill}" filter="url(#colShadow)" class="transition-all group-hover:brightness-105"/>
-                  ${isVal && openH >= 18 ? `<text x="${centerX}" y="${yOpen + openH / 2 + 4}" fill="#FFFFFF" font-size="10.5" font-weight="900" text-anchor="middle" pointer-events="none" filter="drop-shadow(0 1px 2px rgba(0,0,0,0.45))">${itemPendingPct.toFixed(0)}%</text>` : ''}
+                  <path d="${path}" fill="${COLOR_OPEN}" class="transition-opacity group-hover:opacity-90"/>
+                  ${openH >= 15 && openPct > 0 ? `<text x="${centerX}" y="${yOpen + openH / 2 + 4}" fill="#FFFFFF" font-size="10.5" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" text-anchor="middle" pointer-events="none">${Math.round(openPct)}%</text>` : ''}
                 `;
               }
 
-              // Professional KPI badge directly atop the column
+              // Tooltip badge atop the column
               columnContent += kpiBadgeSvg;
             }
 
@@ -5370,7 +5101,8 @@
 
           container.innerHTML = `
             <svg viewBox="0 0 ${width} ${height}" class="min-w-[960px] md:min-w-full w-full h-auto overflow-visible select-none">
-              <defs>${defsGradients}</defs>
+              <!-- Plain white background -->
+              <rect width="${width}" height="${height}" fill="#FFFFFF" rx="8"/>
               <!-- Baseline -->
               <line x1="${pad.left}" y1="${baseY}" x2="${width - pad.right}" y2="${baseY}" stroke="#64748B" stroke-width="2"/>
               ${gridSvg}
@@ -7769,56 +7501,60 @@
           // Populate Action Items Table
           const tbody = document.getElementById('detail-actions-tbody');
           if (tbody) {
-            if (!dashboard.actions || dashboard.actions.length === 0) {
-              tbody.innerHTML = `
-                <tr>
-                  <td colspan="6" class="py-12 text-center text-slate-400 font-medium">
-                    <div class="flex flex-col items-center justify-center gap-2">
-                      <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
-                        <i data-lucide="file-spreadsheet" class="w-5 h-5"></i>
+            try {
+              if (!dashboard.actions || dashboard.actions.length === 0) {
+                tbody.innerHTML = `
+                  <tr>
+                    <td colspan="6" class="py-12 text-center text-slate-400 font-medium">
+                      <div class="flex flex-col items-center justify-center gap-2">
+                        <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
+                          <i data-lucide="file-spreadsheet" class="w-5 h-5"></i>
+                        </div>
+                        <p class="text-sm font-bold text-slate-600">Awaiting Google Sheets Dataset</p>
+                        <p class="text-xs text-slate-400 max-w-md">Google Sheets for this dashboard will be linked soon. Records and live KPIs will synchronize automatically.</p>
                       </div>
-                      <p class="text-sm font-bold text-slate-600">Awaiting Google Sheets Dataset</p>
-                      <p class="text-xs text-slate-400 max-w-md">Google Sheets for this dashboard will be linked soon. Records and live KPIs will synchronize automatically.</p>
-                    </div>
-                  </td>
-                </tr>
-              `;
-            } else {
-              tbody.innerHTML = dashboard.actions.map(action => {
-              const prioColors = {
-                'Critical': 'bg-rose-50 text-rose-700 border-rose-200',
-                'High': 'bg-amber-50 text-amber-700 border-amber-200',
-                'Medium': 'bg-blue-50 text-blue-700 border-blue-200',
-                'Low': 'bg-slate-100 text-slate-600 border-slate-200',
-              }[action.priority] || 'bg-slate-100 text-slate-600 border-slate-200';
+                    </td>
+                  </tr>
+                `;
+              } else {
+                tbody.innerHTML = dashboard.actions.map(action => {
+                  const prioColors = {
+                    'Critical': 'bg-rose-50 text-rose-700 border-rose-200',
+                    'High': 'bg-amber-50 text-amber-700 border-amber-200',
+                    'Medium': 'bg-blue-50 text-blue-700 border-blue-200',
+                    'Low': 'bg-slate-100 text-slate-600 border-slate-200',
+                  }[action.priority] || 'bg-slate-100 text-slate-600 border-slate-200';
 
-              const statusPills = {
-                'Completed': 'text-emerald-700 bg-emerald-50 border-emerald-200',
-                'In Progress': 'text-blue-700 bg-blue-50 border-blue-200',
-                'Awaiting Sign-off': 'text-amber-700 bg-amber-50 border-amber-200',
-              }[action.status] || 'text-slate-700 bg-slate-100 border-slate-200';
+                  const statusPills = {
+                    'Completed': 'text-emerald-700 bg-emerald-50 border-emerald-200',
+                    'In Progress': 'text-blue-700 bg-blue-50 border-blue-200',
+                    'Awaiting Sign-off': 'text-amber-700 bg-amber-50 border-amber-200',
+                  }[action.status] || 'text-slate-700 bg-slate-100 border-slate-200';
 
-              return `
-                <tr class="hover:bg-slate-50/90 transition-colors">
-                  <td class="py-3 px-4 font-mono text-[11px] font-bold">
-                    <span class="inline-block px-2 py-0.5 rounded border ${dashboard.tagStyle}">${action.id}</span>
-                  </td>
-                  <td class="py-3 px-4 font-semibold text-[#1E293B]">${action.desc}</td>
-                  <td class="py-3 px-4 text-slate-600 font-medium">${action.owner}</td>
-                  <td class="py-3 px-4 font-mono text-slate-500 text-[11px]">${action.due}</td>
-                  <td class="py-3 px-4">
-                    <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold border ${prioColors}">
-                      ${action.priority}
-                    </span>
-                  </td>
-                  <td class="py-3 px-4">
-                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${statusPills}">
-                      ${action.status}
-                    </span>
-                  </td>
-                </tr>
-              `;
-            }).join('');
+                  return `
+                    <tr class="hover:bg-slate-50/90 transition-colors">
+                      <td class="py-3 px-4 font-mono text-[11px] font-bold">
+                        <span class="inline-block px-2 py-0.5 rounded border ${dashboard.tagStyle}">${action.id}</span>
+                      </td>
+                      <td class="py-3 px-4 font-semibold text-[#1E293B]">${action.desc}</td>
+                      <td class="py-3 px-4 text-slate-600 font-medium">${action.owner}</td>
+                      <td class="py-3 px-4 font-mono text-slate-500 text-[11px]">${action.due}</td>
+                      <td class="py-3 px-4">
+                        <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold border ${prioColors}">
+                          ${action.priority}
+                        </span>
+                      </td>
+                      <td class="py-3 px-4">
+                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${statusPills}">
+                          ${action.status}
+                        </span>
+                      </td>
+                    </tr>
+                  `;
+                }).join('');
+              }
+            } catch (tableErr) {
+              console.warn('Error populating action items table:', tableErr);
             }
           }
 
@@ -8075,8 +7811,306 @@
         },
 
         /**
-         * Contacts Directory Modal Handlers
+         * Contacts Directory Modal Handlers - Synchronized with Google Sheets (Tab: Contacts)
          */
+        contactsSheetConfig: {
+          sheetId: '1mI5WbcNBYtJc1fQjG0ZYQ1PKQzAHp5Sm3gyi9MibW-g',
+          sheetTab: 'Contacts',
+          csvUrl: 'https://docs.google.com/spreadsheets/d/1mI5WbcNBYtJc1fQjG0ZYQ1PKQzAHp5Sm3gyi9MibW-g/gviz/tq?tqx=out:csv&sheet=Contacts',
+        },
+
+        defaultContactsData: [
+          { dashboard: 'PLR', responsibility: 'Haroon Zulqernain', email: 'haroon.zulqernain@fpcl.com', designation: 'Senior Executive-Process', mobile: '3222329509', extension: '8507' },
+          { dashboard: 'PSM Audits', responsibility: 'Akhtar Rasool khan', email: 'akhtar.khan@fpcl.com', designation: 'Section Manager Safety', mobile: '3332545233', extension: '8701' },
+          { dashboard: 'PSM Validation', responsibility: 'Akhtar Rasool khan', email: 'akhtar.khan@fpcl.com', designation: 'Section Manager Safety', mobile: '3332545233', extension: '8701' },
+          { dashboard: 'IMS Audits', responsibility: 'Shahzad Riaz', email: 'shahzad.riaz@fpcl.com', designation: 'Deputy Manager IMS', mobile: '3332319850', extension: '8711' },
+          { dashboard: 'PSSR', responsibility: 'Asad Mehmood/Ashir Gul', email: 'asad.mehmood2@fpcl.com/ashir.gul@fpcl.com', designation: 'Deputy Manager PSG/Senior Executive CASH', mobile: '', extension: '' },
+          { dashboard: 'CAPEX', responsibility: 'Liaqat Amin Khattak', email: 'liaqat.khattak@fpcl.com', designation: 'UM PSG', mobile: '3333991994', extension: '8320' },
+          { dashboard: 'Sub HSE - P', responsibility: 'Haroon Zulqernain', email: 'haroon.zulqernain@fpcl.com', designation: 'Senior Executive', mobile: '3222329509', extension: '8507' },
+          { dashboard: 'Sub HSE – E&I', responsibility: 'Farhan Aslam', email: 'farhan.aslam@fpcl.com', designation: 'Deputy Manager Inst', mobile: '3343106146', extension: '8424' },
+          { dashboard: 'EHSE', responsibility: 'Akhtar Rasool khan', email: 'akhtar.khan@fpcl.com', designation: 'Section Manager Safety', mobile: '3332545233', extension: '8701' },
+          { dashboard: 'Sub HSE – M', responsibility: 'Muhammad Noman', email: 'muhammad.noman1@fpcl.com', designation: 'Senior Executive Project', mobile: '3107612138', extension: '8565' },
+          { dashboard: 'PSI', responsibility: 'Muhammad Noman', email: 'muhammad.noman1@fpcl.com', designation: 'Senior Executive Project', mobile: '3107612138', extension: '8565' },
+          { dashboard: 'Safety talks', responsibility: 'Akhtar Rasool khan', email: 'akhtar.khan@fpcl.com', designation: 'Section Manager Safety', mobile: '3332545233', extension: '8701' }
+        ],
+
+        getDashboardBadgeStyle(dashboardName) {
+          const norm = (dashboardName || '').toLowerCase().trim();
+          if (norm.includes('plr')) {
+            return { badge: 'bg-purple-100 text-purple-800 border-purple-200', icon: 'activity', dot: 'bg-purple-500' };
+          } else if (norm.includes('validation')) {
+            return { badge: 'bg-orange-100 text-orange-800 border-orange-200', icon: 'shield-check', dot: 'bg-orange-500' };
+          } else if (norm.includes('psm')) {
+            return { badge: 'bg-amber-100 text-amber-900 border-amber-200', icon: 'clipboard-check', dot: 'bg-amber-500' };
+          } else if (norm.includes('ims')) {
+            return { badge: 'bg-indigo-100 text-indigo-800 border-indigo-200', icon: 'file-check-2', dot: 'bg-indigo-500' };
+          } else if (norm.includes('pssr')) {
+            return { badge: 'bg-sky-100 text-sky-800 border-sky-200', icon: 'play-circle', dot: 'bg-sky-500' };
+          } else if (norm.includes('capex')) {
+            return { badge: 'bg-emerald-100 text-emerald-800 border-emerald-200', icon: 'circle-dollar-sign', dot: 'bg-emerald-500' };
+          } else if (norm.includes('sub hse - p') || norm.includes('sub hse – p') || norm === 'sub hse p') {
+            return { badge: 'bg-blue-100 text-blue-800 border-blue-200', icon: 'flame', dot: 'bg-blue-500' };
+          } else if (norm.includes('e&i') || norm.includes('inst')) {
+            return { badge: 'bg-teal-100 text-teal-800 border-teal-200', icon: 'cpu', dot: 'bg-teal-500' };
+          } else if (norm.includes('ehse')) {
+            return { badge: 'bg-rose-100 text-rose-800 border-rose-200', icon: 'award', dot: 'bg-rose-500' };
+          } else if (norm.includes('sub hse – m') || norm.includes('sub hse - m') || norm.includes('mech')) {
+            return { badge: 'bg-cyan-100 text-cyan-800 border-cyan-200', icon: 'wrench', dot: 'bg-cyan-500' };
+          } else if (norm.includes('psi')) {
+            return { badge: 'bg-fuchsia-100 text-fuchsia-800 border-fuchsia-200', icon: 'zap', dot: 'bg-fuchsia-500' };
+          } else if (norm.includes('safety talks')) {
+            return { badge: 'bg-amber-100 text-amber-900 border-amber-300', icon: 'message-circle', dot: 'bg-amber-600' };
+          }
+          return { badge: 'bg-slate-100 text-slate-800 border-slate-200', icon: 'tag', dot: 'bg-slate-500' };
+        },
+
+        getInitials(name) {
+          if (!name) return 'FP';
+          const parts = name.replace(/[\/]/g, ' ').trim().split(/\s+/);
+          if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+          return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+        },
+
+        getAvatarGradient(index) {
+          const gradients = [
+            'from-blue-600 to-indigo-600',
+            'from-purple-600 to-pink-600',
+            'from-emerald-600 to-teal-600',
+            'from-amber-500 to-orange-600',
+            'from-rose-500 to-red-600',
+            'from-cyan-600 to-blue-600',
+            'from-indigo-600 to-violet-600'
+          ];
+          return gradients[index % gradients.length];
+        },
+
+        parseContactsCsv(csvText) {
+          if (!csvText || typeof csvText !== 'string') return [];
+          const lines = csvText.trim().split(/\r\n|\r|\n/).filter(line => line.trim().length > 0);
+          if (lines.length < 2) return [];
+
+          const parseRow = (line) => {
+            const row = [];
+            let inQuotes = false;
+            let current = '';
+            for (let i = 0; i < line.length; i++) {
+              const ch = line[i];
+              if (ch === '"') {
+                if (inQuotes && line[i + 1] === '"') {
+                  current += '"';
+                  i++;
+                } else {
+                  inQuotes = !inQuotes;
+                }
+              } else if (ch === ',' && !inQuotes) {
+                row.push(current.trim());
+                current = '';
+              } else {
+                current += ch;
+              }
+            }
+            row.push(current.trim());
+            return row;
+          };
+
+          const rawHeaders = parseRow(lines[0]);
+          const headers = rawHeaders.map(h => h.toLowerCase().replace(/[^a-z0-9]/g, ''));
+          const dashboardIdx = headers.findIndex(h => h.includes('dashboard'));
+          const respIdx = headers.findIndex(h => h.includes('responsib') || h.includes('name') || h.includes('person'));
+          const emailIdx = headers.findIndex(h => h.includes('email') || h.includes('mail'));
+          const desigIdx = headers.findIndex(h => h.includes('designat') || h.includes('role') || h.includes('title'));
+          const mobileIdx = headers.findIndex(h => h.includes('mobile') || h.includes('phone') || h.includes('contact'));
+          const extIdx = headers.findIndex(h => h.includes('ext') || h.includes('extension'));
+
+          const result = [];
+          for (let i = 1; i < lines.length; i++) {
+            const cols = parseRow(lines[i]);
+            if (cols.length < 2 || !cols.some(c => c && c.trim().length > 0)) continue;
+            result.push({
+              dashboard: (dashboardIdx !== -1 ? cols[dashboardIdx] : cols[0]) || '',
+              responsibility: (respIdx !== -1 ? cols[respIdx] : cols[1]) || '',
+              email: (emailIdx !== -1 ? cols[emailIdx] : cols[2]) || '',
+              designation: (desigIdx !== -1 ? cols[desigIdx] : cols[3]) || '',
+              mobile: (mobileIdx !== -1 ? cols[mobileIdx] : cols[4]) || '',
+              extension: (extIdx !== -1 ? cols[extIdx] : cols[5]) || ''
+            });
+          }
+          return result;
+        },
+
+        async fetchContactsData(forceRefresh) {
+          const syncIcon = document.getElementById('contacts-sync-icon');
+          if (syncIcon) syncIcon.classList.add('animate-spin');
+
+          try {
+            const urls = [
+              '/api/contacts',
+              '/api/sheets/fetch?sheetTab=Contacts',
+              this.contactsSheetConfig.csvUrl
+            ];
+
+            let csvText = '';
+            for (const u of urls) {
+              try {
+                const res = await fetch(u + (u.includes('?') ? '&' : '?') + '_t=' + Date.now(), {
+                  headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+                });
+                if (res.ok) {
+                  const data = await res.json().catch(() => null);
+                  if (data && data.csvText) {
+                    csvText = data.csvText;
+                    break;
+                  } else if (!data) {
+                    const text = await res.text().catch(() => '');
+                    if (text && !text.includes('<!DOCTYPE html>') && text.includes(',')) {
+                      csvText = text;
+                      break;
+                    }
+                  }
+                }
+              } catch (e) {
+                // Try next URL
+              }
+            }
+
+            if (csvText) {
+              const parsed = this.parseContactsCsv(csvText);
+              if (parsed && parsed.length > 0) {
+                this.contactsList = parsed;
+              }
+            }
+          } catch (err) {
+            console.warn('Contacts live sync warning:', err);
+          } finally {
+            if (syncIcon) {
+              setTimeout(() => syncIcon.classList.remove('animate-spin'), 400);
+            }
+            const searchInput = document.getElementById('contacts-modal-search');
+            const query = searchInput ? searchInput.value : '';
+            this.filterContactsModal(query);
+          }
+        },
+
+        renderContactsTable(itemsToRender) {
+          const tbody = document.getElementById('contacts-table-body');
+          const countEl = document.getElementById('contacts-count-label');
+          const noMatchEl = document.getElementById('contacts-no-matches');
+          if (!tbody) return;
+
+          const items = itemsToRender || this.contactsList || this.defaultContactsData;
+          const totalCount = items.length;
+
+          if (countEl) {
+            countEl.textContent = totalCount + (totalCount === 1 ? ' Contact' : ' Contacts');
+          }
+
+          if (totalCount === 0) {
+            tbody.innerHTML = '';
+            if (noMatchEl) noMatchEl.classList.remove('hidden');
+            return;
+          }
+
+          if (noMatchEl) noMatchEl.classList.add('hidden');
+
+          tbody.innerHTML = items.map((item, idx) => {
+            const style = this.getDashboardBadgeStyle(item.dashboard);
+            const initials = this.getInitials(item.responsibility);
+            const avatarGrad = this.getAvatarGradient(idx);
+
+            // Format email (handle single or slash-separated multiple emails)
+            const emailHtml = item.email ? item.email.split('/').map(e => e.trim()).filter(Boolean).map(e => `
+              <a href="mailto:${e}" class="inline-flex items-center gap-1.5 text-blue-600 hover:text-blue-800 hover:underline font-mono text-[11px] font-semibold transition-colors group" title="Send email to ${e}">
+                <i data-lucide="mail" class="w-3 h-3 text-blue-500 group-hover:scale-110 transition-transform shrink-0"></i>
+                <span>${e}</span>
+              </a>
+            `).join('<div class="my-0.5"></div>') : '<span class="text-slate-400 font-mono text-xs">—</span>';
+
+            // Format mobile
+            const cleanMobile = item.mobile ? item.mobile.trim() : '';
+            const mobileHtml = cleanMobile.length > 0 ? `
+              <div class="inline-flex items-center gap-1.5">
+                <a href="tel:${cleanMobile.replace(/[^0-9+]/g, '')}" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-mono text-[11px] font-bold border border-emerald-200 transition-colors" title="Call ${cleanMobile}">
+                  <i data-lucide="phone" class="w-3 h-3 text-emerald-600 shrink-0"></i>
+                  <span>${cleanMobile}</span>
+                </a>
+                <button type="button" onclick="portalApp.copyContactInfo('${cleanMobile}', this)" class="p-1 rounded text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer" title="Copy mobile number">
+                  <i data-lucide="copy" class="w-3 h-3"></i>
+                </button>
+              </div>
+            ` : '<span class="text-slate-400 font-mono text-xs">—</span>';
+
+            // Format extension
+            const cleanExt = item.extension ? item.extension.trim() : '';
+            const extHtml = cleanExt.length > 0 ? `
+              <div class="inline-flex items-center justify-center gap-1">
+                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-indigo-50 text-indigo-700 font-mono text-xs font-black border border-indigo-200/80 shadow-2xs">
+                  <i data-lucide="phone-forwarded" class="w-3 h-3 text-indigo-500 shrink-0"></i>
+                  <span>${cleanExt}</span>
+                </span>
+                <button type="button" onclick="portalApp.copyContactInfo('${cleanExt}', this)" class="p-1 rounded text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer" title="Copy extension">
+                  <i data-lucide="copy" class="w-2.5 h-2.5"></i>
+                </button>
+              </div>
+            ` : '<span class="text-slate-400 font-mono text-xs">—</span>';
+
+            return `
+              <tr class="hover:bg-blue-50/40 transition-colors group">
+                <!-- Index -->
+                <td class="py-3 px-4 text-center font-mono text-[11px] font-bold text-slate-400 group-hover:text-slate-600">
+                  ${idx + 1}
+                </td>
+
+                <!-- Dashboard Name -->
+                <td class="py-3 px-4 whitespace-nowrap">
+                  <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold border shadow-2xs ${style.badge}">
+                    <span class="w-1.5 h-1.5 rounded-full ${style.dot}"></span>
+                    <i data-lucide="${style.icon}" class="w-3.5 h-3.5 shrink-0"></i>
+                    <span>${item.dashboard}</span>
+                  </span>
+                </td>
+
+                <!-- Responsibility -->
+                <td class="py-3 px-4">
+                  <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-br ${avatarGrad} flex items-center justify-center text-white font-black text-xs shadow-xs shrink-0 select-none">
+                      ${initials}
+                    </div>
+                    <span class="font-bold text-slate-900 text-xs sm:text-[13px] leading-tight">
+                      ${item.responsibility}
+                    </span>
+                  </div>
+                </td>
+
+                <!-- Designation -->
+                <td class="py-3 px-4">
+                  <span class="inline-block px-2.5 py-1 rounded-md bg-slate-100/90 text-slate-700 font-semibold text-[11px] border border-slate-200/60">
+                    ${item.designation || '—'}
+                  </span>
+                </td>
+
+                <!-- Email -->
+                <td class="py-3 px-4">
+                  ${emailHtml}
+                </td>
+
+                <!-- Mobile No -->
+                <td class="py-3 px-4 whitespace-nowrap">
+                  ${mobileHtml}
+                </td>
+
+                <!-- Extension -->
+                <td class="py-3 px-4 text-center whitespace-nowrap">
+                  ${extHtml}
+                </td>
+              </tr>
+            `;
+          }).join('');
+
+          if (window.lucide && typeof window.lucide.createIcons === 'function') {
+            window.lucide.createIcons();
+          }
+        },
+
         openContactsModal(event) {
           if (event && event.stopPropagation) event.stopPropagation();
           const modal = document.getElementById('contacts-modal');
@@ -8086,9 +8120,14 @@
             const searchInput = document.getElementById('contacts-modal-search');
             if (searchInput) {
               searchInput.value = '';
-              this.filterContactsModal('');
               setTimeout(() => searchInput.focus(), 80);
             }
+            if (!this.contactsList) {
+              this.contactsList = [...this.defaultContactsData];
+            }
+            this.renderContactsTable();
+            // Fetch live data silently in background to keep synchronized
+            this.fetchContactsData(false);
             if (window.lucide && typeof window.lucide.createIcons === 'function') {
               window.lucide.createIcons();
             }
@@ -8105,18 +8144,23 @@
 
         filterContactsModal(query) {
           const q = (query || '').toLowerCase().trim();
-          const cards = document.querySelectorAll('.contact-directory-card');
-          let visibleCount = 0;
-          cards.forEach(card => {
-            const text = (card.getAttribute('data-search-text') || card.innerText || '').toLowerCase();
-            const matches = !q || text.includes(q);
-            card.style.display = matches ? '' : 'none';
-            if (matches) visibleCount++;
-          });
-          const noMatchEl = document.getElementById('contacts-no-matches');
-          if (noMatchEl) {
-            noMatchEl.style.display = visibleCount === 0 ? 'block' : 'none';
+          const allItems = this.contactsList || this.defaultContactsData;
+          if (!q) {
+            this.renderContactsTable(allItems);
+            return;
           }
+
+          const filtered = allItems.filter(item => {
+            const d = (item.dashboard || '').toLowerCase();
+            const r = (item.responsibility || '').toLowerCase();
+            const e = (item.email || '').toLowerCase();
+            const des = (item.designation || '').toLowerCase();
+            const m = (item.mobile || '').toLowerCase();
+            const ext = (item.extension || '').toLowerCase();
+            return d.includes(q) || r.includes(q) || e.includes(q) || des.includes(q) || m.includes(q) || ext.includes(q);
+          });
+
+          this.renderContactsTable(filtered);
         },
 
         copyContactInfo(text, btnElement) {

@@ -575,6 +575,44 @@ app.get('/api/hseq-kpi', async (req: Request, res: Response): Promise<void> => {
   }
 });
 
+// GET /api/contacts - Live Contacts Feed from Google Sheet ID 1mI5WbcNBYtJc1fQjG0ZYQ1PKQzAHp5Sm3gyi9MibW-g (Tab: Contacts)
+app.get('/api/contacts', async (_req: Request, res: Response): Promise<void> => {
+  const CONTACTS_SHEET_ID = '1mI5WbcNBYtJc1fQjG0ZYQ1PKQzAHp5Sm3gyi9MibW-g';
+  const urls = [
+    `https://docs.google.com/spreadsheets/d/${CONTACTS_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Contacts`,
+    `https://docs.google.com/spreadsheets/d/${CONTACTS_SHEET_ID}/export?format=csv&sheet=Contacts`,
+    `https://docs.google.com/spreadsheets/d/${CONTACTS_SHEET_ID}/gviz/tq?tqx=out:csv`
+  ];
+
+  let csvText = '';
+  for (const u of urls) {
+    try {
+      const response = await fetch(`${u}&_t=${Date.now()}`, {
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
+        }
+      });
+      if (response.ok) {
+        const text = await response.text();
+        if (text && !text.includes('<!DOCTYPE html>') && text.includes(',')) {
+          csvText = text;
+          break;
+        }
+      }
+    } catch {
+      // try next
+    }
+  }
+
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+  if (csvText) {
+    res.json({ success: true, csvText });
+  } else {
+    res.status(502).json({ success: false, error: 'Could not fetch Contacts from Google Sheet' });
+  }
+});
+
 // POST & GET /api/sheets/fetch - Live Google Sheets Tab CSV Proxy (supports Recommendations and PLR tabs)
 app.all('/api/sheets/fetch', async (req: Request, res: Response): Promise<void> => {
   try {
@@ -586,7 +624,9 @@ app.all('/api/sheets/fetch', async (req: Request, res: Response): Promise<void> 
     if (!url || typeof url !== 'string' || url.includes('1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms')) {
       const sLower = (sheetTab || '').toLowerCase();
       const tileId = (req.body?.tileId || req.query?.tileId || '').toLowerCase();
-      if (sLower === 'scm' || sLower.includes('scm') || tileId === 'scm') {
+      if (sLower === 'contacts' || sLower.includes('contact')) {
+        url = 'https://docs.google.com/spreadsheets/d/1mI5WbcNBYtJc1fQjG0ZYQ1PKQzAHp5Sm3gyi9MibW-g/gviz/tq?tqx=out:csv&sheet=Contacts';
+      } else if (sLower === 'scm' || sLower.includes('scm') || tileId === 'scm') {
         const scmSecret = process.env.SCM_SHEET_URL || process.env.STRATEGIC_SCM_SHEET_URL || process.env.GOOGLE_SHEET_SCM || process.env.SCM_URL || process.env.SCM;
         if (scmSecret) url = scmSecret;
       } else if (sLower.includes('validation') || sLower.includes('valid')) {

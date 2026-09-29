@@ -3989,6 +3989,9 @@
     }
   };
 
+  // Synchronously expose FPCL_CAPEX_SUITE to window
+  window.FPCL_CAPEX_SUITE = capexSuite;
+
   // Auto-initialize when document is ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => capexSuite.init());
