@@ -219,6 +219,11 @@ export default async function handler(req: any, res: any) {
       extraValTabs.forEach(t => {
         if (!candidateTabs.includes(t)) candidateTabs.push(t);
       });
+    } else if (sLower === 'ehse' || sLower.includes('ehse') || (normalizedTileId && normalizedTileId.includes('ehse')) || trimmedUrl.includes('1I4oX4kPr6d0_7q--9OcoJWs0W7IQG1dK1rBmNO7BlGo')) {
+      const extraEhseTabs = ['EHSE', 'ehse', 'EHSEC', 'ehsec', 'Executive HSE', 'Sheet1'];
+      extraEhseTabs.forEach(t => {
+        if (!candidateTabs.includes(t)) candidateTabs.push(t);
+      });
     }
 
     const candidateUrls: string[] = [];

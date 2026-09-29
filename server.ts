@@ -619,11 +619,11 @@ app.all('/api/sheets/fetch', async (req: Request, res: Response): Promise<void> 
     let url = req.body?.url || req.query?.url;
     const sheetTab = req.body?.sheetTab || req.query?.sheetTab || 'Recommendations';
     const customGid = req.body?.gid || req.query?.gid;
+    const tileId = (req.body?.tileId || req.query?.tileId || '').toLowerCase();
 
     // Resolve URL from environment variables if not provided or default placeholder
     if (!url || typeof url !== 'string' || url.includes('1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms')) {
       const sLower = (sheetTab || '').toLowerCase();
-      const tileId = (req.body?.tileId || req.query?.tileId || '').toLowerCase();
       if (sLower === 'contacts' || sLower.includes('contact')) {
         url = 'https://docs.google.com/spreadsheets/d/1mI5WbcNBYtJc1fQjG0ZYQ1PKQzAHp5Sm3gyi9MibW-g/gviz/tq?tqx=out:csv&sheet=Contacts';
       } else if (sLower === 'scm' || sLower.includes('scm') || tileId === 'scm') {
@@ -737,6 +737,11 @@ app.all('/api/sheets/fetch', async (req: Request, res: Response): Promise<void> 
     } else if (sLower.includes('sub_hse_mech') || sLower.includes('sub-hse-mech') || sLower.includes('mech') || trimmedUrl.includes('1Put-VhgQkpG43kAuW_l3cRtj4MH6Dl3aa2gms9IaLqQ')) {
       const extraSubHseMechTabs = ['Sub_HSE_Mech', 'Sub_HSE-Mech', 'Sub HSE Mech', 'Sub HSE - Mech', 'Sub_HSE_mech', 'Sheet1'];
       extraSubHseMechTabs.forEach(t => {
+        if (!candidateTabs.includes(t)) candidateTabs.push(t);
+      });
+    } else if (sLower === 'ehse' || sLower.includes('ehse') || tileId === 'ehse' || tileId.includes('ehse') || trimmedUrl.includes('1I4oX4kPr6d0_7q--9OcoJWs0W7IQG1dK1rBmNO7BlGo')) {
+      const extraEhseTabs = ['EHSE', 'ehse', 'EHSEC', 'ehsec', 'Executive HSE', 'Sheet1'];
+      extraEhseTabs.forEach(t => {
         if (!candidateTabs.includes(t)) candidateTabs.push(t);
       });
     }

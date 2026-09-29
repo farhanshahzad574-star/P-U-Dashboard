@@ -36,7 +36,7 @@
 
     state: {
       searchQuery: '',
-      yearFilter: String(new Date().getFullYear()),    // Column C: Year from Date of Meeting (Dynamically opens with current year)
+      yearFilter: 'all',    // Column C: Year from Date of Meeting (Defaults to 'all' so all live Google Sheet records are immediately visible)
       refFilter: 'all',     // Column D: Ref. #
       deptFilter: 'all',    // Column G: Responsibility Department (Action by)
       statusFilter: 'all',  // Column H: Status (Open / Close)
@@ -46,17 +46,39 @@
       isSettingsOpen: false
     },
 
-    // Executed whenever the EHSE dashboard is opened to dynamically ensure current year filter
+    setupVisibilityWatcher() {
+      const container = document.getElementById('ehse-specialized-container');
+      if (!container) {
+        setTimeout(() => this.setupVisibilityWatcher(), 350);
+        return;
+      }
+
+      let wasHidden = container.classList.contains('hidden') || container.hidden;
+
+      const observer = new MutationObserver(() => {
+        const isHidden = container.classList.contains('hidden') || container.hidden;
+        if (wasHidden && !isHidden) {
+          // Dashboard was just opened: ensure live sync & render
+          this.render();
+          this.syncLiveFeed({ silent: true });
+        }
+        wasHidden = isHidden;
+      });
+
+      observer.observe(container, { attributes: true, attributeFilter: ['class', 'hidden'] });
+    },
+
+    // Executed whenever the EHSE dashboard is opened
     onOpen() {
-      this.state.yearFilter = this.getCurrentYear();
       this.render();
+      this.syncLiveFeed({ silent: true });
     },
 
     init() {
       window.FPCL_EHSE_SUITE = this;
 
-      // Ensure initial open starts with dynamic current year filter
-      this.state.yearFilter = this.getCurrentYear();
+      // Setup watcher so whenever opened it dynamically updates
+      this.setupVisibilityWatcher();
 
       // Fast cache retrieval
       try {
@@ -79,16 +101,16 @@
       // Propagate live stats to overview portal registry
       this.syncStatsToOverview();
 
-      // Trigger automatic live Google Sheets sync
+      // Trigger automatic live Google Sheets sync immediately
       setTimeout(() => {
         this.syncLiveFeed({ silent: true });
-      }, 500);
+      }, 300);
 
-      // Periodic auto-sync every 45 seconds so live sheet updates reflect immediately
+      // Periodic auto-sync every 30 seconds so live sheet updates reflect immediately
       if (!this._autoSyncTimer) {
         this._autoSyncTimer = setInterval(() => {
           this.syncLiveFeed({ silent: true });
-        }, 45000);
+        }, 30000);
       }
     },
 
@@ -260,43 +282,88 @@
 
       try {
         let csvText = '';
+        const now = Date.now();
+        const nonce = Math.floor(Math.random() * 10000000);
 
-        // Priority 1: Direct CORS-free fetch from Google Sheets CSV GViz
+        // Tier 1: Serverless / Express API Proxy via POST (with complete explicit payload)
         try {
-          const directUrl = `${EHSE_SHEET_URL}&_nocache=${Date.now()}`;
-          const directRes = await fetch(directUrl, {
-            cache: 'no-store',
-            headers: { 'Cache-Control': 'no-cache, no-store' }
+          const postRes = await fetch('/api/sheets/fetch', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Cache-Control': 'no-cache, no-store, must-revalidate',
+              'Pragma': 'no-cache'
+            },
+            body: JSON.stringify({
+              url: EHSE_SHEET_URL,
+              sheetTab: EHSE_SHEET_TAB,
+              tileId: 'ehse',
+              t: now,
+              _nocache: nonce
+            }),
+            cache: 'no-store'
           });
-          if (directRes.ok) {
-            const txt = await directRes.text();
-            if (txt && !txt.includes('<!DOCTYPE html>') && txt.includes(',')) {
-              csvText = txt;
+          if (postRes.ok) {
+            const json = await postRes.json();
+            if (json && json.success && json.csvText && json.csvText.length > 50) {
+              csvText = json.csvText;
             }
           }
-        } catch (e) {}
+        } catch (e) {
+          // Proceed to next tier
+        }
 
-        // Priority 2: Server API endpoint proxy
+        // Tier 2: Serverless / Express API Proxy via GET (with full explicit query params)
         if (!csvText) {
           try {
-            const apiRes = await fetch(`/api/sheets/fetch?sheetTab=${encodeURIComponent(EHSE_SHEET_TAB)}&_t=${Date.now()}`, {
-              cache: 'no-store'
+            const apiRes = await fetch(`/api/sheets/fetch?url=${encodeURIComponent(EHSE_SHEET_URL)}&sheetTab=${encodeURIComponent(EHSE_SHEET_TAB)}&tileId=ehse&_t=${now}&_nocache=${nonce}`, {
+              cache: 'no-store',
+              headers: { 'Pragma': 'no-cache', 'Cache-Control': 'no-cache, no-store' }
             });
             if (apiRes.ok) {
               const json = await apiRes.json();
-              if (json && json.csvText) {
+              if (json && json.success && json.csvText && json.csvText.length > 50) {
                 csvText = json.csvText;
               }
             }
           } catch (e) {}
         }
 
-        // Priority 3: Global fetchGoogleSheetData helper if available
+        // Tier 3: Universal fetchGoogleSheetData helper
         if (!csvText && typeof window.fetchGoogleSheetData === 'function') {
           try {
             csvText = await window.fetchGoogleSheetData(EHSE_SHEET_URL, {
               sheetTab: EHSE_SHEET_TAB
             });
+          } catch (e) {}
+        }
+
+        // Tier 4: Direct browser JSONP via Google Visualization API (native zero-CORS script injection)
+        if (!csvText && typeof window.fetchGoogleSheetViaJSONP === 'function') {
+          try {
+            const jsonpRes = await window.fetchGoogleSheetViaJSONP(EHSE_SHEET_URL, {
+              sheetTab: EHSE_SHEET_TAB,
+              timeout: 12000
+            });
+            if (jsonpRes && jsonpRes.csvText && jsonpRes.csvText.length > 50) {
+              csvText = jsonpRes.csvText;
+            }
+          } catch (e) {}
+        }
+
+        // Tier 5: Direct Google Sheets GViz CSV (simple browser fetch without forbidden custom preflight headers)
+        if (!csvText) {
+          try {
+            const directUrl = `${EHSE_SHEET_URL}&_nocache=${now}&t=${now}`;
+            const directRes = await fetch(directUrl, {
+              cache: 'no-store'
+            });
+            if (directRes.ok) {
+              const txt = await directRes.text();
+              if (txt && !txt.includes('<!DOCTYPE html>') && !txt.includes('<html') && txt.includes(',')) {
+                csvText = txt;
+              }
+            }
           } catch (e) {}
         }
 
@@ -310,6 +377,12 @@
 
             this.state.lastSynced = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             this.syncStatsToOverview();
+
+            // Re-render immediately if container is open
+            const container = document.getElementById('ehse-specialized-container');
+            if (container && !container.classList.contains('hidden') && !container.hidden) {
+              this.render();
+            }
 
             if (!silent && window.portalApp && window.portalApp.showToast) {
               window.portalApp.showToast(
@@ -326,7 +399,7 @@
         this.state.isSyncing = false;
         this.updateSyncUI();
         const container = document.getElementById('ehse-specialized-container');
-        if (container && !container.classList.contains('hidden')) {
+        if (container && !container.classList.contains('hidden') && !container.hidden) {
           this.render();
         }
       }
@@ -376,13 +449,13 @@
 
     resetFilters() {
       this.state.searchQuery = '';
-      this.state.yearFilter = this.getCurrentYear();
+      this.state.yearFilter = 'all';
       this.state.refFilter = 'all';
       this.state.deptFilter = 'all';
       this.state.statusFilter = 'all';
       this.render();
       if (window.portalApp && window.portalApp.showToast) {
-        window.portalApp.showToast('Filters Reset', `EHSE filters restored to current year (${this.getCurrentYear()}).`, 'info');
+        window.portalApp.showToast('Filters Reset', 'EHSE filters reset (showing all observations).', 'info');
       }
     },
 
