@@ -112,6 +112,9 @@
     <!-- Sub HSE – Mech (Mechanical HSE Sub-Committee) Dataset & Specialized Executive Suite -->
     <script src="/assets/subHseMechData.js?v=20260926b"></script>
     <script src="/assets/subHseMechSuite.js?v=20260928c"></script>
+    <!-- Process Safety Information (PSI) Dataset & Specialized Executive Suite (Google Sheets ID: 1vWYE3G4W7TxHBVzsUJuu1Z-aufjXD-xFeodTpFUTZtY) -->
+    <script src="/assets/psiData.js?v=20260930"></script>
+    <script src="/assets/psiSuite.js?v=20260930b"></script>
     <!-- FPCL Live Telephone Directory Suite (Google Sheets ID: 1SrPdaxzEXbOFVbWin4zJvrc-m9TQKtxFjcyZYamXfpg) -->
     <script src="/assets/fpclDirectorySuite.js?v=20260930"></script>
 
@@ -2061,6 +2064,13 @@
           <!-- Populated dynamically via FPCL_SUB_HSE_MECH_SUITE.render() -->
         </div>
 
+        <!-- ========================================================================= -->
+        <!-- DEDICATED FULL-SCALE PSI EXECUTIVE BI SUITE CONTAINER                     -->
+        <!-- ========================================================================= -->
+        <div id="psi-specialized-container" class="hidden space-y-6">
+          <!-- Populated dynamically via FPCL_PSI_SUITE.render() -->
+        </div>
+
       </section>
 
     </main>
@@ -3208,26 +3218,26 @@
           name: 'PSI',
           code: 'PSI',
           icon: 'gauge',
-          status: 'Awaiting Data',
-          hasSheetLink: false,
+          status: 'Active',
+          hasSheetLink: true,
           category: 'Process Safety',
           department: 'Process Safety Management (PSM)',
           cadence: 'Live Sync / Google Sheet',
-          description: 'Process Safety Information & Indicators (PSI) Dashboard • Google Sheets dataset connection will be linked.',
+          description: 'Process Safety Information & Indicators (PSI) Dashboard • Live Synchronized (1vWYE3G4W7TxHBVzsUJuu1Z-aufjXD-xFeodTpFUTZtY)',
           color: {
-            bg: '#FFF1F2',
-            primary: '#E11D48',
-            secondary: '#FDA4AF',
-            text: '#881337'
+            bg: '#F5F3FF',
+            primary: '#4F46E5',
+            secondary: '#C7D2FE',
+            text: '#1E1B4B'
           },
-          gradient: 'from-rose-600 via-pink-600 to-red-600',
-          gradientStop1: '#E11D48',
-          gradientStop2: '#BE123C',
-          tagStyle: 'bg-rose-50 text-rose-800 border-rose-200',
-          kpis: { total: 0, closed: 0, inProgress: 0, overdue: 0, compliance: '0.0%' },
-          punchList: { open: 0, closed: 0, total: 0, rate: '0.0%' },
-          dataReadiness: { master: '0%', signoff: '0%' },
-          statusComment: 'Google Sheets dataset will be linked soon.',
+          gradient: 'from-indigo-600 via-blue-600 to-cyan-500',
+          gradientStop1: '#4F46E5',
+          gradientStop2: '#06B6D4',
+          tagStyle: 'bg-indigo-50 text-indigo-800 border-indigo-200',
+          kpis: { total: 22208, closed: 18563, inProgress: 3645, overdue: 0, compliance: '83.6%' },
+          punchList: { open: 3645, closed: 18563, total: 22208, rate: '83.6%' },
+          dataReadiness: { master: '100%', signoff: '100%' },
+          statusComment: 'Live Google Sheets: PSI Tab (1vWYE3G4W7TxHBVzsUJuu1Z-aufjXD-xFeodTpFUTZtY)',
           actions: []
         },
         {
@@ -4803,8 +4813,46 @@
           // Build comparison items: Includes all modules, labeling PSM as PSM Audits, plotting PSM Validation on secondary axis, and plotting PSSR and CAPEX next to IMS
           const chartItems = [];
           DASHBOARD_REGISTRY.forEach(d => {
-            // Exclude strategic, sub-hse-eri, psi, and safety-talks from the Overview Progress Comparison Status
-            if (d.id === 'strategic' || d.id === 'sub-hse-eri' || d.id === 'psi' || d.id === 'safety-talks') return;
+            // Exclude strategic, sub-hse-eri, and safety-talks from the Overview Progress Comparison Status
+            if (d.id === 'strategic' || d.id === 'sub-hse-eri' || d.id === 'safety-talks') return;
+
+            if (d.id === 'psi') {
+              const psiRaw = (window.FPCL_PSI_SUITE && typeof window.FPCL_PSI_SUITE.getRawData === 'function')
+                ? window.FPCL_PSI_SUITE.getRawData()
+                : (window.FPCL_PSI_DATA || []);
+              const psiClean = psiRaw.filter(i => {
+                const ru = String(i.responsibleUnit || '').trim().toLowerCase();
+                return ru !== 'total' && ru !== 'grand total';
+              });
+              const psiTotals = (window.FPCL_PSI_SUITE && typeof window.FPCL_PSI_SUITE.calculateTotals === 'function')
+                ? window.FPCL_PSI_SUITE.calculateTotals(psiClean)
+                : { totalPlanned: 22208, totalUpload: 18563, documentsRemaining: 3645, overallPercent: 83.6 };
+
+              const totalDocs = psiTotals.totalPlanned || 22208;
+              const closedDocs = (openCloseFilter === 'open') ? 0 : (psiTotals.totalUpload || 18563);
+              const openDocs = (openCloseFilter === 'close') ? 0 : (psiTotals.documentsRemaining || 3645);
+
+              const closedPct = totalDocs > 0 ? (closedDocs / totalDocs) * 100 : 0;
+              const openPct = totalDocs > 0 ? (openDocs / totalDocs) * 100 : 0;
+
+              chartItems.push({
+                id: 'psi',
+                name: 'PSI',
+                code: 'PSI (%)',
+                type: 'validation', // Plotted in percentage because document count is very large
+                closed: closedDocs,
+                open: openDocs,
+                total: totalDocs,
+                totalPersonnel: totalDocs,
+                passedPersonnel: closedDocs,
+                pendingPersonnel: openDocs,
+                passedPct: closedPct,
+                pendingPct: openPct,
+                clickHandler: "portalApp.showDetailView('psi');",
+                tooltip: `PSI Documents (Percentage View):\n• Completion Rate: ${closedPct.toFixed(1)}%\n• Total Documents: ${totalDocs.toLocaleString()}\n• Uploaded / Closed: ${closedDocs.toLocaleString()}\n• Documents Remaining / Open: ${openDocs.toLocaleString()}\nClick to view PSI Dashboard`
+              });
+              return;
+            }
 
             if (d.id === 'capex') {
               const capexKpi = this.getCapexFilteredKpis(deptFilter, openCloseFilter, yearFilter);
@@ -4897,8 +4945,8 @@
           // Single stacked column per module: width calibrated for high visibility and clear separation
           const colW = Math.min(38, Math.max(24, Math.round(slotW * 0.46)));
 
-          // Primary Y-Axis scale calculated ONLY from action modules (excluding PSM Validation on secondary axis)
-          const primaryItems = chartItems.filter(i => i.id !== 'psm-validation');
+          // Primary Y-Axis scale calculated ONLY from action modules (excluding PSM Validation & PSI on secondary axis)
+          const primaryItems = chartItems.filter(i => i.id !== 'psm-validation' && i.id !== 'psi' && i.type !== 'validation');
           const maxVal = Math.max(...primaryItems.map(i => i.total), 10);
           const yMax = maxVal > 300 ? Math.ceil((maxVal * 1.34) / 50) * 50 : Math.max(20, Math.ceil((maxVal * 1.36) / 10) * 10);
 
@@ -4997,13 +5045,15 @@
               const pendingCount = itemPendingPersonnel;
               const passedCount = itemPassedPersonnel;
 
+              const isPsi = item.id === 'psi';
+              const unitLabel = isPsi ? 'Docs' : 'Pers.';
               tooltipContent = `
                 <!-- Total (navy #1E3A8A) -->
-                <text x="${centerX}" y="${badgeY + 14}" fill="${COLOR_NAVY}" font-size="10" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="900" text-anchor="middle">Total: ${totalCount} Pers.</text>
+                <text x="${centerX}" y="${badgeY + 14}" fill="${COLOR_NAVY}" font-size="9" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="900" text-anchor="middle">Total: ${totalCount.toLocaleString()} ${unitLabel}</text>
                 <!-- Open (red #DC2626) -->
-                <text x="${centerX}" y="${badgeY + 26}" fill="${COLOR_OPEN}" font-size="9.5" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" text-anchor="middle">Open: ${pendingCount}</text>
+                <text x="${centerX}" y="${badgeY + 26}" fill="${COLOR_OPEN}" font-size="9.5" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" text-anchor="middle">Open: ${pendingCount.toLocaleString()}</text>
                 <!-- Closed (green #0B8A5A) -->
-                <text x="${centerX}" y="${badgeY + 38}" fill="${COLOR_CLOSED}" font-size="9.5" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" text-anchor="middle">Closed: ${passedCount}</text>
+                <text x="${centerX}" y="${badgeY + 38}" fill="${COLOR_CLOSED}" font-size="9.5" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="800" text-anchor="middle">Closed: ${passedCount.toLocaleString()}</text>
               `;
             } else {
               tooltipContent = `
@@ -6297,7 +6347,7 @@
          * ONLY sums dashboards attached with Google Sheet links (hasSheetLink === true)
          */
         updateRollupStats() {
-          const linkedDashboards = DASHBOARD_REGISTRY.filter(item => item.hasSheetLink === true);
+          const linkedDashboards = DASHBOARD_REGISTRY.filter(item => item.hasSheetLink === true && item.id !== 'psi');
           const effectiveKpis = linkedDashboards.map(d => this.getEffectiveCardKpis(d));
           const total = effectiveKpis.reduce((acc, k) => acc + (k.total || 0), 0);
           const closed = effectiveKpis.reduce((acc, k) => acc + (k.closed || 0), 0);
@@ -7122,9 +7172,11 @@
           const subHseEiContainer = document.getElementById('sub-hse-ei-specialized-container');
           const ehseContainer = document.getElementById('ehse-specialized-container');
           const subHseMechContainer = document.getElementById('sub-hse-mech-specialized-container');
+          const psiContainer = document.getElementById('psi-specialized-container');
 
           // Always ensure all specialized containers are hidden initially unless specifically activated
           if (subHseMechContainer) { subHseMechContainer.classList.add('hidden'); subHseMechContainer.hidden = true; }
+          if (psiContainer) { psiContainer.classList.add('hidden'); psiContainer.hidden = true; }
 
           if (dashboardId === 'strategic') {
             if (headerCard) { headerCard.classList.add('hidden'); headerCard.hidden = true; }
@@ -7561,6 +7613,44 @@
               sheetKeyEl.textContent = 'Sub HSE – Mech Dashboard • Live Synchronized (1Put-VhgQkpG43kAuW_l3cRtj4MH6Dl3aa2gms9IaLqQ)';
               sheetKeyEl.title = 'Live Google Sheets: Sub_HSE_Mech Tab (1Put-VhgQkpG43kAuW_l3cRtj4MH6Dl3aa2gms9IaLqQ)';
             }
+          } else if (dashboardId === 'psi') {
+            if (headerCard) { headerCard.classList.add('hidden'); headerCard.hidden = true; }
+            if (connCard) { connCard.classList.add('hidden'); connCard.hidden = true; }
+            const psmActions = document.getElementById('detail-psm-actions');
+            if (psmActions) { psmActions.classList.add('hidden'); psmActions.hidden = true; }
+            if (stdContainer) { stdContainer.classList.add('hidden'); stdContainer.hidden = true; }
+            if (plrContainer) { plrContainer.classList.add('hidden'); plrContainer.hidden = true; }
+            if (psmContainer) { psmContainer.classList.add('hidden'); psmContainer.hidden = true; }
+            if (strategicContainer) {
+              strategicContainer.classList.add('hidden');
+              strategicContainer.hidden = true;
+              strategicContainer.style.marginTop = '';
+            }
+            if (imsContainer) { imsContainer.classList.add('hidden'); imsContainer.hidden = true; }
+            if (pssrContainer) { pssrContainer.classList.add('hidden'); pssrContainer.hidden = true; }
+            if (capexContainer) { capexContainer.classList.add('hidden'); capexContainer.hidden = true; }
+            if (subHsePContainer) { subHsePContainer.classList.add('hidden'); subHsePContainer.hidden = true; }
+            if (subHseEiContainer) { subHseEiContainer.classList.add('hidden'); subHseEiContainer.hidden = true; }
+            if (ehseContainer) { ehseContainer.classList.add('hidden'); ehseContainer.hidden = true; }
+            if (subHseMechContainer) { subHseMechContainer.classList.add('hidden'); subHseMechContainer.hidden = true; }
+            if (psiContainer) {
+              psiContainer.classList.remove('hidden');
+              psiContainer.hidden = false;
+              if (window.FPCL_PSI_SUITE) {
+                if (typeof window.FPCL_PSI_SUITE.render === 'function') {
+                  window.FPCL_PSI_SUITE.render();
+                }
+                if (typeof window.FPCL_PSI_SUITE.syncLiveFeed === 'function') {
+                  window.FPCL_PSI_SUITE.syncLiveFeed({ silent: true });
+                }
+              }
+            }
+            const breadcrumbActive = document.getElementById('breadcrumb-active-name');
+            if (breadcrumbActive) breadcrumbActive.textContent = 'Process Safety Information (PSI)';
+            if (sheetKeyEl) {
+              sheetKeyEl.textContent = 'PSI Dashboard • Live Synchronized (1vWYE3G4W7TxHBVzsUJuu1Z-aufjXD-xFeodTpFUTZtY)';
+              sheetKeyEl.title = 'Live Google Sheets: PSI Tab (1vWYE3G4W7TxHBVzsUJuu1Z-aufjXD-xFeodTpFUTZtY)';
+            }
           } else {
             if (headerCard) { headerCard.classList.remove('hidden'); headerCard.hidden = false; }
             if (plrContainer) { plrContainer.classList.add('hidden'); plrContainer.hidden = true; }
@@ -7808,6 +7898,11 @@
           if (subHseMechContainer) {
             subHseMechContainer.classList.add('hidden');
             subHseMechContainer.hidden = true;
+          }
+          const psiContainer = document.getElementById('psi-specialized-container');
+          if (psiContainer) {
+            psiContainer.classList.add('hidden');
+            psiContainer.hidden = true;
           }
           if (window.FPCL_STRATEGIC_SUITE && window.FPCL_STRATEGIC_SUITE.state) {
             window.FPCL_STRATEGIC_SUITE.state.currentView = 'grid';

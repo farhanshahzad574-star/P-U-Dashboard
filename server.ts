@@ -603,6 +603,96 @@ app.get('/api/contacts', async (_req: Request, res: Response): Promise<void> => 
   }
 });
 
+// Cache for PSI data
+let psiDataCache: { timestamp: number; csvText: string } = {
+  timestamp: 0,
+  csvText: ''
+};
+
+// GET /api/psi - Live PSI Feed from Google Sheet ID 1vWYE3G4W7TxHBVzsUJuu1Z-aufjXD-xFeodTpFUTZtY (Tab: PSI)
+app.get('/api/psi', async (_req: Request, res: Response): Promise<void> => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+
+  const now = Date.now();
+  if (psiDataCache.csvText && now - psiDataCache.timestamp < 30000) {
+    res.json({
+      success: true,
+      source: 'cache',
+      sheetId: '1vWYE3G4W7TxHBVzsUJuu1Z-aufjXD-xFeodTpFUTZtY',
+      tabName: 'PSI',
+      csvText: psiDataCache.csvText,
+      lastUpdated: new Date(psiDataCache.timestamp).toISOString()
+    });
+    return;
+  }
+
+  const PSI_SHEET_ID = '1vWYE3G4W7TxHBVzsUJuu1Z-aufjXD-xFeodTpFUTZtY';
+  const urls = [
+    `https://docs.google.com/spreadsheets/d/${PSI_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=PSI&_t=${now}`,
+    `https://docs.google.com/spreadsheets/d/${PSI_SHEET_ID}/export?format=csv&sheet=PSI&_t=${now}`,
+    `https://docs.google.com/spreadsheets/d/${PSI_SHEET_ID}/gviz/tq?tqx=out:csv&_t=${now}`
+  ];
+
+  let rawCsv = '';
+  for (const u of urls) {
+    try {
+      const response = await fetch(u, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'text/csv,text/plain,*/*',
+          'Cache-Control': 'no-cache, no-store, must-revalidate'
+        }
+      });
+      if (response.ok) {
+        const text = await response.text();
+        if (text && !text.includes('<!DOCTYPE html>') && text.includes('Responsible_Unit')) {
+          rawCsv = text;
+          break;
+        }
+      }
+    } catch {
+      // try next
+    }
+  }
+
+  if (rawCsv) {
+    psiDataCache = {
+      timestamp: now,
+      csvText: rawCsv
+    };
+    res.json({
+      success: true,
+      source: 'live',
+      sheetId: PSI_SHEET_ID,
+      tabName: 'PSI',
+      csvText: rawCsv,
+      lastUpdated: new Date(now).toISOString()
+    });
+    return;
+  }
+
+  if (psiDataCache.csvText) {
+    res.json({
+      success: true,
+      source: 'stale-cache',
+      sheetId: PSI_SHEET_ID,
+      tabName: 'PSI',
+      csvText: psiDataCache.csvText,
+      lastUpdated: new Date(psiDataCache.timestamp).toISOString()
+    });
+    return;
+  }
+
+  res.status(502).json({
+    success: false,
+    error: 'Could not fetch PSI from Google Sheet',
+    sheetId: PSI_SHEET_ID,
+    tabName: 'PSI'
+  });
+});
+
 // Cache for FPCL Directory data
 let fpclDirectoryCache: { timestamp: number; data: any[] } = {
   timestamp: 0,
@@ -761,6 +851,8 @@ app.all('/api/sheets/fetch', async (req: Request, res: Response): Promise<void> 
         url = process.env.Sub_HSE_Mech || process.env.SUB_HSE_MECH || process.env.SUB_HSE_MECH_SHEET_URL || (process.env.SUB_HSE_MECH_SHEET_ID ? `https://docs.google.com/spreadsheets/d/${process.env.SUB_HSE_MECH_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Sub_HSE_Mech` : 'https://docs.google.com/spreadsheets/d/1Put-VhgQkpG43kAuW_l3cRtj4MH6Dl3aa2gms9IaLqQ/gviz/tq?tqx=out:csv&sheet=Sub_HSE_Mech');
       } else if (sLower === 'ehse' || sLower.includes('ehse') || tileId === 'ehse' || tileId.includes('ehse')) {
         url = process.env.EHSE || process.env.EHSE_SHEET_URL || (process.env.EHSE_SHEET_ID ? `https://docs.google.com/spreadsheets/d/${process.env.EHSE_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=EHSE` : 'https://docs.google.com/spreadsheets/d/1I4oX4kPr6d0_7q--9OcoJWs0W7IQG1dK1rBmNO7BlGo/gviz/tq?tqx=out:csv&sheet=EHSE');
+      } else if (sLower === 'psi' || sLower.includes('psi') || tileId === 'psi' || tileId.includes('psi')) {
+        url = process.env.PSI || process.env.PSI_SHEET_URL || (process.env.PSI_SHEET_ID ? `https://docs.google.com/spreadsheets/d/${process.env.PSI_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=PSI` : 'https://docs.google.com/spreadsheets/d/1vWYE3G4W7TxHBVzsUJuu1Z-aufjXD-xFeodTpFUTZtY/gviz/tq?tqx=out:csv&sheet=PSI');
       } else if (sLower.includes('psm') && process.env.PSM_SHEET_URL) {
         url = process.env.PSM_SHEET_URL;
       } else if (process.env.RECOMMENDATIONS_SHEET_URL) {
@@ -849,6 +941,11 @@ app.all('/api/sheets/fetch', async (req: Request, res: Response): Promise<void> 
     } else if (sLower.includes('sub_hse_mech') || sLower.includes('sub-hse-mech') || sLower.includes('mech') || trimmedUrl.includes('1Put-VhgQkpG43kAuW_l3cRtj4MH6Dl3aa2gms9IaLqQ')) {
       const extraSubHseMechTabs = ['Sub_HSE_Mech', 'Sub_HSE-Mech', 'Sub HSE Mech', 'Sub HSE - Mech', 'Sub_HSE_mech', 'Sheet1'];
       extraSubHseMechTabs.forEach(t => {
+        if (!candidateTabs.includes(t)) candidateTabs.push(t);
+      });
+    } else if (sLower === 'psi' || sLower.includes('psi') || tileId === 'psi' || tileId.includes('psi') || trimmedUrl.includes('1vWYE3G4W7TxHBVzsUJuu1Z-aufjXD-xFeodTpFUTZtY')) {
+      const extraPsiTabs = ['PSI', 'psi', 'Process Safety Information', 'Sheet1'];
+      extraPsiTabs.forEach(t => {
         if (!candidateTabs.includes(t)) candidateTabs.push(t);
       });
     } else if (sLower === 'ehse' || sLower.includes('ehse') || tileId === 'ehse' || tileId.includes('ehse') || trimmedUrl.includes('1I4oX4kPr6d0_7q--9OcoJWs0W7IQG1dK1rBmNO7BlGo')) {
