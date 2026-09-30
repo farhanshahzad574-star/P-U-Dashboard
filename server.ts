@@ -323,65 +323,19 @@ function convertGvizTableToCsv(table: any): string {
   return [headers, ...rows].join('\r\n');
 }
 
-// GET /api/hseq-kpi - Live HSEQ KPI Feed from Google Sheet HSEQ_KPI
+// GET /api/hseq-kpi - Live HSEQ KPI Feed from Google Sheet ID 1bFBRGKqIfO8Pn7qPSTU0pbdTB87ezDyXvVDnCbTGrx4 (Tab: HSEQ_KPI)
 app.get('/api/hseq-kpi', async (req: Request, res: Response): Promise<void> => {
   try {
-    let sheetUrl = (req.query?.url as string) || process.env.HSEQ_KPI || 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTyc0eRsaIpv3DWLdBbEplWo5FqrNwuCFpFrXM4_A6pRTkQgHz56DaN9FMV0cuCkQXnXfPDyKS_nsYC/pub?gid=553516171&single=true&output=csv';
+    let sheetUrl = (req.query?.url as string) || process.env.HSEQ_KPI || 'https://docs.google.com/spreadsheets/d/1bFBRGKqIfO8Pn7qPSTU0pbdTB87ezDyXvVDnCbTGrx4/gviz/tq?tqx=out:csv&sheet=HSEQ_KPI';
     sheetUrl = sheetUrl.trim();
 
-    // Prepare candidate URLs
-    const candidateUrls: string[] = [];
-    if (sheetUrl.includes('/pub') && sheetUrl.includes('output=csv')) {
+    // Prepare candidate URLs targeting sheet ID 1bFBRGKqIfO8Pn7qPSTU0pbdTB87ezDyXvVDnCbTGrx4 and tab HSEQ_KPI
+    const candidateUrls: string[] = [
+      'https://docs.google.com/spreadsheets/d/1bFBRGKqIfO8Pn7qPSTU0pbdTB87ezDyXvVDnCbTGrx4/gviz/tq?tqx=out:csv&sheet=HSEQ_KPI',
+      'https://docs.google.com/spreadsheets/d/1bFBRGKqIfO8Pn7qPSTU0pbdTB87ezDyXvVDnCbTGrx4/export?format=csv&sheet=HSEQ_KPI'
+    ];
+    if (sheetUrl && !candidateUrls.includes(sheetUrl)) {
       candidateUrls.push(sheetUrl);
-    } else if (sheetUrl.includes('/pub')) {
-      const glue = sheetUrl.includes('?') ? '&' : '?';
-      candidateUrls.push(`${sheetUrl}${glue}single=true&output=csv`);
-      candidateUrls.push(sheetUrl);
-    } else {
-      // Standard spreadsheet URL
-      const match = sheetUrl.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
-      if (match) {
-        const id = match[1];
-        const gidMatch = sheetUrl.match(/[#?&]gid=([0-9]+)/);
-        const gid = gidMatch ? gidMatch[1] : '553516171';
-        candidateUrls.push(`https://docs.google.com/spreadsheets/d/${id}/export?format=csv&gid=${gid}`);
-        candidateUrls.push(`https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&sheet=HSEQ_KPI`);
-        candidateUrls.push(`https://docs.google.com/spreadsheets/d/${id}/export?format=csv&sheet=HSEQ_KPI`);
-        candidateUrls.push(`https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&gid=${gid}`);
-      }
-      candidateUrls.push(sheetUrl);
-    }
-    // Always append fallback official published URL
-    candidateUrls.push('https://docs.google.com/spreadsheets/d/e/2PACX-1vTyc0eRsaIpv3DWLdBbEplWo5FqrNwuCFpFrXM4_A6pRTkQgHz56DaN9FMV0cuCkQXnXfPDyKS_nsYC/pub?gid=553516171&single=true&output=csv');
-
-    let csvText = '';
-    for (const testUrl of candidateUrls) {
-      try {
-        const response = await fetch(testUrl, {
-          headers: {
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache',
-          }
-        });
-        if (response.ok) {
-          const text = await response.text();
-          if (text && !text.includes('<!DOCTYPE html>') && text.includes(',')) {
-            csvText = text;
-            break;
-          }
-        }
-      } catch (fetchErr) {
-        // try next candidate
-      }
-    }
-
-    if (!csvText) {
-      throw new Error('Could not fetch CSV content from HSEQ_KPI sheet candidate URLs');
-    }
-
-    const lines = csvText.trim().split(/\r\n|\r|\n/).filter(line => line.trim().length > 0);
-    if (lines.length < 2) {
-      throw new Error('HSEQ_KPI sheet is empty or missing data rows');
     }
 
     const parseCsvRow = (rowStr: string): string[] => {
@@ -403,8 +357,42 @@ app.get('/api/hseq-kpi', async (req: Request, res: Response): Promise<void> => {
       return result.map(s => s.replace(/^["']|["']$/g, '').trim());
     };
 
+    let csvText = '';
+    for (const testUrl of candidateUrls) {
+      try {
+        const response = await fetch(testUrl, {
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+          }
+        });
+        if (response.ok) {
+          const text = await response.text();
+          if (text && !text.includes('<!DOCTYPE html>') && text.includes(',')) {
+            const firstLine = text.trim().split(/\r\n|\r|\n/)[0] || '';
+            const testHeaders = parseCsvRow(firstLine);
+            const isWrongActionSheet = testHeaders.some(h => /action|assigned|ack|remarks/i.test(h));
+            if (!isWrongActionSheet) {
+              csvText = text;
+              break;
+            }
+          }
+        }
+      } catch (fetchErr) {
+        // try next candidate
+      }
+    }
+
+    if (!csvText) {
+      throw new Error('Could not fetch CSV content from HSEQ_KPI sheet candidate URLs');
+    }
+
+    const lines = csvText.trim().split(/\r\n|\r|\n/).filter(line => line.trim().length > 0);
+    if (lines.length < 2) {
+      throw new Error('HSEQ_KPI sheet is empty or missing data rows');
+    }
+
     const headers = parseCsvRow(lines[0]);
-    const isActionSheet = headers.some(h => /action|assigned|ack|remarks/i.test(h));
 
     const parseNum = (val: any, fallback: number = 0): number => {
       if (val === undefined || val === null || val === '') return fallback;
@@ -446,51 +434,53 @@ app.get('/api/hseq-kpi', async (req: Request, res: Response): Promise<void> => {
       const values = parseCsvRow(line);
       if (values.length < 2 || !values.some(v => v.length > 0)) return;
 
-      const sNo = getRowVal(values, ['s', 'sno', 's_#'], rIdx + 1, 0);
+      const sNo = getRowVal(values, ['s', 'sno', 's_#', 'sr'], rIdx + 1, 0);
+      // Column H (index 7) named 'Year'
       const year = getRowVal(values, ['year', 'yr'], 2017 + rIdx, 7);
-      const safeManhours = getRowVal(values, ['safemanhours', 'manhours'], 22200445, 1);
+      const safeManhours = getRowVal(values, ['safemanhours', 'manhours'], 0, 1);
       const fire = getRowVal(values, ['fire', 'fireincidents'], 0, 2);
       const lti = getRowVal(values, ['lti', 'losttimeinjury'], 0, 3);
       const medicalTreatment = getRowVal(values, ['medicaltreatment', 'medical'], 0, 4);
-      const firstAidCase = getRowVal(values, ['firstaidcase', 'firstaid'], 5, 5);
-      const nearmiss = getRowVal(values, ['nearmiss', 'nearmisses'], 24, 6);
-      const trirActual = getRowVal(values, ['triractual', 'triract'], 0, 8);
-      const trirPlanned = getRowVal(values, ['triractual1', 'trirplanned', 'trirplan', 'trirtarget'], 5, 9);
+      const firstAidCase = getRowVal(values, ['firstaidcase', 'firstaid'], 0, 5);
+      const nearmiss = getRowVal(values, ['nearmiss', 'nearmisses'], 0, 6);
+      const trirActual = getRowVal(values, ['triractual', 'triract', 'trir_actual'], 0, 8);
+      const trirPlanned = getRowVal(values, ['trirplan', 'trirplanned', 'trirtarget', 'trir_plan', 'triractual1'], 0.6, 9);
 
-      yearlyData.push({
-        sNo,
-        year,
-        safeManhours,
-        fire,
-        lti,
-        medicalTreatment,
-        firstAidCase,
-        nearmiss,
-        trirActual,
-        trirPlanned
-      });
+      if (year) {
+        yearlyData.push({
+          sNo,
+          year,
+          safeManhours,
+          fire,
+          lti,
+          medicalTreatment,
+          firstAidCase,
+          nearmiss,
+          trirActual,
+          trirPlanned
+        });
+      }
     });
 
     // Fallback if parsing yielded no rows
     if (yearlyData.length === 0) {
-      for (let y = 2017; y <= 2026; y++) {
-        yearlyData.push({
-          sNo: y - 2016,
-          year: y,
-          safeManhours: 22200445,
-          fire: 0,
-          lti: 0,
-          medicalTreatment: 0,
-          firstAidCase: 5,
-          nearmiss: 24,
-          trirActual: 0,
-          trirPlanned: 5
-        });
-      }
+      const fallbackRows = [
+        { sNo: 1, year: 2017, safeManhours: 392077, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 0, nearmiss: 0, trirActual: 0, trirPlanned: 0.6 },
+        { sNo: 2, year: 2018, safeManhours: 1635908, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 0, nearmiss: 0, trirActual: 0, trirPlanned: 0.6 },
+        { sNo: 3, year: 2019, safeManhours: 2948991, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 4, nearmiss: 31, trirActual: 0, trirPlanned: 0.6 },
+        { sNo: 4, year: 2020, safeManhours: 4201942, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 5, nearmiss: 38, trirActual: 0, trirPlanned: 0.6 },
+        { sNo: 5, year: 2021, safeManhours: 5406727, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 4, nearmiss: 4, trirActual: 0, trirPlanned: 0.6 },
+        { sNo: 6, year: 2022, safeManhours: 6588709, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 4, nearmiss: 18, trirActual: 0, trirPlanned: 0.6 },
+        { sNo: 7, year: 2023, safeManhours: 7842960, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 1, nearmiss: 4, trirActual: 0, trirPlanned: 0.6 },
+        { sNo: 8, year: 2024, safeManhours: 9257227, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 6, nearmiss: 7, trirActual: 0, trirPlanned: 0.6 },
+        { sNo: 9, year: 2025, safeManhours: 10497943, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 4, nearmiss: 15, trirActual: 0, trirPlanned: 0.6 },
+        { sNo: 10, year: 2026, safeManhours: 11105365, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 6, nearmiss: 8, trirActual: 0, trirPlanned: 0.6 }
+      ];
+      yearlyData.push(...fallbackRows);
     }
 
     // Sort ascending by year for charts and trends
-    yearlyData.sort((a, b) => a.year - b.year);
+    yearlyData.sort((a, b) => Number(a.year) - Number(b.year));
 
     // Calculate sum of all values per category
     const totals = {
@@ -501,7 +491,7 @@ app.get('/api/hseq-kpi', async (req: Request, res: Response): Promise<void> => {
       firstAidCase: yearlyData.reduce((acc, row) => acc + (row.firstAidCase || 0), 0),
       nearmiss: yearlyData.reduce((acc, row) => acc + (row.nearmiss || 0), 0),
       trirActual: yearlyData.reduce((acc, row) => acc + (row.trirActual || 0), 0),
-      trirPlanned: yearlyData.reduce((acc, row) => acc + (row.trirPlanned || 0), 0)
+      trirPlanned: yearlyData.length > 0 ? yearlyData[yearlyData.length - 1].trirPlanned : 0.6
     };
 
     const latest = yearlyData[yearlyData.length - 1] || yearlyData[0];
@@ -513,16 +503,15 @@ app.get('/api/hseq-kpi', async (req: Request, res: Response): Promise<void> => {
       sheetName: 'HSEQ_KPI',
       updatedAt: new Date().toISOString(),
       totals,
-      // Default kpis represent the sum of all values per category
       kpis: {
-        safeManhours: totals.safeManhours,
+        safeManhours: latest ? latest.safeManhours : totals.safeManhours,
         fire: totals.fire,
         lti: totals.lti,
         medicalTreatment: totals.medicalTreatment,
         firstAidCase: totals.firstAidCase,
         nearmiss: totals.nearmiss,
-        trirActual: totals.trirActual,
-        trirPlanned: totals.trirPlanned
+        trirActual: latest ? latest.trirActual : 0,
+        trirPlanned: latest ? latest.trirPlanned : 0.6
       },
       latest,
       yearlyData,
@@ -533,43 +522,44 @@ app.get('/api/hseq-kpi', async (req: Request, res: Response): Promise<void> => {
     });
   } catch (err: any) {
     console.error('Error in /api/hseq-kpi:', err);
+    const fallbackRows = [
+      { sNo: 1, year: 2017, safeManhours: 392077, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 0, nearmiss: 0, trirActual: 0, trirPlanned: 0.6 },
+      { sNo: 2, year: 2018, safeManhours: 1635908, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 0, nearmiss: 0, trirActual: 0, trirPlanned: 0.6 },
+      { sNo: 3, year: 2019, safeManhours: 2948991, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 4, nearmiss: 31, trirActual: 0, trirPlanned: 0.6 },
+      { sNo: 4, year: 2020, safeManhours: 4201942, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 5, nearmiss: 38, trirActual: 0, trirPlanned: 0.6 },
+      { sNo: 5, year: 2021, safeManhours: 5406727, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 4, nearmiss: 4, trirActual: 0, trirPlanned: 0.6 },
+      { sNo: 6, year: 2022, safeManhours: 6588709, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 4, nearmiss: 18, trirActual: 0, trirPlanned: 0.6 },
+      { sNo: 7, year: 2023, safeManhours: 7842960, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 1, nearmiss: 4, trirActual: 0, trirPlanned: 0.6 },
+      { sNo: 8, year: 2024, safeManhours: 9257227, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 6, nearmiss: 7, trirActual: 0, trirPlanned: 0.6 },
+      { sNo: 9, year: 2025, safeManhours: 10497943, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 4, nearmiss: 15, trirActual: 0, trirPlanned: 0.6 },
+      { sNo: 10, year: 2026, safeManhours: 11105365, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 6, nearmiss: 8, trirActual: 0, trirPlanned: 0.6 }
+    ];
     res.json({
       success: false,
       error: err?.message || 'Failed to fetch HSEQ_KPI sheet',
       sheetName: 'HSEQ_KPI',
       updatedAt: new Date().toISOString(),
       totals: {
-        safeManhours: 222004450,
+        safeManhours: 59885744,
         fire: 0,
         lti: 0,
         medicalTreatment: 0,
-        firstAidCase: 50,
-        nearmiss: 240,
+        firstAidCase: 34,
+        nearmiss: 125,
         trirActual: 0,
-        trirPlanned: 50
+        trirPlanned: 0.6
       },
       kpis: {
-        safeManhours: 222004450,
+        safeManhours: 11105365,
         fire: 0,
         lti: 0,
         medicalTreatment: 0,
-        firstAidCase: 50,
-        nearmiss: 240,
+        firstAidCase: 6,
+        nearmiss: 8,
         trirActual: 0,
-        trirPlanned: 50
+        trirPlanned: 0.6
       },
-      yearlyData: [
-        { sNo: 1, year: 2017, safeManhours: 22200445, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 5, nearmiss: 24, trirActual: 0, trirPlanned: 5 },
-        { sNo: 2, year: 2018, safeManhours: 22200445, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 5, nearmiss: 24, trirActual: 0, trirPlanned: 5 },
-        { sNo: 3, year: 2019, safeManhours: 22200445, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 5, nearmiss: 24, trirActual: 0, trirPlanned: 5 },
-        { sNo: 4, year: 2020, safeManhours: 22200445, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 5, nearmiss: 24, trirActual: 0, trirPlanned: 5 },
-        { sNo: 5, year: 2021, safeManhours: 22200445, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 5, nearmiss: 24, trirActual: 0, trirPlanned: 5 },
-        { sNo: 6, year: 2022, safeManhours: 22200445, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 5, nearmiss: 24, trirActual: 0, trirPlanned: 5 },
-        { sNo: 7, year: 2023, safeManhours: 22200445, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 5, nearmiss: 24, trirActual: 0, trirPlanned: 5 },
-        { sNo: 8, year: 2024, safeManhours: 22200445, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 5, nearmiss: 24, trirActual: 0, trirPlanned: 5 },
-        { sNo: 9, year: 2025, safeManhours: 22200445, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 5, nearmiss: 24, trirActual: 0, trirPlanned: 5 },
-        { sNo: 10, year: 2026, safeManhours: 22200445, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 5, nearmiss: 24, trirActual: 0, trirPlanned: 5 }
-      ],
+      yearlyData: fallbackRows,
       years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026]
     });
   }
@@ -613,6 +603,126 @@ app.get('/api/contacts', async (_req: Request, res: Response): Promise<void> => 
   }
 });
 
+// Cache for FPCL Directory data
+let fpclDirectoryCache: { timestamp: number; data: any[] } = {
+  timestamp: 0,
+  data: []
+};
+
+// GET /api/fpcl-directory - Live FPCL Telephone & Extension Directory from Google Sheet
+app.get('/api/fpcl-directory', async (_req: Request, res: Response): Promise<void> => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+
+  const now = Date.now();
+  // Return cached data if under 30 seconds old
+  if (fpclDirectoryCache.data.length > 0 && now - fpclDirectoryCache.timestamp < 30000) {
+    res.json({
+      success: true,
+      count: fpclDirectoryCache.data.length,
+      data: fpclDirectoryCache.data,
+      source: 'cache',
+      sheetId: '1SrPdaxzEXbOFVbWin4zJvrc-m9TQKtxFjcyZYamXfpg',
+      tabName: 'FPCL_Directory',
+      lastUpdated: new Date(fpclDirectoryCache.timestamp).toISOString()
+    });
+    return;
+  }
+
+  const sheetId = '1SrPdaxzEXbOFVbWin4zJvrc-m9TQKtxFjcyZYamXfpg';
+  const tabName = 'FPCL_Directory';
+  const candidateUrls = [
+    `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tabName)}&_t=${now}`,
+    `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&sheet=${encodeURIComponent(tabName)}&_t=${now}`,
+    `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&_t=${now}`
+  ];
+
+  let rawCsv = '';
+  for (const url of candidateUrls) {
+    try {
+      const response = await fetch(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'text/csv,text/plain,*/*',
+          'Cache-Control': 'no-cache, no-store, must-revalidate'
+        }
+      });
+      if (response.ok) {
+        const text = await response.text();
+        if (text && !text.includes('<!DOCTYPE html>') && text.includes('Extion_Number')) {
+          rawCsv = text;
+          break;
+        }
+      }
+    } catch {
+      // try next
+    }
+  }
+
+  if (rawCsv) {
+    const lines = rawCsv.split(/\r?\n/).filter(Boolean);
+    const parsed: any[] = [];
+    for (let i = 1; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line) continue;
+      // Parse CSV line handling quotes
+      const match = line.match(/^"?([^",]*)"?,(?:"([^"]*)"|([^,]*)),(?:"([^"]*)"|(.*))$/);
+      if (match) {
+        const sr = (match[1] || '').trim();
+        const ext = (match[2] !== undefined ? match[2] : match[3] || '').trim();
+        const name = (match[4] !== undefined ? match[4] : match[5] || '').trim();
+
+        if (ext || name) {
+          parsed.push({
+            sr: sr || String(parsed.length + 1),
+            ext,
+            name
+          });
+        }
+      }
+    }
+
+    if (parsed.length > 0) {
+      fpclDirectoryCache = {
+        timestamp: now,
+        data: parsed
+      };
+      res.json({
+        success: true,
+        count: parsed.length,
+        data: parsed,
+        source: 'live',
+        sheetId,
+        tabName,
+        lastUpdated: new Date(now).toISOString()
+      });
+      return;
+    }
+  }
+
+  // If live fetch failed but we have stale cache, return it
+  if (fpclDirectoryCache.data.length > 0) {
+    res.json({
+      success: true,
+      count: fpclDirectoryCache.data.length,
+      data: fpclDirectoryCache.data,
+      source: 'stale-cache',
+      sheetId,
+      tabName,
+      lastUpdated: new Date(fpclDirectoryCache.timestamp).toISOString()
+    });
+    return;
+  }
+
+  res.status(502).json({
+    success: false,
+    error: 'Could not fetch FPCL Directory from Google Sheet',
+    sheetId,
+    tabName
+  });
+});
+
 // POST & GET /api/sheets/fetch - Live Google Sheets Tab CSV Proxy (supports Recommendations and PLR tabs)
 app.all('/api/sheets/fetch', async (req: Request, res: Response): Promise<void> => {
   try {
@@ -626,13 +736,15 @@ app.all('/api/sheets/fetch', async (req: Request, res: Response): Promise<void> 
       const sLower = (sheetTab || '').toLowerCase();
       if (sLower === 'contacts' || sLower.includes('contact')) {
         url = 'https://docs.google.com/spreadsheets/d/1mI5WbcNBYtJc1fQjG0ZYQ1PKQzAHp5Sm3gyi9MibW-g/gviz/tq?tqx=out:csv&sheet=Contacts';
+      } else if (sLower === 'fpcl_directory' || sLower.includes('directory') || tileId === 'fpcl_directory' || tileId.includes('directory')) {
+        url = 'https://docs.google.com/spreadsheets/d/1SrPdaxzEXbOFVbWin4zJvrc-m9TQKtxFjcyZYamXfpg/gviz/tq?tqx=out:csv&sheet=FPCL_Directory';
       } else if (sLower === 'scm' || sLower.includes('scm') || tileId === 'scm') {
         const scmSecret = process.env.SCM_SHEET_URL || process.env.STRATEGIC_SCM_SHEET_URL || process.env.GOOGLE_SHEET_SCM || process.env.SCM_URL || process.env.SCM;
         if (scmSecret) url = scmSecret;
       } else if (sLower.includes('validation') || sLower.includes('valid')) {
         url = process.env.PSM_Validation_sheet_URL || process.env.PSM_VALIDATION_SHEET_URL || process.env.PSM_Validation_sheet || 'https://docs.google.com/spreadsheets/d/1bFBRGKqIfO8Pn7qPSTU0pbdTB87ezDyXvVDnCbTGrx4/gviz/tq?tqx=out:csv&sheet=PSM%20Validation';
       } else if (sLower.includes('hseq') || sLower.includes('kpi')) {
-        url = process.env.HSEQ_KPI || 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTyc0eRsaIpv3DWLdBbEplWo5FqrNwuCFpFrXM4_A6pRTkQgHz56DaN9FMV0cuCkQXnXfPDyKS_nsYC/pub?gid=553516171&single=true&output=csv';
+        url = process.env.HSEQ_KPI || 'https://docs.google.com/spreadsheets/d/1bFBRGKqIfO8Pn7qPSTU0pbdTB87ezDyXvVDnCbTGrx4/gviz/tq?tqx=out:csv&sheet=HSEQ_KPI';
       } else if ((sLower.includes('plr') || sLower.includes('status')) && process.env.PLR_STATUS_SHEET_URL) {
         url = process.env.PLR_STATUS_SHEET_URL;
       } else if (sLower.includes('ims') || tileId.includes('ims')) {

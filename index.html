@@ -112,6 +112,8 @@
     <!-- Sub HSE – Mech (Mechanical HSE Sub-Committee) Dataset & Specialized Executive Suite -->
     <script src="/assets/subHseMechData.js?v=20260926b"></script>
     <script src="/assets/subHseMechSuite.js?v=20260928c"></script>
+    <!-- FPCL Live Telephone Directory Suite (Google Sheets ID: 1SrPdaxzEXbOFVbWin4zJvrc-m9TQKtxFjcyZYamXfpg) -->
+    <script src="/assets/fpclDirectorySuite.js?v=20260930"></script>
 
     <style>
       /* Base font legibility: standard across devices, calibrated for wall displays */
@@ -981,21 +983,21 @@
                 <i data-lucide="arrow-up-right" class="w-2.5 h-2.5 text-rose-100/90 shrink-0"></i>
               </button>
 
-              <!-- 7. FPCL Directory -->
+              <!-- 7. FPCL Directory (Live Telephone & Extension Directory from Google Sheet) -->
               <button
                 id="link-btn-responsibility"
                 data-name="fpcl-directory"
-                data-alias="fpcl directory directory responsibility responsibilty governance"
+                data-alias="fpcl directory directory telephone phone extensions matrix contacts"
                 type="button"
-                onclick="event.stopPropagation(); portalApp.openResponsibilityModal(event);"
-                class="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-[7px] text-[10px] sm:text-[11px] font-bold text-white bg-gradient-to-r from-cyan-600 via-teal-600 to-emerald-600 hover:from-cyan-700 hover:via-teal-700 hover:to-emerald-700 border border-cyan-500/40 shadow-2xs hover:shadow-xs transition-all cursor-pointer whitespace-nowrap select-none"
-                title="FPCL Directory • Department Scope &amp; Governance Matrix"
+                onclick="event.stopPropagation(); portalApp.openDirectoryModal(event);"
+                class="inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 rounded-[7px] text-[10px] sm:text-[11px] font-bold text-white bg-gradient-to-r from-teal-600 via-emerald-600 to-cyan-600 hover:from-teal-700 hover:via-emerald-700 hover:to-cyan-700 border border-teal-500/40 shadow-2xs hover:shadow-xs transition-all cursor-pointer whitespace-nowrap select-none"
+                title="FPCL Directory • Live Telephone &amp; Extension Directory from Google Sheet"
               >
-                <i data-lucide="book-open" class="w-3 h-3 text-white shrink-0"></i>
+                <i data-lucide="phone" class="w-3 h-3 text-white shrink-0"></i>
                 <span>FPCL Directory</span>
                 <i data-lucide="arrow-up-right" class="w-2.5 h-2.5 text-cyan-100/90 shrink-0"></i>
               </button>
-              <span id="link-btn-responsibilty" class="hidden" aria-hidden="true" onclick="portalApp.openResponsibilityModal(event)"></span>
+              <span id="link-btn-responsibilty" class="hidden" aria-hidden="true" onclick="portalApp.openDirectoryModal(event)"></span>
 
               <!-- Subtle Divider Separator -->
               <div class="h-4 w-px bg-slate-300 mx-0.5 hidden sm:block shrink-0"></div>
@@ -1169,7 +1171,7 @@
               <!-- Main Value -->
               <div class="flex-1 flex flex-col justify-center items-center text-center min-w-0 w-full overflow-hidden my-auto py-1">
                 <div id="kpi-val-safe-manhours" class="text-xl min-[360px]:text-2xl min-[400px]:text-[1.65rem] sm:text-3xl lg:text-[1.55rem] xl:text-[1.95rem] font-black font-mono tracking-tight text-emerald-800 leading-none whitespace-nowrap text-center -mx-2 sm:mx-0 my-auto cursor-pointer" title="Safe Manhours (Click to view trend)">
-                  22,200,445
+                  11,105,365
                 </div>
               </div>
             </div>
@@ -1205,7 +1207,7 @@
                 <!-- Planned Box -->
                 <div class="flex-1 flex flex-col items-center justify-center bg-blue-50/90 border border-blue-200/90 rounded-lg py-1 px-1 shadow-2xs hover:bg-blue-100/80 transition-colors">
                   <span class="text-[8px] sm:text-[9px] font-black uppercase tracking-wider text-blue-700 font-mono">Planned</span>
-                  <span id="kpi-val-trir-planned" class="text-base sm:text-xl xl:text-2xl font-black font-mono text-blue-950 leading-none mt-0.5" title="TRIR Planned Target: 5">5</span>
+                  <span id="kpi-val-trir-planned" class="text-base sm:text-xl xl:text-2xl font-black font-mono text-blue-950 leading-none mt-0.5" title="TRIR Planned Target: 0.6">0.6</span>
                 </div>
                 <!-- Actual Box -->
                 <div class="flex-1 flex flex-col items-center justify-center bg-emerald-50/90 border border-emerald-200/90 rounded-lg py-1 px-1 shadow-2xs hover:bg-emerald-100/80 transition-colors">
@@ -1312,7 +1314,7 @@
               <!-- Main Value -->
               <div class="flex-1 flex flex-col justify-center items-center text-center my-auto py-1">
                 <div id="kpi-val-first-aid" class="text-2xl sm:text-4xl lg:text-5xl xl:text-6xl font-black font-mono tracking-tight text-amber-800 leading-none text-center hseq-kpi-val cursor-pointer" title="First Aid Case (Click to view trend)">
-                  5
+                  6
                 </div>
               </div>
             </div>
@@ -1346,7 +1348,7 @@
               <!-- Main Value -->
               <div class="flex-1 flex flex-col justify-center items-center text-center my-auto py-1">
                 <div id="kpi-val-nearmiss" class="text-2xl sm:text-4xl lg:text-5xl xl:text-6xl font-black font-mono tracking-tight text-sky-800 leading-none text-center hseq-kpi-val cursor-pointer" title="Near Miss (Click to view trend)">
-                  24
+                  8
                 </div>
               </div>
             </div>
@@ -2472,206 +2474,197 @@
       </div>
     </div>
 
-    <!-- Responsibility & Governance Matrix Modal -->
+    <!-- FPCL Live Telephone Directory Modal (Enlarged Window) -->
     <div
       id="responsibility-modal"
-      onclick="if(event.target === this) portalApp.closeResponsibilityModal()"
-      class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs hidden items-center justify-center p-3 sm:p-4 overflow-y-auto"
+      data-modal="fpcl-directory"
+      onclick="if(event.target === this) portalApp.closeDirectoryModal()"
+      class="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs hidden items-center justify-center p-1 sm:p-2.5 md:p-4 overflow-hidden"
     >
-      <div class="bg-white border border-slate-200 rounded-2xl max-w-4xl w-full p-4 sm:p-6 shadow-2xl space-y-4 max-h-[92vh] flex flex-col">
+      <div class="bg-white border border-slate-200 rounded-2xl w-[98vw] max-w-[1720px] h-[96vh] sm:h-[95vh] p-3.5 sm:p-5 md:p-6 shadow-2xl space-y-3.5 flex flex-col">
         <!-- Header -->
         <div class="flex items-center justify-between pb-3 border-b border-slate-200 shrink-0">
-          <div class="flex items-center gap-2.5">
-            <span class="p-2 sm:p-2.5 rounded-xl bg-gradient-to-r from-cyan-600 via-teal-600 to-emerald-600 text-white shadow-xs">
-              <i data-lucide="shield-check" class="w-5 h-5"></i>
+          <div class="flex items-center gap-3">
+            <span class="p-2.5 sm:p-3 rounded-xl bg-gradient-to-r from-teal-600 via-emerald-600 to-cyan-600 text-white shadow-md">
+              <i data-lucide="phone-call" class="w-5 h-5 sm:w-6 sm:h-6"></i>
             </span>
             <div>
-              <h3 class="text-sm sm:text-base font-bold text-[#1E293B]">FPCL Directory &amp; Governance Matrix</h3>
-              <p class="text-[11px] sm:text-xs text-slate-500">Operational Scopes, Action Ownership &amp; Oversight Committee Mandates</p>
+              <h3 class="text-base sm:text-xl font-extrabold text-[#1E293B] tracking-tight">FPCL Telephone Directory</h3>
+            </div>
+          </div>
+
+          <!-- Controls & Actions -->
+          <div class="flex items-center gap-2 shrink-0">
+            <!-- Refresh Button -->
+            <button
+              id="directory-refresh-btn"
+              type="button"
+              onclick="portalDirectorySuite.fetchLiveData(true)"
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-all cursor-pointer shadow-2xs active:scale-95"
+              title="Refresh live data from Google Sheet"
+            >
+              <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-slate-600"></i>
+              <span class="hidden sm:inline">Sync</span>
+            </button>
+
+            <!-- Close Modal -->
+            <button
+              type="button"
+              onclick="portalApp.closeDirectoryModal()"
+              class="text-slate-400 hover:text-slate-700 p-1.5 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer ml-1"
+              title="Close directory (Esc)"
+            >
+              <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Plant Emergency Highlight Alert Strip -->
+        <div class="p-2.5 sm:p-3 rounded-xl bg-gradient-to-r from-red-600 via-rose-600 to-red-700 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-sm border border-red-500/80 shrink-0">
+          <div class="flex items-center gap-2.5">
+            <span class="p-1.5 rounded-lg bg-white/20 text-white shrink-0 animate-pulse">
+              <i data-lucide="alert-octagon" class="w-4 h-4"></i>
+            </span>
+            <div>
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-xs sm:text-sm font-extrabold uppercase tracking-wide">Plant Safety Emergency</span>
+                <span class="px-2 py-0.5 rounded-md bg-white text-red-700 font-mono font-black text-xs sm:text-sm shadow-xs">
+                  EXT 8888
+                </span>
+              </div>
+              <p class="text-[11px] text-red-100 leading-tight">Direct 24/7 FPCL Emergency Response, Incident Command &amp; Fire Station Hotline</p>
             </div>
           </div>
           <button
             type="button"
-            onclick="portalApp.closeResponsibilityModal()"
-            class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
-            title="Close matrix"
+            onclick="portalDirectorySuite.copyExtension('8888', 'Safety Emergency', event)"
+            class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-black bg-white text-red-700 hover:bg-red-50 transition-all cursor-pointer shadow-xs active:scale-95 shrink-0 self-start sm:self-auto"
+            title="Copy Emergency Extension 8888"
           >
-            <i data-lucide="x" class="w-5 h-5"></i>
+            <i data-lucide="copy" class="w-3.5 h-3.5 text-red-600"></i>
+            <span>Copy 8888</span>
           </button>
         </div>
 
-        <!-- Filter Search Bar -->
-        <div class="relative shrink-0">
-          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-            <i data-lucide="search" class="w-4 h-4"></i>
+        <!-- Search Bar, View Mode & Sort Controls -->
+        <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2.5 shrink-0">
+          <!-- Search Bar -->
+          <div class="relative flex-1">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+              <i data-lucide="search" class="w-4 h-4"></i>
+            </div>
+            <input
+              id="directory-modal-search"
+              type="text"
+              placeholder="Search directory by name, extension (e.g. 8000, 8888), or department..."
+              class="w-full pl-9 pr-8 py-2 bg-slate-50 hover:bg-white focus:bg-white border border-slate-300 rounded-xl text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all shadow-2xs"
+              oninput="portalDirectorySuite.setSearch(this.value)"
+            />
+            <button
+              type="button"
+              onclick="document.getElementById('directory-modal-search').value = ''; portalDirectorySuite.setSearch('');"
+              class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer"
+              title="Clear search"
+            >
+              <i data-lucide="x-circle" class="w-3.5 h-3.5"></i>
+            </button>
           </div>
-          <input
-            id="responsibility-modal-search"
-            type="text"
-            placeholder="Search responsibility by department, dashboard name, or operational scope..."
-            class="w-full pl-9 pr-4 py-2 bg-slate-50 hover:bg-white focus:bg-white border border-slate-300 rounded-xl text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all shadow-2xs"
-            oninput="portalApp.filterResponsibilityModal(this.value)"
-          />
+
+          <!-- Secondary Toolbar: Sort, View Switcher & Result Count -->
+          <div class="flex items-center justify-between md:justify-end gap-2 shrink-0">
+            <!-- Results count badge -->
+            <span id="directory-result-count" class="text-xs font-bold text-slate-600 font-mono whitespace-nowrap">
+              Loading contacts...
+            </span>
+
+            <!-- Sort Select -->
+            <div class="relative">
+              <select
+                id="directory-sort-select"
+                onchange="portalDirectorySuite.setSort(this.value)"
+                class="appearance-none pl-2.5 pr-7 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-300 rounded-xl text-xs font-bold text-slate-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-teal-500 shadow-2xs"
+              >
+                <option value="ext_asc">Extension (Low to High)</option>
+                <option value="ext_desc">Extension (High to Low)</option>
+                <option value="name_asc">Name (A → Z)</option>
+                <option value="name_desc">Name (Z → A)</option>
+                <option value="sr_asc">Serial # (Default)</option>
+              </select>
+              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500">
+                <i data-lucide="chevron-down" class="w-3 h-3"></i>
+              </div>
+            </div>
+
+            <!-- View Mode Switcher -->
+            <div class="inline-flex rounded-xl border border-slate-200 p-0.5 bg-slate-100 shadow-2xs shrink-0">
+              <button
+                type="button"
+                id="directory-view-table-btn"
+                onclick="portalDirectorySuite.setViewMode('table');"
+                class="px-2.5 py-1 rounded-lg text-xs font-bold bg-white text-teal-800 shadow-xs transition-all cursor-pointer flex items-center gap-1"
+                title="Table List View (Default)"
+              >
+                <i data-lucide="table" class="w-3.5 h-3.5"></i>
+                <span class="hidden sm:inline">Table</span>
+              </button>
+              <button
+                type="button"
+                id="directory-view-grid-btn"
+                onclick="portalDirectorySuite.setViewMode('grid');"
+                class="px-2.5 py-1 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition-all cursor-pointer flex items-center gap-1"
+                title="Card Grid View"
+              >
+                <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i>
+                <span class="hidden sm:inline">Cards</span>
+              </button>
+            </div>
+          </div>
         </div>
 
-        <!-- Responsibility Cards List (Scrollable) -->
-        <div class="overflow-y-auto flex-1 pr-1 space-y-3 text-xs">
-          <!-- 1. HSEQ -->
-          <div class="responsibility-matrix-card p-3 rounded-xl border border-emerald-200 bg-emerald-50/30 space-y-2 hover:bg-emerald-50/60 transition-colors" data-search-text="hseq health safety environment quality psm audits psm validation ims ehse overview pha moc pssr investigations">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
-                <span class="font-bold text-slate-800 text-xs uppercase tracking-wide">Health, Safety, Environment &amp; Quality (HSEQ)</span>
-              </div>
-              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">Primary Governance</span>
-            </div>
-            <div class="text-[11px] text-slate-600 leading-relaxed">
-              <strong>Core Responsibilities:</strong> Oversight of Process Safety Management (PSM 14 elements), Environmental statutory reporting (SEQS / EPA), Integrated Management Systems (IMS audits), Pre-Startup Safety Reviews (PSSR), and Occupational incident reporting and investigation.
-            </div>
-            <div class="flex flex-wrap items-center gap-1.5 pt-1 text-[10px] font-mono">
-              <span class="text-slate-400 font-sans">Associated Dashboards:</span>
-              <span class="px-1.5 py-0.5 rounded bg-white border border-emerald-200 text-emerald-800">PSM Audits</span>
-              <span class="px-1.5 py-0.5 rounded bg-white border border-emerald-200 text-emerald-800">PSM Validation</span>
-              <span class="px-1.5 py-0.5 rounded bg-white border border-emerald-200 text-emerald-800">IMS</span>
-              <span class="px-1.5 py-0.5 rounded bg-white border border-emerald-200 text-emerald-800">EHSE</span>
-              <span class="px-1.5 py-0.5 rounded bg-white border border-emerald-200 text-emerald-800">Overview HSEQ KPIs</span>
-            </div>
+        <!-- Scrollable Category Tabs Bar -->
+        <div id="directory-category-tabs" class="flex items-center gap-1.5 overflow-x-auto pb-1 shrink-0 scrollbar-thin">
+          <!-- Dynamically populated by portalDirectorySuite.updateCategoryTabs() -->
+        </div>
+
+        <!-- Scrollable Contacts Grid / Table Container -->
+        <div class="overflow-y-auto flex-1 pr-1 min-h-[300px]">
+          <!-- Contacts Mount Point -->
+          <div id="directory-contacts-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3">
+            <!-- Dynamically populated by portalDirectorySuite.render() -->
           </div>
 
-          <!-- 2. Operations (PSG & CASH) -->
-          <div class="responsibility-matrix-card p-3 rounded-xl border border-blue-200 bg-blue-50/30 space-y-2 hover:bg-blue-50/60 transition-colors" data-search-text="operations psg cash power steam generation coal ash handling sub hse p strategic dashboard plr ccr boiler turbine grid">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
-                <span class="font-bold text-slate-800 text-xs uppercase tracking-wide">Plant Operations (PSG &amp; CASH)</span>
-              </div>
-              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800">Plant Operations</span>
+          <!-- Empty State -->
+          <div id="directory-empty-state" class="hidden text-center py-12 px-4">
+            <div class="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-3 text-slate-400">
+              <i data-lucide="search-x" class="w-6 h-6"></i>
             </div>
-            <div class="text-[11px] text-slate-600 leading-relaxed">
-              <strong>Core Responsibilities:</strong> Continuous execution of power and steam dispatch, safe combustion in pulverized coal boilers, STG turbine operation, coal conveyor receipt/bunkering, dense-phase ash extraction, demineralized water chemistry, and Sub HSE Committee (Production) action fulfillment.
-            </div>
-            <div class="flex flex-wrap items-center gap-1.5 pt-1 text-[10px] font-mono">
-              <span class="text-slate-400 font-sans">Associated Dashboards:</span>
-              <span class="px-1.5 py-0.5 rounded bg-white border border-blue-200 text-blue-800">Sub HSE – P</span>
-              <span class="px-1.5 py-0.5 rounded bg-white border border-blue-200 text-blue-800">Strategic Dashboard</span>
-              <span class="px-1.5 py-0.5 rounded bg-white border border-blue-200 text-blue-800">PLR (Loss Reports)</span>
-            </div>
-          </div>
-
-          <!-- 3. Mechanical Maintenance -->
-          <div class="responsibility-matrix-card p-3 rounded-xl border border-amber-200 bg-amber-50/30 space-y-2 hover:bg-amber-50/60 transition-colors" data-search-text="mechanical maintenance sub hse mech capex plr rotating equipment boiler tubes pumps compressors sootblowers valves">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <span class="w-2.5 h-2.5 rounded-full bg-amber-600"></span>
-                <span class="font-bold text-slate-800 text-xs uppercase tracking-wide">Mechanical Maintenance Department</span>
-              </div>
-              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800">Asset Maintenance</span>
-            </div>
-            <div class="text-[11px] text-slate-600 leading-relaxed">
-              <strong>Core Responsibilities:</strong> Overhauls of major rotating equipment, boiler pressure part inspections, steam turbine stop/governor valves, coal crushers, fans, electrostatic precipitator (ESP) mechanical components, vibration issue rectification, and mechanical CAPEX installations.
-            </div>
-            <div class="flex flex-wrap items-center gap-1.5 pt-1 text-[10px] font-mono">
-              <span class="text-slate-400 font-sans">Associated Dashboards:</span>
-              <span class="px-1.5 py-0.5 rounded bg-white border border-amber-200 text-amber-800">Sub HSE – Mech</span>
-              <span class="px-1.5 py-0.5 rounded bg-white border border-amber-200 text-amber-800">CAPEX Projects</span>
-              <span class="px-1.5 py-0.5 rounded bg-white border border-amber-200 text-amber-800">PLR Mechanical Failures</span>
-            </div>
-          </div>
-
-          <!-- 4. Electrical & Instrumentation (E&I) -->
-          <div class="responsibility-matrix-card p-3 rounded-xl border border-indigo-200 bg-indigo-50/30 space-y-2 hover:bg-indigo-50/60 transition-colors" data-search-text="e&i electrical instrumentation sub hse e&i pssr dcs scada switchyard transformers interlocks esd trips calibration">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <span class="w-2.5 h-2.5 rounded-full bg-indigo-600"></span>
-                <span class="font-bold text-slate-800 text-xs uppercase tracking-wide">Electrical &amp; Instrumentation (E&amp;I)</span>
-              </div>
-              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-100 text-indigo-800">Controls &amp; Power</span>
-            </div>
-            <div class="text-[11px] text-slate-600 leading-relaxed">
-              <strong>Core Responsibilities:</strong> Management of Distributed Control Systems (DCS), safety instrumented systems (SIS) and ESD trips, 132kV switchyard maintenance, grid transformers, motor control centers (MCC), field sensor calibration, loop checks, and PSSR electrical verifications.
-            </div>
-            <div class="flex flex-wrap items-center gap-1.5 pt-1 text-[10px] font-mono">
-              <span class="text-slate-400 font-sans">Associated Dashboards:</span>
-              <span class="px-1.5 py-0.5 rounded bg-white border border-indigo-200 text-indigo-800">Sub HSE – E&amp;I</span>
-              <span class="px-1.5 py-0.5 rounded bg-white border border-indigo-200 text-indigo-800">PSSR Reviews</span>
-              <span class="px-1.5 py-0.5 rounded bg-white border border-indigo-200 text-indigo-800">Strategic E&amp;I</span>
-            </div>
-          </div>
-
-          <!-- 5. Plant Technical Evaluation (PTE) & Inspection -->
-          <div class="responsibility-matrix-card p-3 rounded-xl border border-teal-200 bg-teal-50/30 space-y-2 hover:bg-teal-50/60 transition-colors" data-search-text="pte inspection plant technical evaluation reliability ndt metallurgy vibration rla life assessment rcfa plr psm validation">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <span class="w-2.5 h-2.5 rounded-full bg-teal-600"></span>
-                <span class="font-bold text-slate-800 text-xs uppercase tracking-wide">Plant Technical Evaluation (PTE) &amp; Inspection</span>
-              </div>
-              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-teal-100 text-teal-800">Technical Assurance</span>
-            </div>
-            <div class="text-[11px] text-slate-600 leading-relaxed">
-              <strong>Core Responsibilities:</strong> Non-Destructive Testing (NDT), metallurgical evaluations, vibration spectral analysis, root-cause failure analysis (RCFA) for loss events, equipment remaining useful life assessments, and technical evaluation of engineering modifications (MOC).
-            </div>
-            <div class="flex flex-wrap items-center gap-1.5 pt-1 text-[10px] font-mono">
-              <span class="text-slate-400 font-sans">Associated Dashboards:</span>
-              <span class="px-1.5 py-0.5 rounded bg-white border border-teal-200 text-teal-800">PLR Root Cause Analysis</span>
-              <span class="px-1.5 py-0.5 rounded bg-white border border-teal-200 text-teal-800">PSM Validation</span>
-              <span class="px-1.5 py-0.5 rounded bg-white border border-teal-200 text-teal-800">IMS Reliability</span>
-            </div>
-          </div>
-
-          <!-- 6. CAPEX & Capital Projects -->
-          <div class="responsibility-matrix-card p-3 rounded-xl border border-cyan-200 bg-cyan-50/30 space-y-2 hover:bg-cyan-50/60 transition-colors" data-search-text="capex capital projects wbs elements budget procurement milestone engineering modifications vendor contracts">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <span class="w-2.5 h-2.5 rounded-full bg-cyan-600"></span>
-                <span class="font-bold text-slate-800 text-xs uppercase tracking-wide">Capital Expenditure (CAPEX) &amp; Projects Committee</span>
-              </div>
-              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-100 text-cyan-800">Projects &amp; Upgrades</span>
-            </div>
-            <div class="text-[11px] text-slate-600 leading-relaxed">
-              <strong>Core Responsibilities:</strong> Execution of capital projects across plant assets, tracking of WBS elements, expenditure and available budget monitoring, vendor contract compliance, commissioning safety sign-offs, and technical delivery of plant enhancements.
-            </div>
-            <div class="flex flex-wrap items-center gap-1.5 pt-1 text-[10px] font-mono">
-              <span class="text-slate-400 font-sans">Associated Dashboards:</span>
-              <span class="px-1.5 py-0.5 rounded bg-white border border-cyan-200 text-cyan-800">CAPEX Dashboard</span>
-              <span class="px-1.5 py-0.5 rounded bg-white border border-cyan-200 text-cyan-800">Strategic Projects</span>
-            </div>
-          </div>
-
-          <!-- 7. Administration, Security & ICT -->
-          <div class="responsibility-matrix-card p-3 rounded-xl border border-slate-300 bg-slate-50/60 space-y-2 hover:bg-slate-100/60 transition-colors" data-search-text="admin security ict it helpdesk sap site security gate passes emergency logistics visitor cards hr">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <span class="w-2.5 h-2.5 rounded-full bg-slate-700"></span>
-                <span class="font-bold text-slate-800 text-xs uppercase tracking-wide">Administration, Site Security &amp; ICT</span>
-              </div>
-              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-200 text-slate-800">Corporate &amp; Site Security</span>
-            </div>
-            <div class="text-[11px] text-slate-600 leading-relaxed">
-              <strong>Core Responsibilities:</strong> Physical plant security, security gate access control, visitor safety cards, site emergency evacuation muster logistics, corporate IT infrastructure, SAP and intranet portals uptime, and employee logistics services.
-            </div>
-            <div class="flex flex-wrap items-center gap-1.5 pt-1 text-[10px] font-mono">
-              <span class="text-slate-400 font-sans">Associated Dashboards:</span>
-              <span class="px-1.5 py-0.5 rounded bg-white border border-slate-300 text-slate-800">IMS Audit (Security Gate)</span>
-              <span class="px-1.5 py-0.5 rounded bg-white border border-slate-300 text-slate-800">Strategic Admin &amp; Security</span>
-            </div>
-          </div>
-
-          <div id="responsibility-no-matches" class="hidden text-center py-8 text-slate-400">
-            <i data-lucide="search-x" class="w-8 h-8 mx-auto mb-2 text-slate-300"></i>
-            <div class="font-bold text-slate-600">No matching department found</div>
-            <p class="text-[11px] text-slate-400 mt-0.5">Try searching with a different term such as Operations, HSEQ, Mechanical, E&amp;I, or CAPEX.</p>
+            <div class="font-bold text-slate-700 text-sm">No contacts found</div>
+            <p class="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+              No directory entries matched your search query or active filter. Try searching with a different name or extension number.
+            </p>
+            <button
+              type="button"
+              onclick="document.getElementById('directory-modal-search').value = ''; portalDirectorySuite.setCategory('all'); portalDirectorySuite.setSearch('');"
+              class="mt-3 inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold bg-teal-600 text-white hover:bg-teal-700 transition-colors cursor-pointer"
+            >
+              Reset Filters
+            </button>
           </div>
         </div>
 
         <!-- Footer -->
         <div class="flex items-center justify-between pt-3 border-t border-slate-200 text-xs shrink-0">
-          <span class="text-slate-500 text-[11px] font-mono">FPCL Governance &amp; RACI Architecture</span>
+          <div class="flex items-center gap-2 text-[11px] text-slate-500 font-medium">
+            <span class="font-bold text-slate-700">FFBL Power Company Limited (FPCL)</span>
+            <span class="text-slate-300">•</span>
+            <span>268 Plant Extensions</span>
+          </div>
           <button
             type="button"
-            onclick="portalApp.closeResponsibilityModal()"
+            onclick="portalApp.closeDirectoryModal()"
             class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors cursor-pointer"
           >
-            Close Matrix
+            Close Directory
           </button>
         </div>
       </div>
@@ -5121,7 +5114,7 @@
         },
 
         /**
-         * Fetch live HSEQ Key Performance Indicators from Google Sheet (HSEQ_KPI)
+         * Fetch live HSEQ Key Performance Indicators from Google Sheet ID 1bFBRGKqIfO8Pn7qPSTU0pbdTB87ezDyXvVDnCbTGrx4 (Tab: HSEQ_KPI)
          */
         async fetchHseqKpis(showToastNotice = false) {
           const btn = document.getElementById('btn-refresh-hseq-kpis');
@@ -5129,11 +5122,36 @@
           if (icon) icon.classList.add('animate-spin');
 
           try {
-            const res = await fetch('/api/hseq-kpi', { cache: 'no-store' });
-            if (!res.ok) {
-              throw new Error(`HTTP ${res.status}`);
+            let data = null;
+            // 1. Fetch via backend proxy /api/hseq-kpi
+            try {
+              const res = await fetch('/api/hseq-kpi', { cache: 'no-store' });
+              if (res.ok) {
+                const json = await res.json();
+                if (json && json.success && Array.isArray(json.yearlyData) && json.yearlyData.length > 0) {
+                  data = json;
+                }
+              }
+            } catch (apiErr) {
+              console.warn('API /api/hseq-kpi fetch error:', apiErr);
             }
-            const data = await res.json();
+
+            // 2. Direct fallback to Google Sheet ID 1bFBRGKqIfO8Pn7qPSTU0pbdTB87ezDyXvVDnCbTGrx4 tab HSEQ_KPI
+            if (!data || !data.yearlyData || data.yearlyData.length === 0) {
+              try {
+                const directUrl = 'https://docs.google.com/spreadsheets/d/1bFBRGKqIfO8Pn7qPSTU0pbdTB87ezDyXvVDnCbTGrx4/gviz/tq?tqx=out:csv&sheet=HSEQ_KPI';
+                const directRes = await fetch(directUrl, { cache: 'no-store' });
+                if (directRes.ok) {
+                  const csvText = await directRes.text();
+                  if (csvText && csvText.includes(',')) {
+                    data = this.parseHseqKpiCsv(csvText);
+                  }
+                }
+              } catch (directErr) {
+                console.warn('Direct HSEQ_KPI Google Sheet fetch error:', directErr);
+              }
+            }
+
             if (data) {
               this.state.hseqTotals = data.totals || null;
               this.state.hseqYearlyData = Array.isArray(data.yearlyData) ? data.yearlyData : [];
@@ -5142,14 +5160,21 @@
               this.state.hseqLatest = data.latest || null;
 
               const currentCalendarYear = String(new Date().getFullYear());
-              if (!this.state.hseqSelectedYear) {
-                this.state.hseqSelectedYear = currentCalendarYear;
+              const hasSelectedYear = this.state.hseqSelectedYear && this.state.hseqYears.map(String).includes(String(this.state.hseqSelectedYear));
+              if (!hasSelectedYear) {
+                if (this.state.hseqYears.map(String).includes(currentCalendarYear)) {
+                  this.state.hseqSelectedYear = currentCalendarYear;
+                } else if (this.state.hseqYears.length > 0) {
+                  this.state.hseqSelectedYear = String(this.state.hseqYears[this.state.hseqYears.length - 1]);
+                } else {
+                  this.state.hseqSelectedYear = currentCalendarYear;
+                }
               }
 
               // Populate Year select dropdown if available
               this.populateHseqYearDropdown(this.state.hseqYears);
 
-              // Apply current year filter by default (defaults to current year for HSEQ_KPI)
+              // Apply current year filter (picking specific year from column H)
               this.applyHseqKpiFilter(this.state.hseqSelectedYear);
 
               const lastUpdatedEl = document.getElementById('hseq-kpi-last-updated');
@@ -5163,17 +5188,17 @@
               }
             }
           } catch (err) {
-            console.error('Error fetching /api/hseq-kpi:', err);
+            console.error('Error fetching HSEQ_KPI:', err);
             // Default baseline fallback if offline
             if (!this.state.hseqTotals) {
               this.state.hseqTotals = {
-                safeManhours: 222004450,
-                trirPlanned: 50,
+                safeManhours: 59877849,
+                trirPlanned: 0.6,
                 trirActual: 0,
                 lti: 0,
                 medicalTreatment: 0,
-                firstAidCase: 50,
-                nearmiss: 240
+                firstAidCase: 34,
+                nearmiss: 125
               };
               const currentCalendarYear = String(new Date().getFullYear());
               if (!this.state.hseqSelectedYear) {
@@ -5188,6 +5213,133 @@
             if (icon) icon.classList.remove('animate-spin');
             if (window.lucide) window.lucide.createIcons();
           }
+        },
+
+        parseHseqKpiCsv(csvText) {
+          if (!csvText || typeof csvText !== 'string') return null;
+          const lines = csvText.trim().split(/\r\n|\r|\n/).filter(line => line.trim().length > 0);
+          if (lines.length < 2) return null;
+
+          const parseCsvRow = (rowStr) => {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            for (let i = 0; i < rowStr.length; i++) {
+              const char = rowStr[i];
+              if (char === '"' || char === "'") {
+                inQuotes = !inQuotes;
+              } else if (char === ',' && !inQuotes) {
+                result.push(current.trim());
+                current = '';
+              } else {
+                current += char;
+              }
+            }
+            result.push(current.trim());
+            return result.map(s => s.replace(/^["']|["']$/g, '').trim());
+          };
+
+          const headers = parseCsvRow(lines[0]);
+          const parseNum = (val, fallback = 0) => {
+            if (val === undefined || val === null || val === '') return fallback;
+            const clean = String(val).replace(/,/g, '').trim();
+            const num = parseFloat(clean);
+            return isNaN(num) ? fallback : num;
+          };
+
+          const headerIndices = {};
+          headers.forEach((h, idx) => {
+            const norm = h.toLowerCase().replace(/[^a-z0-9]/g, '');
+            if (norm) {
+              if (headerIndices[norm] === undefined) {
+                headerIndices[norm] = idx;
+              } else {
+                headerIndices[`${norm}1`] = idx;
+              }
+            }
+          });
+
+          const getRowVal = (row, keys, defaultVal, fallbackIdx) => {
+            for (const k of keys) {
+              const norm = k.toLowerCase().replace(/[^a-z0-9]/g, '');
+              if (headerIndices[norm] !== undefined && row[headerIndices[norm]] !== undefined && row[headerIndices[norm]] !== '') {
+                return parseNum(row[headerIndices[norm]], defaultVal);
+              }
+            }
+            if (fallbackIdx !== undefined && row[fallbackIdx] !== undefined && row[fallbackIdx] !== '') {
+              return parseNum(row[fallbackIdx], defaultVal);
+            }
+            return defaultVal;
+          };
+
+          const yearlyData = [];
+          const rows = lines.slice(1);
+          rows.forEach((line, rIdx) => {
+            const values = parseCsvRow(line);
+            if (values.length < 2 || !values.some(v => v.length > 0)) return;
+
+            // Column H (index 7) named 'Year'
+            const year = getRowVal(values, ['year', 'yr'], 2017 + rIdx, 7);
+            const sNo = getRowVal(values, ['s', 'sno', 's_#', 'sr'], rIdx + 1, 0);
+            const safeManhours = getRowVal(values, ['safemanhours', 'manhours'], 0, 1);
+            const fire = getRowVal(values, ['fire', 'fireincidents'], 0, 2);
+            const lti = getRowVal(values, ['lti', 'losttimeinjury'], 0, 3);
+            const medicalTreatment = getRowVal(values, ['medicaltreatment', 'medical'], 0, 4);
+            const firstAidCase = getRowVal(values, ['firstaidcase', 'firstaid'], 0, 5);
+            const nearmiss = getRowVal(values, ['nearmiss', 'nearmisses'], 0, 6);
+            const trirActual = getRowVal(values, ['triractual', 'triract', 'trir_actual'], 0, 8);
+            const trirPlanned = getRowVal(values, ['trirplan', 'trirplanned', 'trirtarget', 'trir_plan', 'triractual1'], 0.6, 9);
+
+            if (year) {
+              yearlyData.push({
+                sNo,
+                year,
+                safeManhours,
+                fire,
+                lti,
+                medicalTreatment,
+                firstAidCase,
+                nearmiss,
+                trirActual,
+                trirPlanned
+              });
+            }
+          });
+
+          yearlyData.sort((a, b) => Number(a.year) - Number(b.year));
+          const totals = {
+            safeManhours: yearlyData.reduce((acc, row) => acc + (row.safeManhours || 0), 0),
+            fire: yearlyData.reduce((acc, row) => acc + (row.fire || 0), 0),
+            lti: yearlyData.reduce((acc, row) => acc + (row.lti || 0), 0),
+            medicalTreatment: yearlyData.reduce((acc, row) => acc + (row.medicalTreatment || 0), 0),
+            firstAidCase: yearlyData.reduce((acc, row) => acc + (row.firstAidCase || 0), 0),
+            nearmiss: yearlyData.reduce((acc, row) => acc + (row.nearmiss || 0), 0),
+            trirActual: yearlyData.reduce((acc, row) => acc + (row.trirActual || 0), 0),
+            trirPlanned: yearlyData.length > 0 ? yearlyData[yearlyData.length - 1].trirPlanned : 0.6
+          };
+          const latest = yearlyData[yearlyData.length - 1] || yearlyData[0];
+          const years = yearlyData.map(r => r.year);
+
+          return {
+            success: true,
+            sheetName: 'HSEQ_KPI',
+            updatedAt: new Date().toISOString(),
+            totals,
+            kpis: {
+              safeManhours: latest ? latest.safeManhours : totals.safeManhours,
+              fire: totals.fire,
+              lti: totals.lti,
+              medicalTreatment: totals.medicalTreatment,
+              firstAidCase: totals.firstAidCase,
+              nearmiss: totals.nearmiss,
+              trirActual: latest ? latest.trirActual : 0,
+              trirPlanned: latest ? latest.trirPlanned : 0.6
+            },
+            latest,
+            yearlyData,
+            years,
+            rawHeaders: headers
+          };
         },
 
         /**
@@ -5483,15 +5635,14 @@
           let subTextMap = {};
 
           if (isAll) {
-            // Requirement 2: Show sum of all values per category in KPIs
             dataToDisplay = this.state.hseqTotals || {
-              safeManhours: 222004450,
-              trirPlanned: 50,
+              safeManhours: 59877849,
+              trirPlanned: 0.6,
               trirActual: 0,
               lti: 0,
               medicalTreatment: 0,
-              firstAidCase: 50,
-              nearmiss: 240
+              firstAidCase: 34,
+              nearmiss: 125
             };
 
             if (badgeText) badgeText.textContent = '';
@@ -5501,25 +5652,25 @@
 
             subTextMap = {
               safeManhours: `Sum: ${Number(dataToDisplay.safeManhours || 0).toLocaleString()}`,
-              trir: `Sum: Plan ${dataToDisplay.trirPlanned || 0} | Act ${dataToDisplay.trirActual || 0}`,
+              trir: `Sum: Plan ${dataToDisplay.trirPlanned || 0.6} | Act ${dataToDisplay.trirActual || 0}`,
               lti: `Sum: ${dataToDisplay.lti || 0} (Zero LTI)`,
               medicalTreatment: `Sum: ${dataToDisplay.medicalTreatment || 0} (Zero Cases)`,
               firstAidCase: `Sum: ${dataToDisplay.firstAidCase || 0} Cases`,
               nearmiss: `Sum: ${dataToDisplay.nearmiss || 0} Reports`
             };
           } else {
-            // Find specific year
+            // Find specific year from column H named Year
             const yearlyList = this.state.hseqYearlyData || [];
             const found = yearlyList.find(r => String(r.year) === String(selectedYear));
 
             dataToDisplay = found || {
-              safeManhours: 22200445,
-              trirPlanned: 5,
+              safeManhours: 11105365,
+              trirPlanned: 0.6,
               trirActual: 0,
               lti: 0,
               medicalTreatment: 0,
-              firstAidCase: 5,
-              nearmiss: 24
+              firstAidCase: 6,
+              nearmiss: 8
             };
 
             if (badgeText) badgeText.textContent = `Filtered: Year ${selectedYear}`;
@@ -5527,15 +5678,15 @@
               badgeEl.className = 'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg text-[11px] font-bold text-emerald-800 bg-emerald-50/90 border border-emerald-200 shadow-2xs';
             }
 
-            const totalSafe = (this.state.hseqTotals && this.state.hseqTotals.safeManhours) || 222004450;
-            const totalFA = (this.state.hseqTotals && this.state.hseqTotals.firstAidCase) || 50;
-            const totalNM = (this.state.hseqTotals && this.state.hseqTotals.nearmiss) || 240;
+            const totalSafe = (this.state.hseqTotals && this.state.hseqTotals.safeManhours) || 59877849;
+            const totalFA = (this.state.hseqTotals && this.state.hseqTotals.firstAidCase) || 34;
+            const totalNM = (this.state.hseqTotals && this.state.hseqTotals.nearmiss) || 125;
 
             subTextMap = {
               safeManhours: `Year ${selectedYear} (Total Sum: ${(totalSafe / 1e6).toFixed(1)}M)`,
-              trir: `Year ${selectedYear} (Sum: P 50 | A 0)`,
-              lti: `Year ${selectedYear} (Total Sum: 0)`,
-              medicalTreatment: `Year ${selectedYear} (Total Sum: 0)`,
+              trir: `Year ${selectedYear} (Plan 0.6 | Act 0)`,
+              lti: `Year ${selectedYear} (Zero LTI)`,
+              medicalTreatment: `Year ${selectedYear} (Zero Cases)`,
               firstAidCase: `Year ${selectedYear} (Total Sum: ${totalFA})`,
               nearmiss: `Year ${selectedYear} (Total Sum: ${totalNM})`
             };
@@ -5553,7 +5704,7 @@
           // 1. Safe Manhours
           const safeManhoursEl = document.getElementById('kpi-val-safe-manhours');
           if (safeManhoursEl) {
-            const rawVal = (kpis.safeManhours !== undefined && kpis.safeManhours !== null) ? kpis.safeManhours : 222004450;
+            const rawVal = (kpis.safeManhours !== undefined && kpis.safeManhours !== null) ? kpis.safeManhours : 0;
             safeManhoursEl.textContent = Number(rawVal).toLocaleString();
             safeManhoursEl.title = `${Number(rawVal).toLocaleString()} Safe Manhours`;
             this.fitSafeManhoursText();
@@ -5563,12 +5714,14 @@
           const trirPlannedEl = document.getElementById('kpi-val-trir-planned');
           const trirActualEl = document.getElementById('kpi-val-trir-actual');
           if (trirPlannedEl) {
-            const plannedVal = (kpis.trirPlanned !== undefined && kpis.trirPlanned !== null) ? kpis.trirPlanned : 50;
+            const plannedVal = (kpis.trirPlanned !== undefined && kpis.trirPlanned !== null) ? kpis.trirPlanned : 0.6;
             trirPlannedEl.textContent = String(plannedVal);
+            trirPlannedEl.title = `TRIR Planned Target: ${plannedVal}`;
           }
           if (trirActualEl) {
             const actualVal = (kpis.trirActual !== undefined && kpis.trirActual !== null) ? kpis.trirActual : 0;
             trirActualEl.textContent = String(actualVal);
+            trirActualEl.title = `TRIR Actual: ${actualVal}`;
           }
 
           // 3. LTI
@@ -5588,14 +5741,14 @@
           // 5. First Aid Case
           const firstAidEl = document.getElementById('kpi-val-first-aid');
           if (firstAidEl) {
-            const val = (kpis.firstAidCase !== undefined && kpis.firstAidCase !== null) ? kpis.firstAidCase : 50;
+            const val = (kpis.firstAidCase !== undefined && kpis.firstAidCase !== null) ? kpis.firstAidCase : 0;
             firstAidEl.textContent = String(val);
           }
 
           // 6. Near Miss
           const nearmissEl = document.getElementById('kpi-val-nearmiss');
           if (nearmissEl) {
-            const val = (kpis.nearmiss !== undefined && kpis.nearmiss !== null) ? kpis.nearmiss : 240;
+            const val = (kpis.nearmiss !== undefined && kpis.nearmiss !== null) ? kpis.nearmiss : 0;
             nearmissEl.textContent = String(val);
           }
         },
@@ -5730,20 +5883,20 @@
 
           const config = METRIC_CONFIG[metricKey] || METRIC_CONFIG.safeManhours;
 
-          // Source 10-year dataset (or default 2017-2026 data)
+          // Source 10-year dataset (or default 2017-2026 data from Google Sheet HSEQ_KPI)
           let yearlyList = (this.state.hseqYearlyData && this.state.hseqYearlyData.length > 0)
             ? [...this.state.hseqYearlyData]
             : [
-                { year: 2017, safeManhours: 22200445, trirPlanned: 5, trirActual: 0, lti: 0, medicalTreatment: 0, firstAidCase: 5, nearmiss: 24 },
-                { year: 2018, safeManhours: 22200445, trirPlanned: 5, trirActual: 0, lti: 0, medicalTreatment: 0, firstAidCase: 5, nearmiss: 24 },
-                { year: 2019, safeManhours: 22200445, trirPlanned: 5, trirActual: 0, lti: 0, medicalTreatment: 0, firstAidCase: 5, nearmiss: 24 },
-                { year: 2020, safeManhours: 22200445, trirPlanned: 5, trirActual: 0, lti: 0, medicalTreatment: 0, firstAidCase: 5, nearmiss: 24 },
-                { year: 2021, safeManhours: 22200445, trirPlanned: 5, trirActual: 0, lti: 0, medicalTreatment: 0, firstAidCase: 5, nearmiss: 24 },
-                { year: 2022, safeManhours: 22200445, trirPlanned: 5, trirActual: 0, lti: 0, medicalTreatment: 0, firstAidCase: 5, nearmiss: 24 },
-                { year: 2023, safeManhours: 22200445, trirPlanned: 5, trirActual: 0, lti: 0, medicalTreatment: 0, firstAidCase: 5, nearmiss: 24 },
-                { year: 2024, safeManhours: 22200445, trirPlanned: 5, trirActual: 0, lti: 0, medicalTreatment: 0, firstAidCase: 5, nearmiss: 24 },
-                { year: 2025, safeManhours: 22200445, trirPlanned: 5, trirActual: 0, lti: 0, medicalTreatment: 0, firstAidCase: 5, nearmiss: 24 },
-                { year: 2026, safeManhours: 22200445, trirPlanned: 5, trirActual: 0, lti: 0, medicalTreatment: 0, firstAidCase: 5, nearmiss: 24 }
+                { sNo: 1, year: 2017, safeManhours: 392077, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 0, nearmiss: 0, trirActual: 0, trirPlanned: 0.6 },
+                { sNo: 2, year: 2018, safeManhours: 1635908, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 0, nearmiss: 0, trirActual: 0, trirPlanned: 0.6 },
+                { sNo: 3, year: 2019, safeManhours: 2948991, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 4, nearmiss: 31, trirActual: 0, trirPlanned: 0.6 },
+                { sNo: 4, year: 2020, safeManhours: 4201942, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 5, nearmiss: 38, trirActual: 0, trirPlanned: 0.6 },
+                { sNo: 5, year: 2021, safeManhours: 5406727, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 4, nearmiss: 4, trirActual: 0, trirPlanned: 0.6 },
+                { sNo: 6, year: 2022, safeManhours: 6588709, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 4, nearmiss: 18, trirActual: 0, trirPlanned: 0.6 },
+                { sNo: 7, year: 2023, safeManhours: 7842960, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 1, nearmiss: 4, trirActual: 0, trirPlanned: 0.6 },
+                { sNo: 8, year: 2024, safeManhours: 9257227, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 6, nearmiss: 7, trirActual: 0, trirPlanned: 0.6 },
+                { sNo: 9, year: 2025, safeManhours: 10497943, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 4, nearmiss: 15, trirActual: 0, trirPlanned: 0.6 },
+                { sNo: 10, year: 2026, safeManhours: 11105365, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 6, nearmiss: 8, trirActual: 0, trirPlanned: 0.6 }
               ];
 
           // Sort chronologically (oldest to newest: 2017 -> 2026) for plotting left-to-right
@@ -8188,18 +8341,24 @@
         },
 
         /**
-         * Responsibility & Governance Matrix Modal Handlers
+         * FPCL Live Telephone Directory Modal Handlers
+         * Connected to Google Sheet: 1SrPdaxzEXbOFVbWin4zJvrc-m9TQKtxFjcyZYamXfpg (Tab: FPCL_Directory)
          */
-        openResponsibilityModal(event) {
+        openDirectoryModal(event) {
           if (event && event.stopPropagation) event.stopPropagation();
           const modal = document.getElementById('responsibility-modal');
           if (modal) {
             modal.classList.remove('hidden');
             modal.classList.add('flex');
-            const searchInput = document.getElementById('responsibility-modal-search');
+            if (window.portalDirectorySuite) {
+              window.portalDirectorySuite.setViewMode('table');
+              window.portalDirectorySuite.filterAndRender();
+              if (!window.portalDirectorySuite.lastSynced) {
+                window.portalDirectorySuite.fetchLiveData();
+              }
+            }
+            const searchInput = document.getElementById('directory-modal-search');
             if (searchInput) {
-              searchInput.value = '';
-              this.filterResponsibilityModal('');
               setTimeout(() => searchInput.focus(), 80);
             }
             if (window.lucide && typeof window.lucide.createIcons === 'function') {
@@ -8208,7 +8367,7 @@
           }
         },
 
-        closeResponsibilityModal() {
+        closeDirectoryModal() {
           const modal = document.getElementById('responsibility-modal');
           if (modal) {
             modal.classList.add('hidden');
@@ -8216,20 +8375,12 @@
           }
         },
 
-        filterResponsibilityModal(query) {
-          const q = (query || '').toLowerCase().trim();
-          const cards = document.querySelectorAll('.responsibility-matrix-card');
-          let visibleCount = 0;
-          cards.forEach(card => {
-            const text = (card.getAttribute('data-search-text') || card.innerText || '').toLowerCase();
-            const matches = !q || text.includes(q);
-            card.style.display = matches ? '' : 'none';
-            if (matches) visibleCount++;
-          });
-          const noMatchEl = document.getElementById('responsibility-no-matches');
-          if (noMatchEl) {
-            noMatchEl.style.display = visibleCount === 0 ? 'block' : 'none';
-          }
+        openResponsibilityModal(event) {
+          this.openDirectoryModal(event);
+        },
+
+        closeResponsibilityModal() {
+          this.closeDirectoryModal();
         },
 
         renderPaletteSpecs() {
@@ -8301,6 +8452,14 @@
           window.addEventListener('keydown', (e) => {
             if (e.key === '/' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
               e.preventDefault();
+              const dirModal = document.getElementById('responsibility-modal');
+              if (dirModal && !dirModal.classList.contains('hidden')) {
+                const dirInput = document.getElementById('directory-modal-search');
+                if (dirInput) {
+                  dirInput.focus();
+                  return;
+                }
+              }
               const searchInput = document.getElementById('search-input');
               if (searchInput) {
                 if (this.state.activeDashboardId) {

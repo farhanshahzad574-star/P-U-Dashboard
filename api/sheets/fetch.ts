@@ -90,6 +90,8 @@ export default async function handler(req: any, res: any) {
         url = getSheetUrlForTile(normalizedTileId);
       } else if (sLower === 'contacts' || sLower.includes('contact')) {
         url = 'https://docs.google.com/spreadsheets/d/1mI5WbcNBYtJc1fQjG0ZYQ1PKQzAHp5Sm3gyi9MibW-g/gviz/tq?tqx=out:csv&sheet=Contacts';
+      } else if (sLower === 'fpcl_directory' || sLower.includes('directory') || normalizedTileId.includes('directory')) {
+        url = 'https://docs.google.com/spreadsheets/d/1SrPdaxzEXbOFVbWin4zJvrc-m9TQKtxFjcyZYamXfpg/gviz/tq?tqx=out:csv&sheet=FPCL_Directory';
       } else if (sLower === 'scm' || sLower.includes('scm') || normalizedTileId === 'scm') {
         url = getSheetUrlForTile('scm');
       } else if (normalizedTileId.includes('admin') || normalizedTileId.includes('security') || sLower.includes('admin') || sLower.includes('security')) {
@@ -97,7 +99,7 @@ export default async function handler(req: any, res: any) {
       } else if (sLower.includes('validation') || sLower.includes('valid')) {
         url = process.env.PSM_VALIDATION_SHEET_URL || process.env.PSM_Validation_sheet_URL || process.env.PSM_Validation_sheet || 'https://docs.google.com/spreadsheets/d/1bFBRGKqIfO8Pn7qPSTU0pbdTB87ezDyXvVDnCbTGrx4/gviz/tq?tqx=out:csv&sheet=PSM%20Validation';
       } else if (sLower.includes('hseq') || sLower.includes('kpi')) {
-        url = process.env.HSEQ_KPI || 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTyc0eRsaIpv3DWLdBbEplWo5FqrNwuCFpFrXM4_A6pRTkQgHz56DaN9FMV0cuCkQXnXfPDyKS_nsYC/pub?gid=553516171&single=true&output=csv';
+        url = process.env.HSEQ_KPI || 'https://docs.google.com/spreadsheets/d/1bFBRGKqIfO8Pn7qPSTU0pbdTB87ezDyXvVDnCbTGrx4/gviz/tq?tqx=out:csv&sheet=HSEQ_KPI';
       } else if ((sLower.includes('plr') || sLower.includes('status')) && process.env.PLR_STATUS_SHEET_URL) {
         url = process.env.PLR_STATUS_SHEET_URL;
       } else if (sLower.includes('ims') || (normalizedTileId && normalizedTileId.includes('ims'))) {
@@ -222,6 +224,11 @@ export default async function handler(req: any, res: any) {
     } else if (sLower === 'ehse' || sLower.includes('ehse') || (normalizedTileId && normalizedTileId.includes('ehse')) || trimmedUrl.includes('1I4oX4kPr6d0_7q--9OcoJWs0W7IQG1dK1rBmNO7BlGo')) {
       const extraEhseTabs = ['EHSE', 'ehse', 'EHSEC', 'ehsec', 'Executive HSE', 'Sheet1'];
       extraEhseTabs.forEach(t => {
+        if (!candidateTabs.includes(t)) candidateTabs.push(t);
+      });
+    } else if (sLower === 'fpcl_directory' || sLower.includes('directory') || trimmedUrl.includes('1SrPdaxzEXbOFVbWin4zJvrc-m9TQKtxFjcyZYamXfpg')) {
+      const extraDirTabs = ['FPCL_Directory', 'FPCL Directory', 'Directory', 'Sheet1'];
+      extraDirTabs.forEach(t => {
         if (!candidateTabs.includes(t)) candidateTabs.push(t);
       });
     }
