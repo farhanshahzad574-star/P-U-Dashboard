@@ -254,9 +254,15 @@
 
       let contacts = null;
 
-      // 1. Try local Express API route
+      // 1. Try local / serverless API route (/api/fpcl-directory)
       try {
-        const res = await fetch('/api/fpcl-directory');
+        const res = await fetch(`/api/fpcl-directory?_t=${Date.now()}`, {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache'
+          }
+        });
         if (res.ok) {
           const json = await res.json();
           if (json.success && Array.isArray(json.data) && json.data.length > 0) {
@@ -267,10 +273,17 @@
         console.warn('Direct /api/fpcl-directory fetch failed, trying proxy...', e);
       }
 
-      // 2. Try Universal Sheets Proxy
+      // 2. Try Universal Sheets Proxy (/api/sheets/fetch)
       if (!contacts) {
         try {
-          const res = await fetch(`/api/sheets/fetch?sheetTab=${SHEET_TAB}&url=${encodeURIComponent(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${SHEET_TAB}`)}`);
+          const targetUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_TAB)}`;
+          const res = await fetch(`/api/sheets/fetch?sheetTab=${SHEET_TAB}&sheetId=${SHEET_ID}&url=${encodeURIComponent(targetUrl)}&_t=${Date.now()}`, {
+            cache: 'no-store',
+            headers: {
+              'Cache-Control': 'no-cache, no-store, must-revalidate',
+              'Pragma': 'no-cache'
+            }
+          });
           if (res.ok) {
             const json = await res.json();
             if (json.success && json.csvText) {
@@ -278,19 +291,55 @@
             }
           }
         } catch (e) {
-          console.warn('/api/sheets/fetch failed, trying JSONP...', e);
+          console.warn('/api/sheets/fetch failed, trying universal synchronizer...', e);
         }
       }
 
-      // 3. Try JSONP directly in browser
-      if (!contacts && typeof window.fetchGoogleSheetViaJSONP === 'function') {
+      // 3. Try Universal Google Sheet Synchronizer if loaded
+      if (!contacts && typeof window.fetchGoogleSheetData === 'function') {
         try {
-          const csvText = await window.fetchGoogleSheetViaJSONP(SHEET_ID, { sheetTab: SHEET_TAB });
-          if (csvText) {
+          const sheetUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_TAB)}`;
+          const csvText = await window.fetchGoogleSheetData(sheetUrl, { sheetTab: SHEET_TAB });
+          if (csvText && typeof csvText === 'string') {
             contacts = this.parseCsv(csvText);
           }
         } catch (e) {
+          console.warn('window.fetchGoogleSheetData failed, trying JSONP...', e);
+        }
+      }
+
+      // 4. Try JSONP directly in browser (bypasses browser CORS restrictions)
+      if (!contacts && typeof window.fetchGoogleSheetViaJSONP === 'function') {
+        try {
+          const jsonpResult = await window.fetchGoogleSheetViaJSONP(SHEET_ID, { sheetTab: SHEET_TAB });
+          if (jsonpResult && jsonpResult.csvText && typeof jsonpResult.csvText === 'string') {
+            contacts = this.parseCsv(jsonpResult.csvText);
+          }
+        } catch (e) {
           console.warn('JSONP fetch failed', e);
+        }
+      }
+
+      // 5. Try direct browser fetch to Google Sheets
+      if (!contacts) {
+        try {
+          const directUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_TAB)}&_t=${Date.now()}`;
+          const res = await fetch(directUrl, {
+            cache: 'no-store',
+            redirect: 'follow',
+            headers: {
+              'Cache-Control': 'no-cache, no-store, must-revalidate',
+              'Pragma': 'no-cache'
+            }
+          });
+          if (res.ok) {
+            const text = await res.text();
+            if (text && !text.includes('<!DOCTYPE html>') && text.includes(',')) {
+              contacts = this.parseCsv(text);
+            }
+          }
+        } catch (e) {
+          console.warn('Direct browser fetch failed', e);
         }
       }
 
@@ -320,23 +369,58 @@
     }
 
     parseCsv(csvText) {
-      if (!csvText) return [];
-      const lines = csvText.split(/\r?\n/).filter(Boolean);
+      if (!csvText || typeof csvText !== 'string') return [];
+      const lines = csvText.split(/\r?\n/).filter(line => line.trim().length > 0);
+      if (lines.length < 2) return [];
+
       const result = [];
+      const headerCells = this.splitCsvLine(lines[0]).map(h => h.toLowerCase().replace(/[^a-z0-9]/g, ''));
+      
+      let srIdx = headerCells.findIndex(h => h.includes('sr') || h.includes('no') || h === 'sno');
+      let extIdx = headerCells.findIndex(h => h.includes('ext') || h.includes('phone') || h.includes('number'));
+      let nameIdx = headerCells.findIndex(h => h.includes('user') || h.includes('name') || h.includes('contact') || h.includes('person'));
+
+      if (srIdx === -1) srIdx = 0;
+      if (extIdx === -1) extIdx = 1;
+      if (nameIdx === -1) nameIdx = 2;
+
       for (let i = 1; i < lines.length; i++) {
         const line = lines[i].trim();
         if (!line) continue;
-        const match = line.match(/^"?([^",]*)"?,(?:"([^"]*)"|([^,]*)),(?:"([^"]*)"|(.*))$/);
-        if (match) {
-          const sr = (match[1] || '').trim();
-          const ext = (match[2] !== undefined ? match[2] : match[3] || '').trim();
-          const name = (match[4] !== undefined ? match[4] : match[5] || '').trim();
-          if (ext || name) {
-            result.push({ sr: sr || String(result.length + 1), ext, name });
-          }
+        const cells = this.splitCsvLine(line);
+        const sr = (cells[srIdx] || String(result.length + 1)).trim();
+        const ext = (cells[extIdx] || '').trim();
+        const name = (cells[nameIdx] || '').trim();
+
+        if (ext || name) {
+          result.push({ sr, ext, name });
         }
       }
       return result;
+    }
+
+    splitCsvLine(text) {
+      const tokens = [];
+      let inQuotes = false;
+      let token = '';
+      for (let i = 0; i < text.length; i++) {
+        const c = text[i];
+        if (c === '"') {
+          if (inQuotes && text[i + 1] === '"') {
+            token += '"';
+            i++;
+          } else {
+            inQuotes = !inQuotes;
+          }
+        } else if (c === ',' && !inQuotes) {
+          tokens.push(token);
+          token = '';
+        } else {
+          token += c;
+        }
+      }
+      tokens.push(token);
+      return tokens.map(t => t.trim().replace(/^"|"$/g, ''));
     }
 
     setCategory(categoryId) {
@@ -414,6 +498,11 @@
 
       if (countEl) {
         countEl.textContent = `${this.filteredContacts.length} ${this.filteredContacts.length === 1 ? 'contact' : 'contacts'} found`;
+      }
+
+      const totalFooterEl = document.getElementById('directory-total-count-footer');
+      if (totalFooterEl) {
+        totalFooterEl.textContent = `${this.rawContacts.length} Plant Extensions`;
       }
 
       this.updateCategoryTabs();

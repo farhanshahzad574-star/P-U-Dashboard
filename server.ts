@@ -741,12 +741,16 @@ app.get('/api/fpcl-directory', async (_req: Request, res: Response): Promise<voi
         headers: {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
           'Accept': 'text/csv,text/plain,*/*',
-          'Cache-Control': 'no-cache, no-store, must-revalidate'
-        }
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        },
+        redirect: 'follow',
+        cache: 'no-store'
       });
       if (response.ok) {
         const text = await response.text();
-        if (text && !text.includes('<!DOCTYPE html>') && text.includes('Extion_Number')) {
+        if (text && !text.includes('<!DOCTYPE html>') && !text.includes('<html') && text.includes(',')) {
           rawCsv = text;
           break;
         }
@@ -759,22 +763,26 @@ app.get('/api/fpcl-directory', async (_req: Request, res: Response): Promise<voi
   if (rawCsv) {
     const lines = rawCsv.split(/\r?\n/).filter(Boolean);
     const parsed: any[] = [];
-    for (let i = 1; i < lines.length; i++) {
-      const line = lines[i].trim();
-      if (!line) continue;
-      // Parse CSV line handling quotes
-      const match = line.match(/^"?([^",]*)"?,(?:"([^"]*)"|([^,]*)),(?:"([^"]*)"|(.*))$/);
-      if (match) {
-        const sr = (match[1] || '').trim();
-        const ext = (match[2] !== undefined ? match[2] : match[3] || '').trim();
-        const name = (match[4] !== undefined ? match[4] : match[5] || '').trim();
+    if (lines.length > 1) {
+      // Parse header row
+      const headerLine = lines[0];
+      const matchHeader = headerLine.match(/^"?([^",]*)"?,(?:"([^"]*)"|([^,]*)),(?:"([^"]*)"|(.*))$/);
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+        const match = line.match(/^"?([^",]*)"?,(?:"([^"]*)"|([^,]*)),(?:"([^"]*)"|(.*))$/);
+        if (match) {
+          const sr = (match[1] || '').trim();
+          const ext = (match[2] !== undefined ? match[2] : match[3] || '').trim();
+          const name = (match[4] !== undefined ? match[4] : match[5] || '').trim();
 
-        if (ext || name) {
-          parsed.push({
-            sr: sr || String(parsed.length + 1),
-            ext,
-            name
-          });
+          if (ext || name) {
+            parsed.push({
+              sr: sr || String(parsed.length + 1),
+              ext,
+              name
+            });
+          }
         }
       }
     }
@@ -963,6 +971,11 @@ app.all('/api/sheets/fetch', async (req: Request, res: Response): Promise<void> 
     } else if (sLower === 'ehse' || sLower.includes('ehse') || tileId === 'ehse' || tileId.includes('ehse') || trimmedUrl.includes('1I4oX4kPr6d0_7q--9OcoJWs0W7IQG1dK1rBmNO7BlGo')) {
       const extraEhseTabs = ['EHSE', 'ehse', 'EHSEC', 'ehsec', 'Executive HSE', 'Sheet1'];
       extraEhseTabs.forEach(t => {
+        if (!candidateTabs.includes(t)) candidateTabs.push(t);
+      });
+    } else if (sLower === 'fpcl_directory' || sLower.includes('directory') || tileId === 'fpcl_directory' || tileId.includes('directory') || trimmedUrl.includes('1SrPdaxzEXbOFVbWin4zJvrc-m9TQKtxFjcyZYamXfpg')) {
+      const extraDirTabs = ['FPCL_Directory', 'FPCL Directory', 'Directory', 'Sheet1'];
+      extraDirTabs.forEach(t => {
         if (!candidateTabs.includes(t)) candidateTabs.push(t);
       });
     }

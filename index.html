@@ -990,7 +990,7 @@
               <button
                 id="link-btn-responsibility"
                 data-name="fpcl-directory"
-                data-alias="fpcl directory directory telephone phone extensions matrix contacts"
+                data-alias="fpc directory fpcl directory directory telephone phone extensions matrix contacts"
                 type="button"
                 onclick="event.stopPropagation(); portalApp.openDirectoryModal(event);"
                 class="inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 rounded-[7px] text-[10px] sm:text-[11px] font-bold text-white bg-gradient-to-r from-teal-600 via-emerald-600 to-cyan-600 hover:from-teal-700 hover:via-emerald-700 hover:to-cyan-700 border border-teal-500/40 shadow-2xs hover:shadow-xs transition-all cursor-pointer whitespace-nowrap select-none"
@@ -2499,7 +2499,18 @@
               <i data-lucide="phone-call" class="w-5 h-5 sm:w-6 sm:h-6"></i>
             </span>
             <div>
-              <h3 class="text-base sm:text-xl font-extrabold text-[#1E293B] tracking-tight">FPCL Telephone Directory</h3>
+              <div class="flex items-center gap-2 flex-wrap">
+                <h3 class="text-base sm:text-xl font-extrabold text-[#1E293B] tracking-tight">FPCL Telephone Directory</h3>
+                <div id="directory-sync-status" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-700 border border-emerald-500/20">
+                  <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                  <span class="text-emerald-700 font-semibold">Live Google Sheet Connected</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 mt-0.5 flex-wrap">
+                <span id="directory-sync-time" class="text-[10px] font-mono text-slate-500 font-medium">Awaiting sync</span>
+                <span class="text-slate-300">•</span>
+                <span class="text-[10px] text-slate-500 font-mono">Sheet ID: 1SrPdaxzEXbOFVbWin4zJvrc-m9TQKtxFjcyZYamXfpg • Tab: FPCL_Directory</span>
+              </div>
             </div>
           </div>
 
@@ -2667,7 +2678,7 @@
           <div class="flex items-center gap-2 text-[11px] text-slate-500 font-medium">
             <span class="font-bold text-slate-700">FFBL Power Company Limited (FPCL)</span>
             <span class="text-slate-300">•</span>
-            <span>268 Plant Extensions</span>
+            <span id="directory-total-count-footer">268 Plant Extensions</span>
           </div>
           <button
             type="button"
@@ -8448,9 +8459,7 @@
             if (window.portalDirectorySuite) {
               window.portalDirectorySuite.setViewMode('table');
               window.portalDirectorySuite.filterAndRender();
-              if (!window.portalDirectorySuite.lastSynced) {
-                window.portalDirectorySuite.fetchLiveData();
-              }
+              window.portalDirectorySuite.fetchLiveData();
             }
             const searchInput = document.getElementById('directory-modal-search');
             if (searchInput) {
