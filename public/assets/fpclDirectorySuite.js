@@ -307,8 +307,10 @@
         });
         this.lastSynced = new Date();
         this.saveToStorage();
-        this.showToast(`Synchronized ${this.rawContacts.length} contacts from Google Sheet!`, 'success');
-      } else if (this.rawContacts.length === 0) {
+        if (force) {
+          this.showToast(`Synchronized ${this.rawContacts.length} contacts from Google Sheet!`, 'success');
+        }
+      } else if (force && this.rawContacts.length === 0) {
         this.showToast('Unable to connect to Google Sheet. Retrying...', 'warning');
       }
 

@@ -610,13 +610,15 @@ let psiDataCache: { timestamp: number; csvText: string } = {
 };
 
 // GET /api/psi - Live PSI Feed from Google Sheet ID 1vWYE3G4W7TxHBVzsUJuu1Z-aufjXD-xFeodTpFUTZtY (Tab: PSI)
-app.get('/api/psi', async (_req: Request, res: Response): Promise<void> => {
+app.get('/api/psi', async (req: Request, res: Response): Promise<void> => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
   res.setHeader('Pragma', 'no-cache');
   res.setHeader('Expires', '0');
 
   const now = Date.now();
-  if (psiDataCache.csvText && now - psiDataCache.timestamp < 30000) {
+  const force = req.query?.force === 'true' || req.query?._t !== undefined;
+  // If not forcing fresh sync and cached data is less than 5 seconds old, serve cache
+  if (!force && psiDataCache.csvText && now - psiDataCache.timestamp < 5000) {
     res.json({
       success: true,
       source: 'cache',
@@ -629,8 +631,10 @@ app.get('/api/psi', async (_req: Request, res: Response): Promise<void> => {
   }
 
   const PSI_SHEET_ID = '1vWYE3G4W7TxHBVzsUJuu1Z-aufjXD-xFeodTpFUTZtY';
+  const envUrl = process.env.PSI || process.env.PSI_SHEET_URL;
   const urls = [
     `https://docs.google.com/spreadsheets/d/${PSI_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=PSI&_t=${now}`,
+    ...(envUrl ? [envUrl.includes('_t=') ? envUrl : `${envUrl}&_t=${now}`] : []),
     `https://docs.google.com/spreadsheets/d/${PSI_SHEET_ID}/export?format=csv&sheet=PSI&_t=${now}`,
     `https://docs.google.com/spreadsheets/d/${PSI_SHEET_ID}/gviz/tq?tqx=out:csv&_t=${now}`
   ];
@@ -642,12 +646,14 @@ app.get('/api/psi', async (_req: Request, res: Response): Promise<void> => {
         headers: {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
           'Accept': 'text/csv,text/plain,*/*',
-          'Cache-Control': 'no-cache, no-store, must-revalidate'
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
         }
       });
       if (response.ok) {
         const text = await response.text();
-        if (text && !text.includes('<!DOCTYPE html>') && text.includes('Responsible_Unit')) {
+        const lower = text.toLowerCase();
+        if (text && !text.includes('<!DOCTYPE html>') && (lower.includes('responsible') || lower.includes('steam_generation') || lower.includes('planned'))) {
           rawCsv = text;
           break;
         }
@@ -816,10 +822,16 @@ app.get('/api/fpcl-directory', async (_req: Request, res: Response): Promise<voi
 // POST & GET /api/sheets/fetch - Live Google Sheets Tab CSV Proxy (supports Recommendations and PLR tabs)
 app.all('/api/sheets/fetch', async (req: Request, res: Response): Promise<void> => {
   try {
-    let url = req.body?.url || req.query?.url;
-    const sheetTab = req.body?.sheetTab || req.query?.sheetTab || 'Recommendations';
+    let url = req.body?.url || req.query?.url || req.body?.sheetUrl || req.query?.sheetUrl;
+    const sheetTab = req.body?.sheetTab || req.query?.sheetTab || req.body?.tab || req.query?.tab || req.body?.sheet || req.query?.sheet || 'Recommendations';
     const customGid = req.body?.gid || req.query?.gid;
     const tileId = (req.body?.tileId || req.query?.tileId || '').toLowerCase();
+    const sheetIdParam = req.body?.sheetId || req.query?.sheetId || req.body?.spreadsheetId || req.query?.spreadsheetId || '';
+
+    // Direct PSI match by sheet ID
+    if (sheetIdParam === '1vWYE3G4W7TxHBVzsUJuu1Z-aufjXD-xFeodTpFUTZtY' || (typeof url === 'string' && url.includes('1vWYE3G4W7TxHBVzsUJuu1Z-aufjXD-xFeodTpFUTZtY'))) {
+      url = process.env.PSI || process.env.PSI_SHEET_URL || `https://docs.google.com/spreadsheets/d/1vWYE3G4W7TxHBVzsUJuu1Z-aufjXD-xFeodTpFUTZtY/gviz/tq?tqx=out:csv&sheet=PSI`;
+    }
 
     // Resolve URL from environment variables if not provided or default placeholder
     if (!url || typeof url !== 'string' || url.includes('1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms')) {

@@ -76,9 +76,15 @@ export default async function handler(req: any, res: any) {
       }
     }
     const query = req.query || {};
-    let url = body.url || query.url;
-    const sheetTab = body.sheetTab || query.sheetTab || 'Recommendations';
+    let url = body.url || query.url || body.sheetUrl || query.sheetUrl;
+    const sheetTab = body.sheetTab || query.sheetTab || body.tab || query.tab || body.sheet || query.sheet || 'Recommendations';
     const customGid = body.gid || query.gid;
+    const sheetIdParam = body.sheetId || query.sheetId || body.spreadsheetId || query.spreadsheetId || '';
+
+    // Direct PSI match by sheet ID
+    if (sheetIdParam === '1vWYE3G4W7TxHBVzsUJuu1Z-aufjXD-xFeodTpFUTZtY' || (typeof url === 'string' && url.includes('1vWYE3G4W7TxHBVzsUJuu1Z-aufjXD-xFeodTpFUTZtY'))) {
+      url = process.env.PSI || process.env.PSI_SHEET_URL || `https://docs.google.com/spreadsheets/d/1vWYE3G4W7TxHBVzsUJuu1Z-aufjXD-xFeodTpFUTZtY/gviz/tq?tqx=out:csv&sheet=PSI`;
+    }
 
     // Resolve URL from environment variables or registry if not provided or pointing to placeholder
     if (!url || typeof url !== 'string' || url.includes('1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms')) {
