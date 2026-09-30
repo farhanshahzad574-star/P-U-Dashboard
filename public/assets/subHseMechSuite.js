@@ -118,7 +118,7 @@
     isItemClosed(item) {
       if (!item) return false;
       const s = String(item.status || '').trim().toLowerCase();
-      return s === 'closed' || s === 'close';
+      return s === 'closed' || s === 'close' || s === 'completed' || s === 'compelted';
     },
 
     getItemStatus(item) {
@@ -151,12 +151,14 @@
           return false;
         }
 
-        // Column J Filter: Status (Closed vs Open) - Any non-Closed counts as Open
-        if (s.statusFilter !== 'all') {
-          const itemStatus = this.getItemStatus(item).toLowerCase();
-          const targetStatus = s.statusFilter.toLowerCase();
-          if (itemStatus !== targetStatus) {
-            return false;
+        // Column J Filter: Status (Open / Close) from Google Sheet Column J named Status
+        if (s.statusFilter && s.statusFilter !== 'all') {
+          const itemClosed = this.isItemClosed(item);
+          const filterLower = String(s.statusFilter).trim().toLowerCase();
+          if (filterLower === 'open') {
+            if (itemClosed) return false;
+          } else if (filterLower === 'close' || filterLower === 'closed') {
+            if (!itemClosed) return false;
           }
         }
 
@@ -333,6 +335,17 @@
     setStatusFilter(val) {
       this.state.statusFilter = val;
       this.render();
+    },
+
+    toggleStatusFilterNext() {
+      const cur = (this.state.statusFilter || 'all').toLowerCase();
+      if (cur === 'all') {
+        this.setStatusFilter('Open');
+      } else if (cur === 'open') {
+        this.setStatusFilter('Closed');
+      } else {
+        this.setStatusFilter('all');
+      }
     },
 
     setSearchQuery(val) {
@@ -892,7 +905,7 @@
                   stroke-dasharray="${closedDash} ${circumference}"
                   stroke-dashoffset="${closedOffset}"
                   class="transition-all duration-500 hover:opacity-90 cursor-pointer"
-                  onclick="FPCL_SUB_HSE_MECH_SUITE.setStatusFilter('${this.state.statusFilter === 'Closed' ? 'all' : 'Closed'}')"
+                  onclick="FPCL_SUB_HSE_MECH_SUITE.setStatusFilter('${(this.state.statusFilter.toLowerCase() === 'closed' || this.state.statusFilter.toLowerCase() === 'close') ? 'all' : 'Closed'}')"
                 >
                   <title>Closed Observations: ${closedCount} (${closedPct}%)</title>
                 </circle>
@@ -909,7 +922,7 @@
                   stroke-dasharray="${openDash} ${circumference}"
                   stroke-dashoffset="${openOffset}"
                   class="transition-all duration-500 hover:opacity-90 cursor-pointer"
-                  onclick="FPCL_SUB_HSE_MECH_SUITE.setStatusFilter('${this.state.statusFilter === 'Open' ? 'all' : 'Open'}')"
+                  onclick="FPCL_SUB_HSE_MECH_SUITE.setStatusFilter('${this.state.statusFilter.toLowerCase() === 'open' ? 'all' : 'Open'}')"
                 >
                   <title>Open Observations: ${openCount} (${openPct}%)</title>
                 </circle>
@@ -965,8 +978,8 @@
           <div class="mt-4 flex items-center justify-center gap-3 sm:gap-4 flex-wrap text-xs">
             <button
               type="button"
-              onclick="FPCL_SUB_HSE_MECH_SUITE.setStatusFilter('${this.state.statusFilter === 'Closed' ? 'all' : 'Closed'}')"
-              class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl border transition-all cursor-pointer ${this.state.statusFilter === 'Closed' ? 'bg-emerald-50 border-emerald-400 ring-2 ring-emerald-500/20' : 'bg-white border-slate-200 hover:bg-slate-50'}"
+              onclick="FPCL_SUB_HSE_MECH_SUITE.setStatusFilter('${(this.state.statusFilter.toLowerCase() === 'closed' || this.state.statusFilter.toLowerCase() === 'close') ? 'all' : 'Closed'}')"
+              class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl border transition-all cursor-pointer ${(this.state.statusFilter.toLowerCase() === 'closed' || this.state.statusFilter.toLowerCase() === 'close') ? 'bg-emerald-50 border-emerald-400 ring-2 ring-emerald-500/20' : 'bg-white border-slate-200 hover:bg-slate-50'}"
             >
               <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
               <span class="font-bold text-slate-700">Closed:</span>
@@ -976,8 +989,8 @@
 
             <button
               type="button"
-              onclick="FPCL_SUB_HSE_MECH_SUITE.setStatusFilter('${this.state.statusFilter === 'Open' ? 'all' : 'Open'}')"
-              class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl border transition-all cursor-pointer ${this.state.statusFilter === 'Open' ? 'bg-red-50 border-red-400 ring-2 ring-red-500/20' : 'bg-white border-slate-200 hover:bg-slate-50'}"
+              onclick="FPCL_SUB_HSE_MECH_SUITE.setStatusFilter('${this.state.statusFilter.toLowerCase() === 'open' ? 'all' : 'Open'}')"
+              class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl border transition-all cursor-pointer ${this.state.statusFilter.toLowerCase() === 'open' ? 'bg-red-50 border-red-400 ring-2 ring-red-500/20' : 'bg-white border-slate-200 hover:bg-slate-50'}"
             >
               <span class="w-3 h-3 rounded-full bg-red-500"></span>
               <span class="font-bold text-slate-700">Open:</span>
@@ -1057,6 +1070,10 @@
 
       const allRefNumbers = Array.from(new Set(raw.map(i => i.refNo).filter(Boolean))).sort();
       const allDepartments = Array.from(new Set(raw.map(i => i.action).filter(Boolean))).sort();
+
+      // Open / Close status counts from Google Sheet Column J named Status
+      const rawClosedCount = raw.filter(i => this.isItemClosed(i)).length;
+      const rawOpenCount = raw.length - rawClosedCount;
 
       const isAnyFilterActive =
         (s.searchQuery && s.searchQuery.trim().length > 0) ||
@@ -1180,30 +1197,36 @@
               </div>
             </div>
 
-            <!-- KPI 2: Closed Observations Column H (Unique Emerald Perimeter Line) -->
+            <!-- KPI 2: Closed Observations Column J (Unique Emerald Perimeter Line) -->
             <div
-              onclick="FPCL_SUB_HSE_MECH_SUITE.setStatusFilter('Closed')"
+              onclick="FPCL_SUB_HSE_MECH_SUITE.setStatusFilter((FPCL_SUB_HSE_MECH_SUITE.state.statusFilter.toLowerCase() === 'closed' || FPCL_SUB_HSE_MECH_SUITE.state.statusFilter.toLowerCase() === 'close') ? 'all' : 'Closed')"
               class="bg-white border-2 border-emerald-400 hover:border-emerald-500 rounded-2xl p-5 relative overflow-hidden cursor-pointer shadow-[0_0_18px_rgba(16,185,129,0.22)] transition-all group flex flex-col items-center justify-center text-center min-h-[140px]"
-              title="Click to filter Closed observations"
+              title="Click to filter Closed observations from Column J"
             >
               <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-400 via-teal-500 to-green-600"></div>
-              <div class="text-emerald-900 text-xs sm:text-sm font-black tracking-wider uppercase text-center w-full">
-                CLOSED OBSERVATIONS
+              <div class="text-emerald-900 text-xs sm:text-sm font-black tracking-wider uppercase text-center w-full flex items-center justify-center gap-1.5">
+                <span>CLOSED OBSERVATIONS</span>
+                ${(s.statusFilter.toLowerCase() === 'closed' || s.statusFilter.toLowerCase() === 'close') ? `
+                  <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                ` : ''}
               </div>
               <div class="mt-3 text-center w-full flex items-center justify-center">
                 <span class="text-5xl sm:text-6xl font-black font-mono tracking-tight text-emerald-600 text-center">${closedFiltered}</span>
               </div>
             </div>
 
-            <!-- KPI 3: Open Observations Column H (Unique Red Perimeter Line, Red Color for Value) -->
+            <!-- KPI 3: Open Observations Column J (Unique Red Perimeter Line, Red Color for Value) -->
             <div
-              onclick="FPCL_SUB_HSE_MECH_SUITE.setStatusFilter('Open')"
+              onclick="FPCL_SUB_HSE_MECH_SUITE.setStatusFilter(FPCL_SUB_HSE_MECH_SUITE.state.statusFilter.toLowerCase() === 'open' ? 'all' : 'Open')"
               class="bg-white border-2 border-rose-500 hover:border-red-600 rounded-2xl p-5 relative overflow-hidden cursor-pointer shadow-[0_0_18px_rgba(239,68,68,0.25)] transition-all group flex flex-col items-center justify-center text-center min-h-[140px]"
-              title="Click to filter Open observations"
+              title="Click to filter Open observations from Column J"
             >
               <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-rose-500 via-red-600 to-red-700"></div>
-              <div class="text-red-900 text-xs sm:text-sm font-black tracking-wider uppercase text-center w-full">
-                OPEN OBSERVATIONS
+              <div class="text-red-900 text-xs sm:text-sm font-black tracking-wider uppercase text-center w-full flex items-center justify-center gap-1.5">
+                <span>OPEN OBSERVATIONS</span>
+                ${s.statusFilter.toLowerCase() === 'open' ? `
+                  <span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
+                ` : ''}
               </div>
               <div class="mt-3 text-center w-full flex items-center justify-center">
                 <span class="text-5xl sm:text-6xl font-black font-mono tracking-tight text-red-600 text-center">${openFiltered}</span>
@@ -1255,8 +1278,8 @@
                     </span>
                   ` : ''}
                   ${s.statusFilter !== 'all' ? `
-                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold ${s.statusFilter === 'Closed' ? 'bg-emerald-100 text-emerald-900 border-emerald-300' : 'bg-red-100 text-red-900 border-red-300'} border">
-                      <span>Status: ${s.statusFilter}</span>
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold ${s.statusFilter.toLowerCase() === 'open' ? 'bg-red-100 text-red-900 border-red-300' : 'bg-emerald-100 text-emerald-900 border-emerald-300'} border">
+                      <span>Status: ${s.statusFilter.toLowerCase() === 'open' ? 'Open' : 'Close'}</span>
                       <button type="button" onclick="FPCL_SUB_HSE_MECH_SUITE.setStatusFilter('all')" class="hover:text-red-700 cursor-pointer ml-0.5 text-xs font-black" title="Clear status filter">×</button>
                     </span>
                   ` : ''}
@@ -1355,21 +1378,51 @@
                 </div>
               </div>
 
-              <!-- Filter 4: Column J (Status: Closed vs Open) -->
+              <!-- Filter 4: Column J (Status: Open / Close) from Google Sheet Column J named Status -->
               <div class="space-y-1">
-                <label class="text-[10px] sm:text-[11px] font-black uppercase text-slate-500 tracking-wider flex items-center justify-between truncate" title="Status (Col J)">
-                  <span class="truncate">Status (Col J)</span>
-                  <span class="text-sky-600 font-mono text-[8px] sm:text-[10px] font-bold shrink-0">Closed/Open</span>
+                <label class="text-[10px] sm:text-[11px] font-black uppercase text-slate-500 tracking-wider flex items-center justify-between truncate" title="Status: Open / Close (Column J named Status)">
+                  <span class="truncate">Status: Open / Close (Col J)</span>
+                  <span class="text-sky-600 font-mono text-[8px] sm:text-[10px] font-bold shrink-0">Col J: Status</span>
                 </label>
                 <div class="relative">
                   <select
+                    id="sub-hse-mech-status-filter"
                     onchange="FPCL_SUB_HSE_MECH_SUITE.setStatusFilter(this.value)"
-                    class="w-full ${s.statusFilter !== 'all' ? 'bg-slate-100 border-indigo-500 text-slate-900 font-black ring-1 ring-indigo-400/50' : 'bg-slate-50 hover:bg-slate-100 border-slate-300 text-slate-800 font-bold'} border focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 rounded-xl px-2 sm:px-3 py-1.5 sm:py-2 text-xs outline-none transition-all cursor-pointer shadow-2xs truncate"
+                    class="w-full ${s.statusFilter !== 'all' ? (s.statusFilter.toLowerCase() === 'open' ? 'bg-red-50/70 border-red-400 text-red-950 font-black ring-1 ring-red-400/50' : 'bg-emerald-50/70 border-emerald-400 text-emerald-950 font-black ring-1 ring-emerald-400/50') : 'bg-slate-50 hover:bg-slate-100 border-slate-300 text-slate-800 font-bold'} border focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 rounded-xl px-2 sm:px-3 py-1.5 sm:py-2 text-xs outline-none transition-all cursor-pointer shadow-2xs truncate"
                   >
-                    <option value="all" ${s.statusFilter === 'all' ? 'selected' : ''}>All Statuses (${totalFiltered})</option>
-                    <option value="Closed" ${s.statusFilter === 'Closed' ? 'selected' : ''}>Closed (${raw.filter(i => this.isItemClosed(i)).length})</option>
-                    <option value="Open" ${s.statusFilter === 'Open' ? 'selected' : ''}>Open (${raw.length - raw.filter(i => this.isItemClosed(i)).length})</option>
+                    <option value="all" ${s.statusFilter === 'all' ? 'selected' : ''}>All Statuses (${raw.length})</option>
+                    <option value="Open" ${s.statusFilter.toLowerCase() === 'open' ? 'selected' : ''}>Open (${rawOpenCount})</option>
+                    <option value="Closed" ${s.statusFilter.toLowerCase() === 'closed' || s.statusFilter.toLowerCase() === 'close' ? 'selected' : ''}>Close / Closed (${rawClosedCount})</option>
                   </select>
+                </div>
+                <!-- Interactive Quick-Toggle Segmented Buttons for Open / Close -->
+                <div class="grid grid-cols-3 gap-1 pt-1">
+                  <button
+                    type="button"
+                    onclick="FPCL_SUB_HSE_MECH_SUITE.setStatusFilter('all')"
+                    class="py-1 px-1 rounded-lg text-[10px] font-black uppercase text-center transition-all cursor-pointer truncate ${s.statusFilter === 'all' ? 'bg-slate-800 text-white shadow-xs' : 'bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-200'}"
+                    title="Show All Statuses"
+                  >
+                    All
+                  </button>
+                  <button
+                    type="button"
+                    onclick="FPCL_SUB_HSE_MECH_SUITE.setStatusFilter('Open')"
+                    class="py-1 px-1 rounded-lg text-[10px] font-black uppercase text-center transition-all cursor-pointer truncate flex items-center justify-center gap-1 ${s.statusFilter.toLowerCase() === 'open' ? 'bg-red-600 text-white shadow-xs ring-1 ring-red-400' : 'bg-red-50 hover:bg-red-100 text-red-700 border border-red-200'}"
+                    title="Filter Open observations only (Column J)"
+                  >
+                    <span class="w-1.5 h-1.5 rounded-full ${s.statusFilter.toLowerCase() === 'open' ? 'bg-white' : 'bg-red-500'}"></span>
+                    <span>Open (${rawOpenCount})</span>
+                  </button>
+                  <button
+                    type="button"
+                    onclick="FPCL_SUB_HSE_MECH_SUITE.setStatusFilter('Closed')"
+                    class="py-1 px-1 rounded-lg text-[10px] font-black uppercase text-center transition-all cursor-pointer truncate flex items-center justify-center gap-1 ${s.statusFilter.toLowerCase() === 'closed' || s.statusFilter.toLowerCase() === 'close' ? 'bg-emerald-600 text-white shadow-xs ring-1 ring-emerald-400' : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200'}"
+                    title="Filter Closed observations only (Column J)"
+                  >
+                    <span class="w-1.5 h-1.5 rounded-full ${s.statusFilter.toLowerCase() === 'closed' || s.statusFilter.toLowerCase() === 'close' ? 'bg-white' : 'bg-emerald-500'}"></span>
+                    <span>Close (${rawClosedCount})</span>
+                  </button>
                 </div>
               </div>
 
@@ -1487,7 +1540,35 @@
               </div>
 
               <!-- Dedicated Horizontal Scroll Controls for lengthy sheet -->
-              <div class="flex items-center gap-2">
+              <div class="flex items-center gap-2 flex-wrap">
+                <!-- Status Filter Pills in Table Toolbar -->
+                <div class="hidden sm:flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-bold">
+                  <span class="px-1.5 text-slate-500 text-[10px] uppercase font-black tracking-wider">Status:</span>
+                  <button
+                    type="button"
+                    onclick="FPCL_SUB_HSE_MECH_SUITE.setStatusFilter('all')"
+                    class="px-2 py-0.5 rounded-lg text-[11px] transition-all cursor-pointer ${s.statusFilter === 'all' ? 'bg-white text-slate-900 shadow-2xs font-black' : 'text-slate-600 hover:text-slate-900'}"
+                  >
+                    All (${raw.length})
+                  </button>
+                  <button
+                    type="button"
+                    onclick="FPCL_SUB_HSE_MECH_SUITE.setStatusFilter('Open')"
+                    class="px-2 py-0.5 rounded-lg text-[11px] transition-all cursor-pointer flex items-center gap-1 ${s.statusFilter.toLowerCase() === 'open' ? 'bg-red-600 text-white shadow-2xs font-black' : 'text-red-700 hover:bg-red-50'}"
+                  >
+                    <span class="w-1.5 h-1.5 rounded-full ${s.statusFilter.toLowerCase() === 'open' ? 'bg-white' : 'bg-red-500'}"></span>
+                    <span>Open (${rawOpenCount})</span>
+                  </button>
+                  <button
+                    type="button"
+                    onclick="FPCL_SUB_HSE_MECH_SUITE.setStatusFilter('Closed')"
+                    class="px-2 py-0.5 rounded-lg text-[11px] transition-all cursor-pointer flex items-center gap-1 ${s.statusFilter.toLowerCase() === 'closed' || s.statusFilter.toLowerCase() === 'close' ? 'bg-emerald-600 text-white shadow-2xs font-black' : 'text-emerald-700 hover:bg-emerald-50'}"
+                  >
+                    <span class="w-1.5 h-1.5 rounded-full ${s.statusFilter.toLowerCase() === 'closed' || s.statusFilter.toLowerCase() === 'close' ? 'bg-white' : 'bg-emerald-500'}"></span>
+                    <span>Close (${rawClosedCount})</span>
+                  </button>
+                </div>
+
                 <button
                   type="button"
                   onclick="FPCL_SUB_HSE_MECH_SUITE.scrollTable(-350)"
@@ -1533,7 +1614,12 @@
                     <th class="py-3 px-3 w-32">Type (G)</th>
                     <th class="py-3 px-4 min-w-[380px]">MoM / Recommendation (H)</th>
                     <th class="py-3 px-3 w-40">Action Dept (I)</th>
-                    <th class="py-3 px-3 w-32 text-center">Status (J)</th>
+                    <th class="py-3 px-3 w-36 text-center cursor-pointer select-none hover:text-cyan-700 group" onclick="FPCL_SUB_HSE_MECH_SUITE.toggleStatusFilterNext()" title="Click to filter Open / Close (Column J: Status)">
+                      <div class="flex items-center justify-center gap-1">
+                        <span>Status (Col J)</span>
+                        <i data-lucide="filter" class="w-3 h-3 ${s.statusFilter !== 'all' ? 'text-cyan-600' : 'text-slate-400 opacity-60'}"></i>
+                      </div>
+                    </th>
                     <th class="py-3 px-3 w-28">Target Date (K)</th>
                     <th class="py-3 px-4 min-w-[280px]">Remarks (L)</th>
                   </tr>

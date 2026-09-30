@@ -1705,10 +1705,6 @@
 
             this.state.lastSynced = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-            if (!this._userManuallyChangedYear) {
-              this.applyCurrentYearFilter();
-            }
-
             if (!silent && window.portalApp && typeof window.portalApp.showToast === 'function') {
               window.portalApp.showToast(`CAPEX feed synchronized live with Google Sheet (${parsed.length} projects).`, 'success');
             }
@@ -1784,12 +1780,43 @@
       document.body.removeChild(link);
     },
 
+    setYearFilter(yr) {
+      this._userManuallyChangedYear = true;
+      this.state.yearFilter = yr;
+      this.state.page = 1;
+      this.render();
+    },
+
+    setStatusFilter(status) {
+      this.state.statusFilter = status;
+      this.state.page = 1;
+      this.render();
+    },
+
     setCategoryFilter(cat) {
       if (this.state.categoryFilter === cat) {
         this.state.categoryFilter = 'all';
       } else {
         this.state.categoryFilter = cat;
       }
+      this.state.page = 1;
+      this.render();
+    },
+
+    setUnitFilter(unit) {
+      this.state.unitFilter = unit;
+      this.state.page = 1;
+      this.render();
+    },
+
+    setTypeFilter(type) {
+      this.state.typeFilter = type;
+      this.state.page = 1;
+      this.render();
+    },
+
+    setPriorityFilter(priority) {
+      this.state.priorityFilter = priority;
       this.state.page = 1;
       this.render();
     },
@@ -2092,6 +2119,9 @@
       const rawYears = [...new Set(allProjects.map(p => String(p.year || '').trim()).filter(Boolean))];
       if (!rawYears.includes(currentCalYear)) {
         rawYears.push(currentCalYear);
+      }
+      if (s.yearFilter && s.yearFilter !== 'all' && !rawYears.includes(String(s.yearFilter).trim())) {
+        rawYears.push(String(s.yearFilter).trim());
       }
       rawYears.sort((a, b) => b.localeCompare(a));
       const years = rawYears.length > 0 ? rawYears : [currentCalYear, '2027', '2026', '2025', '2024'];
@@ -2398,7 +2428,7 @@
               <!-- Filter 1: Year (Column B) -->
               <div>
                 <select
-                  onchange="window.FPCL_CAPEX_SUITE.state.yearFilter = this.value; window.FPCL_CAPEX_SUITE.state.page = 1; window.FPCL_CAPEX_SUITE.render();"
+                  onchange="window.FPCL_CAPEX_SUITE.setYearFilter(this.value);"
                   class="w-full py-1.5 sm:py-2 px-2.5 sm:px-3 rounded-lg text-xs bg-slate-50 border border-[#CBD2DE] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B1D3A]/20 text-[#1A1F2B] font-semibold truncate"
                 >
                   <option value="all" ${s.yearFilter === 'all' ? 'selected' : ''}>All Years (${allProjects.length})</option>
@@ -2412,7 +2442,7 @@
               <!-- Filter 2: Open/Close Status (Column R) -->
               <div>
                 <select
-                  onchange="window.FPCL_CAPEX_SUITE.state.statusFilter = this.value; window.FPCL_CAPEX_SUITE.state.page = 1; window.FPCL_CAPEX_SUITE.render();"
+                  onchange="window.FPCL_CAPEX_SUITE.setStatusFilter(this.value);"
                   class="w-full py-1.5 sm:py-2 px-2.5 sm:px-3 rounded-lg text-xs bg-slate-50 border border-[#CBD2DE] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B1D3A]/20 text-[#1A1F2B] font-semibold truncate"
                 >
                   <option value="all" ${s.statusFilter === 'all' ? 'selected' : ''}>All Statuses</option>
@@ -2424,7 +2454,7 @@
               <!-- Filter 3: Category (Column O) -->
               <div>
                 <select
-                  onchange="window.FPCL_CAPEX_SUITE.state.categoryFilter = this.value; window.FPCL_CAPEX_SUITE.state.page = 1; window.FPCL_CAPEX_SUITE.render();"
+                  onchange="window.FPCL_CAPEX_SUITE.setCategoryFilter(this.value);"
                   class="w-full py-1.5 sm:py-2 px-2.5 sm:px-3 rounded-lg text-xs bg-slate-50 border border-[#CBD2DE] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B1D3A]/20 text-[#1A1F2B] font-semibold truncate"
                 >
                   <option value="all" ${s.categoryFilter === 'all' ? 'selected' : ''}>All Categories</option>
@@ -2435,7 +2465,7 @@
               <!-- Filter 4: Unit (Column I) -->
               <div>
                 <select
-                  onchange="window.FPCL_CAPEX_SUITE.state.unitFilter = this.value; window.FPCL_CAPEX_SUITE.state.page = 1; window.FPCL_CAPEX_SUITE.render();"
+                  onchange="window.FPCL_CAPEX_SUITE.setUnitFilter(this.value);"
                   class="w-full py-1.5 sm:py-2 px-2.5 sm:px-3 rounded-lg text-xs bg-slate-50 border border-[#CBD2DE] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B1D3A]/20 text-[#1A1F2B] font-semibold truncate"
                 >
                   <option value="all" ${s.unitFilter === 'all' ? 'selected' : ''}>All Units</option>
