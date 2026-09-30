@@ -83,7 +83,8 @@ export default async function handler(req: any, res: any) {
 
     // Direct PSI match by sheet ID
     if (sheetIdParam === '1vWYE3G4W7TxHBVzsUJuu1Z-aufjXD-xFeodTpFUTZtY' || (typeof url === 'string' && url.includes('1vWYE3G4W7TxHBVzsUJuu1Z-aufjXD-xFeodTpFUTZtY'))) {
-      url = process.env.PSI || process.env.PSI_SHEET_URL || `https://docs.google.com/spreadsheets/d/1vWYE3G4W7TxHBVzsUJuu1Z-aufjXD-xFeodTpFUTZtY/gviz/tq?tqx=out:csv&sheet=PSI`;
+      const targetTab = sheetTab || 'PSI';
+      url = (targetTab === 'PSI' && (process.env.PSI || process.env.PSI_SHEET_URL)) ? (process.env.PSI || process.env.PSI_SHEET_URL) : `https://docs.google.com/spreadsheets/d/1vWYE3G4W7TxHBVzsUJuu1Z-aufjXD-xFeodTpFUTZtY/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(targetTab)}`;
     }
 
     // Resolve URL from environment variables or registry if not provided or pointing to placeholder

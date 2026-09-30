@@ -277,4 +277,98 @@
   ];
 
   window.FPCL_PSI_DATA = window.FPCL_PSI_INITIAL_SEED.slice();
+
+  // Initial Seed for Hold_Points Tab from Sheet ID 1vWYE3G4W7TxHBVzsUJuu1Z-aufjXD-xFeodTpFUTZtY
+  window.FPCL_PSI_HOLD_POINTS_SEED = [
+    {
+      id: 1,
+      date: "20-Jul-26",
+      package: "Steam Generation",
+      point: "PTE tentative documents increased from 3615 to 8615 (+5000)",
+      raisedBy: "Projects",
+      status: "For Info."
+    },
+    {
+      id: 2,
+      date: "30-Jul-26",
+      package: "Steam Generation",
+      point: "Process Engineering tentative documents decreased from 358 to 139 (-219)",
+      raisedBy: "Process",
+      status: "For Info."
+    },
+    {
+      id: 3,
+      date: "31-Jul-26",
+      package: "Steam Generation",
+      point: "PTE tentative documents increased from 8615 to 9690 (+1075)",
+      raisedBy: "Projects",
+      status: "For Info."
+    },
+    {
+      id: 4,
+      date: "31-Jul-26",
+      package: "Steam Generation",
+      point: "Mechancial Equipment tentative documents increased from 21 to 29 (+8)",
+      raisedBy: "Mech Equipment",
+      status: "For Info."
+    },
+    {
+      id: 5,
+      date: "03-Sep-26",
+      package: "Power Generation",
+      point: "PTE tentative documents increased from 350 to 1322 (+972)",
+      raisedBy: "Projects",
+      status: "For Info."
+    },
+    {
+      id: 6,
+      date: "31-Aug-2026",
+      package: "Steam Generation",
+      point: "E&I Steam Generation Documents increased from",
+      raisedBy: "E&I",
+      status: "For Info."
+    },
+    {
+      id: 7,
+      date: "31-Aug-2026",
+      package: "Power Generation",
+      point: "E&I Grid Documents increased from",
+      raisedBy: "E&I",
+      status: "For Info."
+    },
+    {
+      id: 8,
+      date: "31-Aug-2026",
+      package: "Grid",
+      point: "E&I Power Generation Document increased from",
+      raisedBy: "E&I",
+      status: "For Info."
+    },
+    {
+      id: 9,
+      date: "08-Sep-2026",
+      package: "Non-Operating Area",
+      point: "PTE Grid Document decreased from 450 to 330",
+      raisedBy: "PTE",
+      status: "For Info."
+    },
+    {
+      id: 10,
+      date: "10-Sep-2026",
+      package: "Grid",
+      point: "PTE Grid Document increased from 14 to 94",
+      raisedBy: "PTE",
+      status: "For Info."
+    },
+    {
+      id: 11,
+      date: "15-Sep-2026",
+      package: "Power Generation",
+      point: "PTE Documents increased from 1,281 to 1986",
+      raisedBy: "PTE",
+      status: "For Info."
+    }
+  ];
+
+  window.FPCL_PSI_HOLD_POINTS_DATA = window.FPCL_PSI_HOLD_POINTS_SEED.slice();
 })();

@@ -3279,6 +3279,60 @@
           actions: []
         },
         {
+          id: 'sr',
+          name: 'SR',
+          code: 'SR',
+          icon: 'file-text',
+          status: 'Awaiting Data',
+          hasSheetLink: false,
+          category: 'Safety & Regulatory Reporting',
+          department: 'HSEQ Directorate',
+          cadence: 'Awaiting Google Sheet Data',
+          description: 'Safety Review (SR) Dashboard • Google Sheets dataset connection will be linked once provided.',
+          color: {
+            bg: '#FFFBEB',
+            primary: '#B45309',
+            secondary: '#FDE68A',
+            text: '#78350F'
+          },
+          gradient: 'from-amber-600 via-amber-700 to-yellow-600',
+          gradientStop1: '#D97706',
+          gradientStop2: '#B45309',
+          tagStyle: 'bg-amber-50 text-amber-800 border-amber-200',
+          kpis: { total: 0, closed: 0, inProgress: 0, overdue: 0, compliance: '0.0%' },
+          punchList: { open: 0, closed: 0, total: 0, rate: '0.0%' },
+          dataReadiness: { master: '0%', signoff: '0%' },
+          statusComment: 'Google Sheets dataset will be provided later.',
+          actions: []
+        },
+        {
+          id: 'msa',
+          name: 'MSA',
+          code: 'MSA',
+          icon: 'bar-chart-2',
+          status: 'Awaiting Data',
+          hasSheetLink: false,
+          category: 'Management Safety & Assurance',
+          department: 'Technical Services & Audit',
+          cadence: 'Awaiting Google Sheet Data',
+          description: 'Management Safety Audit (MSA) Dashboard • Google Sheets dataset connection will be linked once provided.',
+          color: {
+            bg: '#FFF1F2',
+            primary: '#BE123C',
+            secondary: '#FECDD3',
+            text: '#881337'
+          },
+          gradient: 'from-rose-600 via-pink-600 to-rose-700',
+          gradientStop1: '#E11D48',
+          gradientStop2: '#BE123C',
+          tagStyle: 'bg-rose-50 text-rose-800 border-rose-200',
+          kpis: { total: 0, closed: 0, inProgress: 0, overdue: 0, compliance: '0.0%' },
+          punchList: { open: 0, closed: 0, total: 0, rate: '0.0%' },
+          dataReadiness: { master: '0%', signoff: '0%' },
+          statusComment: 'Google Sheets dataset will be provided later.',
+          actions: []
+        },
+        {
           id: 'hseq',
           name: 'HSEQ',
           code: 'HSEQ',
@@ -3357,6 +3411,9 @@
           } catch (e) {}
           if (typeof this.syncPlrStatsToOverview === 'function') {
             this.syncPlrStatsToOverview();
+          }
+          if (window.FPCL_PSI_SUITE && typeof window.FPCL_PSI_SUITE.syncStatsToOverview === 'function') {
+            window.FPCL_PSI_SUITE.syncStatsToOverview();
           }
           this.updateRollupStats();
           this.updateOverviewFilterUI();
@@ -4304,6 +4361,111 @@
         },
 
         /**
+         * Process Safety Information (PSI): Responsible Unit, Total Planned, Total Upload, Documents Remaining
+         */
+        getPsiFilteredKpis(deptFilter, openCloseFilter, yearFilter) {
+          let raw = [];
+          if (window.FPCL_PSI_SUITE && typeof window.FPCL_PSI_SUITE.getRawData === 'function') {
+            raw = window.FPCL_PSI_SUITE.getRawData();
+          } else if (Array.isArray(window.FPCL_PSI_DATA) && window.FPCL_PSI_DATA.length > 0) {
+            raw = window.FPCL_PSI_DATA;
+          } else if (Array.isArray(window.FPCL_PSI_INITIAL_SEED)) {
+            raw = window.FPCL_PSI_INITIAL_SEED;
+          }
+
+          const clean = raw.filter(i => {
+            const ru = String(i.responsibleUnit || '').trim().toLowerCase();
+            return ru !== 'total' && ru !== 'grand total';
+          });
+
+          const deptRows = clean.filter(r => {
+            if (!deptFilter || deptFilter === 'all') return true;
+            return this.isDeptMatch(r.responsibleUnit, deptFilter) ||
+                   this.isDeptMatch('Process Safety', deptFilter) ||
+                   this.isDeptMatch('PSM', deptFilter);
+          });
+
+          if (deptFilter && deptFilter !== 'all' && deptRows.length === 0) {
+            return {
+              total: 0,
+              closed: 0,
+              inProgress: 0,
+              overdue: 0,
+              compliance: '0.0%',
+              deptTotal: 0,
+              deptClosed: 0,
+              deptOpen: 0,
+              deptRate: '0.0%',
+              mode: openCloseFilter
+            };
+          }
+
+          let totalPlanned = 0;
+          let totalUpload = 0;
+          let remaining = 0;
+
+          deptRows.forEach(i => {
+            const planned = Number(i.totalPlanned) || 0;
+            const upload = Number(i.totalUpload) || 0;
+            const rem = (i.documentsRemaining !== undefined && !isNaN(Number(i.documentsRemaining)))
+              ? Number(i.documentsRemaining)
+              : Math.max(0, planned - upload);
+            totalPlanned += planned;
+            totalUpload += upload;
+            remaining += rem;
+          });
+
+          if (totalPlanned === 0 && clean.length === 0) {
+            totalPlanned = 22208;
+            totalUpload = 18563;
+            remaining = 3645;
+          }
+
+          const compRate = totalPlanned > 0 ? ((totalUpload / totalPlanned) * 100).toFixed(1) + '%' : '0.0%';
+
+          if (openCloseFilter === 'open') {
+            return {
+              total: remaining,
+              closed: 0,
+              inProgress: remaining,
+              overdue: 0,
+              compliance: remaining + ' Open',
+              deptTotal: totalPlanned,
+              deptClosed: totalUpload,
+              deptOpen: remaining,
+              deptRate: compRate,
+              mode: 'open'
+            };
+          } else if (openCloseFilter === 'close') {
+            return {
+              total: totalUpload,
+              closed: totalUpload,
+              inProgress: 0,
+              overdue: 0,
+              compliance: totalUpload + ' Closed',
+              deptTotal: totalPlanned,
+              deptClosed: totalUpload,
+              deptOpen: remaining,
+              deptRate: compRate,
+              mode: 'close'
+            };
+          } else {
+            return {
+              total: totalPlanned,
+              closed: totalUpload,
+              inProgress: remaining,
+              overdue: 0,
+              compliance: compRate,
+              deptTotal: totalPlanned,
+              deptClosed: totalUpload,
+              deptOpen: remaining,
+              deptRate: compRate,
+              mode: 'all'
+            };
+          }
+        },
+
+        /**
          * Get live filtered KPIs for any summary dashboard card based on overview filters
          */
         getEffectiveCardKpis(item) {
@@ -4342,6 +4504,9 @@
           }
           if (item.id === 'executive-hse-committee-ehsec') {
             return this.getEhseFilteredKpis(deptFilter, openCloseFilter, yearFilter);
+          }
+          if (item.id === 'psi') {
+            return this.getPsiFilteredKpis(deptFilter, openCloseFilter, yearFilter);
           }
 
           if (deptFilter === 'all' && openCloseFilter === 'all' && yearFilter === 'all') {
@@ -4824,8 +4989,8 @@
           // Build comparison items: Includes all modules, labeling PSM as PSM Audits, plotting PSM Validation on secondary axis, and plotting PSSR and CAPEX next to IMS
           const chartItems = [];
           DASHBOARD_REGISTRY.forEach(d => {
-            // Exclude strategic, sub-hse-eri, and safety-talks from the Overview Progress Comparison Status
-            if (d.id === 'strategic' || d.id === 'sub-hse-eri' || d.id === 'safety-talks') return;
+            // Exclude strategic, sub-hse-eri, safety-talks, hseq, sr, and msa from the Overview Progress Comparison Status
+            if (d.id === 'strategic' || d.id === 'sub-hse-eri' || d.id === 'safety-talks' || d.id === 'hseq' || d.id === 'sr' || d.id === 'msa') return;
 
             if (d.id === 'psi') {
               const psiRaw = (window.FPCL_PSI_SUITE && typeof window.FPCL_PSI_SUITE.getRawData === 'function')
@@ -5986,19 +6151,27 @@
               allVals.push(Number(r.trirPlanned || 0));
               allVals.push(Number(r.trirActual || 0));
             });
-            const topVal = Math.max(...allVals, 5) * 1.25;
+            const maxVal = Math.max(...allVals, 0);
+
+            // Calibrated reduced scale for TRIR (target is 0.6, actual is 0; avoids oversized 6.25 scale)
+            let topVal = 1.0;
+            let yTicks = [0, 0.2, 0.4, 0.6, 0.8, 1.0];
+            if (maxVal > 0.8) {
+              topVal = Math.max(Math.ceil(maxVal * 1.25 * 10) / 10, 1.0);
+              yTicks = [0, topVal * 0.25, topVal * 0.5, topVal * 0.75, topVal];
+            }
 
             // X-scale
             const getX = (idx) => padL + (idx / Math.max(n - 1, 1)) * plotW;
             const getY = (v) => padT + (1 - (v / topVal)) * plotH;
 
             // Grid lines
-            const yTicks = [0, topVal * 0.25, topVal * 0.5, topVal * 0.75, topVal];
             const gridLines = yTicks.map(t => {
               const y = getY(t);
+              const labelText = (t === 0) ? '0.0' : (t % 1 === 0 ? t.toFixed(1) : (Number.isInteger(t * 10) ? t.toFixed(1) : t.toFixed(2)));
               return `
                 <line x1="${padL}" y1="${y}" x2="${svgW - padR}" y2="${y}" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="3,3"/>
-                <text x="${padL - 10}" y="${y + 4}" text-anchor="end" font-size="10" font-family="monospace" fill="#64748B">${t.toFixed(1)}</text>
+                <text x="${padL - 10}" y="${y + 4}" text-anchor="end" font-size="10" font-family="monospace" fill="#64748B">${labelText}</text>
               `;
             }).join('');
 
@@ -6031,7 +6204,7 @@
               <circle cx="${p.x}" cy="${p.y}" r="4.5" fill="#FFFFFF" stroke="#059669" stroke-width="2.5" class="transition-all hover:scale-125 cursor-pointer">
                 <title>${p.year} TRIR Actual: ${p.val}</title>
               </circle>
-              <text x="${p.x}" y="${p.y + 16}" text-anchor="middle" font-size="9.5" font-family="monospace" font-weight="bold" fill="#047857">${p.val}</text>
+              <text x="${p.x}" y="${p.val === 0 ? p.y - 8 : (p.y + 14)}" text-anchor="middle" font-size="9.5" font-family="monospace" font-weight="bold" fill="#047857">${p.val}</text>
             `).join('');
 
             chartSvgContent = `
@@ -6198,7 +6371,7 @@
           const container = document.getElementById('action-scenarios-container');
           if (!container) return;
 
-          container.innerHTML = DASHBOARD_REGISTRY.filter(item => item.id !== 'psi' && item.id !== 'safety-talks').map(item => `
+          container.innerHTML = DASHBOARD_REGISTRY.filter(item => item.id !== 'psi' && item.id !== 'safety-talks' && item.id !== 'sr' && item.id !== 'msa').map(item => `
             <div class="p-3 bg-white hover:bg-slate-50 border border-slate-200/90 rounded-xl space-y-2 transition-all group">
               <div class="flex items-center justify-between gap-2">
                 <div class="flex items-center gap-2 min-w-0 flex-1">
@@ -6236,7 +6409,7 @@
           const tbody = document.getElementById('punch-list-tbody');
           if (!tbody) return;
 
-          tbody.innerHTML = DASHBOARD_REGISTRY.filter(item => item.id !== 'psi' && item.id !== 'safety-talks').map(item => `
+          tbody.innerHTML = DASHBOARD_REGISTRY.filter(item => item.id !== 'psi' && item.id !== 'safety-talks' && item.id !== 'sr' && item.id !== 'msa').map(item => `
             <tr class="hover:bg-slate-50 transition-colors">
               <td class="py-2.5 pr-2">
                 <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${item.tagStyle}">${item.code}</span>
@@ -6268,7 +6441,7 @@
           const tbody = document.getElementById('data-readiness-tbody');
           if (!tbody) return;
 
-          tbody.innerHTML = DASHBOARD_REGISTRY.filter(item => item.id !== 'psi' && item.id !== 'safety-talks').map(item => `
+          tbody.innerHTML = DASHBOARD_REGISTRY.filter(item => item.id !== 'psi' && item.id !== 'safety-talks' && item.id !== 'sr' && item.id !== 'msa').map(item => `
             <tr class="hover:bg-slate-50 transition-colors">
               <td class="py-2.5 pr-2">
                 <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${item.tagStyle}">${item.code}</span>
@@ -6432,8 +6605,8 @@
 
           const query = this.state.searchQuery.toLowerCase().trim();
           const filtered = DASHBOARD_REGISTRY.filter(item => {
-            // Exclude strategic, sub-hse-eri, psi, and safety-talks from the Overview Department Card Grid
-            if (item.id === 'strategic' || item.id === 'sub-hse-eri' || item.id === 'psi' || item.id === 'safety-talks') return false;
+            // Exclude strategic, sub-hse-eri, hseq, safety-talks, sr, and msa from the Overview Department Card Grid
+            if (item.id === 'strategic' || item.id === 'sub-hse-eri' || item.id === 'hseq' || item.id === 'safety-talks' || item.id === 'sr' || item.id === 'msa') return false;
 
             const matchesQuery = !query || 
               item.name.toLowerCase().includes(query) ||
@@ -6699,7 +6872,7 @@
          * Update badge counts
          */
         updateCounts() {
-          const overviewItems = DASHBOARD_REGISTRY.filter(d => d.id !== 'strategic' && d.id !== 'sub-hse-eri' && d.id !== 'psi' && d.id !== 'safety-talks');
+          const overviewItems = DASHBOARD_REGISTRY.filter(d => d.id !== 'strategic' && d.id !== 'sub-hse-eri' && d.id !== 'hseq' && d.id !== 'safety-talks' && d.id !== 'sr' && d.id !== 'msa');
           const total = overviewItems.length;
           const active = overviewItems.filter(d => d.status === 'Active').length;
           const awaiting = overviewItems.filter(d => d.status.includes('Awaiting')).length;
@@ -6858,11 +7031,11 @@
             `}
           `;
 
-          // On Overview dashboard: show all dashboard buttons.
+          // On Overview dashboard: show all dashboard buttons (excluding HSEQ).
           // When a single dashboard is opened: show only that dashboard button; remaining dashboard names at top are not seen.
           const itemsToRender = isOverviewSelected
-            ? DASHBOARD_REGISTRY
-            : DASHBOARD_REGISTRY.filter(item => item.id === activeId);
+            ? DASHBOARD_REGISTRY.filter(item => item.id !== 'hseq')
+            : DASHBOARD_REGISTRY.filter(item => item.id === activeId && item.id !== 'hseq');
 
           html += itemsToRender.map(item => {
             const isSelected = activeId === item.id;
@@ -7682,6 +7855,8 @@
               subHseMechContainer.hidden = true;
             }
             if (stdContainer) { stdContainer.classList.remove('hidden'); stdContainer.hidden = false; }
+            const breadcrumbActive = document.getElementById('breadcrumb-active-name');
+            if (breadcrumbActive) breadcrumbActive.textContent = dashboard.name;
             if (sheetKeyEl) {
               sheetKeyEl.textContent = dashboard.hasSheetLink ? 'Connected' : (dashboard.statusComment || 'Data will be provided later');
               sheetKeyEl.title = dashboard.statusComment || 'Data will be provided later';
@@ -8491,7 +8666,7 @@
           const container = document.getElementById('palette-specs-grid');
           if (!container) return;
 
-          container.innerHTML = DASHBOARD_REGISTRY.filter(item => item.id !== 'psi' && item.id !== 'safety-talks').map((d, index) => `
+          container.innerHTML = DASHBOARD_REGISTRY.filter(item => item.id !== 'psi' && item.id !== 'safety-talks' && item.id !== 'sr' && item.id !== 'msa').map((d, index) => `
             <div class="p-3 rounded-xl border flex flex-col justify-between" style="background-color: ${d.color.bg}; border-color: ${d.color.secondary}; color: ${d.color.text};">
               <div class="font-bold text-xs mb-1.5 flex items-center justify-between">
                 <span>${index + 1}. ${d.name}</span>

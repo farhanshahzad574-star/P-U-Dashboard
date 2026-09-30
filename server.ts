@@ -603,29 +603,29 @@ app.get('/api/contacts', async (_req: Request, res: Response): Promise<void> => 
   }
 });
 
-// Cache for PSI data
-let psiDataCache: { timestamp: number; csvText: string } = {
-  timestamp: 0,
-  csvText: ''
-};
+// Cache for PSI data by tab name
+let psiDataCacheByTab: Record<string, { timestamp: number; csvText: string }> = {};
 
-// GET /api/psi - Live PSI Feed from Google Sheet ID 1vWYE3G4W7TxHBVzsUJuu1Z-aufjXD-xFeodTpFUTZtY (Tab: PSI)
+// GET /api/psi - Live PSI Feed from Google Sheet ID 1vWYE3G4W7TxHBVzsUJuu1Z-aufjXD-xFeodTpFUTZtY (Tabs: PSI, Hold_Points)
 app.get('/api/psi', async (req: Request, res: Response): Promise<void> => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
   res.setHeader('Pragma', 'no-cache');
   res.setHeader('Expires', '0');
 
   const now = Date.now();
+  const targetTab = String(req.query?.tab || req.query?.sheetTab || 'PSI').trim();
   const force = req.query?.force === 'true' || req.query?._t !== undefined;
+  const tabCache = psiDataCacheByTab[targetTab];
+
   // If not forcing fresh sync and cached data is less than 5 seconds old, serve cache
-  if (!force && psiDataCache.csvText && now - psiDataCache.timestamp < 5000) {
+  if (!force && tabCache?.csvText && now - tabCache.timestamp < 5000) {
     res.json({
       success: true,
       source: 'cache',
       sheetId: '1vWYE3G4W7TxHBVzsUJuu1Z-aufjXD-xFeodTpFUTZtY',
-      tabName: 'PSI',
-      csvText: psiDataCache.csvText,
-      lastUpdated: new Date(psiDataCache.timestamp).toISOString()
+      tabName: targetTab,
+      csvText: tabCache.csvText,
+      lastUpdated: new Date(tabCache.timestamp).toISOString()
     });
     return;
   }
@@ -633,9 +633,9 @@ app.get('/api/psi', async (req: Request, res: Response): Promise<void> => {
   const PSI_SHEET_ID = '1vWYE3G4W7TxHBVzsUJuu1Z-aufjXD-xFeodTpFUTZtY';
   const envUrl = process.env.PSI || process.env.PSI_SHEET_URL;
   const urls = [
-    `https://docs.google.com/spreadsheets/d/${PSI_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=PSI&_t=${now}`,
-    ...(envUrl ? [envUrl.includes('_t=') ? envUrl : `${envUrl}&_t=${now}`] : []),
-    `https://docs.google.com/spreadsheets/d/${PSI_SHEET_ID}/export?format=csv&sheet=PSI&_t=${now}`,
+    `https://docs.google.com/spreadsheets/d/${PSI_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(targetTab)}&_t=${now}`,
+    ...(envUrl && targetTab === 'PSI' ? [envUrl.includes('_t=') ? envUrl : `${envUrl}&_t=${now}`] : []),
+    `https://docs.google.com/spreadsheets/d/${PSI_SHEET_ID}/export?format=csv&sheet=${encodeURIComponent(targetTab)}&_t=${now}`,
     `https://docs.google.com/spreadsheets/d/${PSI_SHEET_ID}/gviz/tq?tqx=out:csv&_t=${now}`
   ];
 
@@ -653,7 +653,11 @@ app.get('/api/psi', async (req: Request, res: Response): Promise<void> => {
       if (response.ok) {
         const text = await response.text();
         const lower = text.toLowerCase();
-        if (text && !text.includes('<!DOCTYPE html>') && (lower.includes('responsible') || lower.includes('steam_generation') || lower.includes('planned'))) {
+        const isValid = text && !text.includes('<!DOCTYPE html>') && (
+          lower.includes('hold') || lower.includes('point') || lower.includes('package') ||
+          lower.includes('responsible') || lower.includes('steam') || lower.includes('planned') || lower.includes('balance') || lower.includes('date')
+        );
+        if (isValid) {
           rawCsv = text;
           break;
         }
@@ -664,7 +668,7 @@ app.get('/api/psi', async (req: Request, res: Response): Promise<void> => {
   }
 
   if (rawCsv) {
-    psiDataCache = {
+    psiDataCacheByTab[targetTab] = {
       timestamp: now,
       csvText: rawCsv
     };
@@ -672,30 +676,30 @@ app.get('/api/psi', async (req: Request, res: Response): Promise<void> => {
       success: true,
       source: 'live',
       sheetId: PSI_SHEET_ID,
-      tabName: 'PSI',
+      tabName: targetTab,
       csvText: rawCsv,
       lastUpdated: new Date(now).toISOString()
     });
     return;
   }
 
-  if (psiDataCache.csvText) {
+  if (tabCache?.csvText) {
     res.json({
       success: true,
       source: 'stale-cache',
       sheetId: PSI_SHEET_ID,
-      tabName: 'PSI',
-      csvText: psiDataCache.csvText,
-      lastUpdated: new Date(psiDataCache.timestamp).toISOString()
+      tabName: targetTab,
+      csvText: tabCache.csvText,
+      lastUpdated: new Date(tabCache.timestamp).toISOString()
     });
     return;
   }
 
   res.status(502).json({
     success: false,
-    error: 'Could not fetch PSI from Google Sheet',
+    error: `Could not fetch PSI (${targetTab}) from Google Sheet`,
     sheetId: PSI_SHEET_ID,
-    tabName: 'PSI'
+    tabName: targetTab
   });
 });
 

@@ -13,7 +13,9 @@
 
   const PSI_SHEET_ID = '1vWYE3G4W7TxHBVzsUJuu1Z-aufjXD-xFeodTpFUTZtY';
   const PSI_SHEET_TAB = 'PSI';
+  const HOLD_POINTS_TAB = 'Hold_Points';
   const PSI_SHEET_URL = `https://docs.google.com/spreadsheets/d/${PSI_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(PSI_SHEET_TAB)}`;
+  const HOLD_POINTS_URL = `https://docs.google.com/spreadsheets/d/${PSI_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(HOLD_POINTS_TAB)}`;
 
   const psiSuite = {
     state: {
@@ -21,7 +23,10 @@
       responsibleUnitFilter: 'all', // Column B: Responsible_Unit
       plannedFilter: 'all',         // Column L to T: Planned columns
       actualFilter: 'all',          // Column C to K: Actual columns
+      holdPointsSearch: '',
+      holdPointsPackageFilter: 'all',
       isSyncing: false,
+      isSyncingHoldPoints: false,
       lastSynced: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       isSettingsOpen: false,
       activeTooltipItem: null
@@ -30,13 +35,31 @@
     init() {
       window.FPCL_PSI_SUITE = this;
 
-      // Try reading from cache
+      // Try reading PSI from cache with validation for Projects data integrity
       try {
         const cached = localStorage.getItem('FPCL_PSI_CACHE');
         if (cached) {
           const parsed = JSON.parse(cached);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            window.FPCL_PSI_DATA = parsed;
+            const prj = parsed.find(p => String(p.responsibleUnit || '').toLowerCase().includes('project'));
+            // Validate that Projects row has non-zero Planned Balance of Plant (2245)
+            // If cache was corrupted by old faulty parser, invalidate and purge
+            if (prj && Number(prj.plannedBalanceOfPlant) > 0) {
+              window.FPCL_PSI_DATA = parsed;
+            } else {
+              localStorage.removeItem('FPCL_PSI_CACHE');
+            }
+          }
+        }
+      } catch (e) {}
+
+      // Try reading Hold Points from cache
+      try {
+        const cachedHp = localStorage.getItem('FPCL_PSI_HOLD_POINTS_CACHE');
+        if (cachedHp) {
+          const parsedHp = JSON.parse(cachedHp);
+          if (Array.isArray(parsedHp) && parsedHp.length > 0) {
+            window.FPCL_PSI_HOLD_POINTS_DATA = parsedHp;
           }
         }
       } catch (e) {}
@@ -48,18 +71,26 @@
         }
       }
 
+      if (!window.FPCL_PSI_HOLD_POINTS_DATA || window.FPCL_PSI_HOLD_POINTS_DATA.length === 0) {
+        if (window.FPCL_PSI_HOLD_POINTS_SEED) {
+          window.FPCL_PSI_HOLD_POINTS_DATA = window.FPCL_PSI_HOLD_POINTS_SEED.slice();
+        }
+      }
+
       // Propagate stats to overview registry
       this.syncStatsToOverview();
 
       // Immediate background live sync with Google Sheets on load/refresh
       setTimeout(() => {
         this.syncLiveFeed({ silent: true, force: true });
+        this.syncHoldPointsFeed({ silent: true });
       }, 300);
 
       // Periodic auto-sync every 15 seconds to track live changes in Google Sheet
       if (!this._autoSyncTimer) {
         this._autoSyncTimer = setInterval(() => {
           this.syncLiveFeed({ silent: true, force: true });
+          this.syncHoldPointsFeed({ silent: true });
         }, 15000);
       }
 
@@ -69,6 +100,7 @@
         document.addEventListener('visibilitychange', () => {
           if (!document.hidden) {
             this.syncLiveFeed({ silent: true, force: true });
+            this.syncHoldPointsFeed({ silent: true });
           }
         });
       }
@@ -103,7 +135,9 @@
 
         // Responsible Unit Filter (Column B)
         if (unit !== 'all') {
-          if (String(item.responsibleUnit || '').trim().toLowerCase() !== unit.toLowerCase()) {
+          const itemUnit = String(item.responsibleUnit || '').trim().toLowerCase();
+          const targetUnit = String(unit).trim().toLowerCase();
+          if (itemUnit !== targetUnit && !itemUnit.startsWith(targetUnit) && !targetUnit.startsWith(itemUnit)) {
             return false;
           }
         }
@@ -388,9 +422,265 @@
 
       this.state.isSyncing = false;
       this.renderSyncButton();
+      // Also sync Hold Points live feed
+      this.syncHoldPointsFeed({ silent: true });
+
       if (!silent && window.portalApp && typeof window.portalApp.showToast === 'function') {
         window.portalApp.showToast('PSI Live Sync', 'Using verified PSI dataset.', 'info');
       }
+    },
+
+    async syncHoldPointsFeed(options = {}) {
+      const silent = !!options.silent;
+      if (this.state.isSyncingHoldPoints) return;
+      this.state.isSyncingHoldPoints = true;
+
+      const ts = Date.now();
+      const candidateUrls = [
+        `/api/psi?tab=${HOLD_POINTS_TAB}&force=true&_t=${ts}`,
+        `/api/sheets/fetch?sheetTab=${HOLD_POINTS_TAB}&sheetId=${PSI_SHEET_ID}&force=true&_t=${ts}`,
+        `https://docs.google.com/spreadsheets/d/${PSI_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(HOLD_POINTS_TAB)}&_t=${ts}`,
+        `https://docs.google.com/spreadsheets/d/${PSI_SHEET_ID}/export?format=csv&sheet=${encodeURIComponent(HOLD_POINTS_TAB)}&_t=${ts}`
+      ];
+
+      let csvText = '';
+      for (const url of candidateUrls) {
+        try {
+          const res = await fetch(url, {
+            headers: {
+              'Cache-Control': 'no-cache, no-store, must-revalidate',
+              'Pragma': 'no-cache'
+            }
+          });
+          if (res.ok) {
+            const contentType = res.headers.get('content-type') || '';
+            if (contentType.includes('application/json')) {
+              const json = await res.json();
+              if (json && json.success && json.csvText) {
+                csvText = json.csvText;
+                break;
+              } else if (json && json.data && Array.isArray(json.data) && json.data.length > 0) {
+                window.FPCL_PSI_HOLD_POINTS_DATA = json.data;
+                try {
+                  localStorage.setItem('FPCL_PSI_HOLD_POINTS_CACHE', JSON.stringify(json.data));
+                } catch (e) {}
+                this.state.isSyncingHoldPoints = false;
+                this.render();
+                if (!silent && window.portalApp && typeof window.portalApp.showToast === 'function') {
+                  window.portalApp.showToast('Hold Points Synced', 'Live Hold Points updated from Google Sheet.', 'success');
+                }
+                return;
+              }
+            } else {
+              const text = await res.text();
+              const lower = text.toLowerCase();
+              if (text && !text.includes('<!DOCTYPE html>') && (lower.includes('hold') || lower.includes('package') || lower.includes('point') || lower.includes('date'))) {
+                csvText = text;
+                break;
+              }
+            }
+          }
+        } catch (e) {
+          // Continue to next candidate
+        }
+      }
+
+      if (csvText) {
+        const parsed = this.parseHoldPointsCsv(csvText);
+        if (parsed.length > 0) {
+          window.FPCL_PSI_HOLD_POINTS_DATA = parsed;
+          try {
+            localStorage.setItem('FPCL_PSI_HOLD_POINTS_CACHE', JSON.stringify(parsed));
+          } catch (e) {}
+          this.state.isSyncingHoldPoints = false;
+          this.render();
+          if (!silent && window.portalApp && typeof window.portalApp.showToast === 'function') {
+            window.portalApp.showToast('Hold Points Synced', `Loaded ${parsed.length} hold points from Google Sheet tab Hold_Points.`, 'success');
+          }
+          return;
+        }
+      }
+
+      this.state.isSyncingHoldPoints = false;
+    },
+
+    parseHoldPointsCsv(csvText) {
+      if (!csvText) return [];
+      const lines = csvText.trim().split(/\r?\n/).filter(line => line.trim().length > 0);
+      if (lines.length < 2) return [];
+
+      const parseCsvLine = (line) => {
+        const cells = [];
+        let cur = '';
+        let inQuotes = false;
+        for (let i = 0; i < line.length; i++) {
+          const ch = line[i];
+          if (ch === '"') {
+            if (inQuotes && line[i + 1] === '"') {
+              cur += '"';
+              i++;
+            } else {
+              inQuotes = !inQuotes;
+            }
+          } else if (ch === ',' && !inQuotes) {
+            cells.push(cur.trim());
+            cur = '';
+          } else {
+            cur += ch;
+          }
+        }
+        cells.push(cur.trim());
+        return cells.map(c => c.replace(/^"|"$/g, '').trim());
+      };
+
+      const headerCells = parseCsvLine(lines[0]);
+      const normHeaders = headerCells.map(h => h.toLowerCase().replace(/[^a-z0-9]/g, ''));
+
+      const dateIdx = normHeaders.findIndex(h => h.includes('date'));
+      const pkgIdx = normHeaders.findIndex(h => h.includes('package') || h.includes('psi'));
+      const pointIdx = normHeaders.findIndex(h => h.includes('hold') || h.includes('point') || h.includes('note') || h.includes('key'));
+      const raisedIdx = normHeaders.findIndex(h => h.includes('raised') || h.includes('by') || h.includes('owner') || h.includes('dept'));
+      const statusIdx = normHeaders.findIndex(h => h.includes('status'));
+
+      const results = [];
+      for (let i = 1; i < lines.length; i++) {
+        const cells = parseCsvLine(lines[i]);
+        if (cells.length < 2) continue;
+
+        const date = (cells[dateIdx !== -1 ? dateIdx : 0] || '').trim();
+        const pkg = (cells[pkgIdx !== -1 ? pkgIdx : 1] || '').trim();
+        const point = (cells[pointIdx !== -1 ? pointIdx : 2] || '').trim();
+        const raisedBy = (cells[raisedIdx !== -1 ? raisedIdx : 3] || '').trim();
+        const status = (cells[statusIdx !== -1 ? statusIdx : 4] || 'For Info.').trim();
+
+        if (!point && !pkg && !date) continue;
+
+        results.push({
+          id: i,
+          date,
+          package: pkg,
+          point,
+          raisedBy,
+          status
+        });
+      }
+
+      return results;
+    },
+
+    identifyColumns(headerCells) {
+      const colIdx = {
+        id: -1,
+        unit: -1,
+        actSteam: -1,
+        actPower: -1,
+        actCoal: -1,
+        actBop: -1,
+        actGrid: -1,
+        actNonOp: -1,
+        actHseq: -1,
+        actGeneral: -1,
+        totalUpload: -1,
+        planSteam: -1,
+        planPower: -1,
+        planCoal: -1,
+        planBop: -1,
+        planGrid: -1,
+        planNonOp: -1,
+        planHseq: -1,
+        planGeneral: -1,
+        totalPlanned: -1
+      };
+
+      headerCells.forEach((rawH, idx) => {
+        const h = String(rawH || '').toLowerCase().trim();
+        const clean = h.replace(/[^a-z0-9]/g, ' ');
+        const words = clean.split(/\s+/).filter(Boolean);
+
+        // ID (Col A)
+        if (h === 'id' || (words.length > 0 && words[0] === 'id')) {
+          colIdx.id = idx;
+          return;
+        }
+
+        // Responsible Unit (Col B)
+        if (h.includes('responsible') || h.includes('unit')) {
+          colIdx.unit = idx;
+          return;
+        }
+
+        // Total Upload (Col K)
+        if (h.includes('total_upload') || (words.includes('total') && words.includes('upload')) || (words.includes('upload') && !words.includes('plan') && !words.includes('planned'))) {
+          colIdx.totalUpload = idx;
+          return;
+        }
+
+        // Total Planned (Col T)
+        if (h.includes('total_planned') || (words.includes('total') && (words.includes('plan') || words.includes('planned')))) {
+          colIdx.totalPlanned = idx;
+          return;
+        }
+
+        // Check if Planned vs Actual
+        // Planned: starts with planned/plan, or words contains planned, or contains plan without plant
+        const isPlanned = words[0] === 'planned' || words[0] === 'plan' || words.includes('planned') || (words.includes('plan') && !words.includes('plant'));
+        // Actual: starts with actual/act, or words contains actual/act
+        const isActual = words[0] === 'actual' || words[0] === 'act' || words.includes('actual') || words.includes('act');
+
+        if (isPlanned) {
+          if (words.includes('steam')) colIdx.planSteam = idx;
+          else if (words.includes('power')) colIdx.planPower = idx;
+          else if (words.includes('coal') || words.includes('sorbent')) colIdx.planCoal = idx;
+          else if (words.includes('balance') || words.includes('bop')) colIdx.planBop = idx;
+          else if (words.includes('grid')) colIdx.planGrid = idx;
+          else if (words.includes('non') || words.includes('nonoperating')) colIdx.planNonOp = idx;
+          else if (words.includes('hseq')) colIdx.planHseq = idx;
+          else if (words.includes('general')) colIdx.planGeneral = idx;
+          else if (words.includes('total')) colIdx.totalPlanned = idx;
+        } else if (isActual) {
+          if (words.includes('steam')) colIdx.actSteam = idx;
+          else if (words.includes('power')) colIdx.actPower = idx;
+          else if (words.includes('coal') || words.includes('sorbent')) colIdx.actCoal = idx;
+          else if (words.includes('balance') || words.includes('bop')) colIdx.actBop = idx;
+          else if (words.includes('grid')) colIdx.actGrid = idx;
+          else if (words.includes('non') || words.includes('nonoperating')) colIdx.actNonOp = idx;
+          else if (words.includes('hseq')) colIdx.actHseq = idx;
+          else if (words.includes('general')) colIdx.actGeneral = idx;
+          else if (words.includes('upload')) colIdx.totalUpload = idx;
+        }
+      });
+
+      // Strict positional fallback for standard PSI 20-column schema (Col A=0 to Col T=19)
+      const positionalFallback = {
+        id: 0,            // Col A
+        unit: 1,          // Col B: Responsible_Unit
+        actSteam: 2,      // Col C: Actual_Steam_Generation
+        actPower: 3,      // Col D: Actual_Power_Generation
+        actCoal: 4,       // Col E: Actual_Coal_&_Sorbent_Handling
+        actBop: 5,        // Col F: Actual_Balance_of_Plant
+        actGrid: 6,       // Col G: Actual _Grid
+        actNonOp: 7,      // Col H: Actual_Non_Operating_Areas
+        actHseq: 8,       // Col I: Actual _HSEQ
+        actGeneral: 9,    // Col J: Actual_Plant General
+        totalUpload: 10,  // Col K: Total_Upload
+        planSteam: 11,    // Col L: Planned_Steam_Generation
+        planPower: 12,    // Col M: Planned_Power_Generation
+        planCoal: 13,     // Col N: Planned_Coal_&_Sorbent_Handling
+        planBop: 14,      // Col O: Planned _Balance_of_Plant
+        planGrid: 15,     // Col P: Planned_Grid
+        planNonOp: 16,    // Col Q: Planned_Non_Operating_Areas
+        planHseq: 17,     // Col R: Planned_HSEQ
+        planGeneral: 18,  // Col S: Planned_Plant_General
+        totalPlanned: 19  // Col T: total_planned
+      };
+
+      for (const k in positionalFallback) {
+        if (colIdx[k] === undefined || colIdx[k] === -1) {
+          colIdx[k] = positionalFallback[k];
+        }
+      }
+
+      return colIdx;
     },
 
     parseCsv(csvText) {
@@ -423,31 +713,7 @@
       };
 
       const headerCells = parseCsvLine(lines[0]);
-      const normHeaders = headerCells.map(h => h.toLowerCase().replace(/[^a-z0-9]/g, ''));
-
-      const colIdx = {
-        id: normHeaders.indexOf('id'),
-        unit: normHeaders.findIndex(h => h.includes('responsible') || h === 'unit'),
-        actSteam: normHeaders.findIndex(h => h.includes('actual') && h.includes('steam')),
-        actPower: normHeaders.findIndex(h => h.includes('actual') && h.includes('power')),
-        actCoal: normHeaders.findIndex(h => h.includes('actual') && (h.includes('coal') || h.includes('sorbent'))),
-        actBop: normHeaders.findIndex(h => h.includes('actual') && (h.includes('balance') || h.includes('bop'))),
-        actGrid: normHeaders.findIndex(h => h.includes('actual') && h.includes('grid')),
-        actNonOp: normHeaders.findIndex(h => h.includes('actual') && (h.includes('non') || h.includes('operating'))),
-        actHseq: normHeaders.findIndex(h => h.includes('actual') && h.includes('hseq')),
-        actGeneral: normHeaders.findIndex(h => h.includes('actual') && (h.includes('general') || h.includes('plant'))),
-        totalUpload: normHeaders.findIndex(h => h.includes('upload') || (h.includes('total') && h.includes('upload'))),
-
-        planSteam: normHeaders.findIndex(h => h.includes('plan') && h.includes('steam')),
-        planPower: normHeaders.findIndex(h => h.includes('plan') && h.includes('power')),
-        planCoal: normHeaders.findIndex(h => h.includes('plan') && (h.includes('coal') || h.includes('sorbent'))),
-        planBop: normHeaders.findIndex(h => h.includes('plan') && (h.includes('balance') || h.includes('bop'))),
-        planGrid: normHeaders.findIndex(h => h.includes('plan') && h.includes('grid')),
-        planNonOp: normHeaders.findIndex(h => h.includes('plan') && (h.includes('non') || h.includes('operating'))),
-        planHseq: normHeaders.findIndex(h => h.includes('plan') && h.includes('hseq')),
-        planGeneral: normHeaders.findIndex(h => h.includes('plan') && (h.includes('general') || h.includes('plant'))),
-        totalPlanned: normHeaders.findIndex(h => h.includes('totalplanned') || (h.includes('total') && h.includes('plan')))
-      };
+      const colIdx = this.identifyColumns(headerCells);
 
       const parseNum = (val) => {
         if (val === undefined || val === null || val === '') return 0;
@@ -460,31 +726,31 @@
         const cells = parseCsvLine(lines[i]);
         if (cells.length < 2) continue;
 
-        const unitName = cells[colIdx.unit !== -1 ? colIdx.unit : 1] || '';
+        const unitName = (cells[colIdx.unit] || '').trim();
         if (!unitName || unitName.toLowerCase() === 'total' || unitName.toLowerCase() === 'grand total') {
           continue; // Skip aggregate summary row
         }
 
-        const id = cells[colIdx.id !== -1 ? colIdx.id : 0] || String(results.length + 1);
-        const actualSteamGen = parseNum(cells[colIdx.actSteam !== -1 ? colIdx.actSteam : 2]);
-        const actualPowerGen = parseNum(cells[colIdx.actPower !== -1 ? colIdx.actPower : 3]);
-        const actualCoalSorbent = parseNum(cells[colIdx.actCoal !== -1 ? colIdx.actCoal : 4]);
-        const actualBalanceOfPlant = parseNum(cells[colIdx.actBop !== -1 ? colIdx.actBop : 5]);
-        const actualGrid = parseNum(cells[colIdx.actGrid !== -1 ? colIdx.actGrid : 6]);
-        const actualNonOperating = parseNum(cells[colIdx.actNonOp !== -1 ? colIdx.actNonOp : 7]);
-        const actualHseq = parseNum(cells[colIdx.actHseq !== -1 ? colIdx.actHseq : 8]);
-        const actualPlantGeneral = parseNum(cells[colIdx.actGeneral !== -1 ? colIdx.actGeneral : 9]);
-        const totalUpload = parseNum(cells[colIdx.totalUpload !== -1 ? colIdx.totalUpload : 10]);
+        const id = (cells[colIdx.id] || String(results.length + 1)).trim();
+        const actualSteamGen = parseNum(cells[colIdx.actSteam]);
+        const actualPowerGen = parseNum(cells[colIdx.actPower]);
+        const actualCoalSorbent = parseNum(cells[colIdx.actCoal]);
+        const actualBalanceOfPlant = parseNum(cells[colIdx.actBop]);
+        const actualGrid = parseNum(cells[colIdx.actGrid]);
+        const actualNonOperating = parseNum(cells[colIdx.actNonOp]);
+        const actualHseq = parseNum(cells[colIdx.actHseq]);
+        const actualPlantGeneral = parseNum(cells[colIdx.actGeneral]);
+        const totalUpload = parseNum(cells[colIdx.totalUpload]);
 
-        const plannedSteamGen = parseNum(cells[colIdx.planSteam !== -1 ? colIdx.planSteam : 11]);
-        const plannedPowerGen = parseNum(cells[colIdx.planPower !== -1 ? colIdx.planPower : 12]);
-        const plannedCoalSorbent = parseNum(cells[colIdx.planCoal !== -1 ? colIdx.planCoal : 13]);
-        const plannedBalanceOfPlant = parseNum(cells[colIdx.planBop !== -1 ? colIdx.planBop : 14]);
-        const plannedGrid = parseNum(cells[colIdx.planGrid !== -1 ? colIdx.planGrid : 15]);
-        const plannedNonOperating = parseNum(cells[colIdx.planNonOp !== -1 ? colIdx.planNonOp : 16]);
-        const plannedHseq = parseNum(cells[colIdx.planHseq !== -1 ? colIdx.planHseq : 17]);
-        const plannedPlantGeneral = parseNum(cells[colIdx.planGeneral !== -1 ? colIdx.planGeneral : 18]);
-        const totalPlanned = parseNum(cells[colIdx.totalPlanned !== -1 ? colIdx.totalPlanned : 19]);
+        const plannedSteamGen = parseNum(cells[colIdx.planSteam]);
+        const plannedPowerGen = parseNum(cells[colIdx.planPower]);
+        const plannedCoalSorbent = parseNum(cells[colIdx.planCoal]);
+        const plannedBalanceOfPlant = parseNum(cells[colIdx.planBop]);
+        const plannedGrid = parseNum(cells[colIdx.planGrid]);
+        const plannedNonOperating = parseNum(cells[colIdx.planNonOp]);
+        const plannedHseq = parseNum(cells[colIdx.planHseq]);
+        const plannedPlantGeneral = parseNum(cells[colIdx.planGeneral]);
+        const totalPlanned = parseNum(cells[colIdx.totalPlanned]);
 
         const documentsRemaining = Math.max(0, totalPlanned - totalUpload);
         const percentComplete = totalPlanned > 0 ? (totalUpload / totalPlanned) * 100 : 0;
@@ -538,11 +804,55 @@
       this.render();
     },
 
+    getHoldPointsRawData() {
+      if (Array.isArray(window.FPCL_PSI_HOLD_POINTS_DATA) && window.FPCL_PSI_HOLD_POINTS_DATA.length > 0) {
+        return window.FPCL_PSI_HOLD_POINTS_DATA;
+      }
+      if (Array.isArray(window.FPCL_PSI_HOLD_POINTS_SEED) && window.FPCL_PSI_HOLD_POINTS_SEED.length > 0) {
+        return window.FPCL_PSI_HOLD_POINTS_SEED;
+      }
+      return [];
+    },
+
+    getFilteredHoldPoints() {
+      const raw = this.getHoldPointsRawData();
+      const q = (this.state.holdPointsSearch || '').toLowerCase().trim();
+      const pkg = this.state.holdPointsPackageFilter || 'all';
+
+      return raw.filter(item => {
+        if (pkg !== 'all') {
+          if (String(item.package || '').trim().toLowerCase() !== pkg.toLowerCase()) {
+            return false;
+          }
+        }
+        if (q) {
+          const matchPoint = String(item.point || '').toLowerCase().includes(q);
+          const matchPkg = String(item.package || '').toLowerCase().includes(q);
+          const matchRaised = String(item.raisedBy || '').toLowerCase().includes(q);
+          const matchDate = String(item.date || '').toLowerCase().includes(q);
+          if (!matchPoint && !matchPkg && !matchRaised && !matchDate) return false;
+        }
+        return true;
+      });
+    },
+
+    setHoldPointsSearch(val) {
+      this.state.holdPointsSearch = val;
+      this.render();
+    },
+
+    setHoldPointsPackageFilter(val) {
+      this.state.holdPointsPackageFilter = val;
+      this.render();
+    },
+
     resetFilters() {
       this.state.searchQuery = '';
       this.state.responsibleUnitFilter = 'all';
       this.state.plannedFilter = 'all';
       this.state.actualFilter = 'all';
+      this.state.holdPointsSearch = '';
+      this.state.holdPointsPackageFilter = 'all';
       const searchInput = document.getElementById('psi-search-input');
       if (searchInput) searchInput.value = '';
       this.render();
@@ -699,6 +1009,11 @@
 
       // Extract unique Responsible Units for Filter 1
       const allUnits = Array.from(new Set(raw.map(i => i.responsibleUnit).filter(Boolean))).sort();
+
+      // Hold Points data from Google Sheet tab Hold_Points
+      const rawHoldPoints = this.getHoldPointsRawData();
+      const holdPoints = this.getFilteredHoldPoints();
+      const holdPointPackages = Array.from(new Set(rawHoldPoints.map(i => i.package).filter(Boolean))).sort();
 
       container.innerHTML = `
         <!-- ========================================================================= -->
@@ -973,7 +1288,7 @@
           <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-100 gap-3">
             <div>
               <h3 class="text-sm sm:text-base font-black text-[#1E293B] tracking-wide flex items-center gap-2 m-0 p-0">
-                <span>📊</span> Process Safety Information ${((this.state.plannedFilter && this.state.plannedFilter !== 'all' && this.state.plannedFilter !== 'totalPlanned') || (this.state.actualFilter && this.state.actualFilter !== 'all' && this.state.actualFilter !== 'totalUpload')) ? `— ${totals.activePlannedLabel || totals.activeActualLabel} By Responsible Unit` : 'By Technical Area'}
+                <span>📊</span> Process Safety Information ${((this.state.plannedFilter && this.state.plannedFilter !== 'all' && this.state.plannedFilter !== 'totalPlanned') || (this.state.actualFilter && this.state.actualFilter !== 'all' && this.state.actualFilter !== 'totalUpload')) ? `— ${totals.activePlannedLabel || totals.activeActualLabel} By Responsible Unit` : (this.state.responsibleUnitFilter !== 'all' ? `— ${this.state.responsibleUnitFilter} By Technical Area` : 'By Technical Area')}
               </h3>
             </div>
 
@@ -1047,7 +1362,149 @@
         </div>
 
         <!-- ========================================================================= -->
-        <!-- 6. COMPLETE SCROLLABLE EXCEL SHEET IN FORM OF TABLE                       -->
+        <!-- 6. PSI HOLD POINTS & KEY OBSERVATIONS TABLE (FULL SCREEN WIDTH, WRAPPED)  -->
+        <!-- Fits completely on screen without left/right scrolling as requested       -->
+        <!-- ========================================================================= -->
+        <div class="bg-white rounded-2xl p-4 sm:p-6 shadow-sm relative overflow-hidden space-y-3"
+             style="border: 2.5px solid #F59E0B; box-shadow: 0 0 0 1px #F59E0B, 0 4px 16px rgba(245, 158, 11, 0.08);">
+          
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-100 gap-3">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-base sm:text-lg">📌</span>
+                <h3 class="text-sm sm:text-base font-black text-[#1E293B] tracking-wide m-0 p-0 flex items-center gap-2">
+                  <span>PSI Hold Points, Notes & Key Observations</span>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-black bg-amber-100 text-amber-900 border border-amber-300">
+                    ${holdPoints.length} Points
+                  </span>
+                </h3>
+              </div>
+            </div>
+
+            <!-- Controls: Package Filter, Search Box, Refresh -->
+            <div class="flex flex-wrap items-center gap-2">
+              
+              <!-- Filter by Package -->
+              <div class="relative">
+                <select
+                  onchange="FPCL_PSI_SUITE.setHoldPointsPackageFilter(this.value)"
+                  class="pl-2.5 pr-7 py-1.5 bg-amber-50/60 hover:bg-amber-50 focus:bg-white border border-amber-300 rounded-lg text-xs font-bold text-amber-950 outline-none transition-all cursor-pointer appearance-none shadow-2xs"
+                  title="Filter by PSI Package"
+                >
+                  <option value="all" ${this.state.holdPointsPackageFilter === 'all' ? 'selected' : ''}>All Packages (${rawHoldPoints.length})</option>
+                  ${holdPointPackages.map(pkg => `
+                    <option value="${pkg}" ${this.state.holdPointsPackageFilter.toLowerCase() === pkg.toLowerCase() ? 'selected' : ''}>${pkg}</option>
+                  `).join('')}
+                </select>
+                <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none text-amber-600">
+                  <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
+                </div>
+              </div>
+
+              <!-- Search Box -->
+              <div class="relative flex items-center">
+                <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 pointer-events-none"></i>
+                <input
+                  type="text"
+                  value="${this.state.holdPointsSearch || ''}"
+                  oninput="FPCL_PSI_SUITE.setHoldPointsSearch(this.value)"
+                  placeholder="Filter points..."
+                  class="pl-8 pr-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-800 placeholder-slate-400 bg-slate-50 hover:bg-slate-100 focus:bg-white border border-slate-300 focus:border-amber-500 outline-none transition-all w-32 sm:w-40 shadow-2xs"
+                  title="Search in hold points text or department"
+                />
+              </div>
+
+              <!-- Refresh Button -->
+              <button
+                type="button"
+                onclick="FPCL_PSI_SUITE.syncHoldPointsFeed({ silent: false })"
+                class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold text-amber-900 bg-amber-100 hover:bg-amber-200 border border-amber-300 transition-all cursor-pointer shadow-2xs active:scale-95"
+                title="Refresh Hold Points from Google Sheet"
+              >
+                <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-amber-800 ${this.state.isSyncingHoldPoints ? 'animate-spin' : ''}"></i>
+                <span class="hidden sm:inline">Refresh</span>
+              </button>
+
+            </div>
+          </div>
+
+          <!-- TABLE: table-fixed w-full with wrapped text - strictly no horizontal overflow / no scroll required -->
+          <div class="w-full border border-amber-200/90 rounded-xl overflow-hidden bg-white shadow-2xs">
+            <table class="w-full table-fixed border-collapse text-left text-xs font-sans">
+              <thead class="bg-amber-50/90 border-b border-amber-200 text-amber-950 select-none">
+                <tr>
+                  <th class="py-2.5 px-3 font-extrabold uppercase tracking-wider text-center w-[12%] sm:w-[11%] border-r border-amber-200/80">
+                    Date
+                  </th>
+                  <th class="py-2.5 px-3 font-extrabold uppercase tracking-wider text-left w-[20%] sm:w-[18%] border-r border-amber-200/80">
+                    PSI Package
+                  </th>
+                  <th class="py-2.5 px-3 font-extrabold uppercase tracking-wider text-left w-[44%] sm:w-[48%] border-r border-amber-200/80">
+                    Hold Point / Note / Key Point
+                  </th>
+                  <th class="py-2.5 px-3 font-extrabold uppercase tracking-wider text-center w-[13%] sm:w-[12%] border-r border-amber-200/80">
+                    Raised By
+                  </th>
+                  <th class="py-2.5 px-3 font-extrabold uppercase tracking-wider text-center w-[11%] sm:w-[11%]">
+                    Status
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                ${holdPoints.length === 0 ? `
+                  <tr>
+                    <td colspan="5" class="py-6 text-center text-slate-400 font-medium italic">
+                      No hold points or notes found matching the selected filter.
+                    </td>
+                  </tr>
+                ` : holdPoints.map((hp, idx) => {
+                  const isEven = idx % 2 === 0;
+                  return `
+                    <tr class="hover:bg-amber-50/40 transition-colors ${isEven ? 'bg-white' : 'bg-slate-50/40'}">
+                      <!-- Col 1: Date (Centered, bold mono, wrapped) -->
+                      <td class="py-2.5 px-2.5 sm:px-3 font-mono font-bold text-center text-slate-700 border-r border-slate-200/60 break-words whitespace-normal align-top text-[11px] sm:text-xs">
+                        <span class="inline-block px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-800 border border-slate-200 font-bold">
+                          ${hp.date || '—'}
+                        </span>
+                      </td>
+
+                      <!-- Col 2: PSI Package (Wrapped, bold with badge styling) -->
+                      <td class="py-2.5 px-3 font-bold text-slate-900 border-r border-slate-200/60 break-words whitespace-normal align-top leading-snug">
+                        <span class="inline-flex items-center gap-1.5 font-black text-slate-900">
+                          <span class="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0"></span>
+                          <span class="break-words">${hp.package || '—'}</span>
+                        </span>
+                      </td>
+
+                      <!-- Col 3: Hold Point / Note / Key Point (Wrapped, comfortable reading, breaks words) -->
+                      <td class="py-2.5 px-3 text-slate-800 border-r border-slate-200/60 break-words whitespace-normal align-top leading-relaxed text-xs sm:text-[13px] font-medium">
+                        ${hp.point || '—'}
+                      </td>
+
+                      <!-- Col 4: Raised By (Department chip) -->
+                      <td class="py-2.5 px-2 text-center border-r border-slate-200/60 break-words whitespace-normal align-top">
+                        <span class="inline-block px-2 py-0.5 rounded-md text-[11px] font-extrabold bg-indigo-50 text-indigo-800 border border-indigo-200/70 break-words">
+                          ${hp.raisedBy || '—'}
+                        </span>
+                      </td>
+
+                      <!-- Col 5: Status (Badge) -->
+                      <td class="py-2.5 px-2 text-center break-words whitespace-normal align-top">
+                        <span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-black uppercase tracking-wide bg-amber-100 text-amber-900 border border-amber-300/80 shadow-2xs whitespace-nowrap">
+                          ● ${hp.status || 'For Info.'}
+                        </span>
+                      </td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- 7. COMPLETE SCROLLABLE EXCEL SHEET IN FORM OF TABLE                       -->
         <!-- Scrollable up/down and left/right. Buttons for left/right scrolling sheet -->
         <!-- ========================================================================= -->
         <div class="bg-white rounded-2xl p-4 sm:p-6 shadow-sm relative overflow-hidden space-y-3"
@@ -1058,9 +1515,6 @@
               <h3 class="text-sm sm:text-base font-black text-[#1E293B] tracking-wide flex items-center gap-2 m-0 p-0">
                 <span>📋</span> Complete PSI Master Data Spreadsheet
               </h3>
-              <p class="text-xs text-slate-500 font-medium mt-0.5">
-                Full synchronized tabular view from Google Sheet ID <code class="font-mono text-teal-700 font-bold">1vWYE3G4W7TxHBVzsUJuu1Z-aufjXD-xFeodTpFUTZtY</code> (Tab: PSI)
-              </p>
             </div>
 
             <!-- Left and Right Scroll Navigation Buttons -->
@@ -1295,12 +1749,15 @@
                   <span class="font-mono font-bold text-slate-900 selection:bg-indigo-100 select-all">${PSI_SHEET_ID}</span>
                 </div>
                 <div class="flex justify-between items-center py-1 border-b border-slate-200/70">
-                  <span class="font-bold text-slate-500">Target Sheet Tab:</span>
-                  <span class="font-mono font-bold text-indigo-600 selection:bg-indigo-100 select-all">${PSI_SHEET_TAB}</span>
+                  <span class="font-bold text-slate-500">Target Sheet Tabs:</span>
+                  <div class="flex items-center gap-1.5 font-mono font-bold text-xs">
+                    <span class="px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200">${PSI_SHEET_TAB}</span>
+                    <span class="px-1.5 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200">${HOLD_POINTS_TAB}</span>
+                  </div>
                 </div>
                 <div class="flex justify-between items-center py-1 border-b border-slate-200/70">
                   <span class="font-bold text-slate-500">Sync Frequency:</span>
-                  <span class="font-semibold text-slate-800">Auto every 60s + On-Demand Sync Feed</span>
+                  <span class="font-semibold text-slate-800">Auto every 15s + On-Demand Sync Feed</span>
                 </div>
                 <div class="flex justify-between items-center py-1">
                   <span class="font-bold text-slate-500">Last Synced:</span>
@@ -1310,19 +1767,27 @@
 
               <div class="flex items-center justify-end gap-2 pt-2">
                 <a
+                  href="${HOLD_POINTS_URL}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="px-3 py-1.5 rounded-lg text-xs font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 transition-all flex items-center gap-1.5"
+                >
+                  <i data-lucide="external-link" class="w-3.5 h-3.5"></i> View Hold_Points Tab
+                </a>
+                <a
                   href="${PSI_SHEET_URL}"
                   target="_blank"
                   rel="noopener noreferrer"
                   class="px-3 py-1.5 rounded-lg text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 transition-all flex items-center gap-1.5"
                 >
-                  <i data-lucide="external-link" class="w-3.5 h-3.5"></i> View Google Sheet
+                  <i data-lucide="external-link" class="w-3.5 h-3.5"></i> View PSI Tab
                 </a>
                 <button
                   type="button"
-                  onclick="FPCL_PSI_SUITE.syncLiveFeed({ silent: false, force: true }); FPCL_PSI_SUITE.toggleSettingsModal();"
+                  onclick="FPCL_PSI_SUITE.syncLiveFeed({ silent: false, force: true }); FPCL_PSI_SUITE.syncHoldPointsFeed({ silent: false }); FPCL_PSI_SUITE.toggleSettingsModal();"
                   class="px-4 py-1.5 rounded-lg text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-all flex items-center gap-1.5"
                 >
-                  <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Refresh Feed Now
+                  <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Refresh Feeds Now
                 </button>
               </div>
             </div>
