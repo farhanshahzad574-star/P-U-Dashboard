@@ -1619,9 +1619,9 @@
         </div>
 
         <!-- ========================================================================= -->
-        <!-- 3. EXECUTIVE KPI CARDS: Total PLRs, Open PLRs, Total Recs, Open Recs      -->
+        <!-- 3. EXECUTIVE KPI CARDS: Total PLRs, Total Recs, Open Recs                 -->
         <!-- ========================================================================= -->
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           
           <!-- Card 1: TOTAL PLRs -->
           <div
@@ -1642,28 +1642,7 @@
             </div>
           </div>
 
-          <!-- Card 2: OPEN PLRs -->
-          <div
-            data-plr-kpi="open-plrs"
-            onclick="(window.portalApp || portalApp).openPlrKpiModal('open-plrs')"
-            class="bg-white border border-rose-200 hover:border-rose-400 hover:shadow-md hover:-translate-y-0.5 rounded-2xl p-5 sm:p-6 shadow-sm relative overflow-hidden group transition-all cursor-pointer flex flex-col justify-between"
-            title="Click to inspect all ${openPLRs} Open PLRs in pop-up window"
-          >
-            <div class="flex items-center justify-between text-slate-500 text-xs sm:text-sm font-bold uppercase tracking-wider">
-              <span>Open PLRs</span>
-              <span class="p-2 rounded-xl bg-rose-50 text-rose-600 border border-rose-200 group-hover:bg-rose-100 transition-colors">
-                <i data-lucide="alert-circle" class="w-4 h-4 sm:w-5 sm:h-5"></i>
-              </span>
-            </div>
-            <div class="mt-4 flex items-baseline justify-between gap-2">
-              <span class="text-5xl sm:text-6xl font-black font-mono text-rose-600 tracking-tight kpi-metric-val">${openPLRs}</span>
-              <span class="px-2.5 py-0.5 rounded-full text-xs sm:text-sm font-bold bg-rose-50 text-rose-700 border border-rose-200 font-mono">
-                ${totalPLRs > 0 ? ((openPLRs / totalPLRs) * 100).toFixed(0) : 0}% of Total
-              </span>
-            </div>
-          </div>
-
-          <!-- Card 3: TOTAL RECOMMENDATIONS -->
+          <!-- Card 2: TOTAL RECOMMENDATIONS -->
           <div
             data-plr-kpi="total-recs"
             onclick="(window.portalApp || portalApp).openPlrKpiModal('total-recs')"
@@ -1681,7 +1660,7 @@
             </div>
           </div>
 
-          <!-- Card 4: OPEN RECOMMENDATIONS -->
+          <!-- Card 3: OPEN RECOMMENDATIONS -->
           <div
             data-plr-kpi="open-recs"
             onclick="(window.portalApp || portalApp).openPlrKpiModal('open-recs')"
