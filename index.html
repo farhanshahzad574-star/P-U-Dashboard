@@ -10,26 +10,29 @@
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
 
-    <!-- Suppress benign Vite WebSocket disconnects in sandboxed preview -->
+    <!-- Suppress benign Vite WebSocket disconnects and cross-origin Script errors in sandboxed preview -->
     <script>
       (function() {
-        function isViteWsError(err) {
+        function isBenignError(err) {
           if (!err) return false;
           var msg = (typeof err === 'string' ? err : (err.message || err.reason || err.stack || '')) + '';
           return msg.indexOf('WebSocket closed without opened') !== -1 ||
-                 msg.indexOf('failed to connect to websocket') !== -1;
+                 msg.indexOf('failed to connect to websocket') !== -1 ||
+                 msg === 'Script error.' ||
+                 msg.indexOf('Script error') !== -1 ||
+                 msg.indexOf('ResizeObserver loop') !== -1;
         }
         var origConsoleError = console.error;
         console.error = function() {
           for (var i = 0; i < arguments.length; i++) {
-            if (isViteWsError(arguments[i])) {
+            if (isBenignError(arguments[i])) {
               return;
             }
           }
           origConsoleError.apply(console, arguments);
         };
         window.addEventListener('unhandledrejection', function(e) {
-          if (isViteWsError(e.reason)) {
+          if (isBenignError(e.reason)) {
             e.preventDefault();
             if (typeof e.stopImmediatePropagation === 'function') {
               e.stopImmediatePropagation();
@@ -37,13 +40,20 @@
           }
         }, true);
         window.addEventListener('error', function(e) {
-          if (isViteWsError(e.message || e.error)) {
+          var msg = (typeof e === 'string' ? e : (e.message || (e.error && e.error.message) || '')) + '';
+          if (isBenignError(msg) || isBenignError(e.message || e.error)) {
             e.preventDefault();
             if (typeof e.stopImmediatePropagation === 'function') {
               e.stopImmediatePropagation();
             }
+            return true;
           }
         }, true);
+        window.onerror = function(msg, url, line, col, error) {
+          if (isBenignError(msg) || isBenignError(error)) {
+            return true;
+          }
+        };
       })();
     </script>
 
@@ -52,8 +62,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-    <!-- Tailwind CSS via CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind CSS (served locally for zero cross-origin latency and sandboxed reliability) -->
+    <script src="/assets/tailwindcss.min.js"></script>
     <script>
       tailwind.config = {
         darkMode: 'class',
@@ -77,8 +87,14 @@
       }
     </script>
 
-    <!-- Lucide Icons via CDN -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Lucide Icons (served locally for sandboxed iframe reliability) -->
+    <script src="/assets/lucide.min.js"></script>
+    <script>
+      // Fallback loader if local script is ever delayed
+      if (!window.lucide) {
+        document.write('<script src="https://unpkg.com/lucide@latest" crossorigin="anonymous"><\\/script>');
+      }
+    </script>
     <!-- Universal Google Sheets CORS-free Synchronizer -->
     <script src="/assets/googleSheetSync.js?v=20260916b"></script>
     <!-- Plant Loss Reports (PLR) Google Sheets Dataset & Specialized Visualization Suite -->

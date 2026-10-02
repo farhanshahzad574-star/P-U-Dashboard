@@ -649,16 +649,9 @@
                   <i data-lucide="clipboard-check" class="w-6 h-6 text-teal-400"></i>
                 </div>
                 <div>
-                  <h1 class="text-xl sm:text-2xl font-black tracking-tight text-white flex items-center gap-2.5">
+                  <h1 class="text-xl sm:text-2xl font-black tracking-tight text-white">
                     IMS Audits Dashboard
-                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 backdrop-blur-xs">
-                      <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                      Live Google Sheet
-                    </span>
                   </h1>
-                  <p class="text-xs sm:text-sm text-slate-300 mt-0.5">
-                    Integrated Management System Internal Audit • Tab: <span class="font-mono text-teal-300 font-semibold">${HARDCODED_IMS_SHEET_TAB}</span>
-                  </p>
                 </div>
               </div>
 
