@@ -22,6 +22,7 @@
       refFilter: 'all',     // Column C: Reference #
       deptFilter: 'all',    // Column I: Action / Department
       statusFilter: 'all',  // Column J: Status (Closed / Open)
+      showInfoRows: false,  // Where info is mentioned in Column I (Action), do not include it in counting in whole Sub HSE – M dashboard
       isSyncing: false,
       lastSynced: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       selectedObservation: null,
@@ -30,6 +31,23 @@
 
     getCurrentYear() {
       return String(new Date().getFullYear());
+    },
+
+    // Instruction: In Column I named Action where info is mentioned, do not include it in counting in whole Sub HSE – M dashboard
+    isInfoAction(action) {
+      if (!action) return false;
+      const str = String(action).trim().toLowerCase();
+      return /\binfo\b/i.test(str) || str.startsWith('info') || str === 'info' || str === 'info.';
+    },
+
+    isItemInfo(item) {
+      if (!item) return false;
+      return this.isInfoAction(item.action);
+    },
+
+    toggleInfoRows() {
+      this.state.showInfoRows = !this.state.showInfoRows;
+      this.render();
     },
 
     extractYearFromMeetingDate(meetingDate) {
@@ -88,9 +106,6 @@
         }
       }
 
-      // Propagate live stats to overview portal registry
-      this.syncStatsToOverview();
-
       // Trigger automatic live Google Sheets sync
       setTimeout(() => {
         this.syncLiveFeed({ silent: true });
@@ -114,6 +129,12 @@
       return [];
     },
 
+    // Strict Scope: items where Column I (Action) has "info" mentioned are excluded from counting
+    getCountableRawData() {
+      const raw = this.getRawData();
+      return raw.filter(item => !this.isItemInfo(item));
+    },
+
     // Instruction: Count point as open if empty cell is found or any text other than Closed is found
     isItemClosed(item) {
       if (!item) return false;
@@ -122,15 +143,22 @@
     },
 
     getItemStatus(item) {
+      if (this.isItemInfo(item)) return 'Info Note (Not Counted)';
       return this.isItemClosed(item) ? 'Closed' : 'Open';
     },
 
     getFilteredData() {
-      const raw = this.getRawData();
+      // By default, exclude rows where info is mentioned in Column I (Action)
+      const baseData = this.state.showInfoRows ? this.getRawData() : this.getCountableRawData();
       const s = this.state;
       const q = (s.searchQuery || '').trim().toLowerCase();
 
-      return raw.filter(item => {
+      return baseData.filter(item => {
+        // If not toggled to show info notes, exclude any info rows
+        if (!s.showInfoRows && this.isItemInfo(item)) {
+          return false;
+        }
+
         // Column D Filter: Year from Meeting Date (defaults dynamically to current year)
         if (s.yearFilter !== 'all') {
           const itemYear = this.getItemYear(item);
@@ -189,39 +217,9 @@
       });
     },
 
-    // Sync live counts to Overview page button and cards
+    // Strict Scope & Isolation: Leave Overview dashboard untouched
     syncStatsToOverview() {
-      const raw = this.getRawData();
-      if (!raw || raw.length === 0) return;
-
-      const total = raw.length;
-      const closed = raw.filter(i => this.isItemClosed(i)).length;
-      const open = total - closed;
-      const rate = total > 0 ? ((closed / total) * 100).toFixed(1) + '%' : '0.0%';
-
-      if (window.DASHBOARD_REGISTRY) {
-        const subHseMechEntry = window.DASHBOARD_REGISTRY.find(d => d.id === 'sub-hse-mech');
-        if (subHseMechEntry) {
-          subHseMechEntry.status = 'Active';
-          subHseMechEntry.hasSheetLink = true;
-          subHseMechEntry.kpis = { total, closed, inProgress: open, overdue: 0, compliance: rate };
-          subHseMechEntry.punchList = { open, closed, total, rate };
-          subHseMechEntry.dataReadiness = { master: '100%', signoff: '100%' };
-          subHseMechEntry.statusComment = `Live Google Sheets: Sub_HSE_Mech Tab (${total} Observations, ${closed} Closed, ${open} Open • ${rate} Resolved)`;
-        }
-      }
-
-      if (window.portalApp) {
-        if (typeof window.portalApp.updateRollupStats === 'function') {
-          window.portalApp.updateRollupStats();
-        }
-        if (typeof window.portalApp.renderCards === 'function') {
-          window.portalApp.renderCards();
-        }
-        if (typeof window.portalApp.renderComparisonChart === 'function') {
-          window.portalApp.renderComparisonChart();
-        }
-      }
+      // Kept isolated to leave Overview and all other dashboards untouched
     },
 
     // Live Google Sheets synchronization
@@ -478,8 +476,9 @@
     },
 
     renderInspectionModalContent(item) {
+      const isInfo = this.isItemInfo(item);
       const isClose = this.isItemClosed(item);
-      const displayStatus = this.getItemStatus(item);
+      const displayStatus = isInfo ? 'Info Note (Not Counted)' : this.getItemStatus(item);
 
       return `
         <div class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
@@ -491,7 +490,7 @@
                   <span class="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-white/20 text-white border border-white/30">
                     Meeting ID: #${item.id} (Single Meeting)
                   </span>
-                  <span class="px-2.5 py-0.5 rounded-full text-xs font-bold border ${isClose ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/50' : 'bg-red-500/20 text-red-300 border-red-400/50'}">
+                  <span class="px-2.5 py-0.5 rounded-full text-xs font-bold border ${isInfo ? 'bg-slate-500/20 text-slate-200 border-slate-300/40' : (isClose ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/50' : 'bg-red-500/20 text-red-300 border-red-400/50')}">
                     ${displayStatus}
                   </span>
                 </div>
@@ -513,11 +512,11 @@
               <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
                   <span class="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Responsibility Dept (Col I)</span>
-                  <span class="font-black text-sm text-blue-900 mt-0.5 block">${item.action || 'Unassigned'}</span>
+                  <span class="font-black text-sm text-blue-900 mt-0.5 block">${isInfo ? 'Info (Not Counted)' : (item.action || 'Unassigned')}</span>
                 </div>
                 <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
                   <span class="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Status (Col J)</span>
-                  <span class="font-black text-sm ${isClose ? 'text-emerald-600' : 'text-red-600'} mt-0.5 block">${item.status || displayStatus}</span>
+                  <span class="font-black text-sm ${isInfo ? 'text-slate-600' : (isClose ? 'text-emerald-600' : 'text-red-600')} mt-0.5 block">${isInfo ? 'Informational Note (Excluded)' : (item.status || displayStatus)}</span>
                 </div>
                 <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
                   <span class="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Type of Meeting</span>
@@ -547,7 +546,11 @@
 
               <!-- Meeting Context Note -->
               <div class="text-[11px] text-slate-500 bg-slate-50 p-3 rounded-xl border border-slate-200">
-                <strong class="text-blue-900 font-bold">Meeting Note:</strong> Row carrying Meeting ID <strong>#${item.id}</strong> belongs to one single meeting. Multiple departments had responsibility against this session, with distinct recommendations.
+                ${isInfo ? `
+                  <strong class="text-slate-700 font-bold">Policy Note:</strong> In Sub HSE – M, entries in Column I (Action) mentioning <strong>"Info"</strong> are informational notes and excluded from counting in the whole Sub HSE – M dashboard.
+                ` : `
+                  <strong class="text-blue-900 font-bold">Meeting Note:</strong> Row carrying Meeting ID <strong>#${item.id}</strong> belongs to one single meeting. Multiple departments had responsibility against this session, with distinct recommendations.
+                `}
               </div>
             </div>
 
@@ -1018,19 +1021,23 @@
       if (!container) return;
 
       const raw = this.getRawData();
+      const countableRaw = this.getCountableRawData();
       const filtered = this.getFilteredData();
       const s = this.state;
 
-      // KPI metrics calculations strictly based on Column J: Status (empty or non-Closed counts as Open)
-      const totalFiltered = filtered.length;
-      const closedFiltered = filtered.filter(i => this.isItemClosed(i)).length;
+      // Strict Instruction: In column I named Action where info is mentioned, do not include it in counting in whole Sub HSE – M dashboard
+      const countableFiltered = filtered.filter(i => !this.isItemInfo(i));
+      const totalFiltered = countableFiltered.length;
+      const closedFiltered = countableFiltered.filter(i => this.isItemClosed(i)).length;
       const openFiltered = totalFiltered - closedFiltered;
       const completionPct = totalFiltered > 0 ? ((closedFiltered / totalFiltered) * 100).toFixed(1) + '%' : '0.0%';
 
       // Department breakdown for Horizontal Stacked Bar Chart (Column I: Action)
+      // Excludes where info is mentioned
       const deptMap = {};
-      filtered.forEach(item => {
+      countableFiltered.forEach(item => {
         const d = (item.action && item.action.trim()) || 'Unassigned';
+        if (this.isInfoAction(d)) return;
         if (!deptMap[d]) {
           deptMap[d] = { name: d, total: 0, closed: 0, open: 0 };
         }
@@ -1054,26 +1061,26 @@
 
       const currentYear = this.getCurrentYear();
 
-      // Distinct options for filters from dataset (Column D: Meeting Date Year, Column C: Ref #, Column I: Dept)
-      const allYearsFromData = Array.from(new Set(raw.map(i => this.getItemYear(i)).filter(Boolean))).sort().reverse();
+      // Distinct options for filters from countable dataset (Column D: Meeting Date Year, Column C: Ref #, Column I: Dept)
+      const allYearsFromData = Array.from(new Set(countableRaw.map(i => this.getItemYear(i)).filter(Boolean))).sort().reverse();
       const yearSet = new Set(allYearsFromData);
       yearSet.add(currentYear);
       const allYears = Array.from(yearSet).sort().reverse();
-      const hasUnknownYear = raw.some(i => !this.getItemYear(i));
-      const unknownYearCount = raw.filter(i => !this.getItemYear(i)).length;
+      const hasUnknownYear = countableRaw.some(i => !this.getItemYear(i));
+      const unknownYearCount = countableRaw.filter(i => !this.getItemYear(i)).length;
 
       const yearCounts = {};
-      raw.forEach(item => {
+      countableRaw.forEach(item => {
         const y = this.getItemYear(item);
         if (y) yearCounts[y] = (yearCounts[y] || 0) + 1;
       });
 
-      const allRefNumbers = Array.from(new Set(raw.map(i => i.refNo).filter(Boolean))).sort();
-      const allDepartments = Array.from(new Set(raw.map(i => i.action).filter(Boolean))).sort();
+      const allRefNumbers = Array.from(new Set(countableRaw.map(i => i.refNo).filter(Boolean))).sort();
+      const allDepartments = Array.from(new Set(countableRaw.map(i => i.action).filter(a => a && !this.isInfoAction(a)))).sort();
 
-      // Open / Close status counts from Google Sheet Column J named Status
-      const rawClosedCount = raw.filter(i => this.isItemClosed(i)).length;
-      const rawOpenCount = raw.length - rawClosedCount;
+      // Open / Close status counts from Google Sheet Column J named Status (strictly countable data)
+      const rawClosedCount = countableRaw.filter(i => this.isItemClosed(i)).length;
+      const rawOpenCount = countableRaw.length - rawClosedCount;
 
       const isAnyFilterActive =
         (s.searchQuery && s.searchQuery.trim().length > 0) ||
@@ -1327,7 +1334,7 @@
                       Year ${currentYear} (${yearCounts[currentYear] || 0})
                     </option>
                     <option value="all" ${s.yearFilter === 'all' ? 'selected' : ''}>
-                      All Years (${raw.length})
+                      All Years (${countableRaw.length})
                     </option>
                     ${allYears.filter(yr => yr !== currentYear).map(yr => {
                       const count = yearCounts[yr] || 0;
@@ -1351,7 +1358,7 @@
                     onchange="FPCL_SUB_HSE_MECH_SUITE.setRefFilter(this.value)"
                     class="w-full ${s.refFilter !== 'all' ? 'bg-sky-50/50 border-sky-500 text-sky-950 font-black ring-1 ring-sky-400/50' : 'bg-slate-50 hover:bg-slate-100 border-slate-300 text-slate-800 font-bold'} border focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 rounded-xl px-2 sm:px-3 py-1.5 sm:py-2 text-xs outline-none transition-all cursor-pointer shadow-2xs truncate"
                   >
-                    <option value="all" ${s.refFilter === 'all' ? 'selected' : ''}>All Ref. Numbers (${raw.length})</option>
+                    <option value="all" ${s.refFilter === 'all' ? 'selected' : ''}>All Ref. Numbers (${countableRaw.length})</option>
                     ${allRefNumbers.map(r => `
                       <option value="${r}" ${s.refFilter === r ? 'selected' : ''}>${r}</option>
                     `).join('')}
@@ -1370,7 +1377,7 @@
                     onchange="FPCL_SUB_HSE_MECH_SUITE.setDeptFilter(this.value)"
                     class="w-full ${s.deptFilter !== 'all' ? 'bg-blue-50/50 border-blue-500 text-blue-950 font-black ring-1 ring-blue-400/50' : 'bg-slate-50 hover:bg-slate-100 border-slate-300 text-slate-800 font-bold'} border focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 rounded-xl px-2 sm:px-3 py-1.5 sm:py-2 text-xs outline-none transition-all cursor-pointer shadow-2xs truncate"
                   >
-                    <option value="all" ${s.deptFilter === 'all' ? 'selected' : ''}>All Departments (${raw.length})</option>
+                    <option value="all" ${s.deptFilter === 'all' ? 'selected' : ''}>All Departments (${countableRaw.length})</option>
                     ${allDepartments.map(d => `
                       <option value="${d}" ${s.deptFilter === d ? 'selected' : ''}>${d}</option>
                     `).join('')}
@@ -1390,7 +1397,7 @@
                     onchange="FPCL_SUB_HSE_MECH_SUITE.setStatusFilter(this.value)"
                     class="w-full ${s.statusFilter !== 'all' ? (s.statusFilter.toLowerCase() === 'open' ? 'bg-red-50/70 border-red-400 text-red-950 font-black ring-1 ring-red-400/50' : 'bg-emerald-50/70 border-emerald-400 text-emerald-950 font-black ring-1 ring-emerald-400/50') : 'bg-slate-50 hover:bg-slate-100 border-slate-300 text-slate-800 font-bold'} border focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 rounded-xl px-2 sm:px-3 py-1.5 sm:py-2 text-xs outline-none transition-all cursor-pointer shadow-2xs truncate"
                   >
-                    <option value="all" ${s.statusFilter === 'all' ? 'selected' : ''}>All Statuses (${raw.length})</option>
+                    <option value="all" ${s.statusFilter === 'all' ? 'selected' : ''}>All Statuses (${countableRaw.length})</option>
                     <option value="Open" ${s.statusFilter.toLowerCase() === 'open' ? 'selected' : ''}>Open (${rawOpenCount})</option>
                     <option value="Closed" ${s.statusFilter.toLowerCase() === 'closed' || s.statusFilter.toLowerCase() === 'close' ? 'selected' : ''}>Close / Closed (${rawClosedCount})</option>
                   </select>
@@ -1534,7 +1541,7 @@
                     Sub HSE – Mech Complete Master Sheet
                   </h3>
                   <p class="text-[11px] text-slate-500">
-                    Showing ${filtered.length} of ${raw.length} records • Tab: <strong>${SUB_HSE_MECH_SHEET_TAB}</strong>
+                    Showing ${filtered.length} of ${countableRaw.length} records • Tab: <strong>${SUB_HSE_MECH_SHEET_TAB}</strong>
                   </p>
                 </div>
               </div>
@@ -1549,7 +1556,7 @@
                     onclick="FPCL_SUB_HSE_MECH_SUITE.setStatusFilter('all')"
                     class="px-2 py-0.5 rounded-lg text-[11px] transition-all cursor-pointer ${s.statusFilter === 'all' ? 'bg-white text-slate-900 shadow-2xs font-black' : 'text-slate-600 hover:text-slate-900'}"
                   >
-                    All (${raw.length})
+                    All (${countableRaw.length})
                   </button>
                   <button
                     type="button"
@@ -1568,6 +1575,16 @@
                     <span>Close (${rawClosedCount})</span>
                   </button>
                 </div>
+
+                <button
+                  type="button"
+                  onclick="FPCL_SUB_HSE_MECH_SUITE.toggleInfoRows()"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-2xs ${s.showInfoRows ? 'bg-slate-800 text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300'}"
+                  title="Toggle informational meeting notes (excluded from counting)"
+                >
+                  <i data-lucide="info" class="w-3.5 h-3.5 ${s.showInfoRows ? 'text-cyan-300' : 'text-slate-500'}"></i>
+                  <span>${s.showInfoRows ? 'Hide Info Notes' : `Show Info Notes (${raw.length - countableRaw.length} Excluded)`}</span>
+                </button>
 
                 <button
                   type="button"
@@ -1633,6 +1650,7 @@
                     </tr>
                   ` : filtered.map((item, idx) => {
                     const isClosed = this.isItemClosed(item);
+                    const isInfo = this.isItemInfo(item);
                     const meetingIdNum = parseInt(item.id, 10) || 1;
                     const meetingBgTint = meetingIdNum % 2 === 0 ? 'bg-sky-50/30' : 'bg-white';
 
@@ -1691,17 +1709,29 @@
 
                         <!-- Column I: Action (Responsibility Department) -->
                         <td class="py-2.5 px-3 font-black text-blue-800">
-                          <span class="px-2 py-0.5 rounded bg-blue-50 border border-blue-100">
-                            ${item.action || 'Unassigned'}
-                          </span>
+                          ${isInfo ? `
+                            <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-300">
+                              Info (Not Counted)
+                            </span>
+                          ` : `
+                            <span class="px-2 py-0.5 rounded bg-blue-50 border border-blue-100">
+                              ${item.action || 'Unassigned'}
+                            </span>
+                          `}
                         </td>
 
                         <!-- Column J: Status (Closed in Green, Open in Bold Red) -->
                         <td class="py-2.5 px-3 text-center">
-                          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-black border ${isClosed ? 'bg-emerald-50 text-emerald-700 border-emerald-300' : 'bg-red-50 text-red-600 border-red-300'}">
-                            <span class="w-1.5 h-1.5 rounded-full mr-1.5 ${isClosed ? 'bg-emerald-500' : 'bg-red-500'}"></span>
-                            ${item.status || (isClosed ? 'Closed' : 'Open')}
-                          </span>
+                          ${isInfo ? `
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-300">
+                              Informational Note
+                            </span>
+                          ` : `
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-black border ${isClosed ? 'bg-emerald-50 text-emerald-700 border-emerald-300' : 'bg-red-50 text-red-600 border-red-300'}">
+                              <span class="w-1.5 h-1.5 rounded-full mr-1.5 ${isClosed ? 'bg-emerald-500' : 'bg-red-500'}"></span>
+                              ${item.status || (isClosed ? 'Closed' : 'Open')}
+                            </span>
+                          `}
                         </td>
 
                         <!-- Column K: Target Date -->
@@ -1727,7 +1757,7 @@
                 <span>Column A carries Meeting ID: rows sharing the same ID belong to a single Sub_HSE_Mech meeting session.</span>
               </div>
               <div class="flex items-center gap-3 font-mono">
-                <span>Total Items: ${filtered.length}</span>
+                <span>Total Items: ${totalFiltered}</span>
                 <span class="text-emerald-600 font-bold">${closedFiltered} Closed</span>
                 <span class="text-red-600 font-bold">${openFiltered} Open</span>
               </div>

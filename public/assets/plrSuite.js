@@ -91,7 +91,7 @@
       selectedMachine: 'all',
       selectedPriority: 'all',
       selectedDept: 'all',
-      selectedYear: getCurrentDynamicYear(), // Dynamically defaults to current year
+      selectedYear: 'all', // Defaults to all combined for whole dashboard
       selectedEntity: 'all',
       selectedStatus: 'all',
       searchQuery: '',
@@ -116,11 +116,11 @@
   portalApp.getCurrentDynamicYear = getCurrentDynamicYear;
 
   /**
-   * Invoked whenever PLR dashboard is opened to ensure it always defaults on current year dynamically
+   * Invoked whenever PLR dashboard is opened to ensure it defaults to all combined for whole dashboard
    */
   portalApp.onPlrDashboardOpened = function () {
     const s = getPlrState();
-    s.selectedYear = getCurrentDynamicYear();
+    s.selectedYear = 'all';
     s.page = 1;
     s.recPage = 1;
     portalApp.renderPlrSuite();
@@ -1369,7 +1369,7 @@
     s.selectedMachine = 'all';
     s.selectedPriority = 'all';
     s.selectedDept = 'all';
-    s.selectedYear = getCurrentDynamicYear();
+    s.selectedYear = 'all';
     s.selectedEntity = 'all';
     s.recSelectedEntity = 'all';
     s.selectedStatus = 'all';
@@ -1381,7 +1381,7 @@
     portalApp.renderPlrSuite();
   };
 
-  // State tracker to guarantee PLR dashboard always opens by default on current dynamic year
+  // State tracker to guarantee PLR dashboard always opens by default on all combined
   let plrContainerWasHidden = true;
 
   /**
@@ -1395,7 +1395,7 @@
     const isVisible = !container.classList.contains('hidden') && container.style.display !== 'none';
     if (plrContainerWasHidden && isVisible) {
       const s = getPlrState();
-      s.selectedYear = getCurrentDynamicYear();
+      s.selectedYear = 'all';
     }
     plrContainerWasHidden = !isVisible;
 
@@ -2089,7 +2089,7 @@
         nameEl.title = 'PLR Status';
       }
       if (countEl) countEl.textContent = '0';
-      if (pctEl) pctEl.textContent = `0 Outages in ${s.selectedYear}`;
+      if (pctEl) pctEl.textContent = s.selectedYear === 'all' ? '0 Outages across all years' : `0 Outages in ${s.selectedYear}`;
       if (dotEl) dotEl.style.backgroundColor = '#94a3b8';
     }
   };
@@ -2241,7 +2241,7 @@
           onmousemove="portalApp.moveTooltip(event)"
           onmouseleave="portalApp.hideTooltip()"
           class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[160px] h-[160px] min-[400px]:w-[196px] min-[400px]:h-[196px] rounded-full flex flex-col items-center justify-center ${total > 0 ? 'cursor-pointer hover:bg-slate-50' : 'cursor-default'} text-center px-2 py-1.5 font-sans bg-white/95 transition-all duration-150 group z-10 select-none shadow-[inset_0_1px_3px_rgba(0,0,0,0.03)]"
-          title="${total > 0 && activeMachine ? `Click to view outage records for ${activeMachine.name}` : `0 Outages in ${s.selectedYear}`}"
+          title="${total > 0 && activeMachine ? `Click to view outage records for ${activeMachine.name}` : (s.selectedYear === 'all' ? '0 Outages across all years' : `0 Outages in ${s.selectedYear}`)}"
         >
           ${total > 0 && activeMachine ? `
             <!-- Machine Name Badge (fitted cleanly into upper circular chord) -->
@@ -2268,7 +2268,7 @@
               <span class="text-[11px] sm:text-xs font-black text-slate-600 uppercase tracking-wide">PLR Status</span>
             </div>
             <span class="text-4xl sm:text-[42px] font-black text-slate-400 tracking-tight leading-none my-1 font-mono">0</span>
-            <span class="text-[11px] font-bold text-slate-500 font-sans tracking-tight whitespace-nowrap leading-none">0 Outages in ${s.selectedYear}</span>
+            <span class="text-[11px] font-bold text-slate-500 font-sans tracking-tight whitespace-nowrap leading-none">${s.selectedYear === 'all' ? '0 Outages across all years' : `0 Outages in ${s.selectedYear}`}</span>
           `}
         </div>
       </div>
@@ -2755,7 +2755,7 @@
           </svg>
           <div class="absolute inset-0 flex flex-col items-center justify-center text-center p-4">
             <span class="text-3xl sm:text-4xl font-black text-slate-400 font-mono">0</span>
-            <span class="text-xs font-bold text-slate-500 mt-1">No ${labelNoun} in ${s.selectedYear}</span>
+            <span class="text-xs font-bold text-slate-500 mt-1">No ${labelNoun} ${s.selectedYear === 'all' ? 'across all years' : `in ${s.selectedYear}`}</span>
           </div>
         </div>
       `;

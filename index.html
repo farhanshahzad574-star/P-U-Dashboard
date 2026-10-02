@@ -1379,9 +1379,9 @@
                     id="chart-sub-year-select"
                     onchange="portalApp.handleOverviewYearFilter(this.value)"
                     class="pl-3 pr-8 py-1.5 bg-white hover:bg-slate-50 focus:bg-white border border-slate-300 focus:border-blue-600 rounded-xl text-xs font-bold font-mono text-slate-800 shadow-2xs focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer outline-none appearance-none"
-                    title="Filter overview metrics and PROGRESS COMPARISON STATUS by year (Defaults dynamically to current year)"
+                    title="Filter overview metrics and PROGRESS COMPARISON STATUS by year (Defaults to all years)"
                   >
-                    <!-- Populated dynamically: defaults to current year -->
+                    <!-- Populated dynamically: defaults to all years -->
                   </select>
                   <div class="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none text-slate-400">
                     <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
@@ -1450,7 +1450,7 @@
                     class="w-full pl-2 sm:pl-3.5 pr-6 sm:pr-9 py-1.5 sm:py-2.5 bg-slate-50 hover:bg-white focus:bg-white border border-slate-300 focus:border-blue-600 rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold font-mono text-slate-800 shadow-2xs focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer outline-none appearance-none truncate"
                     title="Filter all overview cards and comparison charts by year"
                   >
-                    <!-- Populated dynamically with Current Year selected by default -->
+                    <!-- Populated dynamically with All Years selected by default -->
                   </select>
                   <div class="absolute inset-y-0 right-0 flex items-center pr-1.5 sm:pr-3 pointer-events-none text-slate-400">
                     <i data-lucide="chevron-down" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
@@ -3374,7 +3374,7 @@
         categoryFilter: 'all', // 'all', 'Executive & Governance', etc.
         overviewDeptFilter: 'all',
         overviewOpenCloseFilter: 'all',
-        overviewYearFilter: String(new Date().getFullYear()), // Default to current year dynamically whenever opened
+        overviewYearFilter: 'all', // Default to all years
         hseqSelectedYear: String(new Date().getFullYear()), // Default to current year for HSEQ_KPI sheet
         activeDashboardId: null,
         connectedSheetUrl: (typeof localStorage !== 'undefined' && localStorage.getItem('FPCL_CONNECTED_SHEET_URL')) || 'https://docs.google.com/spreadsheets/d/1LJOdN8T7UUjaZbSfsCrO_Hdg1eoAgqnuE7mJDGtB8qo/export?format=csv&gid=1344438021',
@@ -3663,8 +3663,7 @@
             window.FPCL_PSM_DATA = window.parsePSMCSV(window.FPCL_PSM_RAW_CSV);
             raw = window.FPCL_PSM_DATA;
           }
-
-          const yFilter = yearFilter || (this.state && this.state.overviewYearFilter) || String(new Date().getFullYear());
+          const yFilter = yearFilter || (this.state && this.state.overviewYearFilter) || 'all';
           const deptRows = raw.filter(r => {
             const deptOk = this.isDeptMatch(r.actionDepartment, deptFilter);
             const rYear = this.extractRecordYear('sub-hse-psm', r) || '2026';
@@ -3742,7 +3741,7 @@
             } catch (e) {}
           }
 
-          const yFilter = yearFilter || (this.state && this.state.overviewYearFilter) || String(new Date().getFullYear());
+          const yFilter = yearFilter || (this.state && this.state.overviewYearFilter) || 'all';
 
           if (raw.length === 0) {
             const regEntry = Array.isArray(DASHBOARD_REGISTRY) ? DASHBOARD_REGISTRY.find(d => d.id === 'psm-validation') : null;
@@ -3827,7 +3826,7 @@
             raw = getPlrRecs();
           }
 
-          const yFilter = yearFilter || (this.state && this.state.overviewYearFilter) || String(new Date().getFullYear());
+          const yFilter = yearFilter || (this.state && this.state.overviewYearFilter) || 'all';
           const deptRows = raw.filter(r => {
             const deptOk = this.isDeptMatch(r.actionBy || r.category, deptFilter);
             const rYear = this.extractRecordYear('plr', r);
@@ -3892,7 +3891,7 @@
             raw = window.FPCL_IMS_INITIAL_DATA;
           }
 
-          const yFilter = yearFilter || (this.state && this.state.overviewYearFilter) || String(new Date().getFullYear());
+          const yFilter = yearFilter || (this.state && this.state.overviewYearFilter) || 'all';
           const deptRows = raw.filter(r => {
             const deptOk = this.isDeptMatch(r.dept, deptFilter);
             const rYear = this.extractRecordYear('ims-audits', r) || '2026';
@@ -3957,7 +3956,7 @@
             raw = window.FPCL_PSSR_INITIAL_DATA;
           }
 
-          const yFilter = yearFilter || (this.state && this.state.overviewYearFilter) || String(new Date().getFullYear());
+          const yFilter = yearFilter || (this.state && this.state.overviewYearFilter) || 'all';
           const deptRows = raw.filter(r => {
             const deptOk = this.isDeptMatch(r.responsibility, deptFilter);
             const rYear = this.extractRecordYear('pssr', r) || '2025';
@@ -4026,7 +4025,7 @@
             raw = window.FPCL_CAPEX_INITIAL_DATA;
           }
 
-          const yFilter = yearFilter || (this.state && this.state.overviewYearFilter) || String(new Date().getFullYear());
+          const yFilter = yearFilter || (this.state && this.state.overviewYearFilter) || 'all';
           const deptRows = raw.filter(r => {
             const unit = r.unit || r.responsibleUnit || r.department || r.assigned || '';
             const deptOk = this.isDeptMatch(unit, deptFilter);
@@ -4096,7 +4095,7 @@
             raw = window.FPCL_SUB_HSE_P_INITIAL_SEED;
           }
 
-          const yFilter = yearFilter || (this.state && this.state.overviewYearFilter) || String(new Date().getFullYear());
+          const yFilter = yearFilter || (this.state && this.state.overviewYearFilter) || 'all';
           const deptRows = raw.filter(r => {
             const unit = r.actionBy || r.department || '';
             const deptOk = this.isDeptMatch(unit, deptFilter);
@@ -4166,7 +4165,7 @@
             raw = window.FPCL_SUB_HSE_EI_INITIAL_SEED;
           }
 
-          const yFilter = yearFilter || (this.state && this.state.overviewYearFilter) || String(new Date().getFullYear());
+          const yFilter = yearFilter || (this.state && this.state.overviewYearFilter) || 'all';
           const deptRows = raw.filter(r => {
             const unit = r.actionBy || r.department || '';
             const deptOk = this.isDeptMatch(unit, deptFilter);
@@ -4235,7 +4234,7 @@
             raw = window.FPCL_SUB_HSE_MECH_INITIAL_SEED;
           }
 
-          const yFilter = yearFilter || (this.state && this.state.overviewYearFilter) || String(new Date().getFullYear());
+          const yFilter = yearFilter || (this.state && this.state.overviewYearFilter) || 'all';
           const deptRows = raw.filter(r => {
             const deptOk = this.isDeptMatch(r.action || r.department, deptFilter);
             const rYear = this.extractRecordYear('sub-hse-mech', r) || '2026';
@@ -4303,7 +4302,7 @@
             raw = window.FPCL_EHSE_INITIAL_SEED;
           }
 
-          const yFilter = yearFilter || (this.state && this.state.overviewYearFilter) || String(new Date().getFullYear());
+          const yFilter = yearFilter || (this.state && this.state.overviewYearFilter) || 'all';
           const deptRows = raw.filter(r => {
             const deptOk = this.isDeptMatch(r.actionBy || r.department, deptFilter);
             const rYear = this.extractRecordYear('executive-hse-committee-ehsec', r) || '2026';
@@ -4473,7 +4472,7 @@
 
           const deptFilter = (this.state && this.state.overviewDeptFilter) || 'all';
           const openCloseFilter = (this.state && this.state.overviewOpenCloseFilter) || 'all';
-          const yearFilter = (this.state && this.state.overviewYearFilter) || String(new Date().getFullYear());
+          const yearFilter = (this.state && this.state.overviewYearFilter) || 'all';
 
           if (item.id === 'sub-hse-p') {
             return this.getSubHsePFilteredKpis(deptFilter, openCloseFilter, yearFilter);
@@ -4606,7 +4605,7 @@
         },
 
         handleOverviewYearFilter(year) {
-          this.state.overviewYearFilter = year || String(new Date().getFullYear());
+          this.state.overviewYearFilter = year || 'all';
           this.updateOverviewFilterUI();
           this.renderCards();
           this.renderComparisonChart();
@@ -4616,7 +4615,7 @@
         resetOverviewFilters() {
           this.state.overviewDeptFilter = 'all';
           this.state.overviewOpenCloseFilter = 'all';
-          this.state.overviewYearFilter = String(new Date().getFullYear());
+          this.state.overviewYearFilter = 'all';
           this.populateOverviewYearDropdown();
           this.updateOverviewFilterUI();
           this.renderCards();
@@ -4654,14 +4653,14 @@
           
           years.sort((a, b) => b - a);
           
-          const selectedYear = (this.state && this.state.overviewYearFilter) || currentDynamicYear;
+          const selectedYear = (this.state && this.state.overviewYearFilter) || 'all';
           
           const optionsHtml = `
+            <option value="all" ${selectedYear === 'all' ? 'selected' : ''}>All Years</option>
             <option value="${currentDynamicYear}" ${selectedYear === currentDynamicYear ? 'selected' : ''}>${currentDynamicYear}</option>
             ${years.filter(y => String(y) !== currentDynamicYear).map(y => `
               <option value="${y}" ${selectedYear === String(y) ? 'selected' : ''}>${y}</option>
             `).join('')}
-            <option value="all" ${selectedYear === 'all' ? 'selected' : ''}>All Years</option>
           `;
           
           const sel1 = document.getElementById('overview-year-select');
@@ -4874,7 +4873,7 @@
 
         updateOverviewFilterUI() {
           const currentDynamicYear = String(new Date().getFullYear());
-          const year = (this.state && this.state.overviewYearFilter) || currentDynamicYear;
+          const year = (this.state && this.state.overviewYearFilter) || 'all';
           const dept = (this.state && this.state.overviewDeptFilter) || 'all';
           const status = (this.state && this.state.overviewOpenCloseFilter) || 'all';
 
@@ -4915,7 +4914,7 @@
 
           // Update reset button visibility if non-default filters are active
           const resetBtn = document.getElementById('overview-reset-filters-btn');
-          const isNonDefault = (dept !== 'all' || status !== 'all' || year !== currentDynamicYear);
+          const isNonDefault = (dept !== 'all' || status !== 'all' || year !== 'all');
           if (resetBtn) {
             if (isNonDefault) {
               resetBtn.classList.remove('hidden');
@@ -4940,7 +4939,7 @@
 
           const deptFilter = (this.state && this.state.overviewDeptFilter) || 'all';
           const openCloseFilter = (this.state && this.state.overviewOpenCloseFilter) || 'all';
-          const yearFilter = (this.state && this.state.overviewYearFilter) || String(new Date().getFullYear());
+          const yearFilter = (this.state && this.state.overviewYearFilter) || 'all';
 
           // Retrieve live dynamic validation data numbers (Total personnel & Validation passed) from PSM Validation
           let valTotal = 0;
@@ -8019,9 +8018,8 @@
           this.state.activeDashboardId = null;
           document.body.removeAttribute('data-active-dashboard');
 
-          // Whenever overview page is opened it should open by default on current year dynamically
-          const currentDynamicYear = String(new Date().getFullYear());
-          this.state.overviewYearFilter = currentDynamicYear;
+          // Whenever overview page is opened it should open by default on all years
+          this.state.overviewYearFilter = 'all';
           this.populateOverviewYearDropdown();
           this.updateOverviewFilterUI();
 

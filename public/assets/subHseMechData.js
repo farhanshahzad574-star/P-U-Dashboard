@@ -6265,7 +6265,7 @@
       const rawAgenda = (row[colAgenda] || '').trim();
       const rawTypeOfMeeting = (row[colTypeOfMeeting] || '').trim();
       const rawMoM = (row[colMoM] || '').trim();
-      const rawAction = (row[colAction] || '').trim() || 'Info';
+      const rawAction = (row[colAction] || '').trim() || 'Unassigned';
       const rawStatusVal = (row[colStatus] || '').trim();
       const rawTargetDate = (row[colTargetDate] || '').trim();
       const rawRemarks = (row[colRemarks] || '').trim();
