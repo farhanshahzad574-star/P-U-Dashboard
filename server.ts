@@ -703,6 +703,105 @@ app.get('/api/psi', async (req: Request, res: Response): Promise<void> => {
   });
 });
 
+// Cache for MSA data by tab name
+let msaDataCacheByTab: Record<string, { timestamp: number; csvText: string }> = {};
+
+// GET /api/msa - Live MSA Feed from Google Sheet ID 11ggCusY-ZJj09bVcpbikHeupyvFTBxDHlytjhpbNRWw (Tabs: MSA, MSA_Compliance)
+app.get('/api/msa', async (req: Request, res: Response): Promise<void> => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+
+  const now = Date.now();
+  const targetTab = String(req.query?.tab || req.query?.sheetTab || 'MSA').trim();
+  const force = req.query?.force === 'true' || req.query?._t !== undefined;
+  const tabCache = msaDataCacheByTab[targetTab];
+
+  // If not forcing fresh sync and cached data is less than 5 seconds old, serve cache
+  if (!force && tabCache?.csvText && now - tabCache.timestamp < 5000) {
+    res.json({
+      success: true,
+      source: 'cache',
+      sheetId: '11ggCusY-ZJj09bVcpbikHeupyvFTBxDHlytjhpbNRWw',
+      tabName: targetTab,
+      csvText: tabCache.csvText,
+      lastUpdated: new Date(tabCache.timestamp).toISOString()
+    });
+    return;
+  }
+
+  const MSA_SHEET_ID = '11ggCusY-ZJj09bVcpbikHeupyvFTBxDHlytjhpbNRWw';
+  const urls = [
+    `https://docs.google.com/spreadsheets/d/${MSA_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(targetTab)}&_t=${now}`,
+    `https://docs.google.com/spreadsheets/d/${MSA_SHEET_ID}/export?format=csv&sheet=${encodeURIComponent(targetTab)}&_t=${now}`
+  ];
+
+  let rawCsv = '';
+  for (const u of urls) {
+    try {
+      const response = await fetch(u, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'text/csv,text/plain,*/*',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
+        }
+      });
+      if (response.ok) {
+        const text = await response.text();
+        const lower = text.toLowerCase();
+        const isValid = text && !text.includes('<!DOCTYPE html>') && (
+          lower.includes('observation') || lower.includes('planned_msa') || lower.includes('actual_msa') ||
+          lower.includes('audited') || lower.includes('responsible') || lower.includes('department') || lower.includes('sr')
+        );
+        if (isValid) {
+          rawCsv = text;
+          break;
+        }
+      }
+    } catch (_e) {
+      // Continue to fallback
+    }
+  }
+
+  if (rawCsv) {
+    msaDataCacheByTab[targetTab] = {
+      timestamp: now,
+      csvText: rawCsv
+    };
+
+    res.json({
+      success: true,
+      source: 'live_google_sheet',
+      sheetId: MSA_SHEET_ID,
+      tabName: targetTab,
+      csvText: rawCsv,
+      lastUpdated: new Date(now).toISOString()
+    });
+    return;
+  }
+
+  // Fallback to cache if available
+  if (tabCache?.csvText) {
+    res.json({
+      success: true,
+      source: 'stale_cache',
+      sheetId: MSA_SHEET_ID,
+      tabName: targetTab,
+      csvText: tabCache.csvText,
+      lastUpdated: new Date(tabCache.timestamp).toISOString()
+    });
+    return;
+  }
+
+  res.status(502).json({
+    success: false,
+    error: `Could not fetch MSA (${targetTab}) from Google Sheet`,
+    sheetId: MSA_SHEET_ID,
+    tabName: targetTab
+  });
+});
+
 // Cache for FPCL Directory data
 let fpclDirectoryCache: { timestamp: number; data: any[] } = {
   timestamp: 0,
