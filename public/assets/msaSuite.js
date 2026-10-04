@@ -26,6 +26,7 @@
       responsibleUnitFilter: 'all', // Responsible Unit / Department filter
       statusFilter: 'all',          // 'all', 'open' (documents remaining / open), 'closed'
       injuryPotentialFilter: 'all', // Injury_Potential filter (Column F)
+      selectedTableTab: 'all',      // 'all', 'msa', 'compliance'
       isSyncing: false,
       lastSynced: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       isSettingsOpen: false,
@@ -314,6 +315,13 @@
           if (colMap[cleanK] !== undefined && r[colMap[cleanK]] !== undefined) {
             return r[colMap[cleanK]].trim();
           }
+          for (const headerKey of Object.keys(colMap)) {
+            if (headerKey.startsWith(cleanK) || headerKey.includes(cleanK)) {
+              if (r[colMap[headerKey]] !== undefined) {
+                return r[colMap[headerKey]].trim();
+              }
+            }
+          }
         }
         return '';
       };
@@ -503,6 +511,37 @@
     setInjuryPotentialFilter(val) {
       this.state.injuryPotentialFilter = val || 'all';
       this.renderFilteredViews();
+    },
+
+    setTableTab(tab) {
+      this.state.selectedTableTab = tab || 'all';
+      const t1 = document.getElementById('msa-table-1-wrapper');
+      const t2 = document.getElementById('msa-table-2-wrapper');
+      const btnAll = document.getElementById('msa-tab-btn-all');
+      const btnMsa = document.getElementById('msa-tab-btn-msa');
+      const btnComp = document.getElementById('msa-tab-btn-comp');
+
+      if (t1) {
+        if (this.state.selectedTableTab === 'all' || this.state.selectedTableTab === 'msa') {
+          t1.classList.remove('hidden');
+        } else {
+          t1.classList.add('hidden');
+        }
+      }
+      if (t2) {
+        if (this.state.selectedTableTab === 'all' || this.state.selectedTableTab === 'compliance') {
+          t2.classList.remove('hidden');
+        } else {
+          t2.classList.add('hidden');
+        }
+      }
+
+      const activeClass = "px-3.5 py-1.5 rounded-xl font-bold text-xs bg-indigo-600 text-white shadow-sm border border-indigo-500 cursor-pointer flex items-center gap-1.5 transition-all";
+      const inactiveClass = "px-3.5 py-1.5 rounded-xl font-bold text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 cursor-pointer flex items-center gap-1.5 transition-all";
+
+      if (btnAll) btnAll.className = this.state.selectedTableTab === 'all' ? activeClass : inactiveClass;
+      if (btnMsa) btnMsa.className = this.state.selectedTableTab === 'msa' ? activeClass : inactiveClass;
+      if (btnComp) btnComp.className = this.state.selectedTableTab === 'compliance' ? activeClass : inactiveClass;
     },
 
     resetFilters() {
@@ -970,14 +1009,55 @@
         <!-- Scrollable up/down & left/right with left/right scroll buttons            -->
         <!-- Sheet 1: MSA | Sheet 2: MSA_Compliance                                    -->
         <!-- ========================================================================= -->
+        <!-- Sub-Tab Switcher Bar for Google Sheet Tabs -->
+        <div class="flex flex-wrap items-center justify-between gap-3 bg-white p-3 rounded-2xl border border-slate-200 shadow-2xs">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="text-xs font-black uppercase tracking-wider text-slate-500 font-mono">Google Sheet Tabs:</span>
+            <button
+              id="msa-tab-btn-all"
+              type="button"
+              onclick="FPCL_MSA_SUITE.setTableTab('all')"
+              class="px-3.5 py-1.5 rounded-xl font-bold text-xs ${this.state.selectedTableTab === 'all' ? 'bg-indigo-600 text-white shadow-sm border border-indigo-500' : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300'} cursor-pointer flex items-center gap-1.5 transition-all active:scale-95"
+            >
+              <i data-lucide="layers" class="w-3.5 h-3.5"></i>
+              <span>Show Both Tabs</span>
+            </button>
+            <button
+              id="msa-tab-btn-msa"
+              type="button"
+              onclick="FPCL_MSA_SUITE.setTableTab('msa')"
+              class="px-3.5 py-1.5 rounded-xl font-bold text-xs ${this.state.selectedTableTab === 'msa' ? 'bg-indigo-600 text-white shadow-sm border border-indigo-500' : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300'} cursor-pointer flex items-center gap-1.5 transition-all active:scale-95"
+            >
+              <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+              <span>Tab 1: MSA (${filtered.length} Observations)</span>
+            </button>
+            <button
+              id="msa-tab-btn-comp"
+              type="button"
+              onclick="FPCL_MSA_SUITE.setTableTab('compliance')"
+              class="px-3.5 py-1.5 rounded-xl font-bold text-xs ${this.state.selectedTableTab === 'compliance' ? 'bg-indigo-600 text-white shadow-sm border border-indigo-500' : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300'} cursor-pointer flex items-center gap-1.5 transition-all active:scale-95"
+            >
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <span>Tab 2: MSA_Compliance (${compFiltered.length} Departments)</span>
+            </button>
+          </div>
+          <div class="text-[11px] font-mono font-bold text-slate-500 flex items-center gap-2">
+            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span>2 Live Tabs Connected</span>
+            </span>
+          </div>
+        </div>
+
         <div class="space-y-6">
           <!-- Table 1: Sheet MSA -->
+          <div id="msa-table-1-wrapper" class="${this.state.selectedTableTab === 'compliance' ? 'hidden' : ''}">
           <div class="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border-2 border-blue-500/80 space-y-3">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-2 border-b border-slate-100 gap-2">
               <div>
                 <h3 class="text-sm sm:text-base font-black text-[#1E3A8A] tracking-tight flex items-center gap-2">
                   <span class="w-2.5 h-2.5 rounded-full bg-[#1D4ED8]"></span>
-                  <span>Sheet 1: MSA Observations Master (Tab: MSA)</span>
+                  <span>Tab 1: MSA Observations Master (${filtered.length} Records)</span>
                 </h3>
               </div>
 
@@ -1009,14 +1089,16 @@
               <!-- Populated via renderTables() -->
             </div>
           </div>
+          </div>
 
           <!-- Table 2: Sheet MSA_Compliance -->
+          <div id="msa-table-2-wrapper" class="${this.state.selectedTableTab === 'msa' ? 'hidden' : ''}">
           <div class="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border-2 border-emerald-500/80 space-y-3">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-2 border-b border-slate-100 gap-2">
               <div>
                 <h3 class="text-sm sm:text-base font-black text-[#0B8A5A] tracking-tight flex items-center gap-2">
                   <span class="w-2.5 h-2.5 rounded-full bg-[#0B8A5A]"></span>
-                  <span>Sheet 2: MSA Compliance (Tab: MSA_Compliance)</span>
+                  <span>Tab 2: MSA Compliance by Department (${compFiltered.length} Departments)</span>
                 </h3>
               </div>
 
@@ -1047,6 +1129,7 @@
             <div id="msa-table-2-container">
               <!-- Populated via renderTables() -->
             </div>
+          </div>
           </div>
         </div>
       `;

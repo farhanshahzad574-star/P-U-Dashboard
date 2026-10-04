@@ -976,6 +976,9 @@ app.all('/api/sheets/fetch', async (req: Request, res: Response): Promise<void> 
         url = process.env.EHSE || process.env.EHSE_SHEET_URL || (process.env.EHSE_SHEET_ID ? `https://docs.google.com/spreadsheets/d/${process.env.EHSE_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=EHSE` : 'https://docs.google.com/spreadsheets/d/1I4oX4kPr6d0_7q--9OcoJWs0W7IQG1dK1rBmNO7BlGo/gviz/tq?tqx=out:csv&sheet=EHSE');
       } else if (sLower === 'psi' || sLower.includes('psi') || tileId === 'psi' || tileId.includes('psi')) {
         url = process.env.PSI || process.env.PSI_SHEET_URL || (process.env.PSI_SHEET_ID ? `https://docs.google.com/spreadsheets/d/${process.env.PSI_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=PSI` : 'https://docs.google.com/spreadsheets/d/1vWYE3G4W7TxHBVzsUJuu1Z-aufjXD-xFeodTpFUTZtY/gviz/tq?tqx=out:csv&sheet=PSI');
+      } else if (sLower === 'msa' || sLower.includes('msa') || tileId === 'msa' || tileId.includes('msa') || sheetIdParam === '11ggCusY-ZJj09bVcpbikHeupyvFTBxDHlytjhpbNRWw') {
+        const mTab = (sLower.includes('comp') || sheetTab.toLowerCase().includes('comp')) ? 'MSA_Compliance' : 'MSA';
+        url = process.env.MSA_SHEET_URL || `https://docs.google.com/spreadsheets/d/11ggCusY-ZJj09bVcpbikHeupyvFTBxDHlytjhpbNRWw/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(mTab)}`;
       } else if (sLower.includes('psm') && process.env.PSM_SHEET_URL) {
         url = process.env.PSM_SHEET_URL;
       } else if (process.env.RECOMMENDATIONS_SHEET_URL) {
@@ -1079,6 +1082,11 @@ app.all('/api/sheets/fetch', async (req: Request, res: Response): Promise<void> 
     } else if (sLower === 'fpcl_directory' || sLower.includes('directory') || tileId === 'fpcl_directory' || tileId.includes('directory') || trimmedUrl.includes('1SrPdaxzEXbOFVbWin4zJvrc-m9TQKtxFjcyZYamXfpg')) {
       const extraDirTabs = ['FPCL_Directory', 'FPCL Directory', 'Directory', 'Sheet1'];
       extraDirTabs.forEach(t => {
+        if (!candidateTabs.includes(t)) candidateTabs.push(t);
+      });
+    } else if (sLower === 'msa' || sLower.includes('msa') || tileId === 'msa' || tileId.includes('msa') || trimmedUrl.includes('11ggCusY-ZJj09bVcpbikHeupyvFTBxDHlytjhpbNRWw')) {
+      const extraMsaTabs = ['MSA', 'MSA_Compliance', 'msa', 'Sheet1'];
+      extraMsaTabs.forEach(t => {
         if (!candidateTabs.includes(t)) candidateTabs.push(t);
       });
     }
