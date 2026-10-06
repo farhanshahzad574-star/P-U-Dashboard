@@ -133,7 +133,7 @@
     <script src="/assets/psiSuite.js?v=20260930d"></script>
     <!-- Management Safety Audit (MSA) Dataset & Specialized Executive Suite (Google Sheets ID: 11ggCusY-ZJj09bVcpbikHeupyvFTBxDHlytjhpbNRWw) -->
     <script src="/assets/msaData.js?v=20261004b"></script>
-    <script src="/assets/msaSuite.js?v=20261004b"></script>
+    <script src="/assets/msaSuite.js?v=20261005b"></script>
     <!-- FPCL Live Telephone Directory Suite (Google Sheets ID: 1SrPdaxzEXbOFVbWin4zJvrc-m9TQKtxFjcyZYamXfpg) -->
     <script src="/assets/fpclDirectorySuite.js?v=20260930b"></script>
 
@@ -8123,6 +8123,9 @@
               msaContainer.classList.remove('hidden');
               msaContainer.hidden = false;
               if (window.FPCL_MSA_SUITE) {
+                if (typeof window.FPCL_MSA_SUITE.onOpen === 'function') {
+                  window.FPCL_MSA_SUITE.onOpen();
+                }
                 if (typeof window.FPCL_MSA_SUITE.render === 'function') {
                   window.FPCL_MSA_SUITE.render();
                 }

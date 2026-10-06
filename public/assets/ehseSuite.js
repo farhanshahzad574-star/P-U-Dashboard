@@ -36,7 +36,7 @@
 
     state: {
       searchQuery: '',
-      yearFilter: 'all',    // Column C: Year from Date of Meeting (Defaults to 'all' so all live Google Sheet records are immediately visible)
+      yearFilter: String(new Date().getFullYear()), // Column C: Year from Date of Meeting (Opens dynamically on current year filter)
       refFilter: 'all',     // Column D: Ref. #
       deptFilter: 'all',    // Column G: Responsibility Department (Action by)
       statusFilter: 'all',  // Column H: Status (Open / Close)
@@ -58,9 +58,8 @@
       const observer = new MutationObserver(() => {
         const isHidden = container.classList.contains('hidden') || container.hidden;
         if (wasHidden && !isHidden) {
-          // Dashboard was just opened: ensure live sync & render
-          this.render();
-          this.syncLiveFeed({ silent: true });
+          // Dashboard was just opened: ensure dynamic current year filter, live sync & render
+          this.onOpen();
         }
         wasHidden = isHidden;
       });
@@ -70,12 +69,17 @@
 
     // Executed whenever the EHSE dashboard is opened
     onOpen() {
+      // Dynamically open on current year filter
+      this.state.yearFilter = this.getCurrentYear();
       this.render();
       this.syncLiveFeed({ silent: true });
     },
 
     init() {
       window.FPCL_EHSE_SUITE = this;
+
+      // Ensure default yearFilter dynamically reflects current year
+      this.state.yearFilter = this.getCurrentYear();
 
       // Setup watcher so whenever opened it dynamically updates
       this.setupVisibilityWatcher();
@@ -449,13 +453,13 @@
 
     resetFilters() {
       this.state.searchQuery = '';
-      this.state.yearFilter = 'all';
+      this.state.yearFilter = this.getCurrentYear();
       this.state.refFilter = 'all';
       this.state.deptFilter = 'all';
       this.state.statusFilter = 'all';
       this.render();
       if (window.portalApp && window.portalApp.showToast) {
-        window.portalApp.showToast('Filters Reset', 'EHSE filters reset (showing all observations).', 'info');
+        window.portalApp.showToast('Filters Reset', `EHSE filters reset to current year (${this.getCurrentYear()}).`, 'info');
       }
     },
 

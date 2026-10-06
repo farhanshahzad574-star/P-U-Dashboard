@@ -23,6 +23,7 @@
   const msaSuite = {
     state: {
       searchQuery: '',
+      yearFilter: String(new Date().getFullYear()), // Opens dynamically on current year filter (e.g. 2026)
       responsibleUnitFilter: 'all', // Responsible Unit / Department filter
       statusFilter: 'all',          // 'all', 'open' (documents remaining / open), 'closed'
       injuryPotentialFilter: 'all', // Injury_Potential filter (Column F)
@@ -72,6 +73,9 @@
           window.FPCL_MSA_COMPLIANCE_DATA = window.FPCL_MSA_COMPLIANCE_INITIAL_SEED.slice();
         }
       }
+
+      // Ensure year filter dynamically opens on current year
+      this.state.yearFilter = this.getDefaultYear();
 
       // Propagate stats to overview registry
       this.syncStatsToOverview();
@@ -129,16 +133,109 @@
       return s === 'close' || s === 'closed' || s === 'completed' || s === 'rectified';
     },
 
+    /**
+     * Extracts a 4-digit year string from Column B (Audit_Date)
+     * Supports formats: "31-Mar-26", "1-Apr-2026", "2026-04-01", "01/04/2026", "26", etc.
+     */
+    extractYear(dateStr) {
+      if (!dateStr) return '';
+      const s = String(dateStr).trim();
+      if (!s) return '';
+
+      // 1. Explicit 4-digit year (19xx or 20xx)
+      const fourDigitMatch = s.match(/\b(19\d\d|20\d\d)\b/);
+      if (fourDigitMatch) {
+        return fourDigitMatch[1];
+      }
+
+      // 2. Trailing 2-digit year after delimiter (e.g. 31-Mar-26, 01/04/26, 1-Apr-26)
+      const twoDigitEndMatch = s.match(/[-/.](\d{2})$/);
+      if (twoDigitEndMatch) {
+        const yr = parseInt(twoDigitEndMatch[1], 10);
+        return String(2000 + yr);
+      }
+
+      // 3. Just 2 digits (e.g. "26")
+      if (/^\d{2}$/.test(s)) {
+        const yr = parseInt(s, 10);
+        return String(2000 + yr);
+      }
+
+      // 4. Fallback to Date parser
+      const parsed = new Date(s);
+      if (!isNaN(parsed.getTime())) {
+        const y = parsed.getFullYear();
+        if (y >= 1990 && y <= 2100) {
+          return String(y);
+        }
+      }
+
+      return '';
+    },
+
+    /**
+     * Gets the current calendar year as a 4-digit string (e.g., '2026')
+     */
+    getCurrentYear() {
+      return String(new Date().getFullYear());
+    },
+
+    /**
+     * Extracts all unique available years sorted descending from Column B (Audit_Date)
+     */
+    getAvailableYears() {
+      const raw = this.getRawData();
+      const yearSet = new Set();
+      raw.forEach(r => {
+        if (r.auditDate) {
+          const yr = this.extractYear(r.auditDate);
+          if (yr) yearSet.add(yr);
+        }
+      });
+      return Array.from(yearSet).sort((a, b) => b.localeCompare(a));
+    },
+
+    /**
+     * Computes the default year: dynamically opens on the current year.
+     * If the current year exists in the dataset, returns current year (e.g. '2026').
+     * If dataset has other years, falls back to the most recent year available, or current year.
+     */
+    getDefaultYear() {
+      const current = this.getCurrentYear();
+      const available = this.getAvailableYears();
+      if (available.includes(current)) {
+        return current;
+      }
+      return available.length > 0 ? available[0] : current;
+    },
+
+    /**
+     * Lifecycle hook invoked whenever MSA Dashboard is opened
+     * Dynamically ensures it opens on the current year filter
+     */
+    onOpen() {
+      this.state.yearFilter = this.getDefaultYear();
+    },
+
     getFilteredData() {
       const raw = this.getRawData();
       const q = (this.state.searchQuery || '').toLowerCase().trim();
       const unitFilter = this.state.responsibleUnitFilter;
       const statusFilter = this.state.statusFilter;
+      const yearFilter = this.state.yearFilter;
 
       return raw.filter(item => {
         // Exclude aggregate total row if present
         const ru = String(item.groupResponsibleUnit || item.groupResponsibleDept || '').trim().toLowerCase();
         if (ru === 'total' || ru === 'grand total') return false;
+
+        // Year Filter from Column B named Audit_Date
+        if (yearFilter && yearFilter !== 'all') {
+          const itemYear = this.extractYear(item.auditDate);
+          if (itemYear !== String(yearFilter).trim()) {
+            return false;
+          }
+        }
 
         // Search query across fields
         if (q) {
@@ -149,7 +246,8 @@
           const unit = String(item.groupResponsibleUnit || '').toLowerCase();
           const action = String(item.actionTaken || '').toLowerCase();
           const sr = String(item.sr || '').toLowerCase();
-          if (!obs.includes(q) && !area.includes(q) && !by.includes(q) && !dept.includes(q) && !unit.includes(q) && !action.includes(q) && !sr.includes(q)) {
+          const dt = String(item.auditDate || '').toLowerCase();
+          if (!obs.includes(q) && !area.includes(q) && !by.includes(q) && !dept.includes(q) && !unit.includes(q) && !action.includes(q) && !sr.includes(q) && !dt.includes(q)) {
             return false;
           }
         }
@@ -498,6 +596,11 @@
       this.renderFilteredViews();
     },
 
+    setYearFilter(yr) {
+      this.state.yearFilter = yr || 'all';
+      this.renderFilteredViews();
+    },
+
     setUnitFilter(unit) {
       this.state.responsibleUnitFilter = unit || 'all';
       this.renderFilteredViews();
@@ -546,6 +649,7 @@
 
     resetFilters() {
       this.state.searchQuery = '';
+      this.state.yearFilter = this.getDefaultYear();
       this.state.responsibleUnitFilter = 'all';
       this.state.statusFilter = 'all';
       this.state.injuryPotentialFilter = 'all';
@@ -554,6 +658,9 @@
       if (s1) s1.value = '';
       const s2 = document.getElementById('msa-filter-search');
       if (s2) s2.value = '';
+
+      const y = document.getElementById('msa-year-select');
+      if (y) y.value = this.state.yearFilter;
 
       const u = document.getElementById('msa-unit-select');
       if (u) u.value = 'all';
@@ -567,7 +674,7 @@
       this.renderFilteredViews();
 
       if (window.portalApp && typeof window.portalApp.showToast === 'function') {
-        window.portalApp.showToast('Filters Reset', 'All MSA filters have been restored to defaults.', 'info');
+        window.portalApp.showToast('Filters Reset', `All MSA filters restored (Year: ${this.state.yearFilter}).`, 'info');
       }
     },
 
@@ -677,10 +784,26 @@
       const compFiltered = this.getFilteredComplianceData();
       const kpis = this.calculateKpis(filtered);
 
+      const tabBtnMsa = document.getElementById('msa-tab-btn-msa');
+      if (tabBtnMsa) {
+        tabBtnMsa.innerHTML = `
+          <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+          <span>Tab 1: MSA (${filtered.length} Observations)</span>
+        `;
+      }
+      const table1Title = document.querySelector('#msa-table-1-wrapper h3');
+      if (table1Title) {
+        table1Title.innerHTML = `
+          <span class="w-2.5 h-2.5 rounded-full bg-[#1D4ED8]"></span>
+          <span>Tab 1: MSA Observations Master (${filtered.length} Records)</span>
+        `;
+      }
+
       this.renderKpiCards(kpis);
       this.renderCharts(filtered, compFiltered);
       this.renderDonut(kpis);
       this.renderTables(filtered, compFiltered);
+      if (window.lucide) window.lucide.createIcons();
     },
 
     /**
@@ -690,9 +813,17 @@
       const container = document.getElementById('msa-specialized-container');
       if (!container) return;
 
+      // Dynamically ensure yearFilter is set to current year if unset
+      if (!this.state.yearFilter) {
+        this.state.yearFilter = this.getDefaultYear();
+      }
+
       const filtered = this.getFilteredData();
       const compFiltered = this.getFilteredComplianceData();
       const kpis = this.calculateKpis(filtered);
+
+      const currentYear = this.getCurrentYear();
+      const uniqueYears = this.getAvailableYears();
 
       // Extract unique Responsible Units / Departments from raw data for filter dropdown
       const raw = this.getRawData();
@@ -828,18 +959,40 @@
 
         <!-- ========================================================================= -->
         <!-- 3. FILTERS (Below KPIs, side-by-side on mobile, no heading on filter bar)  -->
-        <!-- Filter 1: Responsible_Unit (Col B / Col I)                                 -->
-        <!-- Filter 2: DOCUMENTS REMAINING / open filter                               -->
-        <!-- Filter 3: Injury_Potential filter (Column F named Injury_Potential)        -->
-        <!-- Filter 4: Keyword Search                                                  -->
+        <!-- Filter 1: Year (from Google Sheet Tab MSA Column B named Audit_Date)       -->
+        <!-- Filter 2: Responsible_Unit (Col B / Col I)                                 -->
+        <!-- Filter 3: DOCUMENTS REMAINING / open filter                               -->
+        <!-- Filter 4: Injury_Potential filter (Column F named Injury_Potential)        -->
+        <!-- Filter 5: Keyword Search                                                  -->
         <!-- ========================================================================= -->
         <div id="msa-filters-bar" class="bg-white/95 backdrop-blur-sm border border-slate-200 rounded-2xl p-2.5 sm:p-3.5 shadow-xs relative overflow-hidden">
           <!-- Subtle perimeter top line -->
           <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 via-indigo-600 to-fuchsia-600"></div>
 
-          <!-- Side-by-side on mobile (2 cols on mobile, 4 cols on desktop) -->
-          <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 items-center">
-            <!-- Filter 1: Responsible_Unit Filter -->
+          <!-- Side-by-side on mobile (2 cols on mobile, 3 cols on sm, 5 cols on lg) -->
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 items-center">
+            <!-- Filter 1: Year Filter (Column B named Audit_Date) -->
+            <div class="min-w-0">
+              <div class="relative">
+                <select
+                  id="msa-year-select"
+                  onchange="FPCL_MSA_SUITE.setYearFilter(this.value)"
+                  class="w-full pl-3 pr-8 py-2 bg-slate-50 hover:bg-slate-100 focus:bg-white border border-slate-300 focus:border-indigo-600 rounded-xl text-xs font-bold font-mono text-slate-800 shadow-2xs focus:ring-2 focus:ring-indigo-500/20 transition-all cursor-pointer outline-none appearance-none truncate"
+                  title="Filter by Year from Tab MSA Column B (Audit_Date)"
+                >
+                  <option value="all" ${this.state.yearFilter === 'all' ? 'selected' : ''}>Year: All</option>
+                  ${uniqueYears.map(yr => {
+                    const isCurrent = yr === currentYear;
+                    return `<option value="${yr}" ${this.state.yearFilter === yr ? 'selected' : ''}>${yr}${isCurrent ? ' (Current Year)' : ''}</option>`;
+                  }).join('')}
+                </select>
+                <div class="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none text-slate-400">
+                  <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
+                </div>
+              </div>
+            </div>
+
+            <!-- Filter 2: Responsible_Unit Filter -->
             <div class="min-w-0">
               <div class="relative">
                 <select
@@ -857,7 +1010,7 @@
               </div>
             </div>
 
-            <!-- Filter 2: DOCUMENTS REMAINING / open Filter -->
+            <!-- Filter 3: DOCUMENTS REMAINING / open Filter -->
             <div class="min-w-0">
               <div class="relative">
                 <select
@@ -876,7 +1029,7 @@
               </div>
             </div>
 
-            <!-- Filter 3: Injury_Potential Filter (Column F named Injury_Potential) -->
+            <!-- Filter 4: Injury_Potential Filter (Column F named Injury_Potential) -->
             <div class="min-w-0">
               <div class="relative">
                 <select
@@ -894,8 +1047,8 @@
               </div>
             </div>
 
-            <!-- Filter 4: Quick Filter Search (Desktop & full mobile span if 4 cols wrap) -->
-            <div class="col-span-2 lg:col-span-1 min-w-0">
+            <!-- Filter 5: Quick Filter Search (Desktop & responsive mobile span) -->
+            <div class="col-span-2 sm:col-span-2 lg:col-span-1 min-w-0">
               <div class="relative">
                 <input
                   id="msa-filter-search"
