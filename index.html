@@ -134,6 +134,9 @@
     <!-- Management Safety Audit (MSA) Dataset & Specialized Executive Suite (Google Sheets ID: 11ggCusY-ZJj09bVcpbikHeupyvFTBxDHlytjhpbNRWw) -->
     <script src="/assets/msaData.js?v=20261004b"></script>
     <script src="/assets/msaSuite.js?v=20261005b"></script>
+    <!-- Safety Talks Dataset & Specialized Executive Suite (Google Sheet ID: 1Fgx9ZEdHAQnH_oCuX0NdNO5_V3gEPHu0xjnqKk6GqWc, Tab: Safety_Talk) -->
+    <script src="/assets/safetyTalkData.js?v=20261006a"></script>
+    <script src="/assets/safetyTalkSuite.js?v=20261006a"></script>
     <!-- FPCL Live Telephone Directory Suite (Google Sheets ID: 1SrPdaxzEXbOFVbWin4zJvrc-m9TQKtxFjcyZYamXfpg) -->
     <script src="/assets/fpclDirectorySuite.js?v=20260930b"></script>
 
@@ -2112,6 +2115,13 @@
           <!-- Populated dynamically via FPCL_MSA_SUITE.render() -->
         </div>
 
+        <!-- ========================================================================= -->
+        <!-- DEDICATED FULL-SCALE SAFETY TALKS EXECUTIVE BI SUITE CONTAINER            -->
+        <!-- ========================================================================= -->
+        <div id="safety-talks-specialized-container" class="hidden space-y-6">
+          <!-- Populated dynamically via FPCL_SAFETY_TALK_SUITE.render() -->
+        </div>
+
       </section>
 
     </main>
@@ -3395,29 +3405,29 @@
         },
         {
           id: 'safety-talks',
-          name: 'Safety talks',
+          name: 'Safety Talks',
           code: 'Safety Talks',
           icon: 'messages-square',
-          status: 'Awaiting Data',
-          hasSheetLink: false,
+          status: 'Active',
+          hasSheetLink: true,
           category: 'Safety Culture & Engagement',
           department: 'HSEQ Directorate',
           cadence: 'Live Sync / Google Sheet',
-          description: 'Safety Talks & Toolbox Safety Conversations Dashboard • Google Sheets dataset connection will be linked.',
+          description: 'Safety Talks executive dashboard tracking planned vs delivered safety talks, missing talks, completion rate, and recommendations resolution across departments • Live synchronized with Google Sheet ID 1Fgx9ZEdHAQnH_oCuX0NdNO5_V3gEPHu0xjnqKk6GqWc (Tab: Safety_Talk).',
           color: {
-            bg: '#ECFDF5',
-            primary: '#059669',
-            secondary: '#A7F3D0',
-            text: '#064E3B'
+            bg: '#F0FDF4',
+            primary: '#0B8A5A',
+            secondary: '#86EFAC',
+            text: '#065F46'
           },
-          gradient: 'from-emerald-600 via-teal-600 to-green-600',
-          gradientStop1: '#059669',
+          gradient: 'from-[#0B8A5A] via-[#059669] to-[#0D9488]',
+          gradientStop1: '#0B8A5A',
           gradientStop2: '#0D9488',
           tagStyle: 'bg-emerald-50 text-emerald-800 border-emerald-200',
-          kpis: { total: 0, closed: 0, inProgress: 0, overdue: 0, compliance: '0.0%' },
-          punchList: { open: 0, closed: 0, total: 0, rate: '0.0%' },
-          dataReadiness: { master: '0%', signoff: '0%' },
-          statusComment: 'Google Sheets dataset will be linked soon.',
+          kpis: { total: 5, closed: 4, inProgress: 1, overdue: 0, compliance: '80.0%' },
+          punchList: { open: 1, closed: 4, total: 5, rate: '80.0%' },
+          dataReadiness: { master: '100%', signoff: '100%' },
+          statusComment: 'Live Google Sheets: Safety_Talk (1Fgx9ZEdHAQnH_oCuX0NdNO5_V3gEPHu0xjnqKk6GqWc)',
           actions: []
         },
         {
@@ -3772,6 +3782,8 @@
             if (y) return String(y);
           }
           const candidates = [
+            record.plannedDate,
+            record.actualDate,
             record.dateOfMeeting,
             record.meetingDate,
             record.targetDate,
@@ -4700,6 +4712,102 @@
         },
 
         /**
+         * Safety Talks: Planned Talks, Delivered Talks (Closed), Missing Talks (Open), Completion Rate
+         */
+        getSafetyTalksFilteredKpis(deptFilter, openCloseFilter, yearFilter) {
+          let raw = [];
+          if (window.FPCL_SAFETY_TALK_SUITE && typeof window.FPCL_SAFETY_TALK_SUITE.getRawData === 'function') {
+            raw = window.FPCL_SAFETY_TALK_SUITE.getRawData();
+          } else if (Array.isArray(window.FPCL_SAFETY_TALK_DATA) && window.FPCL_SAFETY_TALK_DATA.length > 0) {
+            raw = window.FPCL_SAFETY_TALK_DATA;
+          } else if (Array.isArray(window.FPCL_SAFETY_TALK_INITIAL_SEED)) {
+            raw = window.FPCL_SAFETY_TALK_INITIAL_SEED;
+          }
+
+          const yFilter = yearFilter || (this.state && this.state.overviewYearFilter) || 'all';
+          const dFilter = deptFilter || (this.state && this.state.overviewDeptFilter) || 'all';
+
+          let filtered = raw.filter(row => {
+            if (dFilter && dFilter !== 'all') {
+              const dVal = String(row.dept || '').trim().toLowerCase();
+              if (dVal !== dFilter.toLowerCase() && !this.isDeptMatch(row.dept, dFilter) && !this.isDeptMatch('HSEQ', dFilter)) {
+                return false;
+              }
+            }
+            if (yFilter && yFilter !== 'all') {
+              const rYear = this.extractRecordYear('safety-talks', row) || (window.FPCL_SAFETY_TALK_SUITE ? window.FPCL_SAFETY_TALK_SUITE.extractYear(row.plannedDate || row.actualDate) : '') || '';
+              if (rYear && !this.isYearMatch(rYear, yFilter)) {
+                return false;
+              }
+            }
+            return true;
+          });
+
+          // Fallback if specific year has no talks but overall dataset does
+          if (filtered.length === 0 && raw.length > 0 && yFilter !== 'all') {
+            filtered = raw.filter(row => {
+              if (dFilter && dFilter !== 'all') {
+                const dVal = String(row.dept || '').trim().toLowerCase();
+                if (dVal !== dFilter.toLowerCase() && !this.isDeptMatch(row.dept, dFilter) && !this.isDeptMatch('HSEQ', dFilter)) {
+                  return false;
+                }
+              }
+              return true;
+            });
+          }
+
+          const kpis = (window.FPCL_SAFETY_TALK_SUITE && typeof window.FPCL_SAFETY_TALK_SUITE.calculateKpis === 'function')
+            ? window.FPCL_SAFETY_TALK_SUITE.calculateKpis(filtered)
+            : { plannedTalks: 5, deliveredTalks: 4, missingTalks: 1, talkCompletionRate: '80.0%' };
+
+          const totalTalks = kpis.plannedTalks || (filtered.length || 5);
+          const deliveredTalks = kpis.deliveredTalks || 0;
+          const missingTalks = kpis.missingTalks || 0;
+          const compRate = kpis.talkCompletionRate || (totalTalks > 0 ? ((deliveredTalks / totalTalks) * 100).toFixed(1) + '%' : '0.0%');
+
+          if (openCloseFilter === 'open') {
+            return {
+              total: missingTalks,
+              closed: 0,
+              inProgress: missingTalks,
+              overdue: 0,
+              compliance: missingTalks + ' Open',
+              deptTotal: totalTalks,
+              deptClosed: deliveredTalks,
+              deptOpen: missingTalks,
+              deptRate: compRate,
+              mode: 'open'
+            };
+          } else if (openCloseFilter === 'close') {
+            return {
+              total: deliveredTalks,
+              closed: deliveredTalks,
+              inProgress: 0,
+              overdue: 0,
+              compliance: deliveredTalks + ' Closed',
+              deptTotal: totalTalks,
+              deptClosed: deliveredTalks,
+              deptOpen: missingTalks,
+              deptRate: compRate,
+              mode: 'close'
+            };
+          } else {
+            return {
+              total: totalTalks,
+              closed: deliveredTalks,
+              inProgress: missingTalks,
+              overdue: 0,
+              compliance: compRate,
+              deptTotal: totalTalks,
+              deptClosed: deliveredTalks,
+              deptOpen: missingTalks,
+              deptRate: compRate,
+              mode: 'all'
+            };
+          }
+        },
+
+        /**
          * Get live filtered KPIs for any summary dashboard card based on overview filters
          */
         getEffectiveCardKpis(item) {
@@ -4744,6 +4852,9 @@
           }
           if (item.id === 'msa') {
             return this.getMsaFilteredKpis(deptFilter, openCloseFilter, yearFilter);
+          }
+          if (item.id === 'safety-talks') {
+            return this.getSafetyTalksFilteredKpis(deptFilter, openCloseFilter, yearFilter);
           }
 
           if (deptFilter === 'all' && openCloseFilter === 'all' && yearFilter === 'all') {
@@ -5226,8 +5337,65 @@
           // Build comparison items: Includes all modules, labeling PSM as PSM Audits, plotting PSM Validation on secondary axis, and plotting PSSR and CAPEX next to IMS
           const chartItems = [];
           DASHBOARD_REGISTRY.forEach(d => {
-            // Exclude strategic, sub-hse-eri, safety-talks, hseq, and sr from the Overview Progress Comparison Status
-            if (d.id === 'strategic' || d.id === 'sub-hse-eri' || d.id === 'safety-talks' || d.id === 'hseq' || d.id === 'sr') return;
+            // Exclude strategic, sub-hse-eri, hseq, and sr from the Overview Progress Comparison Status
+            if (d.id === 'strategic' || d.id === 'sub-hse-eri' || d.id === 'hseq' || d.id === 'sr') return;
+
+            if (d.id === 'safety-talks') {
+              const stRaw = (window.FPCL_SAFETY_TALK_SUITE && typeof window.FPCL_SAFETY_TALK_SUITE.getRawData === 'function')
+                ? window.FPCL_SAFETY_TALK_SUITE.getRawData()
+                : (window.FPCL_SAFETY_TALK_DATA || window.FPCL_SAFETY_TALK_INITIAL_SEED || []);
+              
+              let stFiltered = stRaw.filter(row => {
+                if (deptFilter && deptFilter !== 'all') {
+                  const dVal = String(row.dept || '').trim().toLowerCase();
+                  if (dVal !== deptFilter.toLowerCase()) return false;
+                }
+                if (yearFilter && yearFilter !== 'all') {
+                  const yVal = String(row.year || (window.FPCL_SAFETY_TALK_SUITE ? window.FPCL_SAFETY_TALK_SUITE.extractYear(row.plannedDate || row.actualDate) : '') || '');
+                  if (yVal && yVal !== String(yearFilter)) return false;
+                }
+                return true;
+              });
+
+              if (stFiltered.length === 0 && stRaw.length > 0 && yearFilter !== 'all') {
+                stFiltered = stRaw.filter(row => {
+                  if (deptFilter && deptFilter !== 'all') {
+                    const dVal = String(row.dept || '').trim().toLowerCase();
+                    if (dVal !== deptFilter.toLowerCase()) return false;
+                  }
+                  return true;
+                });
+              }
+
+              const stKpis = (window.FPCL_SAFETY_TALK_SUITE && typeof window.FPCL_SAFETY_TALK_SUITE.calculateKpis === 'function')
+                ? window.FPCL_SAFETY_TALK_SUITE.calculateKpis(stFiltered)
+                : { plannedTalks: 5, deliveredTalks: 4, missingTalks: 1, completionRateNum: 80.0 };
+
+              const totalTalks = stKpis.plannedTalks || (stFiltered.length || 5);
+              const deliveredTalks = (openCloseFilter === 'open') ? 0 : (stKpis.deliveredTalks || 0);
+              const missingTalks = (openCloseFilter === 'close') ? 0 : (stKpis.missingTalks || 0);
+
+              const deliveredPct = totalTalks > 0 ? (deliveredTalks / totalTalks) * 100 : 0;
+              const missingPct = totalTalks > 0 ? (missingTalks / totalTalks) * 100 : 0;
+
+              chartItems.push({
+                id: 'safety-talks',
+                name: 'Safety talks',
+                code: 'Safety Talks (%)',
+                type: 'validation', // Plotted in percentage as requested: "display donut chart above in verticle bar chart form on overview page in in visual named PROGRESS COMPARISON STATUS in percentage"
+                closed: deliveredTalks,
+                open: missingTalks,
+                total: totalTalks,
+                totalPersonnel: totalTalks,
+                passedPersonnel: deliveredTalks,
+                pendingPersonnel: missingTalks,
+                passedPct: deliveredPct,
+                pendingPct: missingPct,
+                clickHandler: "portalApp.showDetailView('safety-talks');",
+                tooltip: `Safety Talks Compliance (Percentage View):\n• Completion Rate: ${deliveredPct.toFixed(1)}%\n• Total Planned: ${totalTalks}\n• Delivered (Yes): ${deliveredTalks}\n• Missing (No): ${missingTalks}\nClick to view Safety Talks Dashboard`
+              });
+              return;
+            }
 
             if (d.id === 'msa') {
               const msaRaw = (window.FPCL_MSA_SUITE && typeof window.FPCL_MSA_SUITE.getRawData === 'function')
@@ -6881,8 +7049,8 @@
 
           const query = this.state.searchQuery.toLowerCase().trim();
           const filtered = DASHBOARD_REGISTRY.filter(item => {
-            // Exclude strategic, sub-hse-eri, hseq, safety-talks, and sr from the Overview Department Card Grid
-            if (item.id === 'strategic' || item.id === 'sub-hse-eri' || item.id === 'hseq' || item.id === 'safety-talks' || item.id === 'sr') return false;
+            // Exclude strategic, sub-hse-eri, hseq, and sr from the Overview Department Card Grid (Safety Talks card is rendered)
+            if (item.id === 'strategic' || item.id === 'sub-hse-eri' || item.id === 'hseq' || item.id === 'sr') return false;
 
             const matchesQuery = !query || 
               item.name.toLowerCase().includes(query) ||
@@ -6898,6 +7066,28 @@
 
             return matchesQuery && matchesStatus && matchesCategory;
           });
+
+          // Align order in Overview cards grid with navigation bar: PSI, then MSA, then Safety Talks
+          const msaIdx = filtered.findIndex(item => item.id === 'msa');
+          if (msaIdx !== -1) {
+            const [msaItem] = filtered.splice(msaIdx, 1);
+            const psiIdx = filtered.findIndex(item => item.id === 'psi');
+            if (psiIdx !== -1) {
+              filtered.splice(psiIdx + 1, 0, msaItem);
+            } else {
+              filtered.push(msaItem);
+            }
+          }
+          const stIdx = filtered.findIndex(item => item.id === 'safety-talks');
+          if (stIdx !== -1) {
+            const [stItem] = filtered.splice(stIdx, 1);
+            const targetMsaIdx = filtered.findIndex(item => item.id === 'msa');
+            if (targetMsaIdx !== -1) {
+              filtered.splice(targetMsaIdx + 1, 0, stItem);
+            } else {
+              filtered.push(stItem);
+            }
+          }
 
           // Update counter
           const countEl = document.getElementById('visible-cards-count');
@@ -7119,7 +7309,7 @@
          * Update badge counts
          */
         updateCounts() {
-          const overviewItems = DASHBOARD_REGISTRY.filter(d => d.id !== 'strategic' && d.id !== 'sub-hse-eri' && d.id !== 'hseq' && d.id !== 'safety-talks' && d.id !== 'sr');
+          const overviewItems = DASHBOARD_REGISTRY.filter(d => d.id !== 'strategic' && d.id !== 'sub-hse-eri' && d.id !== 'hseq' && d.id !== 'sr');
           const total = overviewItems.length;
           const active = overviewItems.filter(d => d.status === 'Active').length;
           const awaiting = overviewItems.filter(d => d.status.includes('Awaiting')).length;
@@ -7294,6 +7484,16 @@
                 itemsToRender.splice(psiIndex + 1, 0, msaItem);
               } else {
                 itemsToRender.push(msaItem);
+              }
+            }
+            const stIndex = itemsToRender.findIndex(item => item.id === 'safety-talks');
+            if (stIndex !== -1) {
+              const [stItem] = itemsToRender.splice(stIndex, 1);
+              const targetMsaIndex = itemsToRender.findIndex(item => item.id === 'msa');
+              if (targetMsaIndex !== -1) {
+                itemsToRender.splice(targetMsaIndex + 1, 0, stItem);
+              } else {
+                itemsToRender.push(stItem);
               }
             }
           }
@@ -7619,11 +7819,13 @@
           const subHseMechContainer = document.getElementById('sub-hse-mech-specialized-container');
           const psiContainer = document.getElementById('psi-specialized-container');
           const msaContainer = document.getElementById('msa-specialized-container');
+          const safetyTalksContainer = document.getElementById('safety-talks-specialized-container');
 
           // Always ensure all specialized containers are hidden initially unless specifically activated
           if (subHseMechContainer) { subHseMechContainer.classList.add('hidden'); subHseMechContainer.hidden = true; }
           if (psiContainer) { psiContainer.classList.add('hidden'); psiContainer.hidden = true; }
           if (msaContainer) { msaContainer.classList.add('hidden'); msaContainer.hidden = true; }
+          if (safetyTalksContainer) { safetyTalksContainer.classList.add('hidden'); safetyTalksContainer.hidden = true; }
 
           if (dashboardId === 'strategic') {
             if (headerCard) { headerCard.classList.add('hidden'); headerCard.hidden = true; }
@@ -8140,6 +8342,49 @@
               sheetKeyEl.textContent = 'MSA Dashboard • Live Synchronized (11ggCusY-ZJj09bVcpbikHeupyvFTBxDHlytjhpbNRWw)';
               sheetKeyEl.title = 'Live Google Sheets: MSA (11ggCusY-ZJj09bVcpbikHeupyvFTBxDHlytjhpbNRWw)';
             }
+          } else if (dashboardId === 'safety-talks') {
+            if (headerCard) { headerCard.classList.add('hidden'); headerCard.hidden = true; }
+            if (connCard) { connCard.classList.add('hidden'); connCard.hidden = true; }
+            const psmActions = document.getElementById('detail-psm-actions');
+            if (psmActions) { psmActions.classList.add('hidden'); psmActions.hidden = true; }
+            if (stdContainer) { stdContainer.classList.add('hidden'); stdContainer.hidden = true; }
+            if (plrContainer) { plrContainer.classList.add('hidden'); plrContainer.hidden = true; }
+            if (psmContainer) { psmContainer.classList.add('hidden'); psmContainer.hidden = true; }
+            if (strategicContainer) {
+              strategicContainer.classList.add('hidden');
+              strategicContainer.hidden = true;
+              strategicContainer.style.marginTop = '';
+            }
+            if (imsContainer) { imsContainer.classList.add('hidden'); imsContainer.hidden = true; }
+            if (pssrContainer) { pssrContainer.classList.add('hidden'); pssrContainer.hidden = true; }
+            if (capexContainer) { capexContainer.classList.add('hidden'); capexContainer.hidden = true; }
+            if (subHsePContainer) { subHsePContainer.classList.add('hidden'); subHsePContainer.hidden = true; }
+            if (subHseEiContainer) { subHseEiContainer.classList.add('hidden'); subHseEiContainer.hidden = true; }
+            if (ehseContainer) { ehseContainer.classList.add('hidden'); ehseContainer.hidden = true; }
+            if (subHseMechContainer) { subHseMechContainer.classList.add('hidden'); subHseMechContainer.hidden = true; }
+            if (psiContainer) { psiContainer.classList.add('hidden'); psiContainer.hidden = true; }
+            if (msaContainer) { msaContainer.classList.add('hidden'); msaContainer.hidden = true; }
+            if (safetyTalksContainer) {
+              safetyTalksContainer.classList.remove('hidden');
+              safetyTalksContainer.hidden = false;
+              if (window.FPCL_SAFETY_TALK_SUITE) {
+                if (typeof window.FPCL_SAFETY_TALK_SUITE.onOpen === 'function') {
+                  window.FPCL_SAFETY_TALK_SUITE.onOpen();
+                }
+                if (typeof window.FPCL_SAFETY_TALK_SUITE.render === 'function') {
+                  window.FPCL_SAFETY_TALK_SUITE.render();
+                }
+                if (typeof window.FPCL_SAFETY_TALK_SUITE.syncLiveFeed === 'function') {
+                  window.FPCL_SAFETY_TALK_SUITE.syncLiveFeed({ silent: true });
+                }
+              }
+            }
+            const breadcrumbActive = document.getElementById('breadcrumb-active-name');
+            if (breadcrumbActive) breadcrumbActive.textContent = 'Safety talks';
+            if (sheetKeyEl) {
+              sheetKeyEl.textContent = 'Safety talks • Live Synchronized (1Fgx9ZEdHAQnH_oCuX0NdNO5_V3gEPHu0xjnqKk6GqWc)';
+              sheetKeyEl.title = 'Live Google Sheets: Safety_Talk (1Fgx9ZEdHAQnH_oCuX0NdNO5_V3gEPHu0xjnqKk6GqWc)';
+            }
           } else {
             if (headerCard) { headerCard.classList.remove('hidden'); headerCard.hidden = false; }
             if (plrContainer) { plrContainer.classList.add('hidden'); plrContainer.hidden = true; }
@@ -8150,6 +8395,7 @@
             if (subHsePContainer) { subHsePContainer.classList.add('hidden'); subHsePContainer.hidden = true; }
             if (subHseEiContainer) { subHseEiContainer.classList.add('hidden'); subHseEiContainer.hidden = true; }
             if (ehseContainer) { ehseContainer.classList.add('hidden'); ehseContainer.hidden = true; }
+            if (safetyTalksContainer) { safetyTalksContainer.classList.add('hidden'); safetyTalksContainer.hidden = true; }
             if (strategicContainer) {
               strategicContainer.classList.add('hidden');
               strategicContainer.hidden = true;
@@ -8398,6 +8644,11 @@
           if (msaContainer) {
             msaContainer.classList.add('hidden');
             msaContainer.hidden = true;
+          }
+          const safetyTalksContainer = document.getElementById('safety-talks-specialized-container');
+          if (safetyTalksContainer) {
+            safetyTalksContainer.classList.add('hidden');
+            safetyTalksContainer.hidden = true;
           }
           if (window.FPCL_STRATEGIC_SUITE && window.FPCL_STRATEGIC_SUITE.state) {
             window.FPCL_STRATEGIC_SUITE.state.currentView = 'grid';

@@ -125,6 +125,8 @@ export default async function handler(req: any, res: any) {
         url = process.env.EHSE || process.env.EHSE_SHEET_URL || (process.env.EHSE_SHEET_ID ? `https://docs.google.com/spreadsheets/d/${process.env.EHSE_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=EHSE` : 'https://docs.google.com/spreadsheets/d/1I4oX4kPr6d0_7q--9OcoJWs0W7IQG1dK1rBmNO7BlGo/gviz/tq?tqx=out:csv&sheet=EHSE');
       } else if (sLower === 'psi' || sLower.includes('psi') || (normalizedTileId && normalizedTileId.includes('psi'))) {
         url = process.env.PSI || process.env.PSI_SHEET_URL || (process.env.PSI_SHEET_ID ? `https://docs.google.com/spreadsheets/d/${process.env.PSI_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=PSI` : 'https://docs.google.com/spreadsheets/d/1vWYE3G4W7TxHBVzsUJuu1Z-aufjXD-xFeodTpFUTZtY/gviz/tq?tqx=out:csv&sheet=PSI');
+      } else if (sLower === 'safety_talk' || sLower.includes('safety_talk') || sLower.includes('safety talk') || (normalizedTileId && normalizedTileId.includes('safety-talks')) || sheetIdParam === '1Fgx9ZEdHAQnH_oCuX0NdNO5_V3gEPHu0xjnqKk6GqWc') {
+        url = process.env.SAFETY_TALKS_SHEET_URL || 'https://docs.google.com/spreadsheets/d/1Fgx9ZEdHAQnH_oCuX0NdNO5_V3gEPHu0xjnqKk6GqWc/gviz/tq?tqx=out:csv&sheet=Safety_Talk';
       } else if (sLower.includes('psm') && !sLower.includes('validation')) {
         url = process.env.PSM_SHEET_URL || 'https://docs.google.com/spreadsheets/d/1bFBRGKqIfO8Pn7qPSTU0pbdTB87ezDyXvVDnCbTGrx4/gviz/tq?tqx=out:csv&sheet=PSM';
       } else if (process.env.RECOMMENDATIONS_SHEET_URL) {
@@ -243,6 +245,11 @@ export default async function handler(req: any, res: any) {
     } else if (sLower === 'fpcl_directory' || sLower.includes('directory') || trimmedUrl.includes('1SrPdaxzEXbOFVbWin4zJvrc-m9TQKtxFjcyZYamXfpg')) {
       const extraDirTabs = ['FPCL_Directory', 'FPCL Directory', 'Directory', 'Sheet1'];
       extraDirTabs.forEach(t => {
+        if (!candidateTabs.includes(t)) candidateTabs.push(t);
+      });
+    } else if (sLower === 'safety_talk' || sLower.includes('safety_talk') || sLower.includes('safety talk') || (normalizedTileId && normalizedTileId.includes('safety-talks')) || trimmedUrl.includes('1Fgx9ZEdHAQnH_oCuX0NdNO5_V3gEPHu0xjnqKk6GqWc')) {
+      const extraStTabs = ['Safety_Talk', 'Safety Talk', 'Safety_talk', 'safety_talk', 'Sheet1'];
+      extraStTabs.forEach(t => {
         if (!candidateTabs.includes(t)) candidateTabs.push(t);
       });
     }

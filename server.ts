@@ -802,6 +802,235 @@ app.get('/api/msa', async (req: Request, res: Response): Promise<void> => {
   });
 });
 
+// Cache for Safety Talks data by tab name
+let safetyTalkDataCacheByTab: Record<string, { timestamp: number; csvText: string; records?: any[] }> = {};
+
+function parseSafetyTalkCsv(csvText: string): any[] {
+  if (!csvText || typeof csvText !== 'string') return [];
+  const lines: string[][] = [];
+  let row: string[] = [];
+  let current = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < csvText.length; i++) {
+    const c = csvText[i];
+    if (c === '"') {
+      if (inQuotes && csvText[i + 1] === '"') {
+        current += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (c === ',' && !inQuotes) {
+      row.push(current.trim());
+      current = '';
+    } else if ((c === '\r' || c === '\n') && !inQuotes) {
+      if (c === '\r' && csvText[i + 1] === '\n') i++;
+      row.push(current.trim());
+      current = '';
+      if (row.length > 1 || (row[0] && row[0] !== '')) {
+        lines.push(row);
+      }
+      row = [];
+    } else {
+      current += c;
+    }
+  }
+  if (current.length > 0 || row.length > 0) {
+    row.push(current.trim());
+    lines.push(row);
+  }
+
+  if (lines.length < 2) return [];
+
+  const headers = lines[0].map(h => String(h || '').trim());
+  const colMap: Record<string, number> = {};
+  headers.forEach((h, idx) => {
+    const clean = h.toLowerCase().replace(/[^a-z0-9]/g, '');
+    colMap[clean] = idx;
+  });
+
+  const getCol = (r: string[], aliases: string[], fallbackIdx: number): string => {
+    for (const a of aliases) {
+      const idx = colMap[a.toLowerCase().replace(/[^a-z0-9]/g, '')];
+      if (idx !== undefined && r[idx] !== undefined) {
+        return String(r[idx]).trim();
+      }
+    }
+    if (fallbackIdx !== undefined && r[fallbackIdx] !== undefined) {
+      return String(r[fallbackIdx]).trim();
+    }
+    return '';
+  };
+
+  const records: any[] = [];
+  for (let i = 1; i < lines.length; i++) {
+    const r = lines[i];
+    if (!r || r.length < 2) continue;
+
+    const sr = getCol(r, ['sr', 'sr#', 'sno', 'id'], 0);
+    const dept = getCol(r, ['dept', 'department'], 1);
+    const shift = getCol(r, ['shift'], 2);
+    const plannedDate = getCol(r, ['planneddate', 'planned_date', 'plan_date'], 3);
+    const actualDate = getCol(r, ['actualdate', 'actual_date'], 4);
+    const feedbackSubmissionDate = getCol(r, ['feedbacksubmissiondate', 'feedback_date'], 5);
+    const feedbackSubmission = getCol(r, ['feedbacksubmission', 'feedback_submission'], 6);
+    const stStatus = getCol(r, ['ststatus', 'st_status', 'safetytalkstatus'], 7);
+    const plannedTopic = getCol(r, ['plannedtopic', 'planned_topic', 'topic'], 8);
+    const actualTopic = getCol(r, ['actualtopic', 'actual_topic'], 9);
+    const plannedSpeaker = getCol(r, ['plannedspeaker', 'planned_speaker'], 10);
+    const backupSpeaker = getCol(r, ['backupspeaker', 'backup_speaker'], 11);
+    const actualSpeaker = getCol(r, ['actualspeaker', 'actual_speaker'], 12);
+    const plannedTopicDelivered = getCol(r, ['plannedtopicdelivered', 'topicdelivered'], 13);
+    const recommendations = getCol(r, ['recommendations', 'recommendation', 'recs'], 14);
+    const rStatus = getCol(r, ['rstatus', 'r_status', 'recommendationstatus'], 15);
+    const pendingWith = getCol(r, ['pendingwithresponsibleunit', 'pendingwith', 'responsibleunit'], 16);
+    const targetDate = getCol(r, ['targetdate', 'target_date'], 17);
+    const closureDate = getCol(r, ['closuredate', 'closure_date'], 18);
+    const remarks = getCol(r, ['remarks', 'remark', 'notes'], 19);
+
+    let year = '';
+    const dateStr = plannedDate || actualDate || '';
+    const fourDigitMatch = dateStr.match(/\b(19\d\d|20\d\d)\b/);
+    if (fourDigitMatch) year = fourDigitMatch[1];
+
+    if (sr || dept || plannedTopic || stStatus) {
+      records.push({
+        sr: sr || String(records.length + 1),
+        dept: dept || 'Unassigned',
+        shift: shift || '',
+        plannedDate: plannedDate || '',
+        actualDate: actualDate || '',
+        year: year,
+        feedbackSubmissionDate: feedbackSubmissionDate || '',
+        feedbackSubmission: feedbackSubmission || '',
+        stStatus: stStatus || 'No',
+        plannedTopic: plannedTopic || '',
+        actualTopic: actualTopic || '',
+        plannedSpeaker: plannedSpeaker || '',
+        backupSpeaker: backupSpeaker || '',
+        actualSpeaker: actualSpeaker || '',
+        plannedTopicDelivered: plannedTopicDelivered || '',
+        recommendations: recommendations || '',
+        rStatus: rStatus || '',
+        pendingWith: pendingWith || '',
+        targetDate: targetDate || '',
+        closureDate: closureDate || '',
+        remarks: remarks || ''
+      });
+    }
+  }
+
+  return records;
+}
+
+// GET /api/safety-talks - Live Safety Talks Feed from Google Sheet ID 1Fgx9ZEdHAQnH_oCuX0NdNO5_V3gEPHu0xjnqKk6GqWc (Tab: Safety_Talk)
+app.get('/api/safety-talks', async (req: Request, res: Response): Promise<void> => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+
+  const now = Date.now();
+  const targetTab = String(req.query?.tab || req.query?.sheetTab || 'Safety_Talk').trim();
+  const force = req.query?.force === 'true' || req.query?._t !== undefined;
+  const tabCache = safetyTalkDataCacheByTab[targetTab];
+
+  // If not forcing fresh sync and cached data is less than 5 seconds old, serve cache
+  if (!force && tabCache?.csvText && now - tabCache.timestamp < 5000) {
+    const cachedRecords = tabCache.records || parseSafetyTalkCsv(tabCache.csvText);
+    res.json({
+      success: true,
+      source: 'cache',
+      sheetId: '1Fgx9ZEdHAQnH_oCuX0NdNO5_V3gEPHu0xjnqKk6GqWc',
+      tabName: targetTab,
+      count: cachedRecords.length,
+      records: cachedRecords,
+      csvText: tabCache.csvText,
+      lastUpdated: new Date(tabCache.timestamp).toISOString()
+    });
+    return;
+  }
+
+  const SAFETY_TALK_SHEET_ID = '1Fgx9ZEdHAQnH_oCuX0NdNO5_V3gEPHu0xjnqKk6GqWc';
+  const urls = [
+    `https://docs.google.com/spreadsheets/d/${SAFETY_TALK_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(targetTab)}&_t=${now}`,
+    `https://docs.google.com/spreadsheets/d/${SAFETY_TALK_SHEET_ID}/export?format=csv&sheet=${encodeURIComponent(targetTab)}&_t=${now}`,
+    `https://docs.google.com/spreadsheets/d/${SAFETY_TALK_SHEET_ID}/gviz/tq?tqx=out:csv&_t=${now}`
+  ];
+
+  let rawCsv = '';
+  for (const u of urls) {
+    try {
+      const response = await fetch(u, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'text/csv,text/plain,*/*',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
+        }
+      });
+      if (response.ok) {
+        const text = await response.text();
+        const lower = text.toLowerCase();
+        const isValid = text && !text.includes('<!DOCTYPE html>') && (
+          lower.includes('st status') || lower.includes('safety') || lower.includes('talk') ||
+          lower.includes('dept') || lower.includes('planned date') || lower.includes('recommendations')
+        );
+        if (isValid) {
+          rawCsv = text;
+          break;
+        }
+      }
+    } catch (_e) {
+      // Continue to next URL
+    }
+  }
+
+  if (rawCsv) {
+    const parsedRecords = parseSafetyTalkCsv(rawCsv);
+    safetyTalkDataCacheByTab[targetTab] = {
+      timestamp: now,
+      csvText: rawCsv,
+      records: parsedRecords
+    };
+
+    res.json({
+      success: true,
+      source: 'live_google_sheet',
+      sheetId: SAFETY_TALK_SHEET_ID,
+      tabName: targetTab,
+      count: parsedRecords.length,
+      records: parsedRecords,
+      csvText: rawCsv,
+      lastUpdated: new Date(now).toISOString()
+    });
+    return;
+  }
+
+  // Fallback to cache if available
+  if (tabCache?.csvText) {
+    const cachedRecords = tabCache.records || parseSafetyTalkCsv(tabCache.csvText);
+    res.json({
+      success: true,
+      source: 'stale_cache',
+      sheetId: SAFETY_TALK_SHEET_ID,
+      tabName: targetTab,
+      count: cachedRecords.length,
+      records: cachedRecords,
+      csvText: tabCache.csvText,
+      lastUpdated: new Date(tabCache.timestamp).toISOString()
+    });
+    return;
+  }
+
+  res.status(502).json({
+    success: false,
+    error: `Could not fetch Safety Talks (${targetTab}) from Google Sheet`,
+    sheetId: SAFETY_TALK_SHEET_ID,
+    tabName: targetTab
+  });
+});
+
 // Cache for FPCL Directory data
 let fpclDirectoryCache: { timestamp: number; data: any[] } = {
   timestamp: 0,
@@ -979,6 +1208,8 @@ app.all('/api/sheets/fetch', async (req: Request, res: Response): Promise<void> 
       } else if (sLower === 'msa' || sLower.includes('msa') || tileId === 'msa' || tileId.includes('msa') || sheetIdParam === '11ggCusY-ZJj09bVcpbikHeupyvFTBxDHlytjhpbNRWw') {
         const mTab = (sLower.includes('comp') || sheetTab.toLowerCase().includes('comp')) ? 'MSA_Compliance' : 'MSA';
         url = process.env.MSA_SHEET_URL || `https://docs.google.com/spreadsheets/d/11ggCusY-ZJj09bVcpbikHeupyvFTBxDHlytjhpbNRWw/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(mTab)}`;
+      } else if (sLower === 'safety_talk' || sLower.includes('safety_talk') || sLower.includes('safety talk') || tileId === 'safety-talks' || tileId === 'safety_talks' || sheetIdParam === '1Fgx9ZEdHAQnH_oCuX0NdNO5_V3gEPHu0xjnqKk6GqWc') {
+        url = process.env.SAFETY_TALKS_SHEET_URL || `https://docs.google.com/spreadsheets/d/1Fgx9ZEdHAQnH_oCuX0NdNO5_V3gEPHu0xjnqKk6GqWc/gviz/tq?tqx=out:csv&sheet=Safety_Talk`;
       } else if (sLower.includes('psm') && process.env.PSM_SHEET_URL) {
         url = process.env.PSM_SHEET_URL;
       } else if (process.env.RECOMMENDATIONS_SHEET_URL) {
@@ -1087,6 +1318,11 @@ app.all('/api/sheets/fetch', async (req: Request, res: Response): Promise<void> 
     } else if (sLower === 'msa' || sLower.includes('msa') || tileId === 'msa' || tileId.includes('msa') || trimmedUrl.includes('11ggCusY-ZJj09bVcpbikHeupyvFTBxDHlytjhpbNRWw')) {
       const extraMsaTabs = ['MSA', 'MSA_Compliance', 'msa', 'Sheet1'];
       extraMsaTabs.forEach(t => {
+        if (!candidateTabs.includes(t)) candidateTabs.push(t);
+      });
+    } else if (sLower === 'safety_talk' || sLower.includes('safety_talk') || sLower.includes('safety talk') || tileId === 'safety-talks' || tileId.includes('safety-talks') || trimmedUrl.includes('1Fgx9ZEdHAQnH_oCuX0NdNO5_V3gEPHu0xjnqKk6GqWc')) {
+      const extraStTabs = ['Safety_Talk', 'Safety Talk', 'Safety_talk', 'safety_talk', 'Sheet1'];
+      extraStTabs.forEach(t => {
         if (!candidateTabs.includes(t)) candidateTabs.push(t);
       });
     }
