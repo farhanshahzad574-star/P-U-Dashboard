@@ -1185,71 +1185,73 @@
           <!-- ========================================================================= -->
           <!-- 2. UNIQUE COLORFUL LINES AT PERIMETER OF EACH KPI CARD                     -->
           <!-- (Strictly only KPI heading and value, center-aligned without subtitles)    -->
+          <!-- Mobile view: Side by side mode (grid-cols-2) above filters                -->
+          <!-- Laptop/Desktop view: Unchanged (lg:grid-cols-4)                           -->
           <!-- Red color for open points strictly enforced                               -->
           <!-- ========================================================================= -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             
             <!-- KPI 1: Total Observation (Unique Cyan Perimeter Line) -->
             <div
               onclick="FPCL_SUB_HSE_MECH_SUITE.resetFilters()"
-              class="bg-white border-2 border-cyan-400 hover:border-cyan-500 rounded-2xl p-5 relative overflow-hidden cursor-pointer shadow-[0_0_18px_rgba(6,182,212,0.22)] transition-all group flex flex-col items-center justify-center text-center min-h-[140px]"
+              class="bg-white border-2 border-cyan-400 hover:border-cyan-500 rounded-2xl p-3.5 sm:p-5 relative overflow-hidden cursor-pointer shadow-[0_0_18px_rgba(6,182,212,0.22)] transition-all group flex flex-col items-center justify-center text-center min-h-[110px] sm:min-h-[140px]"
               title="Click to reset filters"
             >
               <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-600"></div>
-              <div class="text-slate-800 text-xs sm:text-sm font-black tracking-wider uppercase text-center w-full">
+              <div class="text-slate-800 text-[10px] sm:text-xs lg:text-sm font-black tracking-wider uppercase text-center w-full leading-tight">
                 TOTAL OBSERVATION
               </div>
-              <div class="mt-3 text-center w-full flex items-center justify-center">
-                <span class="text-5xl sm:text-6xl font-black font-mono tracking-tight text-slate-900 text-center">${totalFiltered}</span>
+              <div class="mt-2 sm:mt-3 text-center w-full flex items-center justify-center">
+                <span class="text-3xl sm:text-5xl lg:text-6xl font-black font-mono tracking-tight text-slate-900 text-center">${totalFiltered}</span>
               </div>
             </div>
 
             <!-- KPI 2: Closed Observations Column J (Unique Emerald Perimeter Line) -->
             <div
               onclick="FPCL_SUB_HSE_MECH_SUITE.setStatusFilter((FPCL_SUB_HSE_MECH_SUITE.state.statusFilter.toLowerCase() === 'closed' || FPCL_SUB_HSE_MECH_SUITE.state.statusFilter.toLowerCase() === 'close') ? 'all' : 'Closed')"
-              class="bg-white border-2 border-emerald-400 hover:border-emerald-500 rounded-2xl p-5 relative overflow-hidden cursor-pointer shadow-[0_0_18px_rgba(16,185,129,0.22)] transition-all group flex flex-col items-center justify-center text-center min-h-[140px]"
+              class="bg-white border-2 border-emerald-400 hover:border-emerald-500 rounded-2xl p-3.5 sm:p-5 relative overflow-hidden cursor-pointer shadow-[0_0_18px_rgba(16,185,129,0.22)] transition-all group flex flex-col items-center justify-center text-center min-h-[110px] sm:min-h-[140px]"
               title="Click to filter Closed observations from Column J"
             >
               <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-400 via-teal-500 to-green-600"></div>
-              <div class="text-emerald-900 text-xs sm:text-sm font-black tracking-wider uppercase text-center w-full flex items-center justify-center gap-1.5">
+              <div class="text-emerald-900 text-[10px] sm:text-xs lg:text-sm font-black tracking-wider uppercase text-center w-full flex items-center justify-center gap-1 leading-tight">
                 <span>CLOSED OBSERVATIONS</span>
                 ${(s.statusFilter.toLowerCase() === 'closed' || s.statusFilter.toLowerCase() === 'close') ? `
-                  <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                  <span class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-500 animate-ping"></span>
                 ` : ''}
               </div>
-              <div class="mt-3 text-center w-full flex items-center justify-center">
-                <span class="text-5xl sm:text-6xl font-black font-mono tracking-tight text-emerald-600 text-center">${closedFiltered}</span>
+              <div class="mt-2 sm:mt-3 text-center w-full flex items-center justify-center">
+                <span class="text-3xl sm:text-5xl lg:text-6xl font-black font-mono tracking-tight text-emerald-600 text-center">${closedFiltered}</span>
               </div>
             </div>
 
             <!-- KPI 3: Open Observations Column J (Unique Red Perimeter Line, Red Color for Value) -->
             <div
               onclick="FPCL_SUB_HSE_MECH_SUITE.setStatusFilter(FPCL_SUB_HSE_MECH_SUITE.state.statusFilter.toLowerCase() === 'open' ? 'all' : 'Open')"
-              class="bg-white border-2 border-rose-500 hover:border-red-600 rounded-2xl p-5 relative overflow-hidden cursor-pointer shadow-[0_0_18px_rgba(239,68,68,0.25)] transition-all group flex flex-col items-center justify-center text-center min-h-[140px]"
+              class="bg-white border-2 border-rose-500 hover:border-red-600 rounded-2xl p-3.5 sm:p-5 relative overflow-hidden cursor-pointer shadow-[0_0_18px_rgba(239,68,68,0.25)] transition-all group flex flex-col items-center justify-center text-center min-h-[110px] sm:min-h-[140px]"
               title="Click to filter Open observations from Column J"
             >
               <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-rose-500 via-red-600 to-red-700"></div>
-              <div class="text-red-900 text-xs sm:text-sm font-black tracking-wider uppercase text-center w-full flex items-center justify-center gap-1.5">
+              <div class="text-red-900 text-[10px] sm:text-xs lg:text-sm font-black tracking-wider uppercase text-center w-full flex items-center justify-center gap-1 leading-tight">
                 <span>OPEN OBSERVATIONS</span>
                 ${s.statusFilter.toLowerCase() === 'open' ? `
-                  <span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
+                  <span class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-red-500 animate-ping"></span>
                 ` : ''}
               </div>
-              <div class="mt-3 text-center w-full flex items-center justify-center">
-                <span class="text-5xl sm:text-6xl font-black font-mono tracking-tight text-red-600 text-center">${openFiltered}</span>
+              <div class="mt-2 sm:mt-3 text-center w-full flex items-center justify-center">
+                <span class="text-3xl sm:text-5xl lg:text-6xl font-black font-mono tracking-tight text-red-600 text-center">${openFiltered}</span>
               </div>
             </div>
 
             <!-- KPI 4: Percentage Completion (Unique Blue Perimeter Line) -->
             <div
-              class="bg-white border-2 border-blue-500 hover:border-blue-600 rounded-2xl p-5 relative overflow-hidden shadow-[0_0_18px_rgba(59,130,246,0.22)] transition-all flex flex-col items-center justify-center text-center min-h-[140px]"
+              class="bg-white border-2 border-blue-500 hover:border-blue-600 rounded-2xl p-3.5 sm:p-5 relative overflow-hidden shadow-[0_0_18px_rgba(59,130,246,0.22)] transition-all flex flex-col items-center justify-center text-center min-h-[110px] sm:min-h-[140px]"
             >
               <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-500 via-indigo-600 to-cyan-500"></div>
-              <div class="text-blue-950 text-xs sm:text-sm font-black tracking-wider uppercase text-center w-full">
+              <div class="text-blue-950 text-[10px] sm:text-xs lg:text-sm font-black tracking-wider uppercase text-center w-full leading-tight">
                 PERCENTAGE COMPLETION
               </div>
-              <div class="mt-3 text-center w-full flex items-center justify-center">
-                <span class="text-5xl sm:text-6xl font-black font-mono tracking-tight text-blue-600 text-center">${completionPct}</span>
+              <div class="mt-2 sm:mt-3 text-center w-full flex items-center justify-center">
+                <span class="text-3xl sm:text-5xl lg:text-6xl font-black font-mono tracking-tight text-blue-600 text-center">${completionPct}</span>
               </div>
             </div>
 
