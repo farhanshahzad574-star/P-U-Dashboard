@@ -96,7 +96,7 @@ export default async function handler(req: any, res: any) {
       if (normalizedTileId && STRATEGIC_TILE_REGISTRY[normalizedTileId]) {
         url = getSheetUrlForTile(normalizedTileId);
       } else if (sLower === 'contacts' || sLower.includes('contact')) {
-        url = 'https://docs.google.com/spreadsheets/d/1mI5WbcNBYtJc1fQjG0ZYQ1PKQzAHp5Sm3gyi9MibW-g/gviz/tq?tqx=out:csv&sheet=Contacts';
+        url = 'https://docs.google.com/spreadsheets/d/1mI5WbcNBYtJc1fQjG0ZYQ1PKQzAHp5Sm3gyi9MibW-g/export?format=csv&sheet=Contacts';
       } else if (sLower === 'fpcl_directory' || sLower.includes('directory') || normalizedTileId.includes('directory')) {
         url = 'https://docs.google.com/spreadsheets/d/1SrPdaxzEXbOFVbWin4zJvrc-m9TQKtxFjcyZYamXfpg/gviz/tq?tqx=out:csv&sheet=FPCL_Directory';
       } else if (sLower === 'scm' || sLower.includes('scm') || normalizedTileId === 'scm') {
@@ -129,6 +129,8 @@ export default async function handler(req: any, res: any) {
         url = process.env.SAFETY_TALKS_SHEET_URL || 'https://docs.google.com/spreadsheets/d/1Fgx9ZEdHAQnH_oCuX0NdNO5_V3gEPHu0xjnqKk6GqWc/gviz/tq?tqx=out:csv&sheet=Safety_Talk';
       } else if (sLower.includes('psm') && !sLower.includes('validation')) {
         url = process.env.PSM_SHEET_URL || 'https://docs.google.com/spreadsheets/d/1bFBRGKqIfO8Pn7qPSTU0pbdTB87ezDyXvVDnCbTGrx4/gviz/tq?tqx=out:csv&sheet=PSM';
+      } else if (sLower.includes('auditor') || sheetTab === 'Compliance_by_Auditor_name') {
+        url = process.env.Compliance_by_Auditor_name || process.env.COMPLIANCE_BY_AUDITOR_NAME || 'https://docs.google.com/spreadsheets/d/11ggCusY-ZJj09bVcpbikHeupyvFTBxDHlytjhpbNRWw/gviz/tq?tqx=out:csv&sheet=Compliance_by_Auditor_name';
       } else if (process.env.RECOMMENDATIONS_SHEET_URL) {
         url = process.env.RECOMMENDATIONS_SHEET_URL;
       } else if (process.env.GOOGLE_SHEETS_CSV_URL) {
@@ -250,6 +252,11 @@ export default async function handler(req: any, res: any) {
     } else if (sLower === 'safety_talk' || sLower.includes('safety_talk') || sLower.includes('safety talk') || (normalizedTileId && normalizedTileId.includes('safety-talks')) || trimmedUrl.includes('1Fgx9ZEdHAQnH_oCuX0NdNO5_V3gEPHu0xjnqKk6GqWc')) {
       const extraStTabs = ['Safety_Talk', 'Safety Talk', 'Safety_talk', 'safety_talk', 'Sheet1'];
       extraStTabs.forEach(t => {
+        if (!candidateTabs.includes(t)) candidateTabs.push(t);
+      });
+    } else if (sLower === 'contacts' || sLower.includes('contact') || trimmedUrl.includes('1mI5WbcNBYtJc1fQjG0ZYQ1PKQzAHp5Sm3gyi9MibW-g')) {
+      const extraContactsTabs = ['Contacts', 'contacts', 'Responsibility Matrix', 'Responsibility_Matrix', 'Sheet1'];
+      extraContactsTabs.forEach(t => {
         if (!candidateTabs.includes(t)) candidateTabs.push(t);
       });
     }

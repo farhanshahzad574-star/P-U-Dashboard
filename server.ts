@@ -565,39 +565,89 @@ app.get('/api/hseq-kpi', async (req: Request, res: Response): Promise<void> => {
   }
 });
 
+// Cache for Responsibility Matrix Contacts data (Google Sheet ID: 1mI5WbcNBYtJc1fQjG0ZYQ1PKQzAHp5Sm3gyi9MibW-g, Tab: Contacts)
+let contactsDataCache: { timestamp: number; csvText: string } | null = null;
+
 // GET /api/contacts - Live Contacts Feed from Google Sheet ID 1mI5WbcNBYtJc1fQjG0ZYQ1PKQzAHp5Sm3gyi9MibW-g (Tab: Contacts)
-app.get('/api/contacts', async (_req: Request, res: Response): Promise<void> => {
+app.get('/api/contacts', async (req: Request, res: Response): Promise<void> => {
   const CONTACTS_SHEET_ID = '1mI5WbcNBYtJc1fQjG0ZYQ1PKQzAHp5Sm3gyi9MibW-g';
+  const forceRefresh = req.query.refresh === 'true' || req.query.force === 'true';
+  const now = Date.now();
+
+  // If cached recently (within 10 seconds) and not forced, return cached copy for speed
+  if (!forceRefresh && contactsDataCache && (now - contactsDataCache.timestamp < 10000)) {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    res.json({
+      success: true,
+      cached: true,
+      timestamp: contactsDataCache.timestamp,
+      csvText: contactsDataCache.csvText,
+      source: 'memory-cache'
+    });
+    return;
+  }
+
   const urls = [
-    `https://docs.google.com/spreadsheets/d/${CONTACTS_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Contacts`,
     `https://docs.google.com/spreadsheets/d/${CONTACTS_SHEET_ID}/export?format=csv&sheet=Contacts`,
+    `https://docs.google.com/spreadsheets/d/${CONTACTS_SHEET_ID}/export?format=csv&sheet=contacts`,
+    `https://docs.google.com/spreadsheets/d/${CONTACTS_SHEET_ID}/export?format=csv`,
+    `https://docs.google.com/spreadsheets/d/${CONTACTS_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Contacts`,
+    `https://docs.google.com/spreadsheets/d/${CONTACTS_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=contacts`,
     `https://docs.google.com/spreadsheets/d/${CONTACTS_SHEET_ID}/gviz/tq?tqx=out:csv`
   ];
 
   let csvText = '';
+  let fetchedSource = '';
+  const nonce = Math.floor(Math.random() * 1000000);
+
   for (const u of urls) {
     try {
-      const response = await fetch(`${u}&_t=${Date.now()}`, {
+      const sep = u.includes('?') ? '&' : '?';
+      const response = await fetch(`${u}${sep}_t=${now}&_nocache=${nonce}`, {
         headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'text/csv,text/plain,*/*',
           'Cache-Control': 'no-cache, no-store, must-revalidate',
           'Pragma': 'no-cache'
         }
       });
       if (response.ok) {
         const text = await response.text();
-        if (text && !text.includes('<!DOCTYPE html>') && text.includes(',')) {
+        if (text && !text.includes('<!DOCTYPE html>') && !text.includes('<html') && text.includes(',')) {
           csvText = text;
+          fetchedSource = u;
           break;
         }
       }
     } catch {
-      // try next
+      // try next candidate
     }
   }
 
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+
   if (csvText) {
-    res.json({ success: true, csvText });
+    contactsDataCache = { timestamp: now, csvText };
+    res.json({
+      success: true,
+      live: true,
+      timestamp: now,
+      source: fetchedSource,
+      rowCount: csvText.split('\n').filter(Boolean).length,
+      csvText
+    });
+  } else if (contactsDataCache) {
+    res.json({
+      success: true,
+      fallback: true,
+      timestamp: contactsDataCache.timestamp,
+      source: 'stale-cache',
+      csvText: contactsDataCache.csvText
+    });
   } else {
     res.status(502).json({ success: false, error: 'Could not fetch Contacts from Google Sheet' });
   }
@@ -731,10 +781,26 @@ app.get('/api/msa', async (req: Request, res: Response): Promise<void> => {
   }
 
   const MSA_SHEET_ID = '11ggCusY-ZJj09bVcpbikHeupyvFTBxDHlytjhpbNRWw';
-  const urls = [
-    `https://docs.google.com/spreadsheets/d/${MSA_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(targetTab)}&_t=${now}`,
-    `https://docs.google.com/spreadsheets/d/${MSA_SHEET_ID}/export?format=csv&sheet=${encodeURIComponent(targetTab)}&_t=${now}`
-  ];
+  const envAuditorUrl = process.env.Compliance_by_Auditor_name || process.env.COMPLIANCE_BY_AUDITOR_NAME || process.env.COMPLIANCE_BY_AUDITOR_NAME_URL || process.env.COMPLIANCE_BY_AUDITOR_URL || process.env.MSA_AUDITOR_COMPLIANCE_URL;
+  const urls: string[] = [];
+
+  if (targetTab === 'Compliance_by_Auditor_name') {
+    if (envAuditorUrl) {
+      urls.push(envAuditorUrl.includes('_t=') ? envAuditorUrl : `${envAuditorUrl}&_t=${now}`);
+    }
+    urls.push(
+      `https://docs.google.com/spreadsheets/d/${MSA_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(targetTab)}&_t=${now}`
+    );
+  } else if (targetTab === 'MSA_Compliance') {
+    urls.push(
+      `https://docs.google.com/spreadsheets/d/${MSA_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(targetTab)}&_t=${now}`
+    );
+  } else {
+    urls.push(
+      `https://docs.google.com/spreadsheets/d/${MSA_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(targetTab)}&_t=${now}`,
+      `https://docs.google.com/spreadsheets/d/${MSA_SHEET_ID}/export?format=csv&sheet=${encodeURIComponent(targetTab)}&_t=${now}`
+    );
+  }
 
   let rawCsv = '';
   for (const u of urls) {
@@ -750,10 +816,16 @@ app.get('/api/msa', async (req: Request, res: Response): Promise<void> => {
       if (response.ok) {
         const text = await response.text();
         const lower = text.toLowerCase();
-        const isValid = text && !text.includes('<!DOCTYPE html>') && (
-          lower.includes('observation') || lower.includes('planned_msa') || lower.includes('actual_msa') ||
-          lower.includes('audited') || lower.includes('responsible') || lower.includes('department') || lower.includes('sr')
-        );
+        let isValid = false;
+        if (text && !text.includes('<!DOCTYPE html>')) {
+          if (targetTab === 'Compliance_by_Auditor_name') {
+            isValid = lower.includes('auditor') || (lower.includes('planned') && lower.includes('actual'));
+          } else if (targetTab === 'MSA_Compliance') {
+            isValid = lower.includes('planned_msa') || (lower.includes('department') && lower.includes('actual_msa'));
+          } else {
+            isValid = lower.includes('observation') || lower.includes('audited');
+          }
+        }
         if (isValid) {
           rawCsv = text;
           break;
@@ -1177,7 +1249,7 @@ app.all('/api/sheets/fetch', async (req: Request, res: Response): Promise<void> 
     if (!url || typeof url !== 'string' || url.includes('1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms')) {
       const sLower = (sheetTab || '').toLowerCase();
       if (sLower === 'contacts' || sLower.includes('contact')) {
-        url = 'https://docs.google.com/spreadsheets/d/1mI5WbcNBYtJc1fQjG0ZYQ1PKQzAHp5Sm3gyi9MibW-g/gviz/tq?tqx=out:csv&sheet=Contacts';
+        url = 'https://docs.google.com/spreadsheets/d/1mI5WbcNBYtJc1fQjG0ZYQ1PKQzAHp5Sm3gyi9MibW-g/export?format=csv&sheet=Contacts';
       } else if (sLower === 'fpcl_directory' || sLower.includes('directory') || tileId === 'fpcl_directory' || tileId.includes('directory')) {
         url = 'https://docs.google.com/spreadsheets/d/1SrPdaxzEXbOFVbWin4zJvrc-m9TQKtxFjcyZYamXfpg/gviz/tq?tqx=out:csv&sheet=FPCL_Directory';
       } else if (sLower === 'scm' || sLower.includes('scm') || tileId === 'scm') {
@@ -1323,6 +1395,11 @@ app.all('/api/sheets/fetch', async (req: Request, res: Response): Promise<void> 
     } else if (sLower === 'safety_talk' || sLower.includes('safety_talk') || sLower.includes('safety talk') || tileId === 'safety-talks' || tileId.includes('safety-talks') || trimmedUrl.includes('1Fgx9ZEdHAQnH_oCuX0NdNO5_V3gEPHu0xjnqKk6GqWc')) {
       const extraStTabs = ['Safety_Talk', 'Safety Talk', 'Safety_talk', 'safety_talk', 'Sheet1'];
       extraStTabs.forEach(t => {
+        if (!candidateTabs.includes(t)) candidateTabs.push(t);
+      });
+    } else if (sLower === 'contacts' || sLower.includes('contact') || trimmedUrl.includes('1mI5WbcNBYtJc1fQjG0ZYQ1PKQzAHp5Sm3gyi9MibW-g')) {
+      const extraContactsTabs = ['Contacts', 'contacts', 'Responsibility Matrix', 'Responsibility_Matrix', 'Sheet1'];
+      extraContactsTabs.forEach(t => {
         if (!candidateTabs.includes(t)) candidateTabs.push(t);
       });
     }

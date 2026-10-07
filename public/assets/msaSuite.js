@@ -15,25 +15,30 @@
   const MSA_SPREADSHEET_ID = '11ggCusY-ZJj09bVcpbikHeupyvFTBxDHlytjhpbNRWw';
   const MSA_TAB = 'MSA';
   const COMPLIANCE_TAB = 'MSA_Compliance';
+  const AUDITOR_COMPLIANCE_TAB = 'Compliance_by_Auditor_name';
 
   // Direct published Google Sheets CSV endpoints
   const MSA_CSV_URL = `https://docs.google.com/spreadsheets/d/${MSA_SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(MSA_TAB)}`;
   const COMPLIANCE_CSV_URL = `https://docs.google.com/spreadsheets/d/${MSA_SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(COMPLIANCE_TAB)}`;
+  const AUDITOR_COMPLIANCE_CSV_URL = `https://docs.google.com/spreadsheets/d/${MSA_SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(AUDITOR_COMPLIANCE_TAB)}`;
 
   const msaSuite = {
     state: {
       searchQuery: '',
       yearFilter: String(new Date().getFullYear()), // Opens dynamically on current year filter (e.g. 2026)
+      monthFilter: '',                              // Opens dynamically on current month filter (e.g. 'Oct')
       responsibleUnitFilter: 'all', // Responsible Unit / Department filter
       statusFilter: 'all',          // 'all', 'open' (documents remaining / open), 'closed'
       injuryPotentialFilter: 'all', // Injury_Potential filter (Column F)
-      selectedTableTab: 'all',      // 'all', 'msa', 'compliance'
+      selectedTableTab: 'all',      // 'all', 'msa', 'compliance', 'auditor'
+      showPlannedAuditorBars: false,// Independent bar chart: Planned bars hidden by default, toggled via small button
       isSyncing: false,
       lastSynced: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       isSettingsOpen: false,
       activeTooltipItem: null,
       table1ScrollPos: 0,
-      table2ScrollPos: 0
+      table2ScrollPos: 0,
+      table3ScrollPos: 0
     },
 
     init() {
@@ -61,6 +66,17 @@
         }
       } catch (e) {}
 
+      // Try reading Compliance_by_Auditor_name from localStorage cache
+      try {
+        const cachedAuditor = localStorage.getItem('FPCL_MSA_AUDITOR_CACHE');
+        if (cachedAuditor) {
+          const parsedAuditor = JSON.parse(cachedAuditor);
+          if (Array.isArray(parsedAuditor) && parsedAuditor.length > 0) {
+            window.FPCL_MSA_AUDITOR_DATA = parsedAuditor;
+          }
+        }
+      } catch (e) {}
+
       // Fallback to initial seed if not yet loaded
       if (!window.FPCL_MSA_DATA || window.FPCL_MSA_DATA.length === 0) {
         if (window.FPCL_MSA_INITIAL_SEED) {
@@ -74,8 +90,15 @@
         }
       }
 
-      // Ensure year filter dynamically opens on current year
+      if (!window.FPCL_MSA_AUDITOR_DATA || window.FPCL_MSA_AUDITOR_DATA.length === 0) {
+        if (window.FPCL_MSA_AUDITOR_COMPLIANCE_INITIAL_SEED) {
+          window.FPCL_MSA_AUDITOR_DATA = window.FPCL_MSA_AUDITOR_COMPLIANCE_INITIAL_SEED.slice();
+        }
+      }
+
+      // Ensure year & month filters dynamically open on current year & current month
       this.state.yearFilter = this.getDefaultYear();
+      this.state.monthFilter = this.getDefaultMonth();
 
       // Propagate stats to overview registry
       this.syncStatsToOverview();
@@ -121,6 +144,50 @@
         return window.FPCL_MSA_COMPLIANCE_INITIAL_SEED;
       }
       return [];
+    },
+
+    /**
+     * Gets raw auditor compliance data from tab: Compliance_by_Auditor_name
+     * Independent of any filter as this is compliance for the whole year.
+     */
+    getRawAuditorData() {
+      if (Array.isArray(window.FPCL_MSA_AUDITOR_DATA) && window.FPCL_MSA_AUDITOR_DATA.length > 0) {
+        return window.FPCL_MSA_AUDITOR_DATA;
+      }
+      if (Array.isArray(window.FPCL_MSA_AUDITOR_COMPLIANCE_INITIAL_SEED) && window.FPCL_MSA_AUDITOR_COMPLIANCE_INITIAL_SEED.length > 0) {
+        return window.FPCL_MSA_AUDITOR_COMPLIANCE_INITIAL_SEED;
+      }
+      return [];
+    },
+
+    /**
+     * Toggles plotting of Planned MSA bars (Column C) in Compliance by Auditor chart
+     */
+    togglePlannedAuditorBars() {
+      this.state.showPlannedAuditorBars = !this.state.showPlannedAuditorBars;
+      this.renderAuditorComplianceChart();
+
+      const btn = document.getElementById('msa-toggle-planned-btn');
+      if (btn) {
+        btn.innerHTML = `
+          <i data-lucide="${this.state.showPlannedAuditorBars ? 'eye-off' : 'eye'}" class="w-3.5 h-3.5"></i>
+          <span>${this.state.showPlannedAuditorBars ? 'Hide Planned MSA' : 'Show Planned MSA'}</span>
+        `;
+        btn.className = this.state.showPlannedAuditorBars
+          ? "px-2.5 py-1 text-xs font-bold rounded-lg bg-blue-600 text-white shadow-xs border border-blue-700 transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer whitespace-nowrap"
+          : "px-2.5 py-1 text-xs font-bold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer whitespace-nowrap";
+      }
+
+      const legendPlanned = document.getElementById('msa-auditor-legend-planned');
+      if (legendPlanned) {
+        if (this.state.showPlannedAuditorBars) {
+          legendPlanned.classList.remove('hidden');
+        } else {
+          legendPlanned.classList.add('hidden');
+        }
+      }
+
+      if (window.lucide) window.lucide.createIcons();
     },
 
     /**
@@ -173,6 +240,112 @@
       return '';
     },
 
+    MONTH_LIST: [
+      { code: 'Jan', name: 'January', num: 1 },
+      { code: 'Feb', name: 'February', num: 2 },
+      { code: 'Mar', name: 'March', num: 3 },
+      { code: 'Apr', name: 'April', num: 4 },
+      { code: 'May', name: 'May', num: 5 },
+      { code: 'Jun', name: 'June', num: 6 },
+      { code: 'Jul', name: 'July', num: 7 },
+      { code: 'Aug', name: 'August', num: 8 },
+      { code: 'Sep', name: 'September', num: 9 },
+      { code: 'Oct', name: 'October', num: 10 },
+      { code: 'Nov', name: 'November', num: 11 },
+      { code: 'Dec', name: 'December', num: 12 }
+    ],
+
+    /**
+     * Gets current calendar month 3-letter code dynamically (e.g. 'Oct')
+     */
+    getCurrentMonth() {
+      const idx = new Date().getMonth();
+      return (this.MONTH_LIST[idx] && this.MONTH_LIST[idx].code) || 'Oct';
+    },
+
+    /**
+     * Gets current calendar month full name dynamically (e.g. 'October')
+     */
+    getCurrentMonthFullName() {
+      const idx = new Date().getMonth();
+      return (this.MONTH_LIST[idx] && this.MONTH_LIST[idx].name) || 'October';
+    },
+
+    /**
+     * Dynamically defaults to current month
+     */
+    getDefaultMonth() {
+      return this.getCurrentMonth();
+    },
+
+    /**
+     * Extracts standardized 3-letter month string ('Jan'..'Dec') from Column B (Audit_Date)
+     * Supports formats: "31-Mar-26", "2-Oct-26", "1-Apr-2026", "2026-10-02", "02/10/2026", etc.
+     */
+    extractMonth(dateStr) {
+      if (!dateStr) return '';
+      const s = String(dateStr).trim();
+      if (!s) return '';
+
+      // 1. Textual month match (Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec, or full names)
+      const textMatch = s.match(/\b(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\b/i);
+      if (textMatch) {
+        const sub = textMatch[1].slice(0, 3).toLowerCase();
+        const found = this.MONTH_LIST.find(m => m.code.toLowerCase() === sub);
+        if (found) return found.code;
+      }
+
+      // 2. ISO format YYYY-MM-DD
+      const isoMatch = s.match(/^\d{4}[-/](\d{1,2})[-/]\d{1,2}/);
+      if (isoMatch) {
+        const m = parseInt(isoMatch[1], 10);
+        if (m >= 1 && m <= 12) {
+          return this.MONTH_LIST[m - 1].code;
+        }
+      }
+
+      // 3. DD-MM-YYYY or DD/MM/YYYY
+      const delimMatch = s.match(/^\d{1,2}[-/](\d{1,2})[-/]\d{2,4}/);
+      if (delimMatch) {
+        const m = parseInt(delimMatch[1], 10);
+        if (m >= 1 && m <= 12) {
+          return this.MONTH_LIST[m - 1].code;
+        }
+      }
+
+      // 4. JS Date fallback
+      const parsed = new Date(s);
+      if (!isNaN(parsed.getTime())) {
+        const m = parsed.getMonth();
+        if (m >= 0 && m < 12) {
+          return this.MONTH_LIST[m].code;
+        }
+      }
+
+      return '';
+    },
+
+    /**
+     * Returns list of months with count of observations present in dataset
+     */
+    getAvailableMonths() {
+      const raw = this.getRawData();
+      const monthCounts = {};
+      this.MONTH_LIST.forEach(m => { monthCounts[m.code] = 0; });
+      raw.forEach(r => {
+        if (r.auditDate) {
+          const m = this.extractMonth(r.auditDate);
+          if (m && monthCounts[m] !== undefined) {
+            monthCounts[m]++;
+          }
+        }
+      });
+      return this.MONTH_LIST.map(m => ({
+        ...m,
+        count: monthCounts[m.code] || 0
+      }));
+    },
+
     /**
      * Gets the current calendar year as a 4-digit string (e.g., '2026')
      */
@@ -211,10 +384,11 @@
 
     /**
      * Lifecycle hook invoked whenever MSA Dashboard is opened
-     * Dynamically ensures it opens on the current year filter
+     * Dynamically ensures it opens on the current month & current year filter
      */
     onOpen() {
       this.state.yearFilter = this.getDefaultYear();
+      this.state.monthFilter = this.getDefaultMonth();
     },
 
     getFilteredData() {
@@ -223,6 +397,7 @@
       const unitFilter = this.state.responsibleUnitFilter;
       const statusFilter = this.state.statusFilter;
       const yearFilter = this.state.yearFilter;
+      const monthFilter = this.state.monthFilter;
 
       return raw.filter(item => {
         // Exclude aggregate total row if present
@@ -233,6 +408,14 @@
         if (yearFilter && yearFilter !== 'all') {
           const itemYear = this.extractYear(item.auditDate);
           if (itemYear !== String(yearFilter).trim()) {
+            return false;
+          }
+        }
+
+        // Month Filter from Column B named Audit_Date
+        if (monthFilter && monthFilter !== 'all') {
+          const itemMonth = this.extractMonth(item.auditDate);
+          if (itemMonth !== String(monthFilter).trim()) {
             return false;
           }
         }
@@ -490,6 +673,82 @@
       return result;
     },
 
+    /**
+     * Splits a CSV line taking quoted values and embedded commas into account
+     */
+    splitCsvLine(line) {
+      if (!line) return [];
+      const result = [];
+      let current = '';
+      let inQuotes = false;
+      for (let i = 0; i < line.length; i++) {
+        const c = line[i];
+        if (c === '"') {
+          if (inQuotes && line[i + 1] === '"') {
+            current += '"';
+            i++;
+          } else {
+            inQuotes = !inQuotes;
+          }
+        } else if (c === ',' && !inQuotes) {
+          result.push(current.trim());
+          current = '';
+        } else {
+          current += c;
+        }
+      }
+      result.push(current.trim());
+      return result.map(s => s.replace(/^["']|["']$/g, '').trim());
+    },
+
+    /**
+     * Parses the live Google Sheet tab: Compliance_by_Auditor_name
+     * Columns: Column A (ID), Column B (Auditor Name), Column C (Planned), Column D (Actual)
+     */
+    parseAuditorComplianceCsv(text) {
+      if (!text || typeof text !== 'string') return [];
+      const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
+      if (lines.length < 2) return [];
+
+      const headerParts = this.splitCsvLine(lines[0]);
+      let idIdx = 0;
+      let nameIdx = 1;
+      let plannedIdx = 2;
+      let actualIdx = 3;
+
+      headerParts.forEach((h, idx) => {
+        const norm = h.toLowerCase().replace(/[^a-z0-9]/g, '');
+        if (norm.includes('auditor') || norm.includes('name')) nameIdx = idx;
+        else if (norm.includes('plan')) plannedIdx = idx;
+        else if (norm.includes('act')) actualIdx = idx;
+        else if (norm.includes('id') || norm.includes('sr') || norm.includes('no')) idIdx = idx;
+      });
+
+      const result = [];
+      for (let i = 1; i < lines.length; i++) {
+        const parts = this.splitCsvLine(lines[i]);
+        if (parts.length >= 2 && parts[nameIdx]) {
+          const id = parts[idIdx] || String(i);
+          const auditorName = parts[nameIdx].trim();
+          if (!auditorName || auditorName.toLowerCase() === 'auditor name') continue;
+          const planned = Number(parts[plannedIdx]) || 0;
+          const actual = Number(parts[actualIdx]) || 0;
+          const remaining = Math.max(0, planned - actual);
+          const rate = planned > 0 ? (actual / planned) * 100 : 0;
+
+          result.push({
+            id,
+            auditorName,
+            planned,
+            actual,
+            remaining,
+            complianceRate: Number(rate.toFixed(1))
+          });
+        }
+      }
+      return result;
+    },
+
     async syncLiveFeed(options = {}) {
       const silent = !!options.silent;
       if (this.state.isSyncing) return;
@@ -512,6 +771,14 @@
         COMPLIANCE_CSV_URL + `&_t=${ts}`,
         `/api/sheets/fetch?sheetTab=MSA_Compliance&sheetId=${MSA_SPREADSHEET_ID}&force=true&_t=${ts}`,
         `https://docs.google.com/spreadsheets/d/${MSA_SPREADSHEET_ID}/export?format=csv&sheet=MSA_Compliance&_t=${ts}`
+      ];
+
+      // Candidate URLs for Compliance_by_Auditor_name tab
+      const auditorUrls = [
+        `/api/msa?tab=Compliance_by_Auditor_name&force=true&_t=${ts}`,
+        AUDITOR_COMPLIANCE_CSV_URL + `&_t=${ts}`,
+        `/api/sheets/fetch?sheetTab=Compliance_by_Auditor_name&sheetId=${MSA_SPREADSHEET_ID}&force=true&_t=${ts}`,
+        `https://docs.google.com/spreadsheets/d/${MSA_SPREADSHEET_ID}/export?format=csv&sheet=Compliance_by_Auditor_name&_t=${ts}`
       ];
 
       let msaParsed = null;
@@ -564,6 +831,31 @@
         } catch (e) {}
       }
 
+      let auditorParsed = null;
+      for (const u of auditorUrls) {
+        try {
+          const res = await fetch(u, {
+            headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache' }
+          });
+          if (res.ok) {
+            const cType = res.headers.get('content-type') || '';
+            if (cType.includes('application/json')) {
+              const j = await res.json();
+              if (j && j.csvText) {
+                const parsed = this.parseAuditorComplianceCsv(j.csvText);
+                if (parsed.length > 0) { auditorParsed = parsed; break; }
+              }
+            } else {
+              const text = await res.text();
+              if (text && !text.includes('<!DOCTYPE html>') && (text.includes('Auditor Name') || text.includes('Planned') || text.includes('Actual'))) {
+                const parsed = this.parseAuditorComplianceCsv(text);
+                if (parsed.length > 0) { auditorParsed = parsed; break; }
+              }
+            }
+          }
+        } catch (e) {}
+      }
+
       let updated = false;
       if (msaParsed && msaParsed.length > 0) {
         window.FPCL_MSA_DATA = msaParsed;
@@ -574,6 +866,12 @@
       if (compParsed && compParsed.length > 0) {
         window.FPCL_MSA_COMPLIANCE_DATA = compParsed;
         try { localStorage.setItem('FPCL_MSA_COMPLIANCE_CACHE', JSON.stringify(compParsed)); } catch (e) {}
+        updated = true;
+      }
+
+      if (auditorParsed && auditorParsed.length > 0) {
+        window.FPCL_MSA_AUDITOR_DATA = auditorParsed;
+        try { localStorage.setItem('FPCL_MSA_AUDITOR_CACHE', JSON.stringify(auditorParsed)); } catch (e) {}
         updated = true;
       }
 
@@ -601,6 +899,11 @@
       this.renderFilteredViews();
     },
 
+    setMonthFilter(m) {
+      this.state.monthFilter = m || 'all';
+      this.renderFilteredViews();
+    },
+
     setUnitFilter(unit) {
       this.state.responsibleUnitFilter = unit || 'all';
       this.renderFilteredViews();
@@ -620,9 +923,11 @@
       this.state.selectedTableTab = tab || 'all';
       const t1 = document.getElementById('msa-table-1-wrapper');
       const t2 = document.getElementById('msa-table-2-wrapper');
+      const t3 = document.getElementById('msa-table-3-wrapper');
       const btnAll = document.getElementById('msa-tab-btn-all');
       const btnMsa = document.getElementById('msa-tab-btn-msa');
       const btnComp = document.getElementById('msa-tab-btn-comp');
+      const btnAuditor = document.getElementById('msa-tab-btn-auditor');
 
       if (t1) {
         if (this.state.selectedTableTab === 'all' || this.state.selectedTableTab === 'msa') {
@@ -638,6 +943,13 @@
           t2.classList.add('hidden');
         }
       }
+      if (t3) {
+        if (this.state.selectedTableTab === 'all' || this.state.selectedTableTab === 'auditor') {
+          t3.classList.remove('hidden');
+        } else {
+          t3.classList.add('hidden');
+        }
+      }
 
       const activeClass = "px-3.5 py-1.5 rounded-xl font-bold text-xs bg-indigo-600 text-white shadow-sm border border-indigo-500 cursor-pointer flex items-center gap-1.5 transition-all";
       const inactiveClass = "px-3.5 py-1.5 rounded-xl font-bold text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 cursor-pointer flex items-center gap-1.5 transition-all";
@@ -645,11 +957,13 @@
       if (btnAll) btnAll.className = this.state.selectedTableTab === 'all' ? activeClass : inactiveClass;
       if (btnMsa) btnMsa.className = this.state.selectedTableTab === 'msa' ? activeClass : inactiveClass;
       if (btnComp) btnComp.className = this.state.selectedTableTab === 'compliance' ? activeClass : inactiveClass;
+      if (btnAuditor) btnAuditor.className = this.state.selectedTableTab === 'auditor' ? activeClass : inactiveClass;
     },
 
     resetFilters() {
       this.state.searchQuery = '';
       this.state.yearFilter = this.getDefaultYear();
+      this.state.monthFilter = this.getDefaultMonth();
       this.state.responsibleUnitFilter = 'all';
       this.state.statusFilter = 'all';
       this.state.injuryPotentialFilter = 'all';
@@ -661,6 +975,9 @@
 
       const y = document.getElementById('msa-year-select');
       if (y) y.value = this.state.yearFilter;
+
+      const m = document.getElementById('msa-month-select');
+      if (m) m.value = this.state.monthFilter;
 
       const u = document.getElementById('msa-unit-select');
       if (u) u.value = 'all';
@@ -674,7 +991,7 @@
       this.renderFilteredViews();
 
       if (window.portalApp && typeof window.portalApp.showToast === 'function') {
-        window.portalApp.showToast('Filters Reset', `All MSA filters restored (Year: ${this.state.yearFilter}).`, 'info');
+        window.portalApp.showToast('Filters Reset', `All MSA filters restored (Year: ${this.state.yearFilter}, Month: ${this.getCurrentMonthFullName()}).`, 'info');
       }
     },
 
@@ -801,6 +1118,7 @@
 
       this.renderKpiCards(kpis);
       this.renderCharts(filtered, compFiltered);
+      this.renderAuditorComplianceChart();
       this.renderDonut(kpis);
       this.renderTables(filtered, compFiltered);
       if (window.lucide) window.lucide.createIcons();
@@ -813,17 +1131,24 @@
       const container = document.getElementById('msa-specialized-container');
       if (!container) return;
 
-      // Dynamically ensure yearFilter is set to current year if unset
+      // Dynamically ensure yearFilter & monthFilter are set to current defaults if unset
       if (!this.state.yearFilter) {
         this.state.yearFilter = this.getDefaultYear();
+      }
+      if (!this.state.monthFilter) {
+        this.state.monthFilter = this.getDefaultMonth();
       }
 
       const filtered = this.getFilteredData();
       const compFiltered = this.getFilteredComplianceData();
+      const auditorData = this.getRawAuditorData();
       const kpis = this.calculateKpis(filtered);
 
       const currentYear = this.getCurrentYear();
       const uniqueYears = this.getAvailableYears();
+      const currentMonth = this.getCurrentMonth();
+      const currentMonthFullName = this.getCurrentMonthFullName();
+      const monthsList = this.getAvailableMonths();
 
       // Extract unique Responsible Units / Departments from raw data for filter dropdown
       const raw = this.getRawData();
@@ -935,7 +1260,7 @@
               <i data-lucide="x" class="w-4 h-4"></i>
             </button>
           </div>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
             <div class="p-3 bg-slate-50 rounded-xl border border-slate-200/80 space-y-1">
               <div class="font-extrabold text-slate-700">Sheet 1: Observations (Tab: MSA)</div>
               <div class="font-mono text-slate-500 break-all text-[11px]">ID: 11ggCusY-ZJj09bVcpbikHeupyvFTBxDHlytjhpbNRWw</div>
@@ -945,6 +1270,11 @@
               <div class="font-extrabold text-slate-700">Sheet 2: Compliance (Tab: MSA_Compliance)</div>
               <div class="font-mono text-slate-500 break-all text-[11px]">ID: 11ggCusY-ZJj09bVcpbikHeupyvFTBxDHlytjhpbNRWw</div>
               <div class="text-slate-600">Columns: Sr, Department, Planned_MSA, Actual_MSA</div>
+            </div>
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200/80 space-y-1">
+              <div class="font-extrabold text-slate-700">Sheet 3: Auditor Compliance (Tab: Compliance_by_Auditor_name)</div>
+              <div class="font-mono text-slate-500 break-all text-[11px]">ID: 11ggCusY-ZJj09bVcpbikHeupyvFTBxDHlytjhpbNRWw</div>
+              <div class="text-slate-600">Columns: ID, Auditor Name, Planned, Actual</div>
             </div>
           </div>
         </div>
@@ -960,17 +1290,18 @@
         <!-- ========================================================================= -->
         <!-- 3. FILTERS (Below KPIs, side-by-side on mobile, no heading on filter bar)  -->
         <!-- Filter 1: Year (from Google Sheet Tab MSA Column B named Audit_Date)       -->
-        <!-- Filter 2: Responsible_Unit (Col B / Col I)                                 -->
-        <!-- Filter 3: DOCUMENTS REMAINING / open filter                               -->
-        <!-- Filter 4: Injury_Potential filter (Column F named Injury_Potential)        -->
-        <!-- Filter 5: Keyword Search                                                  -->
+        <!-- Filter 2: Month (from Tab MSA Column B named Audit_Date - Current Month)   -->
+        <!-- Filter 3: Responsible_Unit (Col B / Col I)                                 -->
+        <!-- Filter 4: DOCUMENTS REMAINING / open filter                               -->
+        <!-- Filter 5: Injury_Potential filter (Column F named Injury_Potential)        -->
+        <!-- Filter 6: Keyword Search                                                  -->
         <!-- ========================================================================= -->
         <div id="msa-filters-bar" class="bg-white/95 backdrop-blur-sm border border-slate-200 rounded-2xl p-2.5 sm:p-3.5 shadow-xs relative overflow-hidden">
           <!-- Subtle perimeter top line -->
           <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 via-indigo-600 to-fuchsia-600"></div>
 
-          <!-- Side-by-side on mobile (2 cols on mobile, 3 cols on sm, 5 cols on lg) -->
-          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 items-center">
+          <!-- Side-by-side on mobile (2 cols on mobile, 3 cols on sm, 6 cols on lg) -->
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3 items-center">
             <!-- Filter 1: Year Filter (Column B named Audit_Date) -->
             <div class="min-w-0">
               <div class="relative">
@@ -992,7 +1323,31 @@
               </div>
             </div>
 
-            <!-- Filter 2: Responsible_Unit Filter -->
+            <!-- Filter 2: Month Filter (from Google Sheet Tab MSA Column B named Audit_Date) -->
+            <div class="min-w-0">
+              <div class="relative">
+                <select
+                  id="msa-month-select"
+                  onchange="FPCL_MSA_SUITE.setMonthFilter(this.value)"
+                  class="w-full pl-3 pr-8 py-2 bg-slate-50 hover:bg-slate-100 focus:bg-white border border-slate-300 focus:border-indigo-600 rounded-xl text-xs font-bold font-mono text-slate-800 shadow-2xs focus:ring-2 focus:ring-indigo-500/20 transition-all cursor-pointer outline-none appearance-none truncate"
+                  title="Filter by Month from Tab MSA Column B (Audit_Date) - Opens dynamically on Current Month"
+                >
+                  <option value="all" ${this.state.monthFilter === 'all' ? 'selected' : ''}>Month: All Months</option>
+                  ${monthsList.map(m => {
+                    const isCurrent = m.code === currentMonth;
+                    const isSelected = this.state.monthFilter === m.code;
+                    const countTag = m.count > 0 ? ` (${m.count})` : '';
+                    const currentTag = isCurrent ? ' (Current Month)' : '';
+                    return `<option value="${m.code}" ${isSelected ? 'selected' : ''}>${m.name}${currentTag}${countTag}</option>`;
+                  }).join('')}
+                </select>
+                <div class="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none text-slate-400">
+                  <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
+                </div>
+              </div>
+            </div>
+
+            <!-- Filter 3: Responsible_Unit Filter -->
             <div class="min-w-0">
               <div class="relative">
                 <select
@@ -1010,7 +1365,7 @@
               </div>
             </div>
 
-            <!-- Filter 3: DOCUMENTS REMAINING / open Filter -->
+            <!-- Filter 4: DOCUMENTS REMAINING / open Filter -->
             <div class="min-w-0">
               <div class="relative">
                 <select
@@ -1029,7 +1384,7 @@
               </div>
             </div>
 
-            <!-- Filter 4: Injury_Potential Filter (Column F named Injury_Potential) -->
+            <!-- Filter 5: Injury_Potential Filter (Column F named Injury_Potential) -->
             <div class="min-w-0">
               <div class="relative">
                 <select
@@ -1047,8 +1402,8 @@
               </div>
             </div>
 
-            <!-- Filter 5: Quick Filter Search (Desktop & responsive mobile span) -->
-            <div class="col-span-2 sm:col-span-2 lg:col-span-1 min-w-0">
+            <!-- Filter 6: Quick Filter Search (Desktop & responsive mobile span) -->
+            <div class="col-span-2 sm:col-span-3 lg:col-span-1 min-w-0">
               <div class="relative">
                 <input
                   id="msa-filter-search"
@@ -1118,15 +1473,15 @@
                 <div class="flex flex-wrap items-center gap-1.5 text-[11px] font-mono font-bold">
                   <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-50 text-[#1E3A8A] border border-blue-200">
                     <span class="w-2 h-2 rounded-xs bg-[#1D4ED8]"></span>
-                    <span>Planned</span>
+                    <span>Planned (100%)</span>
                   </span>
                   <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-50 text-[#0B8A5A] border border-emerald-200">
                     <span class="w-2 h-2 rounded-xs bg-[#0B8A5A]"></span>
-                    <span>Actual</span>
+                    <span>Actual (%)</span>
                   </span>
                   <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-red-50 text-[#DC2626] border border-red-200">
                     <span class="w-2 h-2 rounded-xs bg-[#DC2626]"></span>
-                    <span>Remaining</span>
+                    <span>Remaining (%)</span>
                   </span>
                 </div>
               </div>
@@ -1140,7 +1495,66 @@
         </div>
 
         <!-- ========================================================================= -->
-        <!-- 5. DONUT CHART (Thick donut, large enough center, legends at bottom)       -->
+        <!-- 5. COMPLIANCE BY AUDITOR NAME (Placed side-by-side above Donut Chart)     -->
+        <!-- List is long (24 auditors) so displayed side-by-side in 2 columns         -->
+        <!-- Independent of any filter (Compliance for whole year)                     -->
+        <!-- Column B: Auditor Name, Column D: Actual (MSA carried out)                -->
+        <!-- Column C: Planned (Hidden by default; toggled via small button)           -->
+        <!-- ========================================================================= -->
+        <div class="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border-2 border-emerald-500/80 space-y-3">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-2.5 border-b border-slate-100 gap-2.5">
+            <div>
+              <div class="flex flex-wrap items-center gap-2">
+                <h3 class="text-sm sm:text-base font-black text-[#1E3A8A] tracking-tight flex items-center gap-1.5">
+                  <i data-lucide="user-check" class="w-4 h-4 text-emerald-600"></i>
+                  <span>Compliance by Auditor name</span>
+                </h3>
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold font-mono bg-blue-50 text-[#1E3A8A] border border-blue-200">
+                  <span class="w-1.5 h-1.5 rounded-full bg-[#1D4ED8]"></span>
+                  <span>Annual Compliance (Whole Year)</span>
+                </span>
+              </div>
+              <p class="text-[11px] text-slate-500 font-medium mt-0.5">
+                Live synced with tab <code class="font-mono text-slate-700 bg-slate-100 px-1 py-0.5 rounded">Compliance_by_Auditor_name</code> • Independent of filters
+              </p>
+            </div>
+
+            <!-- Right Controls: Legend and Small Toggle Button -->
+            <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+              <!-- Legend Chips -->
+              <div class="flex items-center gap-1.5 text-[11px] font-mono font-bold">
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-50 text-[#0B8A5A] border border-emerald-200">
+                  <span class="w-2 h-2 rounded-xs bg-[#0B8A5A]"></span>
+                  <span>Actual (Carried Out)</span>
+                </span>
+                <span id="msa-auditor-legend-planned" class="${this.state.showPlannedAuditorBars ? '' : 'hidden'} inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-50 text-[#1E3A8A] border border-blue-200">
+                  <span class="w-2 h-2 rounded-xs bg-[#1D4ED8]"></span>
+                  <span>Planned</span>
+                </span>
+              </div>
+
+              <!-- Small Button to Display Bars of Planned MSA -->
+              <button
+                id="msa-toggle-planned-btn"
+                type="button"
+                onclick="FPCL_MSA_SUITE.togglePlannedAuditorBars()"
+                class="px-2.5 py-1 text-xs font-bold rounded-lg ${this.state.showPlannedAuditorBars ? 'bg-blue-600 text-white shadow-xs border border-blue-700' : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300'} transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer whitespace-nowrap"
+                title="Toggle display of Planned MSA bars from Column C"
+              >
+                <i data-lucide="${this.state.showPlannedAuditorBars ? 'eye-off' : 'eye'}" class="w-3.5 h-3.5"></i>
+                <span>${this.state.showPlannedAuditorBars ? 'Hide Planned MSA' : 'Show Planned MSA'}</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Side-by-side Bar Chart Container: 2 Columns for 24 Auditors above donut chart -->
+          <div id="msa-auditor-chart-grid" class="w-full">
+            <!-- Populated via renderAuditorComplianceChart() -->
+          </div>
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- 6. DONUT CHART (Thick donut, large enough center, legends at bottom)       -->
         <!-- ========================================================================= -->
         <div class="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border-2 border-fuchsia-500/80">
           <div class="flex items-center justify-between pb-3 border-b border-slate-100">
@@ -1158,9 +1572,9 @@
         </div>
 
         <!-- ========================================================================= -->
-        <!-- 6. 02 SEPARATE COMPLETE SCROLLABLE GOOGLE SHEETS IN FORM OF TABLE         -->
+        <!-- 7. 03 SEPARATE COMPLETE SCROLLABLE GOOGLE SHEETS IN FORM OF TABLE         -->
         <!-- Scrollable up/down & left/right with left/right scroll buttons            -->
-        <!-- Sheet 1: MSA | Sheet 2: MSA_Compliance                                    -->
+        <!-- Sheet 1: MSA | Sheet 2: MSA_Compliance | Sheet 3: Auditor Compliance       -->
         <!-- ========================================================================= -->
         <!-- Sub-Tab Switcher Bar for Google Sheet Tabs -->
         <div class="flex flex-wrap items-center justify-between gap-3 bg-white p-3 rounded-2xl border border-slate-200 shadow-2xs">
@@ -1173,7 +1587,7 @@
               class="px-3.5 py-1.5 rounded-xl font-bold text-xs ${this.state.selectedTableTab === 'all' ? 'bg-indigo-600 text-white shadow-sm border border-indigo-500' : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300'} cursor-pointer flex items-center gap-1.5 transition-all active:scale-95"
             >
               <i data-lucide="layers" class="w-3.5 h-3.5"></i>
-              <span>Show Both Tabs</span>
+              <span>Show All Tabs</span>
             </button>
             <button
               id="msa-tab-btn-msa"
@@ -1193,18 +1607,27 @@
               <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
               <span>Tab 2: MSA_Compliance (${compFiltered.length} Departments)</span>
             </button>
+            <button
+              id="msa-tab-btn-auditor"
+              type="button"
+              onclick="FPCL_MSA_SUITE.setTableTab('auditor')"
+              class="px-3.5 py-1.5 rounded-xl font-bold text-xs ${this.state.selectedTableTab === 'auditor' ? 'bg-indigo-600 text-white shadow-sm border border-indigo-500' : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300'} cursor-pointer flex items-center gap-1.5 transition-all active:scale-95"
+            >
+              <span class="w-2 h-2 rounded-full bg-teal-500"></span>
+              <span>Tab 3: Compliance by Auditor (${auditorData.length} Auditors)</span>
+            </button>
           </div>
           <div class="text-[11px] font-mono font-bold text-slate-500 flex items-center gap-2">
             <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">
               <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span>2 Live Tabs Connected</span>
+              <span>3 Live Tabs Connected</span>
             </span>
           </div>
         </div>
 
         <div class="space-y-6">
           <!-- Table 1: Sheet MSA -->
-          <div id="msa-table-1-wrapper" class="${this.state.selectedTableTab === 'compliance' ? 'hidden' : ''}">
+          <div id="msa-table-1-wrapper" class="${this.state.selectedTableTab === 'compliance' || this.state.selectedTableTab === 'auditor' ? 'hidden' : ''}">
           <div class="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border-2 border-blue-500/80 space-y-3">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-2 border-b border-slate-100 gap-2">
               <div>
@@ -1245,7 +1668,7 @@
           </div>
 
           <!-- Table 2: Sheet MSA_Compliance -->
-          <div id="msa-table-2-wrapper" class="${this.state.selectedTableTab === 'msa' ? 'hidden' : ''}">
+          <div id="msa-table-2-wrapper" class="${this.state.selectedTableTab === 'msa' || this.state.selectedTableTab === 'auditor' ? 'hidden' : ''}">
           <div class="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border-2 border-emerald-500/80 space-y-3">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-2 border-b border-slate-100 gap-2">
               <div>
@@ -1280,6 +1703,47 @@
 
             <!-- Table Container -->
             <div id="msa-table-2-container">
+              <!-- Populated via renderTables() -->
+            </div>
+          </div>
+          </div>
+
+          <!-- Table 3: Sheet Compliance_by_Auditor_name -->
+          <div id="msa-table-3-wrapper" class="${this.state.selectedTableTab === 'msa' || this.state.selectedTableTab === 'compliance' ? 'hidden' : ''}">
+          <div class="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border-2 border-teal-500/80 space-y-3">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-2 border-b border-slate-100 gap-2">
+              <div>
+                <h3 class="text-sm sm:text-base font-black text-teal-800 tracking-tight flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-teal-600"></span>
+                  <span>Tab 3: Compliance by Auditor Name (${auditorData.length} Auditors)</span>
+                </h3>
+              </div>
+
+              <!-- Left/Right Scroll Controls -->
+              <div class="flex items-center gap-2">
+                <button
+                  type="button"
+                  onclick="FPCL_MSA_SUITE.scrollTable('msa-table-3-scroll', 'left')"
+                  class="px-2.5 py-1 text-xs font-bold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 transition-all flex items-center gap-1 active:scale-95 cursor-pointer"
+                  title="Scroll table left"
+                >
+                  <i data-lucide="chevron-left" class="w-3.5 h-3.5"></i>
+                  <span>Scroll Left</span>
+                </button>
+                <button
+                  type="button"
+                  onclick="FPCL_MSA_SUITE.scrollTable('msa-table-3-scroll', 'right')"
+                  class="px-2.5 py-1 text-xs font-bold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 transition-all flex items-center gap-1 active:scale-95 cursor-pointer"
+                  title="Scroll table right"
+                >
+                  <span>Scroll Right</span>
+                  <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Table Container -->
+            <div id="msa-table-3-container">
               <!-- Populated via renderTables() -->
             </div>
           </div>
@@ -1504,8 +1968,7 @@
     /**
      * Chart 2 (Right): Stacked horizontal bar chart showing MSA compliance of each department
      * using tab named MSA_Compliance (Department, Planned_MSA, Actual_MSA)
-     * Inside the bars: show numbers (e.g. d.actualMsa, d.remainingMsa)
-     * Outside in front of where bar ends: show percentage (e.g. actualPct%)
+     * Bars shown in PERCENTAGE (0% to 100% scale)
      */
     renderComplianceChart(compData) {
       const container = document.getElementById('msa-compliance-chart-container');
@@ -1521,34 +1984,29 @@
       }
 
       // Solid color constants:
-      const COLOR_CLOSED = '#0B8A5A'; // solid green (Actual MSA)
-      const COLOR_OPEN = '#DC2626';   // solid red (Remaining MSA)
-      const COLOR_TOTAL = '#1D4ED8';  // solid blue (Planned MSA)
+      const COLOR_CLOSED = '#0B8A5A'; // solid green (Actual MSA %)
+      const COLOR_OPEN = '#DC2626';   // solid red (Remaining MSA %)
+      const COLOR_TOTAL = '#1D4ED8';  // solid blue (Planned MSA %)
       const COLOR_NAVY = '#1E3A8A';   // navy for text
 
       const svgWidth = 580;
       const rowHeight = 44;
       const padTop = 20;
       const padBottom = 25;
-      const padLeft = 110;
-      const padRight = 85; // Ample room for percentage label outside bar where bar ends
+      const padLeft = 115;
+      const padRight = 80; // Ample room for percentage label outside bar where bar ends
       const plotWidth = svgWidth - padLeft - padRight;
       const svgHeight = padTop + padBottom + (compData.length * rowHeight);
 
-      // Max planned value across departments
-      const maxVal = Math.max(...compData.map(d => d.plannedMsa), 1);
-      const xMax = Math.max(15, Math.ceil(maxVal * 1.25));
-
-      // Grid steps
-      const step = xMax <= 15 ? 3 : 5;
-      const gridValues = [];
-      for (let v = 0; v <= xMax; v += step) gridValues.push(v);
+      // Percentage scale: 0% to 100%
+      const xMax = 100;
+      const gridValues = [0, 20, 40, 60, 80, 100];
 
       const gridSvg = gridValues.map(v => {
         const xPos = padLeft + (v / xMax) * plotWidth;
         return `
           <line x1="${xPos}" y1="${padTop - 8}" x2="${xPos}" y2="${svgHeight - padBottom}" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="3 3"/>
-          <text x="${xPos}" y="${svgHeight - 8}" fill="#94A3B8" font-size="10" font-family="'Plus Jakarta Sans', monospace, sans-serif" font-weight="bold" text-anchor="middle">${v}</text>
+          <text x="${xPos}" y="${svgHeight - 8}" fill="#94A3B8" font-size="10" font-family="'Plus Jakarta Sans', monospace, sans-serif" font-weight="bold" text-anchor="middle">${v}%</text>
         `;
       }).join('');
 
@@ -1556,17 +2014,20 @@
         const yPos = padTop + (idx * rowHeight);
         const barH = 22;
 
-        const actualW = (d.actualMsa / xMax) * plotWidth;
-        const remainW = (d.remainingMsa / xMax) * plotWidth;
+        const actualPct = d.plannedMsa > 0 ? (d.actualMsa / d.plannedMsa) * 100 : 0;
+        const remainPct = d.plannedMsa > 0 ? Math.max(0, 100 - actualPct) : 0;
+
+        const actualW = (actualPct / 100) * plotWidth;
+        const remainW = (remainPct / 100) * plotWidth;
         const totalW = actualW + remainW;
 
-        const actualPct = d.plannedMsa > 0 ? (d.actualMsa / d.plannedMsa) * 100 : 0;
-        const remainPct = d.plannedMsa > 0 ? (d.remainingMsa / d.plannedMsa) * 100 : 0;
+        const actualPctDisplay = actualPct % 1 === 0 ? `${actualPct.toFixed(0)}%` : `${actualPct.toFixed(1)}%`;
+        const remainPctDisplay = remainPct % 1 === 0 ? `${remainPct.toFixed(0)}%` : `${remainPct.toFixed(1)}%`;
 
         // Tooltip geometry: White rounded tooltip with a blue top border
-        const badgeW = 86;
-        const badgeH = 44;
-        const badgeX = Math.min(svgWidth - badgeW - 8, Math.max(padLeft, padLeft + totalW - (badgeW / 2)));
+        const badgeW = 100;
+        const badgeH = 52;
+        const badgeX = Math.min(svgWidth - badgeW - 8, Math.max(padLeft, padLeft + actualW - (badgeW / 2)));
         const badgeY = Math.max(4, yPos - badgeH - 4);
 
         const tooltipSvg = `
@@ -1574,23 +2035,27 @@
             <rect x="${badgeX}" y="${badgeY}" width="${badgeW}" height="${badgeH}" rx="5" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1" filter="drop-shadow(0 4px 6px rgba(0,0,0,0.08))"/>
             <path d="M ${badgeX + 2},${badgeY} H ${badgeX + badgeW - 2}" stroke="${COLOR_TOTAL}" stroke-width="3" stroke-linecap="round"/>
             <polygon points="${badgeX + (badgeW / 2) - 4},${badgeY + badgeH} ${badgeX + (badgeW / 2) + 4},${badgeY + badgeH} ${badgeX + (badgeW / 2)},${badgeY + badgeH + 4}" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1"/>
-            <text x="${badgeX + (badgeW / 2)}" y="${badgeY + 13}" fill="${COLOR_NAVY}" font-size="9" font-family="'Plus Jakarta Sans', sans-serif" font-weight="900" text-anchor="middle">Planned: ${d.plannedMsa}</text>
-            <text x="${badgeX + (badgeW / 2)}" y="${badgeY + 25}" fill="${COLOR_OPEN}" font-size="9" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" text-anchor="middle">Remaining: ${d.remainingMsa}</text>
-            <text x="${badgeX + (badgeW / 2)}" y="${badgeY + 37}" fill="${COLOR_CLOSED}" font-size="9" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" text-anchor="middle">Actual: ${d.actualMsa}</text>
+            <text x="${badgeX + (badgeW / 2)}" y="${badgeY + 13}" fill="${COLOR_NAVY}" font-size="9" font-family="'Plus Jakarta Sans', sans-serif" font-weight="900" text-anchor="middle">Planned: 100% (${d.plannedMsa})</text>
+            <text x="${badgeX + (badgeW / 2)}" y="${badgeY + 26}" fill="${COLOR_CLOSED}" font-size="9" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" text-anchor="middle">Actual: ${actualPctDisplay} (${d.actualMsa})</text>
+            <text x="${badgeX + (badgeW / 2)}" y="${badgeY + 39}" fill="${COLOR_OPEN}" font-size="9" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" text-anchor="middle">Remain: ${remainPctDisplay} (${d.remainingMsa})</text>
           </g>
         `;
 
-        // Values in NUMBERS inside the bar
+        // Values in PERCENTAGE inside the bar
         let actualLabel = '';
-        if (d.actualMsa > 0) {
-          const fontSize = actualW >= 14 ? '11' : '9.5';
-          actualLabel = `<text x="${padLeft + (actualW / 2)}" y="${yPos + (barH / 2) + 4}" fill="#FFFFFF" font-size="${fontSize}" font-family="'Plus Jakarta Sans', sans-serif" font-weight="900" text-anchor="middle">${d.actualMsa}</text>`;
+        if (actualPct > 0) {
+          const fontSize = actualW >= 34 ? '10.5' : (actualW >= 22 ? '9' : '8');
+          if (actualW >= 18) {
+            actualLabel = `<text x="${padLeft + (actualW / 2)}" y="${yPos + (barH / 2) + 4}" fill="#FFFFFF" font-size="${fontSize}" font-family="'Plus Jakarta Sans', sans-serif" font-weight="900" text-anchor="middle">${actualPctDisplay}</text>`;
+          }
         }
 
         let remainLabel = '';
-        if (d.remainingMsa > 0) {
-          const fontSize = remainW >= 14 ? '11' : '9.5';
-          remainLabel = `<text x="${padLeft + actualW + (remainW / 2)}" y="${yPos + (barH / 2) + 4}" fill="#FFFFFF" font-size="${fontSize}" font-family="'Plus Jakarta Sans', sans-serif" font-weight="900" text-anchor="middle">${d.remainingMsa}</text>`;
+        if (remainPct > 0) {
+          const fontSize = remainW >= 34 ? '10.5' : (remainW >= 22 ? '9' : '8');
+          if (remainW >= 18) {
+            remainLabel = `<text x="${padLeft + actualW + (remainW / 2)}" y="${yPos + (barH / 2) + 4}" fill="#FFFFFF" font-size="${fontSize}" font-family="'Plus Jakarta Sans', sans-serif" font-weight="900" text-anchor="middle">${remainPctDisplay}</text>`;
+          }
         }
 
         return `
@@ -1600,21 +2065,21 @@
               ${d.department}
             </text>
 
-            <!-- Actual Segment (Green #0B8A5A at base/left) -->
+            <!-- Actual Segment (Green #0B8A5A at base/left) in percentage -->
             ${actualW > 0 ? `
               <rect x="${padLeft}" y="${yPos}" width="${actualW}" height="${barH}" rx="${remainW > 0 ? 0 : 3}" fill="${COLOR_CLOSED}" class="transition-all duration-200 group-hover:brightness-105"/>
               ${actualLabel}
             ` : ''}
 
-            <!-- Remaining Segment (Red #DC2626 on top/right) -->
+            <!-- Remaining Segment (Red #DC2626 on top/right) in percentage -->
             ${remainW > 0 ? `
               <rect x="${padLeft + actualW}" y="${yPos}" width="${remainW}" height="${barH}" rx="3" fill="${COLOR_OPEN}" class="transition-all duration-200 group-hover:brightness-105"/>
               ${remainLabel}
             ` : ''}
 
-            <!-- Number OUTSIDE bar in front of where bar ends (no percentage) -->
+            <!-- Percentage OUTSIDE bar in front of where bar ends -->
             <text x="${padLeft + totalW + 8}" y="${yPos + (barH / 2) + 4.5}" fill="${COLOR_NAVY}" font-size="12" font-family="'Plus Jakarta Sans', sans-serif" font-weight="900">
-              ${d.plannedMsa}
+              ${actualPctDisplay}
             </text>
 
             ${tooltipSvg}
@@ -1733,13 +2198,15 @@
     },
 
     /**
-     * Render the 02 Separate Complete Scrollable Tables:
+     * Render the 03 Separate Complete Scrollable Tables:
      * Sheet 1: MSA Observations
      * Sheet 2: MSA_Compliance
+     * Sheet 3: Compliance_by_Auditor_name
      */
     renderTables(filteredObs, compData) {
       this.renderTable1(filteredObs);
       this.renderTable2(compData);
+      this.renderTable3(this.getRawAuditorData());
     },
 
     renderTable1(items) {
@@ -1869,6 +2336,234 @@
               ${rowsHtml}
             </tbody>
           </table>
+        </div>
+      `;
+    },
+
+    renderTable3(auditorData) {
+      const container = document.getElementById('msa-table-3-container');
+      if (!container) return;
+
+      if (!auditorData || auditorData.length === 0) {
+        container.innerHTML = `
+          <div class="py-12 text-center text-slate-400 text-xs font-mono font-bold bg-slate-50 rounded-xl border border-dashed border-slate-200">
+            No auditor compliance records found.
+          </div>
+        `;
+        return;
+      }
+
+      const rowsHtml = auditorData.map((d, idx) => {
+        const rate = d.complianceRate || 0;
+        const rateColor = rate >= 75 ? 'text-emerald-700 bg-emerald-50 border-emerald-200' : (rate >= 50 ? 'text-amber-700 bg-amber-50 border-amber-200' : 'text-rose-700 bg-rose-50 border-rose-200');
+
+        return `
+          <tr class="hover:bg-slate-50/80 transition-colors border-b border-slate-100 ${idx % 2 === 1 ? 'bg-slate-50/40' : ''}">
+            <td class="px-4 py-3 font-mono font-bold text-xs text-slate-700 text-center">${d.id || idx + 1}</td>
+            <td class="px-4 py-3 text-xs font-black text-slate-900">${d.auditorName}</td>
+            <td class="px-4 py-3 font-mono font-bold text-xs text-[#1D4ED8] text-center">${d.planned}</td>
+            <td class="px-4 py-3 font-mono font-bold text-xs text-[#0B8A5A] text-center">${d.actual}</td>
+            <td class="px-4 py-3 font-mono font-bold text-xs text-[#DC2626] text-center">${d.remaining}</td>
+            <td class="px-4 py-3 text-center">
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-black font-mono border ${rateColor}">
+                ${rate.toFixed(1)}%
+              </span>
+            </td>
+            <td class="px-4 py-3 text-xs text-slate-600">
+              <div class="w-full bg-slate-200 rounded-full h-2 overflow-hidden flex">
+                <div class="bg-[#0B8A5A] h-2" style="width: ${rate}%;"></div>
+                <div class="bg-[#DC2626] h-2" style="width: ${100 - rate}%;"></div>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      container.innerHTML = `
+        <div id="msa-table-3-scroll" class="w-full overflow-x-auto max-h-[360px] overflow-y-auto rounded-xl border border-slate-200">
+          <table class="w-full text-left border-collapse min-w-[700px]">
+            <thead class="bg-slate-100/90 sticky top-0 z-10 backdrop-blur-xs border-b border-slate-200 text-[11px] font-black uppercase tracking-wider text-slate-600">
+              <tr>
+                <th class="px-4 py-2.5 text-center">ID</th>
+                <th class="px-4 py-2.5">Auditor Name (Column B)</th>
+                <th class="px-4 py-2.5 text-center">Planned MSA (Column C)</th>
+                <th class="px-4 py-2.5 text-center">Actual MSA (Column D)</th>
+                <th class="px-4 py-2.5 text-center">Remaining MSA</th>
+                <th class="px-4 py-2.5 text-center">Compliance Rate</th>
+                <th class="px-4 py-2.5">Progress Indicator</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              ${rowsHtml}
+            </tbody>
+          </table>
+        </div>
+      `;
+    },
+
+    /**
+     * Bar Chart: Compliance by Auditor name
+     * - Independent of any filter as this is compliance for whole year.
+     * - List is long (24 auditors) so displayed side-by-side in 2 columns above donut chart.
+     * - Displays Auditor Name from Column B named Auditor Name.
+     * - Displays MSA carried out from Column D named Actual.
+     * - Does NOT plot planned MSA from Column C by default.
+     * - Small button toggles display of planned MSA bars (Column C).
+     */
+    renderAuditorComplianceChart() {
+      const container = document.getElementById('msa-auditor-chart-grid');
+      if (!container) return;
+
+      const auditors = this.getRawAuditorData();
+      if (!auditors || auditors.length === 0) {
+        container.innerHTML = `
+          <div class="py-8 text-center text-slate-400 text-xs font-mono font-bold bg-slate-50 rounded-xl border border-dashed border-slate-200">
+            No auditor compliance records found in tab Compliance_by_Auditor_name.
+          </div>
+        `;
+        return;
+      }
+
+      // Split list into two side-by-side columns (e.g. 1-12 and 13-24)
+      const mid = Math.ceil(auditors.length / 2);
+      const col1 = auditors.slice(0, mid);
+      const col2 = auditors.slice(mid);
+
+      const showPlanned = !!this.state.showPlannedAuditorBars;
+      const maxVal = Math.max(...auditors.map(a => Math.max(a.actual || 0, showPlanned ? (a.planned || 0) : 0)), 6);
+      const xMax = Math.max(6, Math.ceil(maxVal));
+
+      const COLOR_ACTUAL = '#0B8A5A'; // Solid green
+      const COLOR_PLANNED = '#1D4ED8'; // Solid blue
+      const COLOR_NAVY = '#1E3A8A';    // Navy for labels
+
+      const renderColumnSvg = (list, colTitle) => {
+        const svgWidth = 470;
+        const padTop = 22;
+        const padBottom = 26;
+        const padLeft = 145;
+        const padRight = 55;
+        const plotWidth = svgWidth - padLeft - padRight;
+        const rowHeight = showPlanned ? 44 : 32;
+        const svgHeight = padTop + padBottom + (list.length * rowHeight);
+
+        // Gridlines
+        const gridValues = [];
+        const step = xMax <= 6 ? 1 : 2;
+        for (let v = 0; v <= xMax; v += step) gridValues.push(v);
+
+        const gridSvg = gridValues.map(v => {
+          const xPos = padLeft + (v / xMax) * plotWidth;
+          return `
+            <line x1="${xPos}" y1="${padTop - 6}" x2="${xPos}" y2="${svgHeight - padBottom}" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="3 3"/>
+            <text x="${xPos}" y="${svgHeight - 8}" fill="#94A3B8" font-size="9.5" font-family="'Plus Jakarta Sans', monospace, sans-serif" font-weight="bold" text-anchor="middle">${v}</text>
+          `;
+        }).join('');
+
+        const rowsSvg = list.map((a, idx) => {
+          const yPos = padTop + (idx * rowHeight);
+          const actualW = Math.max(0, (a.actual / xMax) * plotWidth);
+          const plannedW = Math.max(0, (a.planned / xMax) * plotWidth);
+          const nameDisplay = a.auditorName.length > 18 ? a.auditorName.slice(0, 17) + '…' : a.auditorName;
+          const rateDisplay = a.planned > 0 ? `${((a.actual / a.planned) * 100).toFixed(0)}%` : '0%';
+
+          // Tooltip geometry
+          const badgeW = 100;
+          const badgeH = 46;
+          const tipX = Math.min(svgWidth - badgeW - 8, Math.max(padLeft, padLeft + Math.max(actualW, plannedW) - (badgeW / 2)));
+          const tipY = Math.max(2, yPos - badgeH - 2);
+
+          const tooltipSvg = `
+            <g class="opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none" z-index="50">
+              <rect x="${tipX}" y="${tipY}" width="${badgeW}" height="${badgeH}" rx="5" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1" filter="drop-shadow(0 4px 6px rgba(0,0,0,0.08))"/>
+              <path d="M ${tipX + 2},${tipY} H ${tipX + badgeW - 2}" stroke="${COLOR_ACTUAL}" stroke-width="3" stroke-linecap="round"/>
+              <polygon points="${tipX + (badgeW / 2) - 4},${tipY + badgeH} ${tipX + (badgeW / 2) + 4},${tipY + badgeH} ${tipX + (badgeW / 2)},${tipY + badgeH + 4}" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1"/>
+              <text x="${tipX + (badgeW / 2)}" y="${tipY + 13}" fill="${COLOR_NAVY}" font-size="9" font-family="'Plus Jakarta Sans', sans-serif" font-weight="900" text-anchor="middle">${a.auditorName}</text>
+              <text x="${tipX + (badgeW / 2)}" y="${tipY + 25}" fill="${COLOR_ACTUAL}" font-size="8.5" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" text-anchor="middle">Actual: ${a.actual} · Planned: ${a.planned}</text>
+              <text x="${tipX + (badgeW / 2)}" y="${tipY + 37}" fill="${COLOR_PLANNED}" font-size="8.5" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" text-anchor="middle">Compliance: ${rateDisplay}</text>
+            </g>
+          `;
+
+          if (!showPlanned) {
+            // Plot only Actual MSA carried out (Column D)
+            const barH = 17;
+            return `
+              <g class="group cursor-pointer">
+                <!-- Auditor Name (Column B) -->
+                <text x="${padLeft - 10}" y="${yPos + (barH / 2) + 4}" fill="${COLOR_NAVY}" font-size="11" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" text-anchor="end" title="${a.auditorName}">
+                  ${nameDisplay}
+                </text>
+
+                <!-- Actual MSA Bar (Column D) -->
+                ${actualW > 0 ? `
+                  <rect x="${padLeft}" y="${yPos}" width="${actualW}" height="${barH}" rx="3" fill="${COLOR_ACTUAL}" class="transition-all duration-200 group-hover:brightness-105"/>
+                  ${actualW >= 16 ? `
+                    <text x="${padLeft + (actualW / 2)}" y="${yPos + (barH / 2) + 3.5}" fill="#FFFFFF" font-size="10" font-family="'Plus Jakarta Sans', sans-serif" font-weight="900" text-anchor="middle">${a.actual}</text>
+                  ` : ''}
+                ` : ''}
+
+                <!-- Actual Value Outside Bar -->
+                <text x="${padLeft + actualW + 7}" y="${yPos + (barH / 2) + 4}" fill="${a.actual > 0 ? COLOR_ACTUAL : '#94A3B8'}" font-size="11" font-family="'Plus Jakarta Sans', sans-serif" font-weight="900">
+                  ${a.actual}
+                </text>
+
+                ${tooltipSvg}
+              </g>
+            `;
+          } else {
+            // Plot both Planned (Column C) and Actual (Column D) bars
+            const barH = 10;
+            const gap = 3;
+            const yPlanned = yPos;
+            const yActual = yPos + barH + gap;
+
+            return `
+              <g class="group cursor-pointer">
+                <!-- Auditor Name (Column B) -->
+                <text x="${padLeft - 10}" y="${yPos + barH + 4}" fill="${COLOR_NAVY}" font-size="11" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" text-anchor="end" title="${a.auditorName}">
+                  ${nameDisplay}
+                </text>
+
+                <!-- Planned MSA Bar (Column C, Blue) -->
+                ${plannedW > 0 ? `
+                  <rect x="${padLeft}" y="${yPlanned}" width="${plannedW}" height="${barH}" rx="2" fill="${COLOR_PLANNED}" opacity="0.85" class="transition-all duration-200 group-hover:opacity-100"/>
+                  <text x="${padLeft + plannedW + 5}" y="${yPlanned + barH - 1}" fill="${COLOR_PLANNED}" font-size="9" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800">
+                    P:${a.planned}
+                  </text>
+                ` : ''}
+
+                <!-- Actual MSA Bar (Column D, Green) -->
+                ${actualW > 0 ? `
+                  <rect x="${padLeft}" y="${yActual}" width="${actualW}" height="${barH}" rx="2" fill="${COLOR_ACTUAL}" class="transition-all duration-200 group-hover:brightness-105"/>
+                ` : ''}
+                <text x="${padLeft + actualW + 5}" y="${yActual + barH - 1}" fill="${a.actual > 0 ? COLOR_ACTUAL : '#94A3B8'}" font-size="9.5" font-family="'Plus Jakarta Sans', sans-serif" font-weight="900">
+                  A:${a.actual}
+                </text>
+
+                ${tooltipSvg}
+              </g>
+            `;
+          }
+        }).join('');
+
+        return `
+          <div class="bg-slate-50/70 p-3 rounded-xl border border-slate-200/80 overflow-x-auto">
+            <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1 font-mono flex items-center justify-between">
+              <span>${colTitle}</span>
+              <span class="text-[10px] text-slate-400 font-normal">Scale: 0 to ${xMax} MSAs</span>
+            </div>
+            <svg viewBox="0 0 ${svgWidth} ${svgHeight}" class="w-full h-auto overflow-visible select-none min-w-[360px]">
+              ${gridSvg}
+              ${rowsSvg}
+            </svg>
+          </div>
+        `;
+      };
+
+      container.innerHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+          ${renderColumnSvg(col1, `Auditors 1 – ${mid} of ${auditors.length}`)}
+          ${renderColumnSvg(col2, `Auditors ${mid + 1} – ${auditors.length} of ${auditors.length}`)}
         </div>
       `;
     }

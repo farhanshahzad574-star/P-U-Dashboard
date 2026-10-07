@@ -132,8 +132,8 @@
     <script src="/assets/psiData.js?v=20260930"></script>
     <script src="/assets/psiSuite.js?v=20260930d"></script>
     <!-- Management Safety Audit (MSA) Dataset & Specialized Executive Suite (Google Sheets ID: 11ggCusY-ZJj09bVcpbikHeupyvFTBxDHlytjhpbNRWw) -->
-    <script src="/assets/msaData.js?v=20261004b"></script>
-    <script src="/assets/msaSuite.js?v=20261005b"></script>
+    <script src="/assets/msaData.js?v=20261007b"></script>
+    <script src="/assets/msaSuite.js?v=20261007b"></script>
     <!-- Safety Talks Dataset & Specialized Executive Suite (Google Sheet ID: 1Fgx9ZEdHAQnH_oCuX0NdNO5_V3gEPHu0xjnqKk6GqWc, Tab: Safety_Talk) -->
     <script src="/assets/safetyTalkData.js?v=20261006a"></script>
     <script src="/assets/safetyTalkSuite.js?v=20261006a"></script>
@@ -1012,11 +1012,11 @@
               <button
                 id="link-btn-contacts"
                 data-name="contacts"
-                data-alias="contacts responsibility matrix responsibilty matrix"
+                data-alias="contacts responsibility matrix responsibilty matrix responsibility-matrix responsibilitymatrix REsponsibility Matrix"
                 type="button"
                 onclick="event.stopPropagation(); portalApp.openContactsModal(event);"
                 class="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-[7px] text-[10px] sm:text-[11px] font-bold text-white bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 hover:from-rose-700 hover:via-pink-700 hover:to-fuchsia-700 border border-rose-500/40 shadow-2xs hover:shadow-xs transition-all cursor-pointer whitespace-nowrap select-none"
-                title="Responsibility Matrix • Contacts &amp; Department Directory"
+                title="Responsibility Matrix • Live Contacts &amp; Department Directory from Google Sheet"
               >
                 <i data-lucide="phone-call" class="w-3 h-3 text-white shrink-0"></i>
                 <span>Responsibility Matrix</span>
@@ -1179,14 +1179,14 @@
           </div>
 
           <!-- 6 Colorful Professional KPI Cards in Requested Sequence -->
-          <!-- Sequence: Safe manhours -> TRIR (Planned & Actual) -> LTI -> Medical Treatment -> First Aid -> Near Miss -->
+          <!-- Sequence: Safe Million Manhours -> TRIR (Planned & Actual) -> LTI -> Medical Treatment -> First Aid -> Near Miss -->
           <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3.5">
             
-            <!-- 1. Safe Manhours (Emerald / Green) -->
+            <!-- 1. Safe Million Manhours (Emerald / Green) -->
             <div
               onclick="portalApp.openHseqTrendModal('safeManhours')"
               class="card-hover-effect cursor-pointer relative overflow-hidden rounded-xl border border-emerald-200/90 bg-gradient-to-b from-emerald-50/70 via-white to-emerald-50/30 p-2 sm:p-3 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between items-center text-center min-h-[112px] sm:min-h-[148px]"
-              title="Click to view Safe Manhours Trend"
+              title="Click to view Safe Million Manhours Trend"
             >
               <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-500 to-teal-500"></div>
               
@@ -1196,13 +1196,13 @@
                   <div class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 shadow-2xs border border-emerald-200">
                     <i data-lucide="shield-check" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
                   </div>
-                  <span class="text-[10px] sm:text-xs font-bold text-slate-700 uppercase tracking-wider font-mono truncate" title="Safe Manhours">Safe Manhours</span>
+                  <span class="text-[10px] sm:text-xs font-bold text-slate-700 uppercase tracking-wider font-mono truncate" title="Safe Million Manhours">Safe Million Manhours</span>
                 </div>
                 <button
                   type="button"
                   onclick="event.stopPropagation(); portalApp.openHseqTrendModal('safeManhours')"
                   class="p-1 rounded-md text-emerald-700 hover:text-emerald-950 bg-emerald-100/70 hover:bg-emerald-200 border border-emerald-300 transition-all cursor-pointer group shadow-2xs"
-                  title="View Safe Manhours Trend"
+                  title="View Safe Million Manhours Trend"
                 >
                   <i data-lucide="trending-up" class="w-3.5 h-3.5 group-hover:scale-110 transition-transform"></i>
                 </button>
@@ -1210,9 +1210,16 @@
 
               <!-- Main Value -->
               <div class="flex-1 flex flex-col justify-center items-center text-center min-w-0 w-full overflow-hidden my-auto py-1">
-                <div id="kpi-val-safe-manhours" class="text-xl min-[360px]:text-2xl min-[400px]:text-[1.65rem] sm:text-3xl lg:text-[1.55rem] xl:text-[1.95rem] font-black font-mono tracking-tight text-emerald-800 leading-none whitespace-nowrap text-center -mx-2 sm:mx-0 my-auto cursor-pointer" title="Safe Manhours (Click to view trend)">
-                  11,105,365
+                <div id="kpi-val-safe-manhours" class="text-xl min-[360px]:text-2xl min-[400px]:text-[1.65rem] sm:text-3xl lg:text-[1.55rem] xl:text-[1.95rem] font-black font-mono tracking-tight text-emerald-800 leading-none whitespace-nowrap text-center -mx-2 sm:mx-0 my-auto cursor-pointer" title="Safe Million Manhours (Click to view trend)">
+                  11.105 M
                 </div>
+              </div>
+
+              <!-- Card Bottom: dynamic month name previous to current month -->
+              <div class="mt-auto pt-1 w-full flex items-center justify-center">
+                <span id="kpi-safe-manhours-month" class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-emerald-700/90 font-mono">
+                  TILL SEP
+                </span>
               </div>
             </div>
 
@@ -2442,6 +2449,7 @@
                   <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
                   Google Sheets Live
                 </span>
+                <span id="contacts-live-status" class="text-[10px] text-emerald-300/80 font-mono hidden sm:inline">Synchronized</span>
               </div>
             </div>
           </div>
@@ -2520,9 +2528,11 @@
         <!-- Full-Screen Modal Footer -->
         <div class="px-4 sm:px-6 py-2.5 bg-white border-t border-slate-200 flex items-center justify-between text-xs text-slate-500 shrink-0">
           <div class="flex items-center gap-2">
-            <span id="contacts-count-label" class="font-bold text-slate-800">12 Contacts</span>
+            <span id="contacts-count-label" class="font-bold text-slate-800">13 Contacts</span>
             <span class="text-slate-300">•</span>
             <span class="text-[11px] text-slate-500 hidden sm:inline">Google Sheet Tab: Contacts (Sheet ID: 1mI5WbcNBYtJc1fQjG0ZYQ1PKQzAHp5Sm3gyi9MibW-g)</span>
+            <span class="text-slate-300 hidden sm:inline">•</span>
+            <span id="contacts-footer-sync-time" class="text-[11px] text-emerald-700 font-medium hidden sm:inline">Live Sync Active</span>
           </div>
           <button
             type="button"
@@ -3579,6 +3589,9 @@
           this.fetchSubHsePData({ silent: true });
           this.fetchSubHseEiData({ silent: true });
           this.fetchEhseData({ silent: true });
+          if (typeof this.fetchContactsData === 'function') {
+            this.fetchContactsData(true);
+          }
           this.renderActionScenarios();
           this.renderPunchListTable();
           this.renderDataReadiness();
@@ -3610,6 +3623,9 @@
             this._plrAutoSyncInterval = setInterval(() => {
               if (typeof this.syncAllPlrSheets === 'function') {
                 this.syncAllPlrSheets({ silent: true });
+              }
+              if (typeof this.fetchContactsData === 'function') {
+                this.fetchContactsData(true);
               }
             }, 60000);
           }
@@ -6371,13 +6387,21 @@
         renderHseqKpiValues(kpis) {
           if (!kpis) return;
 
-          // 1. Safe Manhours
+          // 1. Safe Million Manhours
           const safeManhoursEl = document.getElementById('kpi-val-safe-manhours');
           if (safeManhoursEl) {
             const rawVal = (kpis.safeManhours !== undefined && kpis.safeManhours !== null) ? kpis.safeManhours : 0;
-            safeManhoursEl.textContent = Number(rawVal).toLocaleString();
-            safeManhoursEl.title = `${Number(rawVal).toLocaleString()} Safe Manhours`;
+            const num = Number(rawVal) || 0;
+            const formattedVal = (num >= 100000 ? (num / 1000000).toFixed(3) : (num > 0 && num < 1000 ? num.toFixed(3) : (num / 1000000).toFixed(3))) + ' M';
+            safeManhoursEl.textContent = formattedVal;
+            safeManhoursEl.title = `${formattedVal} (${Number(rawVal).toLocaleString()} Safe Manhours)`;
             this.fitSafeManhoursText();
+          }
+
+          // Mention month name previous to current month dynamically e.g if today is October then write TILL SEP
+          const safeMonthEl = document.getElementById('kpi-safe-manhours-month');
+          if (safeMonthEl) {
+            safeMonthEl.textContent = this.getPreviousMonthTillText();
           }
 
           // 2. TRIR (Planned & Actual in One Card)
@@ -6470,8 +6494,8 @@
         renderHseqTrendModalContent(metricKey) {
           const METRIC_CONFIG = {
             safeManhours: {
-              name: 'Safe Manhours',
-              unit: 'Hours',
+              name: 'Safe Million Manhours',
+              unit: 'Million Hours',
               icon: 'shield-check',
               color: '#059669',
               lightBg: 'bg-emerald-50 text-emerald-800 border-emerald-200',
@@ -6787,6 +6811,16 @@
               </div>
             </div>
           `;
+        },
+
+        /**
+         * Returns dynamically the previous month relative to the current month in uppercase (e.g. TILL SEP in October)
+         */
+        getPreviousMonthTillText() {
+          const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+          const now = new Date();
+          const prevMonthIdx = (now.getMonth() + 11) % 12;
+          return `TILL ${months[prevMonthIdx]}`;
         },
 
         /**
@@ -7118,12 +7152,15 @@
             // Donut center label logic based on openCloseFilter
             let donutCenterVal = compRate;
             let donutCenterSubtext = item.id === 'psm-validation' ? 'QUALIFIED' : 'CLOSURE';
+            let donutCenterColor = '#1D4ED8';
             if (openCloseFilter === 'open') {
               donutCenterVal = inProg;
               donutCenterSubtext = item.id === 'psm-validation' ? 'PENDING' : 'OPEN';
+              donutCenterColor = '#DC2626';
             } else if (openCloseFilter === 'close') {
               donutCenterVal = closed;
               donutCenterSubtext = item.id === 'psm-validation' ? 'PASSED' : 'CLOSED';
+              donutCenterColor = '#0B8A5A';
             }
 
             // SVG Donut Calculations (radius = 38, circumference = 238.76, viewBox = 0 0 96 96)
@@ -7218,65 +7255,59 @@
                     <!-- SVG Donut Chart with Centered Value & Label -->
                     <div class="relative flex items-center justify-center shrink-0 w-28 h-28 min-[360px]:w-32 min-[360px]:h-32 sm:w-40 sm:h-40 lg:w-44 lg:h-44 mx-auto">
                       <svg class="w-full h-full transform -rotate-90" viewBox="0 0 96 96">
-                        <defs>
-                          <linearGradient id="donut-grad-${item.id}" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="${item.gradientStop1}"/>
-                            <stop offset="100%" stop-color="${item.gradientStop2}"/>
-                          </linearGradient>
-                        </defs>
                         <!-- Track Circle (Thicker stroke) -->
                         <circle cx="48" cy="48" r="${radius}" fill="transparent" stroke="#E2E8F0" stroke-width="11"></circle>
                         
-                        <!-- Closed Actions Arc (Gradient Fill with thicker stroke) -->
+                        <!-- Closed Actions Arc (Solid Green #0B8A5A) -->
                         ${closedLength > 0 ? `
                         <circle cx="48" cy="48" r="${radius}" fill="transparent"
-                          stroke="url(#donut-grad-${item.id})" stroke-width="11.5"
+                          stroke="#0B8A5A" stroke-width="11.5"
                           stroke-dasharray="${closedLength} ${circumference - closedLength}"
                           stroke-dashoffset="${closedOffset}"
                           stroke-linecap="round"></circle>` : ''}
 
-                        <!-- In-Progress Actions Arc (Purple / Amber / Slate) -->
+                        <!-- In-Progress / Open Actions Arc (Solid Red #DC2626) -->
                         ${inProgLength > 0 ? `
                         <circle cx="48" cy="48" r="${radius}" fill="transparent"
-                          stroke="${openCloseFilter === 'open' ? '#F59E0B' : '#8B5CF6'}" stroke-width="11"
+                          stroke="#DC2626" stroke-width="11"
                           stroke-dasharray="${inProgLength} ${circumference - inProgLength}"
                           stroke-dashoffset="${inProgOffset}"
                           stroke-linecap="round"></circle>` : ''}
 
-                        <!-- Overdue Actions Arc (Red / Alert) -->
+                        <!-- Overdue Actions Arc (Solid Purple #9333EA) -->
                         ${overdueLength > 0 ? `
                         <circle cx="48" cy="48" r="${radius}" fill="transparent"
-                          stroke="#EF4444" stroke-width="11.5"
+                          stroke="#9333EA" stroke-width="11.5"
                           stroke-dasharray="${overdueLength} ${circumference - overdueLength}"
                           stroke-dashoffset="${overdueOffset}"
                           stroke-linecap="round"></circle>` : ''}
                       </svg>
 
-                      <!-- Donut Center Label: Dynamically displays closure rate or open/close count -->
+                      <!-- Donut Center Label: Dynamically displays closure rate or open/close count matching donut color -->
                       <div class="absolute inset-0 flex flex-col items-center justify-center text-center select-none pointer-events-none px-1">
-                        <span class="text-xl min-[360px]:text-2xl sm:text-3xl lg:text-[32px] font-black font-mono tracking-tight leading-none text-[#1E293B] donut-center-val">${donutCenterVal}</span>
+                        <span class="text-xl min-[360px]:text-2xl sm:text-3xl lg:text-[32px] font-black font-mono tracking-tight leading-none donut-center-val" style="color: ${donutCenterColor};">${donutCenterVal}</span>
                         <span class="text-[10px] sm:text-[13px] font-black text-slate-500 uppercase tracking-wider mt-1 sm:mt-1.5 leading-none">${donutCenterSubtext}</span>
                       </div>
                     </div>
                   </div>
 
-                  <!-- 4 ACTION METRICS PILLS (Closure % | Closed | Open | Overdue) shifted a little to bottom -->
+                  <!-- 4 ACTION METRICS PILLS (Closure % | Closed | Open | Overdue) -->
                   <div class="grid grid-cols-4 gap-1 sm:gap-2 text-center mt-2.5 sm:mt-4 pt-0.5 sm:pt-1">
                     <div class="bg-white rounded-lg py-1.5 sm:py-2 px-0.5 sm:px-1 border border-slate-200 shadow-2xs">
                       <div class="text-[9px] min-[360px]:text-[10px] sm:text-xs font-bold text-slate-500 uppercase truncate">${item.id === 'psm-validation' ? 'Qualified' : 'Closure'}</div>
-                      <div class="text-sm min-[360px]:text-base sm:text-lg lg:text-xl font-black font-mono text-emerald-600 card-stat-pill-val">${k.deptRate || compRate}</div>
+                      <div class="text-sm min-[360px]:text-base sm:text-lg lg:text-xl font-black font-mono card-stat-pill-val" style="color: #1D4ED8;">${k.deptRate || compRate}</div>
                     </div>
                     <div class="bg-white rounded-lg py-1.5 sm:py-2 px-0.5 sm:px-1 border border-slate-200 shadow-2xs">
                       <div class="text-[9px] min-[360px]:text-[10px] sm:text-xs font-bold text-slate-500 uppercase truncate">${item.id === 'psm-validation' ? 'Passed' : 'Closed'}</div>
-                      <div class="text-sm min-[360px]:text-base sm:text-lg lg:text-xl font-black font-mono text-blue-600 card-stat-pill-val">${closed}</div>
+                      <div class="text-sm min-[360px]:text-base sm:text-lg lg:text-xl font-black font-mono card-stat-pill-val" style="color: #0B8A5A;">${closed}</div>
                     </div>
-                    <div class="bg-white rounded-lg py-1.5 sm:py-2 px-0.5 sm:px-1 border border-slate-200 shadow-2xs ${openCloseFilter === 'open' && inProg > 0 ? 'bg-amber-50/80 border-amber-300 ring-1 ring-amber-200' : ''}">
-                      <div class="text-[9px] min-[360px]:text-[10px] sm:text-xs font-bold ${openCloseFilter === 'open' && inProg > 0 ? 'text-amber-800' : 'text-slate-500'} uppercase truncate">${item.id === 'psm-validation' ? 'Pending' : 'Open'}</div>
-                      <div class="text-sm min-[360px]:text-base sm:text-lg lg:text-xl font-black font-mono ${openCloseFilter === 'open' && inProg > 0 ? 'text-amber-700' : 'text-purple-600'} card-stat-pill-val">${inProg}</div>
+                    <div class="bg-white rounded-lg py-1.5 sm:py-2 px-0.5 sm:px-1 border border-slate-200 shadow-2xs ${openCloseFilter === 'open' && inProg > 0 ? 'bg-red-50/60 border-red-200 ring-1 ring-red-100' : ''}">
+                      <div class="text-[9px] min-[360px]:text-[10px] sm:text-xs font-bold ${openCloseFilter === 'open' && inProg > 0 ? 'text-red-800' : 'text-slate-500'} uppercase truncate">${item.id === 'psm-validation' ? 'Pending' : 'Open'}</div>
+                      <div class="text-sm min-[360px]:text-base sm:text-lg lg:text-xl font-black font-mono card-stat-pill-val" style="color: #DC2626;">${inProg}</div>
                     </div>
-                    <div class="rounded-lg py-1.5 sm:py-2 px-0.5 sm:px-1 border shadow-2xs ${overdue > 0 ? 'bg-rose-50 border-rose-300' : 'bg-white border-slate-200'}">
-                      <div class="text-[9px] min-[360px]:text-[10px] sm:text-xs font-bold ${overdue > 0 ? 'text-rose-700' : 'text-slate-500'} uppercase truncate">Overdue</div>
-                      <div class="text-sm min-[360px]:text-base sm:text-lg lg:text-xl font-black font-mono ${overdue > 0 ? 'text-rose-600' : 'text-slate-600'} card-stat-pill-val">${overdue}</div>
+                    <div class="rounded-lg py-1.5 sm:py-2 px-0.5 sm:px-1 border shadow-2xs ${overdue > 0 ? 'bg-purple-50/80 border-purple-200' : 'bg-white border-slate-200'}">
+                      <div class="text-[9px] min-[360px]:text-[10px] sm:text-xs font-bold ${overdue > 0 ? 'text-purple-800' : 'text-slate-500'} uppercase truncate">Overdue</div>
+                      <div class="text-sm min-[360px]:text-base sm:text-lg lg:text-xl font-black font-mono card-stat-pill-val" style="color: #9333EA;">${overdue}</div>
                     </div>
                   </div>
                 </div>
@@ -8810,7 +8841,7 @@
         contactsSheetConfig: {
           sheetId: '1mI5WbcNBYtJc1fQjG0ZYQ1PKQzAHp5Sm3gyi9MibW-g',
           sheetTab: 'Contacts',
-          csvUrl: 'https://docs.google.com/spreadsheets/d/1mI5WbcNBYtJc1fQjG0ZYQ1PKQzAHp5Sm3gyi9MibW-g/gviz/tq?tqx=out:csv&sheet=Contacts',
+          csvUrl: 'https://docs.google.com/spreadsheets/d/1mI5WbcNBYtJc1fQjG0ZYQ1PKQzAHp5Sm3gyi9MibW-g/export?format=csv&sheet=Contacts',
         },
 
         defaultContactsData: [
@@ -8818,14 +8849,15 @@
           { dashboard: 'PSM Audits', responsibility: 'Akhtar Rasool khan', email: 'akhtar.khan@fpcl.com', designation: 'Section Manager Safety', mobile: '3332545233', extension: '8701' },
           { dashboard: 'PSM Validation', responsibility: 'Akhtar Rasool khan', email: 'akhtar.khan@fpcl.com', designation: 'Section Manager Safety', mobile: '3332545233', extension: '8701' },
           { dashboard: 'IMS Audits', responsibility: 'Shahzad Riaz', email: 'shahzad.riaz@fpcl.com', designation: 'Deputy Manager IMS', mobile: '3332319850', extension: '8711' },
-          { dashboard: 'PSSR', responsibility: 'Asad Mehmood/Ashir Gul', email: 'asad.mehmood2@fpcl.com/ashir.gul@fpcl.com', designation: 'Deputy Manager PSG/Senior Executive CASH', mobile: '', extension: '' },
+          { dashboard: 'PSSR', responsibility: 'Asad Mehmood/Ashir Gul', email: 'asad.mehmood2@fpcl.com/ashir.gul@fpcl.com', designation: 'Deputy Manager PSG/Senior Executive CASH', mobile: '03336239522/03012057130', extension: '8303/8333' },
           { dashboard: 'CAPEX', responsibility: 'Liaqat Amin Khattak', email: 'liaqat.khattak@fpcl.com', designation: 'UM PSG', mobile: '3333991994', extension: '8320' },
           { dashboard: 'Sub HSE - P', responsibility: 'Haroon Zulqernain', email: 'haroon.zulqernain@fpcl.com', designation: 'Senior Executive', mobile: '3222329509', extension: '8507' },
           { dashboard: 'Sub HSE – E&I', responsibility: 'Farhan Aslam', email: 'farhan.aslam@fpcl.com', designation: 'Deputy Manager Inst', mobile: '3343106146', extension: '8424' },
           { dashboard: 'EHSE', responsibility: 'Akhtar Rasool khan', email: 'akhtar.khan@fpcl.com', designation: 'Section Manager Safety', mobile: '3332545233', extension: '8701' },
           { dashboard: 'Sub HSE – M', responsibility: 'Muhammad Noman', email: 'muhammad.noman1@fpcl.com', designation: 'Senior Executive Project', mobile: '3107612138', extension: '8565' },
           { dashboard: 'PSI', responsibility: 'Muhammad Noman', email: 'muhammad.noman1@fpcl.com', designation: 'Senior Executive Project', mobile: '3107612138', extension: '8565' },
-          { dashboard: 'Safety talks', responsibility: 'Akhtar Rasool khan', email: 'akhtar.khan@fpcl.com', designation: 'Section Manager Safety', mobile: '3332545233', extension: '8701' }
+          { dashboard: 'Safety talks', responsibility: 'Akhtar Rasool khan', email: 'akhtar.khan@fpcl.com', designation: 'Section Manager Safety', mobile: '3332545233', extension: '8701' },
+          { dashboard: 'MSA', responsibility: 'Akhtar Rasool khan', email: 'akhtar.khan@fpcl.com', designation: 'Section Manager Safety', mobile: '3332545233', extension: '8701' }
         ],
 
         getDashboardBadgeStyle(dashboardName) {
@@ -8852,8 +8884,10 @@
             return { badge: 'bg-cyan-100 text-cyan-800 border-cyan-200', icon: 'wrench', dot: 'bg-cyan-500' };
           } else if (norm.includes('psi')) {
             return { badge: 'bg-fuchsia-100 text-fuchsia-800 border-fuchsia-200', icon: 'zap', dot: 'bg-fuchsia-500' };
-          } else if (norm.includes('safety talks')) {
+          } else if (norm.includes('safety talks') || norm.includes('safety talk')) {
             return { badge: 'bg-amber-100 text-amber-900 border-amber-300', icon: 'message-circle', dot: 'bg-amber-600' };
+          } else if (norm.includes('msa')) {
+            return { badge: 'bg-emerald-100 text-emerald-900 border-emerald-200', icon: 'shield-check', dot: 'bg-emerald-500' };
           }
           return { badge: 'bg-slate-100 text-slate-800 border-slate-200', icon: 'tag', dot: 'bg-slate-500' };
         },
@@ -8935,35 +8969,44 @@
         async fetchContactsData(forceRefresh) {
           const syncIcon = document.getElementById('contacts-sync-icon');
           if (syncIcon) syncIcon.classList.add('animate-spin');
+          const liveStatusEl = document.getElementById('contacts-live-status');
+          if (liveStatusEl) liveStatusEl.textContent = 'Syncing...';
 
           try {
             const urls = [
-              '/api/contacts',
+              '/api/contacts?refresh=' + (forceRefresh ? 'true' : 'false'),
               '/api/sheets/fetch?sheetTab=Contacts',
-              this.contactsSheetConfig.csvUrl
+              this.contactsSheetConfig.csvUrl,
+              'https://docs.google.com/spreadsheets/d/1mI5WbcNBYtJc1fQjG0ZYQ1PKQzAHp5Sm3gyi9MibW-g/export?format=csv&sheet=Contacts',
+              'https://docs.google.com/spreadsheets/d/1mI5WbcNBYtJc1fQjG0ZYQ1PKQzAHp5Sm3gyi9MibW-g/gviz/tq?tqx=out:csv'
             ];
 
             let csvText = '';
             for (const u of urls) {
               try {
-                const res = await fetch(u + (u.includes('?') ? '&' : '?') + '_t=' + Date.now(), {
+                const sep = u.includes('?') ? '&' : '?';
+                const res = await fetch(`${u}${sep}_t=${Date.now()}`, {
                   headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
                 });
                 if (res.ok) {
-                  const data = await res.json().catch(() => null);
-                  if (data && data.csvText) {
-                    csvText = data.csvText;
-                    break;
-                  } else if (!data) {
-                    const text = await res.text().catch(() => '');
-                    if (text && !text.includes('<!DOCTYPE html>') && text.includes(',')) {
-                      csvText = text;
-                      break;
+                  const raw = await res.text();
+                  if (raw) {
+                    try {
+                      const json = JSON.parse(raw);
+                      if (json && json.csvText && typeof json.csvText === 'string') {
+                        csvText = json.csvText;
+                        break;
+                      }
+                    } catch (_) {
+                      if (!raw.includes('<!DOCTYPE html>') && !raw.includes('<html') && raw.includes(',')) {
+                        csvText = raw;
+                        break;
+                      }
                     }
                   }
                 }
               } catch (e) {
-                // Try next URL
+                // Try next URL candidate
               }
             }
 
@@ -8971,14 +9014,24 @@
               const parsed = this.parseContactsCsv(csvText);
               if (parsed && parsed.length > 0) {
                 this.contactsList = parsed;
+                this._contactsLastSyncTime = new Date().toLocaleTimeString();
+                try {
+                  localStorage.setItem('fpcl_live_contacts_data', JSON.stringify(parsed));
+                  localStorage.setItem('fpcl_live_contacts_sync_time', this._contactsLastSyncTime);
+                } catch (e) {}
               }
             }
           } catch (err) {
-            console.warn('Contacts live sync warning:', err);
+            console.warn('Responsibility Matrix contacts live sync warning:', err);
           } finally {
             if (syncIcon) {
               setTimeout(() => syncIcon.classList.remove('animate-spin'), 400);
             }
+            const syncTime = this._contactsLastSyncTime || new Date().toLocaleTimeString();
+            if (liveStatusEl) liveStatusEl.textContent = `Live (${syncTime})`;
+            const footerSyncEl = document.getElementById('contacts-footer-sync-time');
+            if (footerSyncEl) footerSyncEl.textContent = `Live Synchronized (${syncTime})`;
+
             const searchInput = document.getElementById('contacts-modal-search');
             const query = searchInput ? searchInput.value : '';
             this.filterContactsModal(query);
@@ -9019,33 +9072,33 @@
               </a>
             `).join('<div class="my-0.5"></div>') : '<span class="text-slate-400 font-mono text-xs">—</span>';
 
-            // Format mobile
+            // Format mobile (handle single or slash-separated multiple numbers, e.g. 03336239522/03012057130)
             const cleanMobile = item.mobile ? item.mobile.trim() : '';
-            const mobileHtml = cleanMobile.length > 0 ? `
-              <div class="inline-flex items-center gap-1.5">
-                <a href="tel:${cleanMobile.replace(/[^0-9+]/g, '')}" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-mono text-[11px] font-bold border border-emerald-200 transition-colors" title="Call ${cleanMobile}">
+            const mobileHtml = cleanMobile.length > 0 ? cleanMobile.split('/').map(m => m.trim()).filter(Boolean).map(m => `
+              <div class="inline-flex items-center gap-1.5 my-0.5">
+                <a href="tel:${m.replace(/[^0-9+]/g, '')}" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-mono text-[11px] font-bold border border-emerald-200 transition-colors" title="Call ${m}">
                   <i data-lucide="phone" class="w-3 h-3 text-emerald-600 shrink-0"></i>
-                  <span>${cleanMobile}</span>
+                  <span>${m}</span>
                 </a>
-                <button type="button" onclick="portalApp.copyContactInfo('${cleanMobile}', this)" class="p-1 rounded text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer" title="Copy mobile number">
+                <button type="button" onclick="portalApp.copyContactInfo('${m}', this)" class="p-1 rounded text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer" title="Copy mobile number">
                   <i data-lucide="copy" class="w-3 h-3"></i>
                 </button>
               </div>
-            ` : '<span class="text-slate-400 font-mono text-xs">—</span>';
+            `).join('<div class="my-0.5"></div>') : '<span class="text-slate-400 font-mono text-xs">—</span>';
 
-            // Format extension
+            // Format extension (handle single or slash-separated multiple extensions, e.g. 8303/8333)
             const cleanExt = item.extension ? item.extension.trim() : '';
-            const extHtml = cleanExt.length > 0 ? `
-              <div class="inline-flex items-center justify-center gap-1">
+            const extHtml = cleanExt.length > 0 ? cleanExt.split('/').map(ext => ext.trim()).filter(Boolean).map(ext => `
+              <div class="inline-flex items-center justify-center gap-1 my-0.5">
                 <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-indigo-50 text-indigo-700 font-mono text-xs font-black border border-indigo-200/80 shadow-2xs">
                   <i data-lucide="phone-forwarded" class="w-3 h-3 text-indigo-500 shrink-0"></i>
-                  <span>${cleanExt}</span>
+                  <span>${ext}</span>
                 </span>
-                <button type="button" onclick="portalApp.copyContactInfo('${cleanExt}', this)" class="p-1 rounded text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer" title="Copy extension">
+                <button type="button" onclick="portalApp.copyContactInfo('${ext}', this)" class="p-1 rounded text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer" title="Copy extension">
                   <i data-lucide="copy" class="w-2.5 h-2.5"></i>
                 </button>
               </div>
-            ` : '<span class="text-slate-400 font-mono text-xs">—</span>';
+            `).join('<div class="my-0.5"></div>') : '<span class="text-slate-400 font-mono text-xs">—</span>';
 
             return `
               <tr class="hover:bg-blue-50/40 transition-colors group">
@@ -9117,11 +9170,19 @@
               setTimeout(() => searchInput.focus(), 80);
             }
             if (!this.contactsList) {
-              this.contactsList = [...this.defaultContactsData];
+              try {
+                const cached = localStorage.getItem('fpcl_live_contacts_data');
+                if (cached) {
+                  this.contactsList = JSON.parse(cached);
+                }
+              } catch (e) {}
+              if (!this.contactsList) {
+                this.contactsList = [...this.defaultContactsData];
+              }
             }
             this.renderContactsTable();
-            // Fetch live data silently in background to keep synchronized
-            this.fetchContactsData(false);
+            // Fetch live data from Google Sheet to ensure up-to-date synchrony
+            this.fetchContactsData(true);
             if (window.lucide && typeof window.lucide.createIcons === 'function') {
               window.lucide.createIcons();
             }
