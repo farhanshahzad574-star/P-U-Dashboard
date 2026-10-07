@@ -1485,9 +1485,13 @@ app.all('/api/sheets/fetch', async (req: Request, res: Response): Promise<void> 
       try {
         const response = await fetch(fetchUrl, {
           method: 'GET',
+          cache: 'no-store',
           headers: {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Accept': 'text/csv,text/plain,*/*'
+            'Accept': 'text/csv,text/plain,*/*',
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
           },
           redirect: 'follow'
         });
@@ -1520,7 +1524,13 @@ app.all('/api/sheets/fetch', async (req: Request, res: Response): Promise<void> 
       for (const gvizUrl of gvizCandidateUrls) {
         try {
           const gvizRes = await fetch(gvizUrl, {
-            headers: { 'Accept': '*/*' },
+            cache: 'no-store',
+            headers: {
+              'Accept': '*/*',
+              'Cache-Control': 'no-cache, no-store, must-revalidate',
+              'Pragma': 'no-cache',
+              'Expires': '0'
+            },
             redirect: 'follow'
           });
           if (gvizRes.ok) {

@@ -1396,98 +1396,98 @@
             </div>
           </div>
 
-          <!-- 2. Top 4 Executive KPI Metric Cards -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- 2. Top 4 Executive KPI Metric Cards (Mobile side by side grid-cols-2, desktop 4-cols) -->
+          <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             
             <!-- Card 1: Total Personnel Tracked -->
             <div
               onclick="FPCL_PSM_SUITE.clearValidationFilters()"
-              class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs relative overflow-hidden cursor-pointer hover:border-slate-400 hover:shadow-sm transition-all group"
+              class="bg-white border border-slate-200 rounded-2xl p-3.5 sm:p-5 shadow-xs relative overflow-hidden cursor-pointer hover:border-slate-400 hover:shadow-sm transition-all group"
               title="Click to reset filters and view all personnel"
             >
               <div class="absolute top-0 left-0 right-0 h-1.5 bg-slate-700 group-hover:bg-slate-900 transition-colors"></div>
-              <div class="flex items-center justify-between text-slate-500 text-xs sm:text-sm font-bold tracking-wider uppercase">
-                <span>1. TOTAL PERSONNEL</span>
-                <span class="p-1.5 rounded-lg bg-slate-100 text-slate-700">
-                  <i data-lucide="users" class="w-4 h-4"></i>
+              <div class="flex items-center justify-between text-slate-500 text-[10px] sm:text-xs md:text-sm font-bold tracking-wider uppercase">
+                <span class="truncate">1. TOTAL PERSONNEL</span>
+                <span class="p-1 sm:p-1.5 rounded-lg bg-slate-100 text-slate-700 shrink-0">
+                  <i data-lucide="users" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
                 </span>
               </div>
-              <div class="mt-3 flex items-baseline gap-2">
-                <span class="text-5xl sm:text-6xl font-black font-mono tracking-tight text-slate-900 kpi-metric-val">${totalFiltered}</span>
-                <span class="text-xs font-mono font-bold text-slate-500">/ ${totalRaw} Total</span>
+              <div class="mt-2 sm:mt-3 flex items-baseline gap-1 sm:gap-2 flex-wrap">
+                <span class="text-3xl sm:text-5xl lg:text-6xl font-black font-mono tracking-tight text-slate-900 kpi-metric-val">${totalFiltered}</span>
+                <span class="text-[10px] sm:text-xs font-mono font-bold text-slate-500">/ ${totalRaw} Total</span>
               </div>
-              <div class="mt-2.5 flex items-center justify-between text-xs text-slate-500">
-                <span>Scope Coverage</span>
-                <span class="font-bold text-slate-800">100% Cohort</span>
+              <div class="mt-2 sm:mt-2.5 flex items-center justify-between text-[10px] sm:text-xs text-slate-500">
+                <span class="truncate">Scope Coverage</span>
+                <span class="font-bold text-slate-800 shrink-0">100% Cohort</span>
               </div>
             </div>
 
             <!-- Card 2: Training Completed -->
             <div
               onclick="FPCL_PSM_SUITE.setValidationFilter('trainingFilter', 'Yes')"
-              class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs relative overflow-hidden cursor-pointer hover:border-emerald-300 hover:shadow-sm transition-all group"
+              class="bg-white border border-slate-200 rounded-2xl p-3.5 sm:p-5 shadow-xs relative overflow-hidden cursor-pointer hover:border-emerald-300 hover:shadow-sm transition-all group"
               title="Click to filter by Training: Yes"
             >
               <div class="absolute top-0 left-0 right-0 h-1.5 bg-emerald-500 group-hover:bg-emerald-600 transition-colors"></div>
-              <div class="flex items-center justify-between text-emerald-800 text-xs sm:text-sm font-bold tracking-wider uppercase">
-                <span>2. TRAINING COMPLETED</span>
-                <span class="p-1.5 rounded-lg bg-emerald-50 text-emerald-600">
-                  <i data-lucide="award" class="w-4 h-4"></i>
+              <div class="flex items-center justify-between text-emerald-800 text-[10px] sm:text-xs md:text-sm font-bold tracking-wider uppercase">
+                <span class="truncate">2. TRAINING COMPLETED</span>
+                <span class="p-1 sm:p-1.5 rounded-lg bg-emerald-50 text-emerald-600 shrink-0">
+                  <i data-lucide="award" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
                 </span>
               </div>
-              <div class="mt-3 flex items-baseline gap-2">
-                <span class="text-5xl sm:text-6xl font-black font-mono tracking-tight text-emerald-600 kpi-metric-val">${trainedYesCount}</span>
-                <span class="text-xs font-mono font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">${trainingPct}%</span>
+              <div class="mt-2 sm:mt-3 flex items-baseline gap-1 sm:gap-2 flex-wrap">
+                <span class="text-3xl sm:text-5xl lg:text-6xl font-black font-mono tracking-tight text-emerald-600 kpi-metric-val">${trainedYesCount}</span>
+                <span class="text-[10px] sm:text-xs font-mono font-extrabold text-emerald-700 bg-emerald-50 px-1.5 sm:px-2 py-0.5 rounded-full border border-emerald-200">${trainingPct}%</span>
               </div>
-              <div class="mt-2.5 flex items-center justify-between text-xs text-slate-500">
-                <span>Pending / Gaps</span>
-                <span class="font-bold text-amber-600">${trainedNoCount} Personnel</span>
+              <div class="mt-2 sm:mt-2.5 flex items-center justify-between text-[10px] sm:text-xs text-slate-500">
+                <span class="truncate">Pending / Gaps</span>
+                <span class="font-bold text-amber-600 shrink-0">${trainedNoCount} Personnel</span>
               </div>
             </div>
 
             <!-- Card 3: Validation Passed -->
             <div
               onclick="FPCL_PSM_SUITE.setValidationFilter('statusFilter', 'Pass')"
-              class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs relative overflow-hidden cursor-pointer hover:border-teal-300 hover:shadow-sm transition-all group"
+              class="bg-white border border-slate-200 rounded-2xl p-3.5 sm:p-5 shadow-xs relative overflow-hidden cursor-pointer hover:border-teal-300 hover:shadow-sm transition-all group"
               title="Click to filter by Status: Pass"
             >
               <div class="absolute top-0 left-0 right-0 h-1.5 bg-teal-600 group-hover:bg-teal-700 transition-colors"></div>
-              <div class="flex items-center justify-between text-teal-800 text-xs sm:text-sm font-bold tracking-wider uppercase">
-                <span>3. VALIDATION PASSED</span>
-                <span class="p-1.5 rounded-lg bg-teal-50 text-teal-700">
-                  <i data-lucide="shield-check" class="w-4 h-4"></i>
+              <div class="flex items-center justify-between text-teal-800 text-[10px] sm:text-xs md:text-sm font-bold tracking-wider uppercase">
+                <span class="truncate">3. VALIDATION PASSED</span>
+                <span class="p-1 sm:p-1.5 rounded-lg bg-teal-50 text-teal-700 shrink-0">
+                  <i data-lucide="shield-check" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
                 </span>
               </div>
-              <div class="mt-3 flex items-baseline gap-2">
-                <span class="text-5xl sm:text-6xl font-black font-mono tracking-tight text-teal-700 kpi-metric-val">${passedCount}</span>
-                <span class="text-xs font-mono font-extrabold text-teal-800 bg-teal-50 px-2 py-0.5 rounded-full border border-teal-200">${passPct}%</span>
+              <div class="mt-2 sm:mt-3 flex items-baseline gap-1 sm:gap-2 flex-wrap">
+                <span class="text-3xl sm:text-5xl lg:text-6xl font-black font-mono tracking-tight text-teal-700 kpi-metric-val">${passedCount}</span>
+                <span class="text-[10px] sm:text-xs font-mono font-extrabold text-teal-800 bg-teal-50 px-1.5 sm:px-2 py-0.5 rounded-full border border-teal-200">${passPct}%</span>
               </div>
-              <div class="mt-2.5 flex items-center justify-between text-xs text-slate-500">
-                <span>Failed / Pending</span>
-                <span class="font-bold text-slate-700">${failedCount} Fail • ${pendingCount} Pending</span>
+              <div class="mt-2 sm:mt-2.5 flex items-center justify-between text-[10px] sm:text-xs text-slate-500">
+                <span class="truncate">Failed / Pending</span>
+                <span class="font-bold text-slate-700 shrink-0">${failedCount} Fail • ${pendingCount} Pending</span>
               </div>
             </div>
 
             <!-- Card 4: Module Validation Compliance -->
             <div
               onclick="FPCL_PSM_SUITE.setValidationFilter('moduleFilter', 'all')"
-              class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs relative overflow-hidden cursor-pointer hover:border-blue-300 hover:shadow-sm transition-all group"
+              class="bg-white border border-slate-200 rounded-2xl p-3.5 sm:p-5 shadow-xs relative overflow-hidden cursor-pointer hover:border-blue-300 hover:shadow-sm transition-all group"
               title="Click to view all validation modules"
             >
               <div class="absolute top-0 left-0 right-0 h-1.5 bg-blue-600 group-hover:bg-blue-700 transition-colors"></div>
-              <div class="flex items-center justify-between text-blue-900 text-xs sm:text-sm font-bold tracking-wider uppercase">
-                <span>4. MODULE VALIDATION</span>
-                <span class="p-1.5 rounded-lg bg-blue-50 text-blue-600">
-                  <i data-lucide="shield-check" class="w-4 h-4"></i>
+              <div class="flex items-center justify-between text-blue-900 text-[10px] sm:text-xs md:text-sm font-bold tracking-wider uppercase">
+                <span class="truncate">4. MODULE VALIDATION</span>
+                <span class="p-1 sm:p-1.5 rounded-lg bg-blue-50 text-blue-600 shrink-0">
+                  <i data-lucide="shield-check" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
                 </span>
               </div>
-              <div class="mt-3 flex items-baseline gap-2 flex-wrap">
-                <span class="text-5xl sm:text-6xl font-black font-mono tracking-tight text-blue-950 kpi-metric-val">${moduleBreakdown.length}</span>
-                <span class="text-xs font-sans text-slate-500 font-bold">${moduleBreakdown.length === 1 ? 'Active Module' : 'Active Modules'}</span>
+              <div class="mt-2 sm:mt-3 flex items-baseline gap-1 sm:gap-2 flex-wrap">
+                <span class="text-3xl sm:text-5xl lg:text-6xl font-black font-mono tracking-tight text-blue-950 kpi-metric-val">${moduleBreakdown.length}</span>
+                <span class="text-[10px] sm:text-xs font-sans text-slate-500 font-bold">${moduleBreakdown.length === 1 ? 'Active Module' : 'Active Modules'}</span>
               </div>
-              <div class="mt-2.5 flex items-center justify-between text-xs text-slate-500">
-                <span>Validation Result</span>
-                <span class="font-bold ${failedCount === 0 ? 'text-emerald-700 font-extrabold' : 'text-rose-600'}">
+              <div class="mt-2 sm:mt-2.5 flex items-center justify-between text-[10px] sm:text-xs text-slate-500">
+                <span class="truncate">Validation Result</span>
+                <span class="font-bold shrink-0 ${failedCount === 0 ? 'text-emerald-700 font-extrabold' : 'text-rose-600'}">
                   ${failedCount === 0 ? `${passedCount} Pass (100%)` : `${passedCount} Pass • ${failedCount} Fail`}
                 </span>
               </div>
@@ -2120,7 +2120,7 @@
           <!-- ========================================================================= -->
           <!-- TOP 4 EXECUTIVE KPI SUMMARY CARDS (DYNAMICALLY COMPUTED)                  -->
           <!-- ========================================================================= -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             
             <!-- Card 1: Total Findings -->
             <div 
@@ -2128,18 +2128,18 @@
               onmouseenter="FPCL_PSM_SUITE.showTooltip(event, { title: '1. Total Findings', badge: 'Scope', color: '#475569', subtitle: 'Audit Registry Overview', metrics: [{ label: 'Filtered Findings', value: '${totalFiltered}' }, { label: 'Total Ingested', value: '${totalRaw}' }, { label: 'Open', value: '${openCount}', color: '#F43F5E' }, { label: 'Closed', value: '${closedCount}', color: '#10B981' }], hint: 'Click to open and inspect all findings' })"
               onmousemove="FPCL_PSM_SUITE.moveTooltip(event)"
               onmouseleave="FPCL_PSM_SUITE.hideTooltip()"
-              class="bg-white border border-slate-200 hover:border-slate-300 rounded-2xl p-5 shadow-xs hover:shadow-md transition-all cursor-pointer relative overflow-hidden group ${s.statusFilter === 'all' ? 'ring-2 ring-slate-400' : ''}"
+              class="bg-white border border-slate-200 hover:border-slate-300 rounded-2xl p-3.5 sm:p-5 shadow-xs hover:shadow-md transition-all cursor-pointer relative overflow-hidden group ${s.statusFilter === 'all' ? 'ring-2 ring-slate-400' : ''}"
             >
               <div class="absolute top-0 left-0 right-0 h-1.5 bg-slate-600"></div>
-              <div class="flex items-center justify-between text-slate-500 text-xs sm:text-sm font-bold tracking-wider uppercase">
-                <span>1. TOTAL FINDINGS</span>
-                <span class="p-1.5 rounded-lg bg-slate-100 text-slate-600 group-hover:bg-slate-200 transition-colors">
-                  <i data-lucide="files" class="w-4 h-4"></i>
+              <div class="flex items-center justify-between text-slate-500 text-[10px] sm:text-xs md:text-sm font-bold tracking-wider uppercase">
+                <span class="truncate">1. TOTAL FINDINGS</span>
+                <span class="p-1 sm:p-1.5 rounded-lg bg-slate-100 text-slate-600 group-hover:bg-slate-200 transition-colors shrink-0">
+                  <i data-lucide="files" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
                 </span>
               </div>
-              <div class="mt-3 flex items-baseline gap-2">
-                <span class="text-5xl sm:text-6xl font-black font-mono tracking-tight text-slate-900 kpi-metric-val">${totalFiltered}</span>
-                ${totalFiltered !== totalRaw ? `<span class="text-sm font-mono text-slate-400">/ ${totalRaw}</span>` : ''}
+              <div class="mt-2 sm:mt-3 flex items-baseline gap-1 sm:gap-2 flex-wrap">
+                <span class="text-3xl sm:text-5xl lg:text-6xl font-black font-mono tracking-tight text-slate-900 kpi-metric-val">${totalFiltered}</span>
+                ${totalFiltered !== totalRaw ? `<span class="text-xs sm:text-sm font-mono text-slate-400">/ ${totalRaw}</span>` : ''}
               </div>
             </div>
 
@@ -2149,18 +2149,18 @@
               onmouseenter="FPCL_PSM_SUITE.showTooltip(event, { title: '2. Open Findings', badge: 'Active Open', color: '#F43F5E', subtitle: 'Corrective Action Required', metrics: [{ label: 'Pending Action', value: '${openCount}', color: '#F43F5E' }, { label: 'Active Ratio', value: '${openPercentage}%' }, { label: 'Filtered Scope', value: '${totalFiltered}' }], hint: 'Click to open all Open findings' })"
               onmousemove="FPCL_PSM_SUITE.moveTooltip(event)"
               onmouseleave="FPCL_PSM_SUITE.hideTooltip()"
-              class="bg-white border border-slate-200 hover:border-rose-300 rounded-2xl p-5 shadow-xs hover:shadow-md transition-all cursor-pointer relative overflow-hidden group ${s.statusFilter === 'Open' ? 'ring-2 ring-rose-500 bg-rose-50/20' : ''}"
+              class="bg-white border border-slate-200 hover:border-rose-300 rounded-2xl p-3.5 sm:p-5 shadow-xs hover:shadow-md transition-all cursor-pointer relative overflow-hidden group ${s.statusFilter === 'Open' ? 'ring-2 ring-rose-500 bg-rose-50/20' : ''}"
             >
               <div class="absolute top-0 left-0 right-0 h-1.5 bg-rose-500"></div>
-              <div class="flex items-center justify-between text-rose-700 text-xs sm:text-sm font-bold tracking-wider uppercase">
-                <span>2. OPEN FINDINGS</span>
-                <span class="p-1.5 rounded-lg bg-rose-50 text-rose-600 group-hover:bg-rose-100 transition-colors">
-                  <i data-lucide="alert-circle" class="w-4 h-4"></i>
+              <div class="flex items-center justify-between text-rose-700 text-[10px] sm:text-xs md:text-sm font-bold tracking-wider uppercase">
+                <span class="truncate">2. OPEN FINDINGS</span>
+                <span class="p-1 sm:p-1.5 rounded-lg bg-rose-50 text-rose-600 group-hover:bg-rose-100 transition-colors shrink-0">
+                  <i data-lucide="alert-circle" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
                 </span>
               </div>
-              <div class="mt-3 flex items-baseline gap-2">
-                <span class="text-5xl sm:text-6xl font-black font-mono tracking-tight text-rose-600 kpi-metric-val">${openCount}</span>
-                <span class="text-sm font-mono font-bold text-rose-700">(${openPercentage}%)</span>
+              <div class="mt-2 sm:mt-3 flex items-baseline gap-1 sm:gap-2 flex-wrap">
+                <span class="text-3xl sm:text-5xl lg:text-6xl font-black font-mono tracking-tight text-rose-600 kpi-metric-val">${openCount}</span>
+                <span class="text-xs sm:text-sm font-mono font-bold text-rose-700">(${openPercentage}%)</span>
               </div>
             </div>
 
@@ -2170,18 +2170,18 @@
               onmouseenter="FPCL_PSM_SUITE.showTooltip(event, { title: '3. Closed Findings', badge: 'Resolved', color: '#10B981', subtitle: 'Audit Verification Completed', metrics: [{ label: 'Resolved Count', value: '${closedCount}', color: '#10B981' }, { label: 'Resolution Rate', value: '${closurePercentage}%' }], hint: 'Click to open all Closed findings' })"
               onmousemove="FPCL_PSM_SUITE.moveTooltip(event)"
               onmouseleave="FPCL_PSM_SUITE.hideTooltip()"
-              class="bg-white border border-slate-200 hover:border-emerald-300 rounded-2xl p-5 shadow-xs hover:shadow-md transition-all cursor-pointer relative overflow-hidden group ${s.statusFilter === 'Close' ? 'ring-2 ring-emerald-500 bg-emerald-50/20' : ''}"
+              class="bg-white border border-slate-200 hover:border-emerald-300 rounded-2xl p-3.5 sm:p-5 shadow-xs hover:shadow-md transition-all cursor-pointer relative overflow-hidden group ${s.statusFilter === 'Close' ? 'ring-2 ring-emerald-500 bg-emerald-50/20' : ''}"
             >
               <div class="absolute top-0 left-0 right-0 h-1.5 bg-emerald-500"></div>
-              <div class="flex items-center justify-between text-emerald-700 text-xs sm:text-sm font-bold tracking-wider uppercase">
-                <span>3. CLOSED FINDINGS</span>
-                <span class="p-1.5 rounded-lg bg-emerald-50 text-emerald-600 group-hover:bg-emerald-100 transition-colors">
-                  <i data-lucide="check-circle" class="w-4 h-4"></i>
+              <div class="flex items-center justify-between text-emerald-700 text-[10px] sm:text-xs md:text-sm font-bold tracking-wider uppercase">
+                <span class="truncate">3. CLOSED FINDINGS</span>
+                <span class="p-1 sm:p-1.5 rounded-lg bg-emerald-50 text-emerald-600 group-hover:bg-emerald-100 transition-colors shrink-0">
+                  <i data-lucide="check-circle" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
                 </span>
               </div>
-              <div class="mt-3 flex items-baseline gap-2">
-                <span class="text-5xl sm:text-6xl font-black font-mono tracking-tight text-emerald-600 kpi-metric-val">${closedCount}</span>
-                <span class="text-sm font-mono font-bold text-emerald-700">(${closurePercentage}%)</span>
+              <div class="mt-2 sm:mt-3 flex items-baseline gap-1 sm:gap-2 flex-wrap">
+                <span class="text-3xl sm:text-5xl lg:text-6xl font-black font-mono tracking-tight text-emerald-600 kpi-metric-val">${closedCount}</span>
+                <span class="text-xs sm:text-sm font-mono font-bold text-emerald-700">(${closurePercentage}%)</span>
               </div>
             </div>
 
@@ -2191,17 +2191,17 @@
               onmouseenter="FPCL_PSM_SUITE.showTooltip(event, { title: '4. % Closure Rate', badge: 'Compliance', color: '#0D9488', subtitle: 'Resolution Efficiency', metrics: [{ label: 'Closure Rate', value: '${closurePercentage}%' }, { label: 'Closed', value: '${closedCount}', color: '#10B981' }, { label: 'Open', value: '${openCount}', color: '#F43F5E' }], hint: 'Click to explore compliance breakdown' })"
               onmousemove="FPCL_PSM_SUITE.moveTooltip(event)"
               onmouseleave="FPCL_PSM_SUITE.hideTooltip()"
-              class="bg-white border border-slate-200 hover:border-teal-300 rounded-2xl p-5 shadow-xs hover:shadow-md transition-all cursor-pointer relative overflow-hidden group"
+              class="bg-white border border-slate-200 hover:border-teal-300 rounded-2xl p-3.5 sm:p-5 shadow-xs hover:shadow-md transition-all cursor-pointer relative overflow-hidden group"
             >
               <div class="absolute top-0 left-0 right-0 h-1.5 bg-teal-500"></div>
-              <div class="flex items-center justify-between text-teal-700 text-xs sm:text-sm font-bold tracking-wider uppercase">
-                <span>4. % CLOSURE</span>
-                <span class="p-1.5 rounded-lg bg-teal-50 text-teal-600 group-hover:bg-teal-100 transition-colors">
-                  <i data-lucide="trending-up" class="w-4 h-4"></i>
+              <div class="flex items-center justify-between text-teal-700 text-[10px] sm:text-xs md:text-sm font-bold tracking-wider uppercase">
+                <span class="truncate">4. % CLOSURE</span>
+                <span class="p-1 sm:p-1.5 rounded-lg bg-teal-50 text-teal-600 group-hover:bg-teal-100 transition-colors shrink-0">
+                  <i data-lucide="trending-up" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
                 </span>
               </div>
-              <div class="mt-3 flex items-baseline gap-2">
-                <span class="text-5xl sm:text-6xl font-black font-mono tracking-tight text-teal-600 kpi-metric-val">${closurePercentage}%</span>
+              <div class="mt-2 sm:mt-3 flex items-baseline gap-1 sm:gap-2">
+                <span class="text-3xl sm:text-5xl lg:text-6xl font-black font-mono tracking-tight text-teal-600 kpi-metric-val">${closurePercentage}%</span>
               </div>
             </div>
 

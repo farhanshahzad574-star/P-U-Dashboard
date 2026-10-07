@@ -1619,26 +1619,26 @@
         </div>
 
         <!-- ========================================================================= -->
-        <!-- 3. EXECUTIVE KPI CARDS: Total PLRs, Total Recs, Open Recs                 -->
+        <!-- 3. EXECUTIVE KPI CARDS: Total PLRs, Total Recs, Open Recs (Side by side on mobile & desktop) -->
         <!-- ========================================================================= -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="grid grid-cols-3 gap-2 sm:gap-4">
           
           <!-- Card 1: TOTAL PLRs -->
           <div
             data-plr-kpi="total-plrs"
             onclick="(window.portalApp || portalApp).openPlrKpiModal('total-plrs')"
-            class="bg-white border border-slate-200 hover:border-[#2E6DA4] hover:shadow-md hover:-translate-y-0.5 rounded-2xl p-5 sm:p-6 shadow-sm relative overflow-hidden group transition-all cursor-pointer flex flex-col justify-between"
+            class="bg-white border border-slate-200 hover:border-[#2E6DA4] hover:shadow-md hover:-translate-y-0.5 rounded-xl sm:rounded-2xl p-2.5 sm:p-6 shadow-sm relative overflow-hidden group transition-all cursor-pointer flex flex-col justify-between"
             title="Click to view all ${totalPLRs} Plant Loss Reports in pop-up window"
           >
-            <div class="flex items-center justify-between text-slate-500 text-xs sm:text-sm font-bold uppercase tracking-wider">
-              <span>Total PLRs</span>
-              <span class="p-2 rounded-xl bg-blue-50 text-[#2E6DA4] border border-blue-100 group-hover:bg-blue-100 transition-colors">
-                <i data-lucide="file-text" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+            <div class="flex items-center justify-between text-slate-500 text-[10px] sm:text-xs md:text-sm font-bold uppercase tracking-wider gap-1">
+              <span class="truncate">Total PLRs</span>
+              <span class="p-1 sm:p-2 rounded-lg sm:rounded-xl bg-blue-50 text-[#2E6DA4] border border-blue-100 group-hover:bg-blue-100 transition-colors shrink-0">
+                <i data-lucide="file-text" class="w-3.5 h-3.5 sm:w-5 sm:h-5"></i>
               </span>
             </div>
-            <div class="mt-4 flex items-baseline justify-between gap-2">
-              <span class="text-5xl sm:text-6xl font-black font-mono text-slate-900 tracking-tight kpi-metric-val">${totalPLRs}</span>
-              <span class="text-xs sm:text-sm font-bold text-[#2E6DA4] font-mono">100%</span>
+            <div class="mt-2 sm:mt-4 flex items-baseline justify-between gap-1">
+              <span class="text-2xl sm:text-5xl md:text-6xl font-black font-mono text-slate-900 tracking-tight kpi-metric-val">${totalPLRs}</span>
+              <span class="text-[10px] sm:text-xs md:text-sm font-bold text-[#2E6DA4] font-mono shrink-0">100%</span>
             </div>
           </div>
 
@@ -1646,17 +1646,18 @@
           <div
             data-plr-kpi="total-recs"
             onclick="(window.portalApp || portalApp).openPlrKpiModal('total-recs')"
-            class="bg-white border border-slate-200 hover:border-blue-400 hover:shadow-md hover:-translate-y-0.5 rounded-2xl p-5 sm:p-6 shadow-sm relative overflow-hidden group transition-all cursor-pointer flex flex-col justify-between"
+            class="bg-white border border-slate-200 hover:border-blue-400 hover:shadow-md hover:-translate-y-0.5 rounded-xl sm:rounded-2xl p-2.5 sm:p-6 shadow-sm relative overflow-hidden group transition-all cursor-pointer flex flex-col justify-between"
             title="Click to view all ${totalRecs} Recommendations in pop-up window"
           >
-            <div class="flex items-center justify-between text-slate-500 text-xs sm:text-sm font-bold uppercase tracking-wider">
-              <span>Total Recommendations</span>
-              <span class="p-2 rounded-xl bg-sky-50 text-sky-600 border border-sky-100 group-hover:bg-sky-100 transition-colors">
-                <i data-lucide="layers" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+            <div class="flex items-center justify-between text-slate-500 text-[10px] sm:text-xs md:text-sm font-bold uppercase tracking-wider gap-1">
+              <span class="hidden sm:inline">Total Recommendations</span>
+              <span class="sm:hidden truncate" title="Total Recommendations">Total Recs</span>
+              <span class="p-1 sm:p-2 rounded-lg sm:rounded-xl bg-sky-50 text-sky-600 border border-sky-100 group-hover:bg-sky-100 transition-colors shrink-0">
+                <i data-lucide="layers" class="w-3.5 h-3.5 sm:w-5 sm:h-5"></i>
               </span>
             </div>
-            <div class="mt-4 flex items-baseline justify-between gap-2">
-              <span class="text-5xl sm:text-6xl font-black font-mono text-slate-900 tracking-tight kpi-metric-val">${totalRecs}</span>
+            <div class="mt-2 sm:mt-4 flex items-baseline justify-between gap-1">
+              <span class="text-2xl sm:text-5xl md:text-6xl font-black font-mono text-slate-900 tracking-tight kpi-metric-val">${totalRecs}</span>
             </div>
           </div>
 
@@ -1664,19 +1665,21 @@
           <div
             data-plr-kpi="open-recs"
             onclick="(window.portalApp || portalApp).openPlrKpiModal('open-recs')"
-            class="bg-white border border-amber-200 hover:border-amber-400 hover:shadow-md hover:-translate-y-0.5 rounded-2xl p-5 sm:p-6 shadow-sm relative overflow-hidden group transition-all cursor-pointer flex flex-col justify-between"
+            class="bg-white border border-amber-200 hover:border-amber-400 hover:shadow-md hover:-translate-y-0.5 rounded-xl sm:rounded-2xl p-2.5 sm:p-6 shadow-sm relative overflow-hidden group transition-all cursor-pointer flex flex-col justify-between"
             title="Click to view all ${openRecs} Open Recommendations in pop-up window"
           >
-            <div class="flex items-center justify-between text-slate-500 text-xs sm:text-sm font-bold uppercase tracking-wider">
-              <span>Open Recommendations</span>
-              <span class="p-2 rounded-xl bg-amber-50 text-amber-600 border border-amber-200 group-hover:bg-amber-100 transition-colors">
-                <i data-lucide="clock" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+            <div class="flex items-center justify-between text-slate-500 text-[10px] sm:text-xs md:text-sm font-bold uppercase tracking-wider gap-1">
+              <span class="hidden sm:inline">Open Recommendations</span>
+              <span class="sm:hidden truncate" title="Open Recommendations">Open Recs</span>
+              <span class="p-1 sm:p-2 rounded-lg sm:rounded-xl bg-amber-50 text-amber-600 border border-amber-200 group-hover:bg-amber-100 transition-colors shrink-0">
+                <i data-lucide="clock" class="w-3.5 h-3.5 sm:w-5 sm:h-5"></i>
               </span>
             </div>
-            <div class="mt-4 flex items-baseline justify-between gap-2">
-              <span class="text-5xl sm:text-6xl font-black font-mono text-amber-600 tracking-tight kpi-metric-val">${openRecs}</span>
-              <span class="px-2.5 py-0.5 rounded-full text-xs sm:text-sm font-bold bg-amber-50 text-amber-800 border border-amber-200 font-mono">
-                ${totalRecs > 0 ? ((openRecs / totalRecs) * 100).toFixed(0) : 0}% Open Obs
+            <div class="mt-2 sm:mt-4 flex items-baseline justify-between gap-1 flex-wrap sm:flex-nowrap">
+              <span class="text-2xl sm:text-5xl md:text-6xl font-black font-mono text-amber-600 tracking-tight kpi-metric-val">${openRecs}</span>
+              <span class="px-1.5 sm:px-2.5 py-0.5 rounded-full text-[9px] sm:text-xs md:text-sm font-bold bg-amber-50 text-amber-800 border border-amber-200 font-mono shrink-0">
+                <span class="hidden sm:inline">${totalRecs > 0 ? ((openRecs / totalRecs) * 100).toFixed(0) : 0}% Open Obs</span>
+                <span class="sm:hidden">${totalRecs > 0 ? ((openRecs / totalRecs) * 100).toFixed(0) : 0}% Open</span>
               </span>
             </div>
           </div>

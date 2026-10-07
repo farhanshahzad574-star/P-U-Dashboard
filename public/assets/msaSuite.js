@@ -466,16 +466,42 @@
     },
 
     getFilteredComplianceData() {
-      const raw = this.getRawComplianceData();
+      let list = this.getRawComplianceData();
       const unitFilter = this.state.responsibleUnitFilter;
+      const q = (this.state.searchQuery || '').toLowerCase().trim();
 
-      if (unitFilter === 'all') return raw;
-
-      return raw.filter(item => {
-        const d = String(item.department || '').trim().toLowerCase();
+      if (unitFilter && unitFilter !== 'all') {
         const target = String(unitFilter).trim().toLowerCase();
-        return d === target || d.includes(target) || target.includes(d);
-      });
+        list = list.filter(item => {
+          const d = String(item.department || '').trim().toLowerCase();
+          return d === target || d.includes(target) || target.includes(d);
+        });
+      }
+
+      if (q) {
+        list = list.filter(item => {
+          const d = String(item.department || '').toLowerCase();
+          const sr = String(item.sr || '').toLowerCase();
+          return d.includes(q) || sr.includes(q);
+        });
+      }
+
+      return list;
+    },
+
+    getFilteredAuditorData() {
+      let list = this.getRawAuditorData();
+      const q = (this.state.searchQuery || '').toLowerCase().trim();
+
+      if (q) {
+        list = list.filter(item => {
+          const name = String(item.auditorName || '').toLowerCase();
+          const id = String(item.id || '').toLowerCase();
+          return name.includes(q) || id.includes(q);
+        });
+      }
+
+      return list;
     },
 
     /**
@@ -995,11 +1021,24 @@
       }
     },
 
-    exportCsv() {
+    downloadCsvFile(filename, headers, rows) {
+      const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\r\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    },
+
+    exportTable1Csv() {
       const items = this.getFilteredData();
-      if (items.length === 0) {
+      if (!items || items.length === 0) {
         if (window.portalApp && typeof window.portalApp.showToast === 'function') {
-          window.portalApp.showToast('Export CSV', 'No matching MSA observations to export.', 'warning');
+          window.portalApp.showToast('Export CSV', 'No matching observations found in Tab 1 based on applied filters.', 'warning');
         }
         return;
       }
@@ -1018,37 +1057,114 @@
         'Target Date'
       ];
 
-      const csvRows = [headers.join(',')];
+      const rows = items.map(i => [
+        `"${String(i.sr || '').replace(/"/g, '""')}"`,
+        `"${String(i.auditDate || '').replace(/"/g, '""')}"`,
+        `"${String(i.auditedBy || '').replace(/"/g, '""')}"`,
+        `"${String(i.areaInspected || '').replace(/"/g, '""')}"`,
+        `"${String(i.observation || '').replace(/"/g, '""')}"`,
+        `"${String(i.injuryPotential || '').replace(/"/g, '""')}"`,
+        `"${String(i.actionTaken || '').replace(/"/g, '""')}"`,
+        `"${String(i.groupResponsibleDept || '').replace(/"/g, '""')}"`,
+        `"${String(i.groupResponsibleUnit || '').replace(/"/g, '""')}"`,
+        `"${String(i.status || '').replace(/"/g, '""')}"`,
+        `"${String(i.targetDate || '').replace(/"/g, '""')}"`
+      ]);
 
-      items.forEach(i => {
-        const row = [
-          `"${String(i.sr || '').replace(/"/g, '""')}"`,
-          `"${String(i.auditDate || '').replace(/"/g, '""')}"`,
-          `"${String(i.auditedBy || '').replace(/"/g, '""')}"`,
-          `"${String(i.areaInspected || '').replace(/"/g, '""')}"`,
-          `"${String(i.observation || '').replace(/"/g, '""')}"`,
-          `"${String(i.injuryPotential || '').replace(/"/g, '""')}"`,
-          `"${String(i.actionTaken || '').replace(/"/g, '""')}"`,
-          `"${String(i.groupResponsibleDept || '').replace(/"/g, '""')}"`,
-          `"${String(i.groupResponsibleUnit || '').replace(/"/g, '""')}"`,
-          `"${String(i.status || '').replace(/"/g, '""')}"`,
-          `"${String(i.targetDate || '').replace(/"/g, '""')}"`
-        ];
-        csvRows.push(row.join(','));
-      });
-
-      const blob = new Blob([csvRows.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `FPCL_MSA_Observations_${new Date().toISOString().slice(0, 10)}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      const dateStr = new Date().toISOString().slice(0, 10);
+      this.downloadCsvFile(`FPCL_MSA_Tab1_Observations_Master_${dateStr}.csv`, headers, rows);
 
       if (window.portalApp && typeof window.portalApp.showToast === 'function') {
-        window.portalApp.showToast('CSV Exported', `Exported ${items.length} MSA filtered observation records.`, 'success');
+        window.portalApp.showToast('CSV Exported', `Exported ${items.length} records from Tab 1: MSA Observations Master based on applied filters.`, 'success');
+      }
+    },
+
+    exportTable2Csv() {
+      const items = this.getFilteredComplianceData();
+      if (!items || items.length === 0) {
+        if (window.portalApp && typeof window.portalApp.showToast === 'function') {
+          window.portalApp.showToast('Export CSV', 'No matching department records found in Tab 2 based on applied filters.', 'warning');
+        }
+        return;
+      }
+
+      const headers = [
+        'Sr',
+        'Department',
+        'Planned MSA',
+        'Actual MSA',
+        'Remaining MSA',
+        'Compliance Rate (%)'
+      ];
+
+      const rows = items.map(d => {
+        const rate = d.complianceRate !== undefined ? Number(d.complianceRate).toFixed(1) : (d.plannedMsa > 0 ? ((d.actualMsa / d.plannedMsa) * 100).toFixed(1) : '0.0');
+        return [
+          `"${String(d.sr || '').replace(/"/g, '""')}"`,
+          `"${String(d.department || '').replace(/"/g, '""')}"`,
+          `"${Number(d.plannedMsa || 0)}"`,
+          `"${Number(d.actualMsa || 0)}"`,
+          `"${Number(d.remainingMsa || 0)}"`,
+          `"${rate}%"`
+        ];
+      });
+
+      const dateStr = new Date().toISOString().slice(0, 10);
+      this.downloadCsvFile(`FPCL_MSA_Tab2_Compliance_by_Department_${dateStr}.csv`, headers, rows);
+
+      if (window.portalApp && typeof window.portalApp.showToast === 'function') {
+        window.portalApp.showToast('CSV Exported', `Exported ${items.length} departments from Tab 2: MSA Compliance by Department based on applied filters.`, 'success');
+      }
+    },
+
+    exportTable3Csv() {
+      const items = this.getFilteredAuditorData();
+      if (!items || items.length === 0) {
+        if (window.portalApp && typeof window.portalApp.showToast === 'function') {
+          window.portalApp.showToast('Export CSV', 'No matching auditor records found in Tab 3 based on applied filters.', 'warning');
+        }
+        return;
+      }
+
+      const headers = [
+        'ID',
+        'Auditor Name',
+        'Planned MSA',
+        'Actual MSA',
+        'Remaining MSA',
+        'Compliance Rate (%)'
+      ];
+
+      const rows = items.map(a => {
+        const planned = Number(a.planned || 0);
+        const actual = Number(a.actual || 0);
+        const remaining = a.remaining !== undefined ? Number(a.remaining) : Math.max(0, planned - actual);
+        const rate = a.complianceRate !== undefined ? Number(a.complianceRate).toFixed(1) : (planned > 0 ? ((actual / planned) * 100).toFixed(1) : '0.0');
+        return [
+          `"${String(a.id || '').replace(/"/g, '""')}"`,
+          `"${String(a.auditorName || '').replace(/"/g, '""')}"`,
+          `"${planned}"`,
+          `"${actual}"`,
+          `"${remaining}"`,
+          `"${rate}%"`
+        ];
+      });
+
+      const dateStr = new Date().toISOString().slice(0, 10);
+      this.downloadCsvFile(`FPCL_MSA_Tab3_Compliance_by_Auditor_Name_${dateStr}.csv`, headers, rows);
+
+      if (window.portalApp && typeof window.portalApp.showToast === 'function') {
+        window.portalApp.showToast('CSV Exported', `Exported ${items.length} auditors from Tab 3: Compliance by Auditor Name based on applied filters.`, 'success');
+      }
+    },
+
+    exportCsv() {
+      if (this.state.selectedTableTab === 'compliance') {
+        this.exportTable2Csv();
+      } else if (this.state.selectedTableTab === 'auditor') {
+        this.exportTable3Csv();
+      } else {
+        this.exportTable1Csv();
       }
     },
 
@@ -1099,6 +1215,7 @@
     renderFilteredViews() {
       const filtered = this.getFilteredData();
       const compFiltered = this.getFilteredComplianceData();
+      const auditorFiltered = this.getFilteredAuditorData();
       const kpis = this.calculateKpis(filtered);
 
       const tabBtnMsa = document.getElementById('msa-tab-btn-msa');
@@ -1108,6 +1225,21 @@
           <span>Tab 1: MSA (${filtered.length} Observations)</span>
         `;
       }
+      const tabBtnComp = document.getElementById('msa-tab-btn-comp');
+      if (tabBtnComp) {
+        tabBtnComp.innerHTML = `
+          <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+          <span>Tab 2: MSA_Compliance (${compFiltered.length} Departments)</span>
+        `;
+      }
+      const tabBtnAuditor = document.getElementById('msa-tab-btn-auditor');
+      if (tabBtnAuditor) {
+        tabBtnAuditor.innerHTML = `
+          <span class="w-2 h-2 rounded-full bg-teal-500"></span>
+          <span>Tab 3: Compliance_by_Auditor_name (${auditorFiltered.length} Auditors)</span>
+        `;
+      }
+
       const table1Title = document.querySelector('#msa-table-1-wrapper h3');
       if (table1Title) {
         table1Title.innerHTML = `
@@ -1115,12 +1247,26 @@
           <span>Tab 1: MSA Observations Master (${filtered.length} Records)</span>
         `;
       }
+      const table2Title = document.querySelector('#msa-table-2-wrapper h3');
+      if (table2Title) {
+        table2Title.innerHTML = `
+          <span class="w-2.5 h-2.5 rounded-full bg-[#0B8A5A]"></span>
+          <span>Tab 2: MSA_Compliance • MSA Compliance by Department (${compFiltered.length} Departments)</span>
+        `;
+      }
+      const table3Title = document.querySelector('#msa-table-3-wrapper h3');
+      if (table3Title) {
+        table3Title.innerHTML = `
+          <span class="w-2.5 h-2.5 rounded-full bg-teal-600"></span>
+          <span>Tab 3: Compliance_by_Auditor_name • Compliance by Auditor Name (${auditorFiltered.length} Auditors)</span>
+        `;
+      }
 
       this.renderKpiCards(kpis);
       this.renderCharts(filtered, compFiltered);
-      this.renderAuditorComplianceChart();
+      this.renderAuditorComplianceChart(auditorFiltered);
       this.renderDonut(kpis);
-      this.renderTables(filtered, compFiltered);
+      this.renderTables(filtered, compFiltered, auditorFiltered);
       if (window.lucide) window.lucide.createIcons();
     },
 
@@ -1141,7 +1287,7 @@
 
       const filtered = this.getFilteredData();
       const compFiltered = this.getFilteredComplianceData();
-      const auditorData = this.getRawAuditorData();
+      const auditorData = this.getFilteredAuditorData();
       const kpis = this.calculateKpis(filtered);
 
       const currentYear = this.getCurrentYear();
@@ -1215,10 +1361,11 @@
 
               <!-- Export CSV Button -->
               <button
+                id="msa-export-btn"
                 type="button"
                 onclick="FPCL_MSA_SUITE.exportCsv()"
-                class="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-white/15 hover:bg-white/25 border border-white/25 text-white text-xs font-bold transition-all shadow-sm hover:shadow flex items-center gap-1.5 cursor-pointer whitespace-nowrap active:scale-95"
-                title="Export filtered MSA observations to CSV"
+                class="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-white/20 hover:bg-white/30 border border-white/30 text-white text-xs font-bold transition-all shadow-sm hover:shadow flex items-center gap-1.5 cursor-pointer whitespace-nowrap active:scale-95"
+                title="Export filtered records to CSV"
               >
                 <i data-lucide="download" class="w-3.5 h-3.5 text-white"></i>
                 <span>Export CSV</span>
@@ -1280,7 +1427,7 @@
         </div>
 
         <!-- ========================================================================= -->
-        <!-- 2. KPI CARDS (Unique colorful perimeter lines, center-aligned values)     -->
+        <!-- 2. KPI CARDS: Observation Closure Summary & Metrics                       -->
         <!-- 1-TOTAL Observations, 2-Open, 3-Closed, 4-Closure Rate                    -->
         <!-- ========================================================================= -->
         <div id="msa-kpi-cards-grid" class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -1511,7 +1658,7 @@
                 </h3>
                 <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold font-mono bg-blue-50 text-[#1E3A8A] border border-blue-200">
                   <span class="w-1.5 h-1.5 rounded-full bg-[#1D4ED8]"></span>
-                  <span>Annual Compliance (Whole Year)</span>
+                  <span>Tab 3: Compliance_by_Auditor_name</span>
                 </span>
               </div>
               <p class="text-[11px] text-slate-500 font-medium mt-0.5">
@@ -1558,12 +1705,10 @@
         <!-- ========================================================================= -->
         <div class="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border-2 border-fuchsia-500/80">
           <div class="flex items-center justify-between pb-3 border-b border-slate-100">
-            <div>
-              <h3 class="text-sm sm:text-base font-black text-[#1E3A8A] tracking-tight flex items-center gap-1.5">
-                <i data-lucide="pie-chart" class="w-4 h-4 text-fuchsia-600"></i>
-                <span>Observation closure</span>
-              </h3>
-            </div>
+            <h3 class="text-sm sm:text-base font-black text-[#1E3A8A] tracking-tight flex items-center gap-1.5">
+              <i data-lucide="pie-chart" class="w-4 h-4 text-fuchsia-600"></i>
+              <span>Observation closure</span>
+            </h3>
           </div>
 
           <div id="msa-donut-container" class="pt-3">
@@ -1614,7 +1759,7 @@
               class="px-3.5 py-1.5 rounded-xl font-bold text-xs ${this.state.selectedTableTab === 'auditor' ? 'bg-indigo-600 text-white shadow-sm border border-indigo-500' : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300'} cursor-pointer flex items-center gap-1.5 transition-all active:scale-95"
             >
               <span class="w-2 h-2 rounded-full bg-teal-500"></span>
-              <span>Tab 3: Compliance by Auditor (${auditorData.length} Auditors)</span>
+              <span>Tab 3: Compliance_by_Auditor_name (${auditorData.length} Auditors)</span>
             </button>
           </div>
           <div class="text-[11px] font-mono font-bold text-slate-500 flex items-center gap-2">
@@ -1633,12 +1778,22 @@
               <div>
                 <h3 class="text-sm sm:text-base font-black text-[#1E3A8A] tracking-tight flex items-center gap-2">
                   <span class="w-2.5 h-2.5 rounded-full bg-[#1D4ED8]"></span>
-                  <span>Tab 1: MSA Observations Master (${filtered.length} Records)</span>
+                  <span>Tab 1: MSA • MSA Observations Master (${filtered.length} Records)</span>
                 </h3>
               </div>
 
-              <!-- Left/Right Scroll Controls -->
+              <!-- Table 1 Controls: Export CSV & Left/Right Scroll -->
               <div class="flex items-center gap-2">
+                <button
+                  id="msa-table-1-export-btn"
+                  type="button"
+                  onclick="FPCL_MSA_SUITE.exportTable1Csv()"
+                  class="px-2.5 py-1 text-xs font-bold rounded-lg bg-blue-50 hover:bg-blue-100 text-[#1D4ED8] border border-blue-300 transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer shadow-2xs hover:shadow-xs"
+                  title="Export Tab 1: MSA Observations Master to CSV based on applied filters"
+                >
+                  <i data-lucide="download" class="w-3.5 h-3.5 text-[#1D4ED8]"></i>
+                  <span>Export CSV</span>
+                </button>
                 <button
                   type="button"
                   onclick="FPCL_MSA_SUITE.scrollTable('msa-table-1-scroll', 'left')"
@@ -1674,12 +1829,22 @@
               <div>
                 <h3 class="text-sm sm:text-base font-black text-[#0B8A5A] tracking-tight flex items-center gap-2">
                   <span class="w-2.5 h-2.5 rounded-full bg-[#0B8A5A]"></span>
-                  <span>Tab 2: MSA Compliance by Department (${compFiltered.length} Departments)</span>
+                  <span>Tab 2: MSA_Compliance • MSA Compliance by Department (${compFiltered.length} Departments)</span>
                 </h3>
               </div>
 
-              <!-- Left/Right Scroll Controls -->
+              <!-- Table 2 Controls: Export CSV & Left/Right Scroll -->
               <div class="flex items-center gap-2">
+                <button
+                  id="msa-table-2-export-btn"
+                  type="button"
+                  onclick="FPCL_MSA_SUITE.exportTable2Csv()"
+                  class="px-2.5 py-1 text-xs font-bold rounded-lg bg-emerald-50 hover:bg-emerald-100 text-[#0B8A5A] border border-emerald-300 transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer shadow-2xs hover:shadow-xs"
+                  title="Export Tab 2: MSA Compliance by Department to CSV based on applied filters"
+                >
+                  <i data-lucide="download" class="w-3.5 h-3.5 text-[#0B8A5A]"></i>
+                  <span>Export CSV</span>
+                </button>
                 <button
                   type="button"
                   onclick="FPCL_MSA_SUITE.scrollTable('msa-table-2-scroll', 'left')"
@@ -1715,12 +1880,22 @@
               <div>
                 <h3 class="text-sm sm:text-base font-black text-teal-800 tracking-tight flex items-center gap-2">
                   <span class="w-2.5 h-2.5 rounded-full bg-teal-600"></span>
-                  <span>Tab 3: Compliance by Auditor Name (${auditorData.length} Auditors)</span>
+                  <span>Tab 3: Compliance_by_Auditor_name • Compliance by Auditor Name (${auditorData.length} Auditors)</span>
                 </h3>
               </div>
 
-              <!-- Left/Right Scroll Controls -->
+              <!-- Table 3 Controls: Export CSV & Left/Right Scroll -->
               <div class="flex items-center gap-2">
+                <button
+                  id="msa-table-3-export-btn"
+                  type="button"
+                  onclick="FPCL_MSA_SUITE.exportTable3Csv()"
+                  class="px-2.5 py-1 text-xs font-bold rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-300 transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer shadow-2xs hover:shadow-xs"
+                  title="Export Tab 3: Compliance by Auditor Name to CSV based on applied filters"
+                >
+                  <i data-lucide="download" class="w-3.5 h-3.5 text-teal-800"></i>
+                  <span>Export CSV</span>
+                </button>
                 <button
                   type="button"
                   onclick="FPCL_MSA_SUITE.scrollTable('msa-table-3-scroll', 'left')"
@@ -2203,10 +2378,10 @@
      * Sheet 2: MSA_Compliance
      * Sheet 3: Compliance_by_Auditor_name
      */
-    renderTables(filteredObs, compData) {
+    renderTables(filteredObs, compData, auditorData) {
       this.renderTable1(filteredObs);
       this.renderTable2(compData);
-      this.renderTable3(this.getRawAuditorData());
+      this.renderTable3(auditorData || this.getFilteredAuditorData());
     },
 
     renderTable1(items) {
@@ -2337,6 +2512,10 @@
             </tbody>
           </table>
         </div>
+        <div class="flex items-center justify-between text-[11px] text-slate-500 font-mono pt-1">
+          <span>Showing ${compData.length} departments</span>
+          <span class="text-slate-400">Departmental compliance tracking</span>
+        </div>
       `;
     },
 
@@ -2398,6 +2577,10 @@
             </tbody>
           </table>
         </div>
+        <div class="flex items-center justify-between text-[11px] text-slate-500 font-mono pt-1">
+          <span>Showing ${auditorData.length} auditors</span>
+          <span class="text-slate-400">Auditor-level safety audit execution tracking</span>
+        </div>
       `;
     },
 
@@ -2410,11 +2593,11 @@
      * - Does NOT plot planned MSA from Column C by default.
      * - Small button toggles display of planned MSA bars (Column C).
      */
-    renderAuditorComplianceChart() {
+    renderAuditorComplianceChart(auditorsData) {
       const container = document.getElementById('msa-auditor-chart-grid');
       if (!container) return;
 
-      const auditors = this.getRawAuditorData();
+      const auditors = auditorsData || this.getFilteredAuditorData();
       if (!auditors || auditors.length === 0) {
         container.innerHTML = `
           <div class="py-8 text-center text-slate-400 text-xs font-mono font-bold bg-slate-50 rounded-xl border border-dashed border-slate-200">

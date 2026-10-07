@@ -703,59 +703,59 @@
           <!-- ========================================================================= -->
           <!-- 2. EXECUTIVE KPI CARDS (Matching Reference Layout & Style)                -->
           <!-- ========================================================================= -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
             
             <!-- 1. TOTAL FINDINGS CARD -->
-            <div class="bg-white rounded-xl border border-slate-200/90 shadow-xs hover:shadow-md transition-shadow p-5 flex flex-col justify-between relative overflow-hidden">
-              <div class="flex items-center justify-between">
-                <span class="text-xs sm:text-sm font-bold text-slate-500 uppercase tracking-wider">1. TOTAL FINDINGS</span>
-                <div class="w-7 h-7 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center border border-slate-200">
-                  <i data-lucide="files" class="w-3.5 h-3.5"></i>
+            <div class="bg-white rounded-xl border border-slate-200/90 shadow-xs hover:shadow-md transition-shadow p-3 sm:p-5 flex flex-col justify-between relative overflow-hidden">
+              <div class="flex items-center justify-between gap-1">
+                <span class="text-[11px] sm:text-xs lg:text-sm font-bold text-slate-500 uppercase tracking-wider truncate">1. TOTAL FINDINGS</span>
+                <div class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center border border-slate-200 shrink-0">
+                  <i data-lucide="files" class="w-3 h-3 sm:w-3.5 sm:h-3.5"></i>
                 </div>
               </div>
-              <div class="mt-3 flex items-baseline gap-2">
-                <span class="text-4xl sm:text-5xl font-black text-slate-900 tracking-tight leading-none">${totalCount}</span>
+              <div class="mt-2 sm:mt-3 flex items-baseline gap-1.5 sm:gap-2">
+                <span class="text-2xl sm:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight leading-none">${totalCount}</span>
               </div>
             </div>
 
             <!-- 2. OPEN FINDINGS CARD -->
-            <div class="bg-white rounded-xl border border-slate-200/90 border-t-4 border-t-rose-500 shadow-xs hover:shadow-md transition-shadow p-5 flex flex-col justify-between relative overflow-hidden">
-              <div class="flex items-center justify-between">
-                <span class="text-xs sm:text-sm font-bold text-rose-600 uppercase tracking-wider">2. OPEN FINDINGS</span>
-                <div class="w-7 h-7 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center border border-rose-200">
-                  <i data-lucide="alert-circle" class="w-3.5 h-3.5"></i>
+            <div class="bg-white rounded-xl border border-slate-200/90 border-t-4 border-t-rose-500 shadow-xs hover:shadow-md transition-shadow p-3 sm:p-5 flex flex-col justify-between relative overflow-hidden">
+              <div class="flex items-center justify-between gap-1">
+                <span class="text-[11px] sm:text-xs lg:text-sm font-bold text-rose-600 uppercase tracking-wider truncate">2. OPEN FINDINGS</span>
+                <div class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center border border-rose-200 shrink-0">
+                  <i data-lucide="alert-circle" class="w-3 h-3 sm:w-3.5 sm:h-3.5"></i>
                 </div>
               </div>
-              <div class="mt-3 flex items-baseline gap-2.5">
-                <span class="text-4xl sm:text-5xl font-black text-[#EF4444] tracking-tight leading-none">${openCount}</span>
-                <span class="text-xl sm:text-2xl font-bold text-rose-500">(${openPctStr})</span>
+              <div class="mt-2 sm:mt-3 flex items-baseline flex-wrap gap-1 sm:gap-2.5">
+                <span class="text-2xl sm:text-4xl lg:text-5xl font-black text-[#EF4444] tracking-tight leading-none">${openCount}</span>
+                <span class="text-xs sm:text-xl lg:text-2xl font-bold text-rose-500">(${openPctStr})</span>
               </div>
             </div>
 
             <!-- 3. CLOSED FINDINGS CARD -->
-            <div class="bg-white rounded-xl border border-slate-200/90 border-t-4 border-t-emerald-500 shadow-xs hover:shadow-md transition-shadow p-5 flex flex-col justify-between relative overflow-hidden">
-              <div class="flex items-center justify-between">
-                <span class="text-xs sm:text-sm font-bold text-emerald-600 uppercase tracking-wider">3. CLOSED FINDINGS</span>
-                <div class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-200">
-                  <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i>
+            <div class="bg-white rounded-xl border border-slate-200/90 border-t-4 border-t-emerald-500 shadow-xs hover:shadow-md transition-shadow p-3 sm:p-5 flex flex-col justify-between relative overflow-hidden">
+              <div class="flex items-center justify-between gap-1">
+                <span class="text-[11px] sm:text-xs lg:text-sm font-bold text-emerald-600 uppercase tracking-wider truncate">3. CLOSED FINDINGS</span>
+                <div class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-200 shrink-0">
+                  <i data-lucide="check-circle-2" class="w-3 h-3 sm:w-3.5 sm:h-3.5"></i>
                 </div>
               </div>
-              <div class="mt-3 flex items-baseline gap-2.5">
-                <span class="text-4xl sm:text-5xl font-black text-[#10B981] tracking-tight leading-none">${closedCount}</span>
-                <span class="text-xl sm:text-2xl font-bold text-emerald-600">(${closedPctStr})</span>
+              <div class="mt-2 sm:mt-3 flex items-baseline flex-wrap gap-1 sm:gap-2.5">
+                <span class="text-2xl sm:text-4xl lg:text-5xl font-black text-[#10B981] tracking-tight leading-none">${closedCount}</span>
+                <span class="text-xs sm:text-xl lg:text-2xl font-bold text-emerald-600">(${closedPctStr})</span>
               </div>
             </div>
 
             <!-- 4. % CLOSURE CARD -->
-            <div class="bg-white rounded-xl border border-slate-200/90 border-t-4 border-t-teal-500 shadow-xs hover:shadow-md transition-shadow p-5 flex flex-col justify-between relative overflow-hidden">
-              <div class="flex items-center justify-between">
-                <span class="text-xs sm:text-sm font-bold text-teal-600 uppercase tracking-wider">4. % CLOSURE</span>
-                <div class="w-7 h-7 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center border border-teal-200">
-                  <i data-lucide="trending-up" class="w-3.5 h-3.5"></i>
+            <div class="bg-white rounded-xl border border-slate-200/90 border-t-4 border-t-teal-500 shadow-xs hover:shadow-md transition-shadow p-3 sm:p-5 flex flex-col justify-between relative overflow-hidden">
+              <div class="flex items-center justify-between gap-1">
+                <span class="text-[11px] sm:text-xs lg:text-sm font-bold text-teal-600 uppercase tracking-wider truncate">4. % CLOSURE</span>
+                <div class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center border border-teal-200 shrink-0">
+                  <i data-lucide="trending-up" class="w-3 h-3 sm:w-3.5 sm:h-3.5"></i>
                 </div>
               </div>
-              <div class="mt-3 flex items-baseline gap-2">
-                <span class="text-4xl sm:text-5xl font-black text-[#0D9488] tracking-tight leading-none">${closureRate}</span>
+              <div class="mt-2 sm:mt-3 flex items-baseline gap-1.5 sm:gap-2">
+                <span class="text-2xl sm:text-4xl lg:text-5xl font-black text-[#0D9488] tracking-tight leading-none">${closureRate}</span>
               </div>
             </div>
 
