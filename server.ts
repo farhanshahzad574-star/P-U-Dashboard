@@ -1231,6 +1231,232 @@ app.get('/api/fpcl-directory', async (_req: Request, res: Response): Promise<voi
   });
 });
 
+// Cache for Crew Week data
+let crewWeekCache: { timestamp: number; data: any[]; rawCsv: string } = {
+  timestamp: 0,
+  data: [],
+  rawCsv: ''
+};
+
+// GET /api/crew-week - Live Crew Week Shift Roster from Google Sheet
+app.get('/api/crew-week', async (_req: Request, res: Response): Promise<void> => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+
+  const now = Date.now();
+  // Return cached data if under 20 seconds old
+  if (crewWeekCache.data.length > 0 && now - crewWeekCache.timestamp < 20000) {
+    res.json({
+      success: true,
+      count: crewWeekCache.data.length,
+      data: crewWeekCache.data,
+      rawCsv: crewWeekCache.rawCsv,
+      source: 'cache',
+      sheetId: process.env.CREW_WEEK_SHEET_ID || '1vbclqX2smmSq2C4tu_fw44mApg1ng6wVZ9bgPC7aUBk',
+      tabName: process.env.CREW_WEEK_SHEET_TAB || 'Crew_Week',
+      lastUpdated: new Date(crewWeekCache.timestamp).toISOString()
+    });
+    return;
+  }
+
+  const sheetId = process.env.CREW_WEEK_SHEET_ID || '1vbclqX2smmSq2C4tu_fw44mApg1ng6wVZ9bgPC7aUBk';
+  const tabName = process.env.CREW_WEEK_SHEET_TAB || 'Crew_Week';
+  const nonce = Math.floor(Math.random() * 10000000);
+
+  const candidateUrls: string[] = [];
+  const customUrl = process.env.CREW_WEEK_SHEET_URL || process.env.CREW_WEEK;
+  if (customUrl) candidateUrls.push(customUrl);
+
+  candidateUrls.push(
+    `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tabName)}&_t=${now}&_nocache=${nonce}`,
+    `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&sheet=${encodeURIComponent(tabName)}&_t=${now}&_nocache=${nonce}`,
+    `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&_t=${now}`
+  );
+
+  let rawCsv = '';
+  for (const url of candidateUrls) {
+    try {
+      const response = await fetch(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'text/csv,text/plain,*/*',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        },
+        redirect: 'follow',
+        cache: 'no-store'
+      });
+      if (response.ok) {
+        const text = await response.text();
+        if (text && !text.includes('<!DOCTYPE html>') && !text.includes('<html') && text.includes(',')) {
+          rawCsv = text;
+          break;
+        }
+      }
+    } catch {
+      // try next
+    }
+  }
+
+  if (rawCsv) {
+    // Parse CSV
+    const rows: string[][] = [];
+    let curRow: string[] = [];
+    let curField = '';
+    let inQuotes = false;
+    for (let i = 0; i < rawCsv.length; i++) {
+      const c = rawCsv[i];
+      if (inQuotes) {
+        if (c === '"' && rawCsv[i + 1] === '"') {
+          curField += '"';
+          i++;
+        } else if (c === '"') {
+          inQuotes = false;
+        } else {
+          curField += c;
+        }
+      } else {
+        if (c === '"') {
+          inQuotes = true;
+        } else if (c === ',') {
+          curRow.push(curField.trim());
+          curField = '';
+        } else if (c === '\n' || c === '\r') {
+          if (c === '\r' && rawCsv[i + 1] === '\n') i++;
+          curRow.push(curField.trim());
+          if (curRow.length > 1 || curRow[0] !== '') rows.push(curRow);
+          curRow = [];
+          curField = '';
+        } else {
+          curField += c;
+        }
+      }
+    }
+    if (curField || curRow.length) {
+      curRow.push(curField.trim());
+      if (curRow.length > 1 || curRow[0] !== '') rows.push(curRow);
+    }
+
+    const dataRows = (rows.length > 0 && (rows[0][0] || '').toLowerCase().includes('sr')) ? rows.slice(1) : rows;
+    const parsed = dataRows
+      .filter(r => r.length >= 2 && r[1])
+      .map(r => ({
+        sr: (r[0] || '').trim(),
+        name: (r[1] || '').trim(),
+        position: (r[2] || '').trim(),
+        crewWeek: (r[3] || '').trim(),
+        designation: (r[4] || '').trim(),
+        orgUnit: (r[5] || '').trim(),
+      }));
+
+    if (parsed.length > 0) {
+      crewWeekCache = {
+        timestamp: now,
+        data: parsed,
+        rawCsv
+      };
+      res.json({
+        success: true,
+        count: parsed.length,
+        data: parsed,
+        rawCsv,
+        source: 'live',
+        sheetId,
+        tabName,
+        lastUpdated: new Date(now).toISOString()
+      });
+      return;
+    }
+  }
+
+  if (crewWeekCache.data.length > 0) {
+    res.json({
+      success: true,
+      count: crewWeekCache.data.length,
+      data: crewWeekCache.data,
+      rawCsv: crewWeekCache.rawCsv,
+      source: 'stale-cache',
+      sheetId,
+      tabName,
+      lastUpdated: new Date(crewWeekCache.timestamp).toISOString()
+    });
+    return;
+  }
+
+  res.status(502).json({
+    success: false,
+    error: 'Could not fetch Crew Week from Google Sheet',
+    sheetId,
+    tabName
+  });
+});
+
+// GET /api/kpis - Live Executive KPIs & Organogram Scorecard from Google Sheet
+app.get('/api/kpis', async (_req: Request, res: Response): Promise<void> => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+
+  const sheetId = process.env.KPIS_SHEET_ID || '1gkO-kV44ABOuB2JB72FQbwLYdAcAZKBzcIBMBZnR8Ts';
+  const tabName = process.env.KPIS_SHEET_TAB || 'KPIs';
+  const now = Date.now();
+  const nonce = Math.floor(Math.random() * 10000000);
+
+  const candidateUrls: string[] = [
+    `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tabName)}&_t=${now}&_nocache=${nonce}`,
+    `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&sheet=${encodeURIComponent(tabName)}&_t=${now}&_nocache=${nonce}`
+  ];
+
+  if (process.env.KPIS_SHEET_URL) {
+    candidateUrls.unshift(process.env.KPIS_SHEET_URL);
+  }
+
+  let rawCsv = '';
+  for (const url of candidateUrls) {
+    try {
+      const response = await fetch(url, {
+        headers: {
+          'Accept': 'text/csv,text/plain,*/*',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        },
+        redirect: 'follow',
+        cache: 'no-store'
+      });
+      if (response.ok) {
+        const text = await response.text();
+        if (text && !text.includes('<!DOCTYPE html>') && !text.includes('<html') && text.includes(',')) {
+          rawCsv = text;
+          break;
+        }
+      }
+    } catch {
+      // try next candidate
+    }
+  }
+
+  if (rawCsv) {
+    res.json({
+      success: true,
+      sheetId,
+      tab: tabName,
+      csvText: rawCsv,
+      lastUpdated: new Date(now).toISOString()
+    });
+    return;
+  }
+
+  res.status(502).json({
+    success: false,
+    error: 'Could not fetch KPIs from Google Sheet',
+    sheetId,
+    tabName
+  });
+});
+
 // POST & GET /api/sheets/fetch - Live Google Sheets Tab CSV Proxy (supports Recommendations and PLR tabs)
 app.all('/api/sheets/fetch', async (req: Request, res: Response): Promise<void> => {
   try {
@@ -1243,6 +1469,18 @@ app.all('/api/sheets/fetch', async (req: Request, res: Response): Promise<void> 
     // Direct PSI match by sheet ID
     if (sheetIdParam === '1vWYE3G4W7TxHBVzsUJuu1Z-aufjXD-xFeodTpFUTZtY' || (typeof url === 'string' && url.includes('1vWYE3G4W7TxHBVzsUJuu1Z-aufjXD-xFeodTpFUTZtY'))) {
       url = process.env.PSI || process.env.PSI_SHEET_URL || `https://docs.google.com/spreadsheets/d/1vWYE3G4W7TxHBVzsUJuu1Z-aufjXD-xFeodTpFUTZtY/gviz/tq?tqx=out:csv&sheet=PSI`;
+    }
+
+    // Direct Crew_Week match by sheet ID
+    if (sheetIdParam === '1vbclqX2smmSq2C4tu_fw44mApg1ng6wVZ9bgPC7aUBk' || (typeof url === 'string' && url.includes('1vbclqX2smmSq2C4tu_fw44mApg1ng6wVZ9bgPC7aUBk'))) {
+      const cTab = sheetTab || 'Crew_Week';
+      url = process.env.CREW_WEEK_SHEET_URL || process.env.CREW_WEEK || `https://docs.google.com/spreadsheets/d/1vbclqX2smmSq2C4tu_fw44mApg1ng6wVZ9bgPC7aUBk/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(cTab)}`;
+    }
+
+    // Direct KPIs match by sheet ID (Target Sheet: 1gkO-kV44ABOuB2JB72FQbwLYdAcAZKBzcIBMBZnR8Ts)
+    if (sheetIdParam === '1gkO-kV44ABOuB2JB72FQbwLYdAcAZKBzcIBMBZnR8Ts' || (typeof url === 'string' && url.includes('1gkO-kV44ABOuB2JB72FQbwLYdAcAZKBzcIBMBZnR8Ts')) || (sheetTab && sheetTab.toLowerCase() === 'kpis')) {
+      const kTab = sheetTab || 'KPIs';
+      url = process.env.KPIS_SHEET_URL || process.env.KPIS || `https://docs.google.com/spreadsheets/d/1gkO-kV44ABOuB2JB72FQbwLYdAcAZKBzcIBMBZnR8Ts/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(kTab)}`;
     }
 
     // Resolve URL from environment variables if not provided or default placeholder
@@ -1395,6 +1633,11 @@ app.all('/api/sheets/fetch', async (req: Request, res: Response): Promise<void> 
     } else if (sLower === 'safety_talk' || sLower.includes('safety_talk') || sLower.includes('safety talk') || tileId === 'safety-talks' || tileId.includes('safety-talks') || trimmedUrl.includes('1Fgx9ZEdHAQnH_oCuX0NdNO5_V3gEPHu0xjnqKk6GqWc')) {
       const extraStTabs = ['Safety_Talk', 'Safety Talk', 'Safety_talk', 'safety_talk', 'Sheet1'];
       extraStTabs.forEach(t => {
+        if (!candidateTabs.includes(t)) candidateTabs.push(t);
+      });
+    } else if (sLower === 'crew_week' || sLower.includes('crew_week') || sLower.includes('crew week') || tileId === 'crew-week' || tileId === 'crew_week' || trimmedUrl.includes('1vbclqX2smmSq2C4tu_fw44mApg1ng6wVZ9bgPC7aUBk')) {
+      const extraCrewTabs = ['Crew_Week', 'Crew Week', 'crew_week', 'crew week', 'CrewWeek', 'Sheet1'];
+      extraCrewTabs.forEach(t => {
         if (!candidateTabs.includes(t)) candidateTabs.push(t);
       });
     } else if (sLower === 'contacts' || sLower.includes('contact') || trimmedUrl.includes('1mI5WbcNBYtJc1fQjG0ZYQ1PKQzAHp5Sm3gyi9MibW-g')) {

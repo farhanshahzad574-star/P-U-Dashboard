@@ -87,6 +87,18 @@ export default async function handler(req: any, res: any) {
       url = (targetTab === 'PSI' && (process.env.PSI || process.env.PSI_SHEET_URL)) ? (process.env.PSI || process.env.PSI_SHEET_URL) : `https://docs.google.com/spreadsheets/d/1vWYE3G4W7TxHBVzsUJuu1Z-aufjXD-xFeodTpFUTZtY/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(targetTab)}`;
     }
 
+    // Direct Crew_Week match by sheet ID
+    if (sheetIdParam === '1vbclqX2smmSq2C4tu_fw44mApg1ng6wVZ9bgPC7aUBk' || (typeof url === 'string' && url.includes('1vbclqX2smmSq2C4tu_fw44mApg1ng6wVZ9bgPC7aUBk'))) {
+      const targetTab = sheetTab || 'Crew_Week';
+      url = process.env.CREW_WEEK_SHEET_URL || process.env.CREW_WEEK || `https://docs.google.com/spreadsheets/d/1vbclqX2smmSq2C4tu_fw44mApg1ng6wVZ9bgPC7aUBk/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(targetTab)}`;
+    }
+
+    // Direct KPIs match by sheet ID
+    if (sheetIdParam === '1gkO-kV44ABOuB2JB72FQbwLYdAcAZKBzcIBMBZnR8Ts' || (typeof url === 'string' && url.includes('1gkO-kV44ABOuB2JB72FQbwLYdAcAZKBzcIBMBZnR8Ts'))) {
+      const targetTab = sheetTab || 'KPIs';
+      url = process.env.KPIS_SHEET_URL || process.env.KPIS || `https://docs.google.com/spreadsheets/d/1gkO-kV44ABOuB2JB72FQbwLYdAcAZKBzcIBMBZnR8Ts/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(targetTab)}`;
+    }
+
     // Resolve URL from environment variables or registry if not provided or pointing to placeholder
     if (!url || typeof url !== 'string' || url.includes('1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms')) {
       const sLower = (sheetTab || '').toLowerCase();
@@ -252,6 +264,11 @@ export default async function handler(req: any, res: any) {
     } else if (sLower === 'safety_talk' || sLower.includes('safety_talk') || sLower.includes('safety talk') || (normalizedTileId && normalizedTileId.includes('safety-talks')) || trimmedUrl.includes('1Fgx9ZEdHAQnH_oCuX0NdNO5_V3gEPHu0xjnqKk6GqWc')) {
       const extraStTabs = ['Safety_Talk', 'Safety Talk', 'Safety_talk', 'safety_talk', 'Sheet1'];
       extraStTabs.forEach(t => {
+        if (!candidateTabs.includes(t)) candidateTabs.push(t);
+      });
+    } else if (sLower === 'crew_week' || sLower.includes('crew_week') || sLower.includes('crew week') || trimmedUrl.includes('1vbclqX2smmSq2C4tu_fw44mApg1ng6wVZ9bgPC7aUBk')) {
+      const extraCrewTabs = ['Crew_Week', 'Crew Week', 'crew_week', 'crew week', 'CrewWeek', 'Sheet1'];
+      extraCrewTabs.forEach(t => {
         if (!candidateTabs.includes(t)) candidateTabs.push(t);
       });
     } else if (sLower === 'contacts' || sLower.includes('contact') || trimmedUrl.includes('1mI5WbcNBYtJc1fQjG0ZYQ1PKQzAHp5Sm3gyi9MibW-g')) {

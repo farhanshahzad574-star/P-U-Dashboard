@@ -84,7 +84,7 @@
 
   function getDefaultPlrState() {
     return {
-      activeTab: 'incidents', // 'incidents' or 'recommendations'
+      activeTab: 'recommendations', // 'incidents' or 'recommendations' (default: recommendations)
       recChartMode: 'side-by-side', // 'side-by-side', 'stacked', 'trend'
       assignedTrendMode: 'entity', // 'entity' or 'yearly'
       assignedTrendViewType: 'side-by-side', // 'side-by-side' or 'trend'
@@ -123,6 +123,7 @@
     s.selectedYear = 'all';
     s.page = 1;
     s.recPage = 1;
+    s.activeTab = 'recommendations'; // Plant Records & Outage Log open by default on Recommendations Tab
     portalApp.renderPlrSuite();
   };
 
@@ -224,6 +225,9 @@
 
   // Initialize PLR state immediately
   window.portalApp.state.plrState = window.portalApp.state.plrState || getDefaultPlrState();
+  if (window.portalApp.state.plrState && (!window.portalApp.state.plrState.activeTab || window.portalApp.state.plrState.activeTab === 'incidents')) {
+    window.portalApp.state.plrState.activeTab = 'recommendations';
+  }
 
   function getPlrData() {
     return Array.isArray(window.FPCL_PLR_DATA) ? window.FPCL_PLR_DATA : [];
@@ -244,7 +248,7 @@
     if (s.selectedPriority && s.selectedPriority !== 'all') activeFilters.push(`Priority: ${s.selectedPriority}`);
     if (s.selectedDept && s.selectedDept !== 'all') activeFilters.push(`Dept: ${s.selectedDept}`);
     if (s.selectedYear && s.selectedYear !== 'all') activeFilters.push(`Year: ${s.selectedYear}`);
-    if (s.selectedEntity && s.selectedEntity !== 'all') activeFilters.push(`Entity: ${s.selectedEntity}`);
+    if (s.selectedStatus && s.selectedStatus !== 'all') activeFilters.push(`Status: ${s.selectedStatus}`);
     if (s.searchQuery && s.searchQuery.trim()) activeFilters.push(`Search: "${s.searchQuery.trim()}"`);
 
     const hasActiveFilters = activeFilters.length > 0;
@@ -953,9 +957,13 @@
         if (!hasEntity) return false;
       }
 
-      // Status filter (COL F)
+      // Status filter (from Recommendations tab Column G named Status or matching incident status)
       if (s.selectedStatus && s.selectedStatus !== 'all') {
-        if (String(item.status || '').toLowerCase() !== s.selectedStatus.toLowerCase()) {
+        const target = s.selectedStatus.toLowerCase().trim();
+        const linkedRecs = recsMap.get(String(item.plrNo || '').toUpperCase()) || [];
+        const hasMatchingRec = linkedRecs.some(r => String(r.status || '').toLowerCase().trim() === target);
+        const matchesIncidentStatus = String(item.status || '').toLowerCase().trim() === target;
+        if (!hasMatchingRec && !matchesIncidentStatus) {
           return false;
         }
       }
@@ -1106,6 +1114,39 @@
       const isSel = String(selectedVal || '').toLowerCase() === e.name.toLowerCase();
       const escaped = e.name.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
       html += `<option value="${escaped}" ${isSel ? 'selected' : ''}>${escaped} (${e.count} items)</option>`;
+    });
+    return html;
+  }
+
+  // Helper: Extract distinct status options from Google Sheet tab Recommendations (Column G named Status)
+  function getDistinctRecStatuses() {
+    const recs = getPlrRecs();
+    const counts = {};
+    recs.forEach(r => {
+      const st = r.status || 'Open';
+      counts[st] = (counts[st] || 0) + 1;
+    });
+    const standardOrder = ['Closed', 'Open'];
+    const keys = Object.keys(counts).sort((a, b) => {
+      const idxA = standardOrder.indexOf(a);
+      const idxB = standardOrder.indexOf(b);
+      if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+      if (idxA !== -1) return -1;
+      if (idxB !== -1) return 1;
+      return counts[b] - counts[a] || a.localeCompare(b);
+    });
+    return keys.map(name => ({ name, count: counts[name] }));
+  }
+
+  // Helper: Render complete <option> list for Status dropdown from Recommendations tab (Column G)
+  function renderRecStatusSelectOptions(selectedVal) {
+    const statuses = getDistinctRecStatuses();
+    const total = getPlrRecs().length;
+    let html = `<option value="all" ${selectedVal === 'all' ? 'selected' : ''}>All Statuses (${total} Recs)</option>`;
+    statuses.forEach(s => {
+      const isSel = String(selectedVal || '').toLowerCase() === s.name.toLowerCase();
+      const escaped = s.name.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      html += `<option value="${escaped}" ${isSel ? 'selected' : ''}>${escaped} (${s.count} Recs)</option>`;
     });
     return html;
   }
@@ -1364,6 +1405,15 @@
     portalApp.renderPlrSuite();
   };
 
+  portalApp.handlePlrStatusChange = function (val) {
+    const s = getPlrState();
+    s.selectedStatus = val;
+    s.recSelectedStatus = val;
+    s.page = 1;
+    s.recPage = 1;
+    portalApp.renderPlrSuite();
+  };
+
   portalApp.resetAllPlrImageFilters = function () {
     const s = getPlrState();
     s.selectedMachine = 'all';
@@ -1448,7 +1498,7 @@
       s.selectedPriority !== 'all',
       s.selectedDept !== 'all',
       s.selectedYear !== 'all',
-      s.selectedEntity !== 'all'
+      s.selectedStatus !== 'all'
     ].filter(Boolean).length;
     const hasActiveFilters = activeFilterCount > 0;
 
@@ -1586,17 +1636,17 @@
               </select>
             </div>
 
-            <!-- Filter 5: ACTION ENTITY -->
+            <!-- Filter 5: STATUS (COL G of Recommendations tab) -->
             <div class="space-y-1 sm:space-y-2">
-              <div class="flex items-center gap-1.5 text-[10px] sm:text-[13px] font-mono font-black text-emerald-300 uppercase tracking-wider truncate" title="ACTION ENTITY">
-                <i data-lucide="building-2" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400 shrink-0"></i>
-                <span class="truncate">ENTITY</span>
+              <div class="flex items-center gap-1.5 text-[10px] sm:text-[13px] font-mono font-black text-emerald-300 uppercase tracking-wider truncate" title="STATUS (COL G)">
+                <i data-lucide="check-circle-2" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400 shrink-0"></i>
+                <span class="truncate">STATUS (COL G)</span>
               </div>
               <select
-                onchange="portalApp.handlePlrEntityChange(this.value)"
+                onchange="portalApp.handlePlrStatusChange(this.value)"
                 class="w-full text-xs sm:text-sm font-semibold px-2.5 sm:px-3.5 py-2 sm:py-2.5 rounded-xl border border-[#1e3e66] bg-[#0c2138] text-white focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 cursor-pointer shadow-inner truncate"
               >
-                ${renderActionEntitySelectOptions(s.selectedEntity)}
+                ${renderRecStatusSelectOptions(s.selectedStatus)}
               </select>
             </div>
 
@@ -3388,19 +3438,6 @@
             </select>
           </div>
 
-          <!-- Status Dropdown -->
-          <div class="flex items-center gap-1.5 text-xs text-slate-700">
-            <span class="font-bold text-slate-500">STATUS:</span>
-            <select
-              onchange="portalApp.filterPlrByStatus(this.value)"
-              class="text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-800 focus:outline-none focus:border-[#2E6DA4] cursor-pointer"
-            >
-              <option value="all" ${s.selectedStatus === 'all' ? 'selected' : ''}>All Statuses</option>
-              <option value="Closed" ${s.selectedStatus === 'Closed' ? 'selected' : ''}>Closed (${allClosed})</option>
-              <option value="Open" ${s.selectedStatus === 'Open' ? 'selected' : ''}>Open (${allOpen})</option>
-            </select>
-          </div>
-
           <span class="text-xs font-mono text-slate-500">Showing <strong class="text-slate-900">${totalFiltered}</strong> records</span>
 
           <button
@@ -3415,7 +3452,7 @@
     `;
 
     // Table Content matching exact columns:
-    // S_NO | PLR # | YEAR | DATE | UNIQUE PLR INCIDENT DESCRIPTION & ALL RECOMMENDATIONS | MACHINE | PRIORITY | ACTION ENTITY | STATUS | VIEW
+    // S_NO | PLR # | YEAR | DATE | UNIQUE PLR INCIDENT DESCRIPTION & ALL RECOMMENDATIONS | MACHINE | PRIORITY | ACTION ENTITY | VIEW
     tableBody.innerHTML = `
       <table class="w-full text-left text-xs sm:text-sm">
         <thead>
@@ -3428,14 +3465,13 @@
             <th class="py-3 px-3 w-28">MACHINE</th>
             <th class="py-3 px-3 w-24">PRIORITY</th>
             <th class="py-3 px-3 w-28">ACTION ENTITY</th>
-            <th class="py-3 px-3 w-28">STATUS</th>
             <th class="py-3 px-3 w-16 text-center">VIEW</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-100 font-medium">
           ${pageItems.length === 0 ? `
             <tr>
-              <td colspan="10" class="py-8 text-center text-slate-500">
+              <td colspan="9" class="py-8 text-center text-slate-500">
                 No incidents match the active filters.
               </td>
             </tr>
@@ -3552,16 +3588,6 @@
                 <td class="py-3.5 px-3">
                   <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
                     ${item.dept || 'KE'}
-                  </span>
-                </td>
-                <td class="py-3.5 px-3">
-                  <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${
-                    isOpen
-                      ? 'bg-rose-50 text-rose-700 border-rose-200'
-                      : 'bg-emerald-50 text-emerald-800 border-emerald-200'
-                  }">
-                    <i data-lucide="${isOpen ? 'alert-circle' : 'check-circle-2'}" class="w-3 h-3"></i>
-                    ${item.status}
                   </span>
                 </td>
                 <td class="py-3.5 px-3 text-center">
@@ -4250,34 +4276,26 @@
 
   /**
    * Dedicated entry point for KPI cards click drill-down
-   * Slices data precisely according to the clicked metric and inherits active dashboard filters
+   * Slices data precisely according to the clicked metric without restrictive dashboard filters
    */
   portalApp.openPlrKpiModal = function (kpiType) {
-    const s = getPlrState();
     const rawData = getPlrData();
     const rawRecs = getPlrRecs();
 
-    // Inherit active filters from dashboard so drilldown matches the KPI card context
-    const activeMachine = s.selectedMachine !== 'all' ? s.selectedMachine : 'all';
-    const activePriority = s.selectedPriority !== 'all' ? s.selectedPriority : 'all';
-    const activeDept = s.selectedDept !== 'all' ? s.selectedDept : (s.selectedEntity !== 'all' ? s.selectedEntity : 'all');
-    const activeYear = s.selectedYear !== 'all' ? s.selectedYear : 'all';
-
     if (kpiType === 'total-plrs') {
-      const openCount = rawData.filter(d => (d.status || '').toLowerCase() === 'open').length;
-      const closedCount = rawData.length - openCount;
-      const closureRate = rawData.length > 0 ? Math.round((closedCount / rawData.length) * 100) : 0;
       portalApp.openPlrDataModal({
         type: 'incidents',
         title: 'Total Plant Loss Reports (PLR Incident Log)',
         badge: `${rawData.length} Total Incidents`,
-        subtitle: `Complete historical plant loss and outage reports (2017–2025) across STG, Boilers & Auxiliaries • ${closedCount} Closed (${closureRate}%), ${openCount} Open`,
+        subtitle: 'Complete historical plant loss and outage reports (2017–2025) across STG, Boilers & Auxiliaries',
         filterStatus: 'all',
-        filterMachine: activeMachine,
-        filterPriority: activePriority,
-        filterDept: activeDept,
-        filterYear: activeYear,
-        kpiSource: 'total-plrs'
+        filterMachine: 'all',
+        filterPriority: 'all',
+        filterDept: 'all',
+        filterYear: 'all',
+        kpiSource: 'total-plrs',
+        hideFilters: true,
+        isKpiModal: true
       });
     } else if (kpiType === 'open-plrs') {
       const openCount = rawData.filter(d => (d.status || '').toLowerCase() === 'open').length;
@@ -4287,11 +4305,13 @@
         badge: `${openCount} Open Incidents`,
         subtitle: 'Plant outages undergoing root-cause investigation, corrective maintenance, or pending closeout sign-off',
         filterStatus: 'Open',
-        filterMachine: activeMachine,
-        filterPriority: activePriority,
-        filterDept: activeDept,
-        filterYear: activeYear,
-        kpiSource: 'open-plrs'
+        filterMachine: 'all',
+        filterPriority: 'all',
+        filterDept: 'all',
+        filterYear: 'all',
+        kpiSource: 'open-plrs',
+        hideFilters: true,
+        isKpiModal: true
       });
     } else if (kpiType === 'total-recs') {
       const openRecs = rawRecs.filter(r => (r.status || '').toLowerCase() === 'open').length;
@@ -4303,11 +4323,13 @@
         badge: `${rawRecs.length} Total Recommendations`,
         subtitle: `Corrective action items extracted across 14+ standardized Action Entities • ${closedRecs} Closed (${closureRate}%), ${openRecs} Open`,
         filterStatus: 'all',
-        filterMachine: activeMachine,
-        filterPriority: activePriority,
-        filterDept: activeDept,
-        filterYear: activeYear,
-        kpiSource: 'total-recs'
+        filterMachine: 'all',
+        filterPriority: 'all',
+        filterDept: 'all',
+        filterYear: 'all',
+        kpiSource: 'total-recs',
+        hideFilters: true,
+        isKpiModal: true
       });
     } else if (kpiType === 'open-recs') {
       const openRecs = rawRecs.filter(r => (r.status || '').toLowerCase() === 'open').length;
@@ -4317,11 +4339,13 @@
         badge: `${openRecs} Open Recommendations`,
         subtitle: 'Active corrective action items awaiting physical completion or engineering sign-off',
         filterStatus: 'Open',
-        filterMachine: activeMachine,
-        filterPriority: activePriority,
-        filterDept: activeDept,
-        filterYear: activeYear,
-        kpiSource: 'open-recs'
+        filterMachine: 'all',
+        filterPriority: 'all',
+        filterDept: 'all',
+        filterYear: 'all',
+        kpiSource: 'open-recs',
+        hideFilters: true,
+        isKpiModal: true
       });
     }
   };
@@ -4337,6 +4361,8 @@
     const filterDept = opts.filterDept || opts.filterEntity || 'all';
     const filterPriority = opts.filterPriority || 'all';
     const filterYear = opts.filterYear ? String(opts.filterYear).trim() : 'all';
+    const hideFilters = Boolean(opts.hideFilters || opts.isKpiModal);
+    const isKpiModal = Boolean(opts.isKpiModal);
 
     let allRecords = [];
     if (type === 'incidents') {
@@ -4359,7 +4385,9 @@
       allRecords: allRecords,
       kpiSource: opts.kpiSource || null,
       baseTitle: title,
-      baseSubtitle: subtitle
+      baseSubtitle: subtitle,
+      hideFilters,
+      isKpiModal
     };
 
     portalApp.renderPlrDataModal();
@@ -4749,12 +4777,14 @@
       });
     }
 
+    const hideFilters = Boolean(m.hideFilters || m.isKpiModal);
+
     container.innerHTML = `
-      <div class="fixed inset-0 z-[9999] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 md:p-6" style="pointer-events: auto;" onclick="if(event.target === this) (window.portalApp || portalApp).closePlrDataModal()">
-        <div class="bg-white border border-slate-200 rounded-2xl w-full max-w-6xl shadow-2xl flex flex-col max-h-[92vh] overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+      <div class="fixed inset-0 z-[9999] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-2 sm:p-3 md:p-4" style="pointer-events: auto;" onclick="if(event.target === this) (window.portalApp || portalApp).closePlrDataModal()">
+        <div class="bg-white border border-slate-200 rounded-2xl w-[98vw] max-w-[1750px] shadow-2xl flex flex-col h-[94vh] max-h-[96vh] overflow-hidden animate-in fade-in zoom-in-95 duration-150">
           
           <!-- Modal Header (Corporate Executive Styled) -->
-          <div class="p-4 sm:p-5 border-b border-slate-200 bg-slate-50 flex items-center justify-between gap-4">
+          <div class="p-4 sm:p-5 border-b border-slate-200 bg-slate-50 flex items-center justify-between gap-4 shrink-0">
             <div class="flex items-center gap-3.5 min-w-0">
               <div class="w-10 h-10 rounded-xl ${isIncidents ? 'bg-[#2E6DA4]' : 'bg-[#047857]'} text-white flex items-center justify-center shadow-sm shrink-0">
                 <i data-lucide="${isIncidents ? 'cpu' : 'clipboard-check'}" class="w-5 h-5"></i>
@@ -4765,7 +4795,7 @@
                   <span class="px-2.5 py-0.5 rounded-full text-xs font-bold ${isIncidents ? 'bg-blue-100 text-blue-800 border border-blue-200' : 'bg-emerald-100 text-emerald-800 border border-emerald-200'} shrink-0 font-mono">
                     ${records.length} of ${allRecords.length} ${isIncidents ? 'Incidents' : 'Recs'}
                   </span>
-                  ${activeFilters.length > 0 ? `
+                  ${!hideFilters && activeFilters.length > 0 ? `
                     <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
                       ${activeFilters.length} Active ${activeFilters.length === 1 ? 'Filter' : 'Filters'}
                     </span>
@@ -4776,7 +4806,7 @@
             </div>
             
             <div class="flex items-center gap-2 shrink-0">
-              ${activeFilters.length > 0 ? `
+              ${!hideFilters && activeFilters.length > 0 ? `
                 <button
                   onclick="portalApp.resetPlrDataModalFilters()"
                   class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 shadow-2xs cursor-pointer transition-colors"
@@ -4804,13 +4834,55 @@
             </div>
           </div>
 
+          ${hideFilters ? `
+            <!-- Clean Summary Metrics & Search (No Filter Dropdowns for KPI Drilldown Pop-up Window) -->
+            <div class="px-5 sm:px-6 py-3 border-b border-slate-200 bg-slate-50/70 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shrink-0">
+              <div class="flex items-center gap-3 flex-wrap text-xs sm:text-sm">
+                <span class="font-bold text-slate-700">Records in Scope: <strong class="text-slate-900 font-mono text-base">${records.length} ${isIncidents ? 'Total Incidents' : 'Recommendations'}</strong></span>
+                ${!isIncidents && m.kpiSource !== 'total-plrs' ? `
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                  <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+                  ${openCount} Open
+                </span>
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                  ${closedCount} Closed
+                </span>
+                <span class="text-xs sm:text-sm font-bold text-emerald-800 bg-emerald-50 border-emerald-200 font-mono px-2.5 py-1 rounded border">
+                  ${closurePct}% Resolved
+                </span>
+                ` : ''}
+              </div>
+
+              <!-- Quick Search Input -->
+              <div class="relative w-full sm:w-80 shrink-0">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                  <i data-lucide="search" class="w-4 h-4"></i>
+                </div>
+                <input
+                  id="plr-modal-search-input"
+                  type="text"
+                  value="${escapeHtml(m.searchQuery || '')}"
+                  oninput="portalApp.filterPlrDataModalSearch(this.value)"
+                  placeholder="Search in records..."
+                  class="w-full pl-9 pr-8 py-2 text-xs sm:text-sm rounded-xl border border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2E6DA4] focus:border-transparent shadow-2xs"
+                />
+                ${m.searchQuery ? `
+                  <button onclick="portalApp.filterPlrDataModalSearch('')" class="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-700 cursor-pointer" title="Clear search">
+                    <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                  </button>
+                ` : ''}
+              </div>
+            </div>
+          ` : `
           <!-- Metrics & Filter Controls Bar -->
-          <div class="px-4 sm:px-5 py-3 border-b border-slate-200 bg-white space-y-2.5">
+          <div class="px-4 sm:px-5 py-3 border-b border-slate-200 bg-white space-y-2.5 shrink-0">
             <!-- Top Row: Metrics & Status Toggle -->
             <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
               <!-- Summary KPIs -->
               <div class="flex items-center gap-2.5 flex-wrap text-xs">
                 <span class="font-bold text-slate-600">Total in Scope: <strong class="text-slate-900 font-mono text-sm">${totalCount}</strong></span>
+                ${!isIncidents && m.kpiSource !== 'total-plrs' ? `
                 <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
                   <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
                   ${openCount} Open
@@ -4819,16 +4891,18 @@
                   <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                   ${closedCount} Closed
                 </span>
-                <span class="text-xs font-bold ${isIncidents ? 'text-[#2E6DA4] bg-blue-50 border-blue-200' : 'text-emerald-800 bg-emerald-50 border-emerald-200'} font-mono px-2 py-0.5 rounded border">
+                <span class="text-xs font-bold text-emerald-800 bg-emerald-50 border-emerald-200 font-mono px-2 py-0.5 rounded border">
                   ${closurePct}% Resolved
                 </span>
+                ` : ''}
               </div>
 
+              ${!isIncidents && m.kpiSource !== 'total-plrs' ? `
               <!-- Status Toggle Buttons -->
               <div class="inline-flex p-0.5 bg-slate-100 rounded-xl border border-slate-200 text-xs shrink-0 self-start md:self-auto">
                 <button
                   onclick="portalApp.setPlrDataModalStatusTab('all')"
-                  class="px-3 py-1 rounded-lg font-bold transition-all cursor-pointer ${m.activeStatusTab === 'all' ? (isIncidents ? 'bg-[#2E6DA4] text-white shadow-2xs' : 'bg-[#047857] text-white shadow-2xs') : 'text-slate-600 hover:text-slate-900'}"
+                  class="px-3 py-1 rounded-lg font-bold transition-all cursor-pointer ${m.activeStatusTab === 'all' ? 'bg-[#047857] text-white shadow-2xs' : 'text-slate-600 hover:text-slate-900'}"
                 >
                   All (${totalCount})
                 </button>
@@ -4845,6 +4919,7 @@
                   Closed (${closedCount})
                 </button>
               </div>
+              ` : ''}
             </div>
 
             <!-- Bottom Row: Filter Dropdowns & Search Box -->
@@ -4943,9 +5018,10 @@
               </div>
             ` : ''}
           </div>
+          `}
 
           <!-- Table Content -->
-          <div class="overflow-y-auto flex-1 max-h-[62vh]">
+          <div class="overflow-y-auto overflow-x-auto flex-1">
             ${records.length === 0 ? `
               <div class="py-16 px-4 text-center text-slate-500 space-y-3">
                 <div class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
@@ -4965,27 +5041,25 @@
               </div>
             ` : isIncidents ? `
               <table class="w-full text-left text-xs border-collapse">
-                <thead class="sticky top-0 bg-slate-100/95 backdrop-blur-xs z-10 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[10px]">
+                <thead class="sticky top-0 bg-slate-100 z-10 border-b border-slate-200 text-slate-700 font-bold uppercase tracking-wider text-xs">
                   <tr>
-                    <th class="py-2.5 px-3 w-12 text-center">#</th>
-                    <th class="py-2.5 px-3 w-20 font-mono">PLR #</th>
-                    <th class="py-2.5 px-3 w-24">Date</th>
-                    <th class="py-2.5 px-3">Loss Narrative & Incident Description</th>
-                    <th class="py-2.5 px-3 w-32">Machine</th>
-                    <th class="py-2.5 px-3 w-24">Entity</th>
-                    <th class="py-2.5 px-3 w-20">Priority</th>
-                    <th class="py-2.5 px-3 w-24 text-center">Status</th>
-                    <th class="py-2.5 px-3 w-20 text-right">Inspect</th>
+                    <th class="py-3 px-4 w-12 text-center">#</th>
+                    <th class="py-3 px-4 w-24 font-mono">PLR #</th>
+                    <th class="py-3 px-4 w-28">Date</th>
+                    <th class="py-3 px-4 min-w-[340px]">Loss Narrative & Incident Description</th>
+                    <th class="py-3 px-4 w-40">Machine</th>
+                    <th class="py-3 px-4 w-32">Entity / Dept</th>
+                    <th class="py-3 px-4 w-28 text-center">Priority</th>
+                    <th class="py-3 px-4 w-24 text-right">Inspect</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 text-slate-800">
                   ${records.map((r, idx) => {
-                    const isOpen = (r.status || '').toLowerCase() === 'open';
                     const isHigh = (r.priority || '').toLowerCase() === 'high' || (r.priority || '').toLowerCase() === 'critical';
                     return `
                       <tr class="hover:bg-slate-50/80 transition-colors group">
-                        <td class="py-2.5 px-3 font-mono text-center text-slate-400 text-[11px]">${idx + 1}</td>
-                        <td class="py-2.5 px-3 font-mono font-bold text-[#2E6DA4] whitespace-nowrap">
+                        <td class="py-3 px-4 font-mono text-center text-slate-400 text-xs">${idx + 1}</td>
+                        <td class="py-3 px-4 font-mono font-bold text-sm text-[#2E6DA4] whitespace-nowrap">
                           <button
                             onclick="portalApp.openPlrInspectionModal(${r.plrNo})"
                             class="hover:underline cursor-pointer flex items-center gap-1 font-bold"
@@ -4994,45 +5068,37 @@
                             <span>#${r.plrNo}</span>
                           </button>
                         </td>
-                        <td class="py-2.5 px-3 font-mono text-slate-500 whitespace-nowrap text-[11px]">
+                        <td class="py-3 px-4 font-mono text-slate-600 whitespace-nowrap text-xs">
                           ${r.date || ''} <span class="text-slate-400">(${r.year})</span>
                         </td>
-                        <td class="py-2.5 px-3 max-w-md">
-                          <div class="line-clamp-2 text-slate-800 font-medium leading-relaxed" title="${(r.incident || '').replace(/"/g, '&quot;')}">
+                        <td class="py-3 px-4 min-w-[340px] max-w-3xl">
+                          <div class="text-sm text-slate-800 font-normal leading-relaxed whitespace-normal break-words" title="${(r.incident || '').replace(/"/g, '&quot;')}">
                             ${r.incident}
                           </div>
                         </td>
-                        <td class="py-2.5 px-3 whitespace-nowrap">
-                          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-800 border border-slate-200">
-                            <i data-lucide="cpu" class="w-3 h-3 text-[#2E6DA4]"></i>
+                        <td class="py-3 px-4 whitespace-nowrap">
+                          <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-bold bg-slate-100 text-slate-800 border border-slate-200">
+                            <i data-lucide="cpu" class="w-3.5 h-3.5 text-[#2E6DA4]"></i>
                             <span>${r.machine}</span>
                           </span>
                         </td>
-                        <td class="py-2.5 px-3 whitespace-nowrap">
-                          <span class="inline-block px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+                        <td class="py-3 px-4 whitespace-nowrap">
+                          <span class="inline-block px-2.5 py-1 rounded text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200">
                             ${r.dept || 'KE'}
                           </span>
                         </td>
-                        <td class="py-2.5 px-3 whitespace-nowrap">
-                          <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-bold ${isHigh ? 'bg-rose-50 text-rose-700 border border-rose-200' : 'bg-slate-100 text-slate-600 border border-slate-200'}">
+                        <td class="py-3 px-4 whitespace-nowrap text-center">
+                          <span class="inline-block px-2 py-0.5 rounded text-xs font-bold ${isHigh ? 'bg-rose-50 text-rose-700 border border-rose-200' : 'bg-slate-100 text-slate-600 border border-slate-200'}">
                             ${r.priority || 'Low'}
                           </span>
                         </td>
-                        <td class="py-2.5 px-3 text-center whitespace-nowrap">
-                          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold ${
-                            isOpen ? 'bg-rose-50 text-rose-800 border border-rose-200' : 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-                          }">
-                            <span class="w-1.5 h-1.5 rounded-full ${isOpen ? 'bg-rose-500' : 'bg-emerald-500'}"></span>
-                            ${r.status}
-                          </span>
-                        </td>
-                        <td class="py-2.5 px-3 text-right whitespace-nowrap">
+                        <td class="py-3 px-4 text-right whitespace-nowrap">
                           <button
                             onclick="portalApp.openPlrInspectionModal(${r.plrNo})"
-                            class="px-2 py-1 rounded-md text-[11px] font-bold text-[#2E6DA4] bg-blue-50/70 hover:bg-blue-100 border border-blue-200 cursor-pointer inline-flex items-center gap-1 transition-colors"
+                            class="px-2.5 py-1.5 rounded-lg text-xs font-bold text-[#2E6DA4] bg-blue-50/70 hover:bg-blue-100 border border-blue-200 cursor-pointer inline-flex items-center gap-1 transition-colors"
                           >
                             <span>View</span>
-                            <i data-lucide="chevron-right" class="w-3 h-3"></i>
+                            <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
                           </button>
                         </td>
                       </tr>
@@ -5042,17 +5108,17 @@
               </table>
             ` : `
               <table class="w-full text-left text-xs border-collapse">
-                <thead class="sticky top-0 bg-slate-100/95 backdrop-blur-xs z-10 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[10px]">
+                <thead class="sticky top-0 bg-slate-100 z-10 border-b border-slate-200 text-slate-700 font-bold uppercase tracking-wider text-xs">
                   <tr>
-                    <th class="py-2.5 px-3 w-12 text-center">#</th>
-                    <th class="py-2.5 px-3 w-28 font-mono">Rec Ref</th>
-                    <th class="py-2.5 px-3 w-32">Action Department</th>
-                    <th class="py-2.5 px-3 w-32">Machine Asset</th>
-                    <th class="py-2.5 px-3">Recommendation Details</th>
-                    <th class="py-2.5 px-3 w-24">Parent PLR</th>
-                    <th class="py-2.5 px-3 w-24">Date</th>
-                    <th class="py-2.5 px-3 w-28 text-center">Status (Click to Toggle)</th>
-                    <th class="py-2.5 px-3 w-28 text-right">Actions</th>
+                    <th class="py-3 px-4 w-12 text-center">#</th>
+                    <th class="py-3 px-4 w-28 font-mono">Rec Ref</th>
+                    <th class="py-3 px-4 w-36">Action Department</th>
+                    <th class="py-3 px-4 w-36">Machine Asset</th>
+                    <th class="py-3 px-4 min-w-[380px]">Recommendation Details</th>
+                    <th class="py-3 px-4 w-28">Parent PLR</th>
+                    <th class="py-3 px-4 w-28">Date</th>
+                    <th class="py-3 px-4 w-36 text-center">Status (Click to Toggle)</th>
+                    <th class="py-3 px-4 w-32 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 text-slate-800">
@@ -5062,8 +5128,8 @@
                     const machineName = parentPlr ? parentPlr.machine : '—';
                     return `
                       <tr class="hover:bg-slate-50/80 transition-colors group">
-                        <td class="py-2.5 px-3 font-mono text-center text-slate-400 text-[11px]">${idx + 1}</td>
-                        <td class="py-2.5 px-3 font-mono font-bold text-[#047857] whitespace-nowrap">
+                        <td class="py-3 px-4 font-mono text-center text-slate-400 text-xs">${idx + 1}</td>
+                        <td class="py-3 px-4 font-mono font-bold text-sm text-[#047857] whitespace-nowrap">
                           <button
                             onclick="portalApp.openPlrInspectionModal(${r.plrNo})"
                             class="hover:underline cursor-pointer flex items-center gap-1 font-bold"
@@ -5072,39 +5138,39 @@
                             <span>#${r.plrNo}-R${r.sNo}</span>
                           </button>
                         </td>
-                        <td class="py-2.5 px-3 whitespace-nowrap">
-                          <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-800 border border-slate-200">
+                        <td class="py-3 px-4 whitespace-nowrap">
+                          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-bold bg-slate-100 text-slate-800 border border-slate-200">
                             <span class="w-1.5 h-1.5 rounded-full bg-[#2E6DA4]"></span>
                             <span>${normalizeActionEntity(r.actionBy)}</span>
                           </span>
                         </td>
-                        <td class="py-2.5 px-3 whitespace-nowrap">
-                          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-800 border border-slate-200">
-                            <i data-lucide="cpu" class="w-3 h-3 text-[#2E6DA4]"></i>
+                        <td class="py-3 px-4 whitespace-nowrap">
+                          <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-bold bg-slate-100 text-slate-800 border border-slate-200">
+                            <i data-lucide="cpu" class="w-3.5 h-3.5 text-[#2E6DA4]"></i>
                             <span>${machineName}</span>
                           </span>
                         </td>
-                        <td class="py-2.5 px-3 max-w-lg">
-                          <div class="line-clamp-2 text-slate-800 font-medium leading-relaxed" title="${(r.recommendation || '').replace(/"/g, '&quot;')}">
+                        <td class="py-3 px-4 min-w-[380px] max-w-4xl">
+                          <div class="text-sm text-slate-800 font-normal leading-relaxed whitespace-pre-line break-words" title="${(r.recommendation || '').replace(/"/g, '&quot;')}">
                             ${r.recommendation}
                           </div>
                         </td>
-                        <td class="py-2.5 px-3 whitespace-nowrap">
+                        <td class="py-3 px-4 whitespace-nowrap">
                           <button
                             onclick="portalApp.openPlrInspectionModal(${r.plrNo})"
-                            class="text-[11px] font-mono font-bold text-[#2E6DA4] hover:underline cursor-pointer"
+                            class="text-xs font-mono font-bold text-[#2E6DA4] hover:underline cursor-pointer"
                             title="View Incident PLR #${r.plrNo}"
                           >
                             PLR #${r.plrNo}
                           </button>
                         </td>
-                        <td class="py-2.5 px-3 font-mono text-slate-500 whitespace-nowrap text-[11px]">
+                        <td class="py-3 px-4 font-mono text-slate-600 whitespace-nowrap text-xs">
                           ${r.date || ''} <span class="text-slate-400">(${r.year})</span>
                         </td>
-                        <td class="py-2.5 px-3 text-center whitespace-nowrap">
+                        <td class="py-3 px-4 text-center whitespace-nowrap">
                           <button
                             onclick="portalApp.toggleRecStatusFromModal(${r.sNo})"
-                            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold transition-all cursor-pointer shadow-2xs ${
+                            class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer shadow-2xs ${
                               isOpen ? 'bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-200' : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200'
                             }"
                             title="Click to toggle status (Open / Closed)"
@@ -5114,22 +5180,22 @@
                             <i data-lucide="refresh-cw" class="w-3 h-3 text-slate-400 group-hover:text-slate-600"></i>
                           </button>
                         </td>
-                        <td class="py-2.5 px-3 text-right whitespace-nowrap space-x-1">
+                        <td class="py-3 px-4 text-right whitespace-nowrap space-x-1">
                           <button
                             onclick="portalApp.openEditRecommendationModal(${r.sNo})"
-                            class="px-2 py-1 rounded-md text-[11px] font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 cursor-pointer inline-flex items-center gap-1 transition-colors"
+                            class="px-2.5 py-1.5 rounded-md text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 cursor-pointer inline-flex items-center gap-1 transition-colors"
                             title="Edit recommendation details"
                           >
-                            <i data-lucide="edit-3" class="w-3 h-3 text-slate-600"></i>
+                            <i data-lucide="edit-3" class="w-3.5 h-3.5 text-slate-600"></i>
                             <span>Edit</span>
                           </button>
                           <button
                             onclick="portalApp.openPlrInspectionModal(${r.plrNo})"
-                            class="px-2 py-1 rounded-md text-[11px] font-bold text-[#2E6DA4] bg-blue-50/70 hover:bg-blue-100 border border-blue-200 cursor-pointer inline-flex items-center gap-1 transition-colors"
+                            class="px-2.5 py-1.5 rounded-md text-xs font-bold text-[#2E6DA4] bg-blue-50/70 hover:bg-blue-100 border border-blue-200 cursor-pointer inline-flex items-center gap-1 transition-colors"
                             title="Inspect Parent Incident PLR #${r.plrNo}"
                           >
                             <span>PLR</span>
-                            <i data-lucide="chevron-right" class="w-3 h-3"></i>
+                            <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
                           </button>
                         </td>
                       </tr>
