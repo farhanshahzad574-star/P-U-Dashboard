@@ -187,7 +187,7 @@
         id: "sm-commercial",
         title: "Senior Manager Commercial",
         fullTitle: "Senior Manager Commercial",
-        role: "Commercial & SCM Strategy",
+        role: "Commercial Strategy",
         reportsTo: "COO FPCL",
         color: "indigo",
         badge: "Direct Report",

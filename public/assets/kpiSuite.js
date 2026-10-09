@@ -84,10 +84,234 @@
     return 'indigo';
   }
 
+  // Organization Structure Definition (Data-Driven JSON)
+  const ORGANIZATION_DATA = {
+    id: 'coo',
+    title: 'COO FPCL',
+    subtitle: 'Chief Operating Officer',
+    level: 1,
+    tag: '100% Weightage',
+    weightageTooltip: 'Weightage in the corporate KPI scorecard',
+    subordinatesCount: 4,
+    role: 'Executive Operations Leadership',
+    icon: 'crown',
+    children: [
+      {
+        id: 'sm-production',
+        title: 'Senior Manager Production',
+        subtitle: 'Reports to COO FPCL',
+        level: 2,
+        department: 'Production',
+        deptKey: 'production',
+        tag: 'Production & Ops',
+        icon: 'factory',
+        subordinatesCount: 1,
+        color: '#059669',
+        borderTop: '#059669',
+        bgTint: '#ECFDF5',
+        borderTint: '#A7F3D0',
+        tagBg: '#ECFDF5',
+        tagText: '#065F46',
+        tagBorder: '#A7F3D0',
+        children: [
+          {
+            id: 'm-production-pu',
+            title: 'Manager Production (P&U)',
+            subtitle: 'Power & Utilities',
+            level: 3,
+            department: 'Production',
+            deptKey: 'production',
+            tag: 'Power & Utilities',
+            icon: 'activity',
+            hasIcon: true,
+            reportingType: 'direct',
+            subordinatesCount: 0,
+            cardBg: '#F0FDF4',
+            cardBorder: '#BBF7D0'
+          }
+        ]
+      },
+      {
+        id: 'sm-commercial',
+        title: 'Senior Manager Commercial',
+        subtitle: 'Reports to COO FPCL',
+        level: 2,
+        department: 'Commercial',
+        deptKey: 'commercial',
+        tag: 'Commercial', // Changed from Commercial & SCM to Commercial
+        icon: 'trending-up',
+        subordinatesCount: 1,
+        color: '#4F46E5',
+        borderTop: '#4F46E5',
+        bgTint: '#EEF2FF',
+        borderTint: '#C7D2FE',
+        tagBg: '#EEF2FF',
+        tagText: '#3730A3',
+        tagBorder: '#C7D2FE',
+        children: [
+          {
+            id: 'm-commercial-fuel',
+            title: 'Commercial & Fuel Portfolio',
+            subtitle: 'Direct reporting to COO',
+            level: 3,
+            department: 'Commercial',
+            deptKey: 'commercial',
+            tag: 'Commercial',
+            icon: null,
+            hasIcon: false, // Strictly removed commercial and fuel portfolio icon as requested
+            reportingType: 'functional',
+            dashedCard: true, // Dashed card representation
+            subordinatesCount: 0,
+            cardBg: '#F5F3FF',
+            cardBorder: '#C7D2FE'
+          }
+        ]
+      },
+      {
+        id: 'sm-ei',
+        title: 'Senior Manager E&I',
+        subtitle: 'Reports to COO FPCL',
+        level: 2,
+        department: 'Electrical & Inst',
+        deptKey: 'ei',
+        tag: 'Electrical & Inst',
+        icon: 'zap',
+        subordinatesCount: 2,
+        color: '#D97706',
+        borderTop: '#D97706',
+        bgTint: '#FFFBEB',
+        borderTint: '#FDE68A',
+        tagBg: '#FFFBEB',
+        tagText: '#92400E',
+        tagBorder: '#FDE68A',
+        children: [
+          {
+            id: 'm-electrical',
+            title: 'Manager Electrical',
+            subtitle: 'Electrical Systems',
+            level: 3,
+            department: 'Electrical & Inst',
+            deptKey: 'ei',
+            tag: 'Electrical',
+            icon: 'cpu',
+            hasIcon: true,
+            reportingType: 'direct',
+            subordinatesCount: 0,
+            cardBg: '#FEFCE8',
+            cardBorder: '#FEF08A'
+          },
+          {
+            id: 'm-instrument',
+            title: 'Manager Instrument',
+            subtitle: 'Instrumentation & Controls',
+            level: 3,
+            department: 'Electrical & Inst',
+            deptKey: 'ei',
+            tag: 'Controls',
+            icon: 'sliders',
+            hasIcon: true,
+            reportingType: 'direct',
+            subordinatesCount: 0,
+            cardBg: '#FEFCE8',
+            cardBorder: '#FEF08A'
+          }
+        ]
+      },
+      {
+        id: 'sm-mech-maint',
+        title: 'Senior Manager Mech Maint',
+        subtitle: 'Reports to COO FPCL',
+        level: 2,
+        department: 'Mechanical Maint',
+        deptKey: 'mech',
+        tag: 'Mechanical Maint',
+        icon: 'wrench',
+        subordinatesCount: 3,
+        color: '#E11D48',
+        borderTop: '#E11D48',
+        bgTint: '#FFF1F2',
+        borderTint: '#FECDD3',
+        tagBg: '#FFF1F2',
+        tagText: '#9F1239',
+        tagBorder: '#FECDD3',
+        children: [
+          {
+            id: 'm-equipment',
+            title: 'Manager Equipment',
+            subtitle: 'Static Equipment',
+            level: 3,
+            department: 'Mechanical Maint',
+            deptKey: 'mech',
+            tag: 'Equipment',
+            icon: 'box',
+            hasIcon: true,
+            reportingType: 'direct',
+            subordinatesCount: 0,
+            cardBg: '#FFF1F2',
+            cardBorder: '#FECDD3'
+          },
+          {
+            id: 'm-machinery',
+            title: 'Manager Machinery',
+            subtitle: 'Rotating Machinery',
+            level: 3,
+            department: 'Mechanical Maint',
+            deptKey: 'mech',
+            tag: 'Machinery',
+            icon: 'cog',
+            hasIcon: true,
+            reportingType: 'direct',
+            subordinatesCount: 0,
+            cardBg: '#FFF1F2',
+            cardBorder: '#FECDD3'
+          },
+          {
+            id: 'm-planning',
+            title: 'Manager Planning',
+            subtitle: 'Maintenance Planning',
+            level: 3,
+            department: 'Mechanical Maint',
+            deptKey: 'mech',
+            tag: 'Planning',
+            icon: 'calendar',
+            hasIcon: true,
+            reportingType: 'direct',
+            subordinatesCount: 0,
+            cardBg: '#FFF1F2',
+            cardBorder: '#FECDD3'
+          }
+        ]
+      }
+    ]
+  };
+
+  // High-performance Inline SVG Icons
+  const SVG_ICONS = {
+    crown: '<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/></svg>',
+    factory: '<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M17 18h1"/><path d="M12 18h1"/><path d="M7 18h1"/></svg>',
+    'trending-up': '<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>',
+    zap: '<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
+    wrench: '<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>',
+    activity: '<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>',
+    cpu: '<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M2 9h2"/><path d="M20 15h2"/><path d="M20 9h2"/><path d="M9 2v2"/><path d="M9 20v2"/></svg>',
+    sliders: '<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>',
+    box: '<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>',
+    cog: '<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z"/><path d="M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>',
+    calendar: '<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+    chevronDown: '<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>',
+    table: '<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/></svg>'
+  };
+
   const kpiSuite = {
     state: {
       kpis: [],
       activeNodeId: 'coo', // default active node in organogram is COO FPCL
+      collapsedBranches: {
+        'sm-production': false,
+        'sm-commercial': false,
+        'sm-ei': false,
+        'sm-mech-maint': false
+      },
       activeCategoryFilter: 'all',
       searchQuery: '',
       popupSearchQuery: '',
@@ -102,6 +326,7 @@
 
     init() {
       window.FPCL_KPI_SUITE = this;
+      window.FPCL_KPI_ORGANOGRAM = ORGANIZATION_DATA;
 
       // Seed with pre-bundled fallback data if available
       if (window.FPCL_KPI_DATA && Array.isArray(window.FPCL_KPI_DATA)) {
@@ -172,6 +397,19 @@
           } catch (e) {}
         }
 
+        // 4. Try dedicated /api/kpis endpoint
+        if (!csvText) {
+          try {
+            const kpiRes = await fetch(`/api/kpis?_nocache=${now}`);
+            if (kpiRes.ok) {
+              const text = await kpiRes.text();
+              if (text && !text.includes('<!DOCTYPE html>') && text.includes(',')) {
+                csvText = text;
+              }
+            }
+          } catch (e) {}
+        }
+
         if (csvText) {
           const parsedKpis = this.parseKpiCsv(csvText);
           if (parsedKpis && parsedKpis.length > 0) {
@@ -189,6 +427,9 @@
         this.state.isSyncing = false;
         this.updateSyncUI();
         this.renderAll();
+        if (this.state.isCooPopupOpen) {
+          this.renderCooHighlightsPopup();
+        }
       }
     },
 
@@ -376,21 +617,60 @@
 
     onCooClick() {
       this.state.activeNodeId = 'coo';
+      this.openCooHighlightsPopup();
+    },
+
+    toggleBranch(branchId) {
+      if (!this.state.collapsedBranches) {
+        this.state.collapsedBranches = {};
+      }
+      this.state.collapsedBranches[branchId] = !this.state.collapsedBranches[branchId];
+      this.state.activeNodeId = branchId;
       this.renderOrganogram();
       this.renderScorecard();
-      this.renderExecutiveSummaryCards();
-      this.renderAnalyticsCharts();
-      this.openCooHighlightsPopup();
       if (window.lucide && typeof window.lucide.createIcons === 'function') {
         window.lucide.createIcons();
       }
     },
 
+    expandAll() {
+      if (!this.state.collapsedBranches) {
+        this.state.collapsedBranches = {};
+      }
+      this.state.collapsedBranches['sm-production'] = false;
+      this.state.collapsedBranches['sm-commercial'] = false;
+      this.state.collapsedBranches['sm-ei'] = false;
+      this.state.collapsedBranches['sm-mech-maint'] = false;
+      this.renderOrganogram();
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
+      }
+    },
+
+    collapseAll() {
+      if (!this.state.collapsedBranches) {
+        this.state.collapsedBranches = {};
+      }
+      this.state.collapsedBranches['sm-production'] = true;
+      this.state.collapsedBranches['sm-commercial'] = true;
+      this.state.collapsedBranches['sm-ei'] = true;
+      this.state.collapsedBranches['sm-mech-maint'] = true;
+      this.renderOrganogram();
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
+      }
+    },
+
+    printOrganogram() {
+      window.print();
+    },
+
     selectOrganogramNode(nodeId) {
       this.state.activeNodeId = nodeId;
       if (nodeId === 'coo') {
-        // Requirement 2: visuals below Corporate Key Performance Highlights (100% Weightage) should open in popup when COO FPCL icon is clicked
+        // Direct click on COO FPCL opens the full Google Sheet Scorecard Table modal
         this.openCooHighlightsPopup();
+        return;
       }
       this.renderOrganogram();
       this.renderScorecard();
@@ -405,11 +685,14 @@
 
     openCooHighlightsPopup() {
       this.state.isCooPopupOpen = true;
+      this.state.activeNodeId = 'coo';
       const modal = document.getElementById('kpi-coo-highlights-modal');
       if (modal) {
         modal.classList.remove('hidden');
         modal.classList.add('flex');
+        modal.style.removeProperty('display');
         modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
       }
       this.renderCooHighlightsPopup();
       if (window.lucide && typeof window.lucide.createIcons === 'function') {
@@ -424,6 +707,12 @@
         modal.classList.add('hidden');
         modal.classList.remove('flex');
         modal.style.display = 'none';
+      }
+      const suiteModal = document.getElementById('kpis-suite-modal');
+      if (suiteModal && !suiteModal.classList.contains('hidden')) {
+        document.body.style.overflow = 'hidden';
+      } else {
+        document.body.style.overflow = '';
       }
     },
 
@@ -620,11 +909,7 @@
               <div>
                 <h4 class="text-sm sm:text-base font-black tracking-tight text-white flex items-center gap-2">
                   <span>COO FPCL Corporate KPI Master Scorecard</span>
-                  <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-white text-amber-900 shadow-2xs">100% Weightage Active</span>
                 </h4>
-                <div class="text-[11px] text-amber-100 font-medium">
-                  Showing ${items.length} KPIs calibrated across 3 performance tiers (Threshold -95% • Budget 100% • Stretch 110%)
-                </div>
               </div>
             </div>
             <div class="flex items-center gap-2">
@@ -677,7 +962,6 @@
                     </div>
                   </th>
                   <th class="py-3 px-3.5 bg-slate-100/90 text-slate-800 border-l border-slate-200 text-center" style="min-width: 90px;">Unit</th>
-                  <th class="py-3 px-3.5 bg-amber-50/90 text-amber-950 border-l border-amber-200 text-center" style="min-width: 110px;">Action</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100">
@@ -803,19 +1087,6 @@
                         <span class="px-2 py-0.5 rounded-md text-[10px] font-mono font-black bg-slate-100 text-slate-800 border border-slate-200 whitespace-nowrap">
                           ${k.unit || '—'}
                         </span>
-                      </td>
-
-                      <!-- Action Button -->
-                      <td class="py-3.5 px-3.5 text-center whitespace-nowrap border-l border-slate-100">
-                        <button
-                          type="button"
-                          onclick="FPCL_KPI_SUITE.openDrillDown('${k.sr}')"
-                          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 text-white shadow-2xs hover:shadow-xs transition-all cursor-pointer active:scale-95"
-                          title="View In-Depth KPI Drilldown"
-                        >
-                          <span>Deep Dive</span>
-                          <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-amber-100"></i>
-                        </button>
                       </td>
                     </tr>
                   `;
@@ -1044,307 +1315,358 @@
       const container = document.getElementById('kpi-organogram-container');
       if (!container) return;
 
-      const activeId = this.state.activeNodeId;
+      const activeId = this.state.activeNodeId || 'coo';
       const isCooActive = activeId === 'coo';
-
-      // Uniform color themes:
-      // Senior Managers: Royal Indigo theme for ALL Senior Managers
-      // Managers: Crisp Teal theme for ALL Managers
+      const root = ORGANIZATION_DATA;
+      const collapsed = this.state.collapsedBranches || {};
 
       container.innerHTML = `
-        <div class="w-full max-w-7xl mx-auto flex flex-col items-center select-none py-2 px-1 sm:px-3">
-          <!-- LEVEL 1: COO FPCL (Top of Organogram) -->
-          <div class="relative flex flex-col items-center">
-            <button
-              type="button"
-              onclick="FPCL_KPI_SUITE.onCooClick()"
-              class="group relative flex flex-col p-4 rounded-2xl border-2 transition-all duration-200 cursor-pointer text-left shadow-sm overflow-hidden
-                ${isCooActive ? 'bg-gradient-to-br from-amber-50 via-white to-amber-100/90 border-amber-500 shadow-lg shadow-amber-500/20 ring-4 ring-amber-400/30' : 'bg-white border-amber-300 hover:border-amber-500 hover:shadow-md'}"
-              style="width: 340px; max-width: 100%;"
-            >
-              <div class="flex items-center gap-3 w-full">
-                <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-amber-500 via-amber-600 to-yellow-600 text-white flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
-                  <i data-lucide="award" class="w-6 h-6 text-white"></i>
+        <div class="w-full max-w-7xl mx-auto flex flex-col items-center select-none py-2 px-2 sm:px-4">
+          <!-- A Header Above the Chart -->
+          <div class="w-full mb-8 bg-white/90 backdrop-blur-sm border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div>
+              <h2 class="text-lg sm:text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                <span>FPCL Operations Organogram</span>
+                <span class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">Interactive</span>
+              </h2>
+              <p class="text-xs sm:text-[13px] text-slate-500 font-medium mt-0.5">Performance Management Structure</p>
+            </div>
+
+            <!-- Legend & Toolbar -->
+            <div class="flex flex-wrap items-center gap-3 w-full md:w-auto justify-between md:justify-end">
+              <!-- Small Legend -->
+              <div class="flex flex-wrap items-center gap-2.5 text-[11px] font-medium text-slate-600 bg-slate-50/90 px-3 py-1.5 rounded-xl border border-slate-200/80">
+                <div class="flex items-center gap-1.5">
+                  <span class="w-4 h-0.5 bg-slate-400 rounded-full inline-block"></span>
+                  <span>Direct reporting</span>
                 </div>
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-center justify-between gap-1.5 flex-wrap">
-                    <h4 class="text-base font-black text-slate-900 tracking-tight leading-tight">
-                      COO FPCL
-                    </h4>
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-900 border border-amber-300 shrink-0">
-                      100% Weightage
-                    </span>
-                  </div>
-                  <p class="text-xs font-semibold text-slate-600 mt-0.5 break-words">Chief Operating Officer</p>
+                <span class="text-slate-300">•</span>
+                <div class="flex items-center gap-1.5">
+                  <span class="w-4 border-t-2 border-dashed border-indigo-400 inline-block"></span>
+                  <span>Functional reporting</span>
+                </div>
+                <span class="text-slate-300 hidden sm:inline">•</span>
+                <div class="hidden sm:flex items-center gap-2" title="Department Color System">
+                  <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-800">
+                    <span class="w-2 h-2 rounded-full bg-[#059669]"></span> Production
+                  </span>
+                  <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-indigo-800">
+                    <span class="w-2 h-2 rounded-full bg-[#4F46E5]"></span> Commercial
+                  </span>
+                  <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-800">
+                    <span class="w-2 h-2 rounded-full bg-[#D97706]"></span> E&amp;I
+                  </span>
+                  <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-rose-800">
+                    <span class="w-2 h-2 rounded-full bg-[#E11D48]"></span> Mechanical
+                  </span>
                 </div>
               </div>
 
-              <div class="mt-3 pt-2.5 border-t border-amber-200/80 w-full flex items-center justify-between text-[11px] font-bold text-amber-900">
-                <span class="flex items-center gap-1.5">
-                  <i data-lucide="table" class="w-3.5 h-3.5 text-amber-700"></i>
-                  <span>Corporate KPI Scorecard Table</span>
-                </span>
-                <span class="inline-flex items-center gap-1 text-blue-700 font-black group-hover:translate-x-0.5 transition-transform">
-                  Click to Open <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
-                </span>
+              <!-- Toolbar Buttons -->
+              <div class="flex items-center gap-1.5 no-print">
+                <button
+                  type="button"
+                  onclick="FPCL_KPI_SUITE.expandAll()"
+                  class="px-2.5 py-1.5 text-xs font-semibold rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-2xs hover:shadow-xs transition-all active:scale-95 cursor-pointer"
+                  title="Expand all subordinate teams"
+                >
+                  Expand all
+                </button>
+                <button
+                  type="button"
+                  onclick="FPCL_KPI_SUITE.collapseAll()"
+                  class="px-2.5 py-1.5 text-xs font-semibold rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-2xs hover:shadow-xs transition-all active:scale-95 cursor-pointer"
+                  title="Collapse all subordinate teams"
+                >
+                  Collapse all
+                </button>
+                <button
+                  type="button"
+                  onclick="FPCL_KPI_SUITE.printOrganogram()"
+                  class="px-3 py-1.5 text-xs font-semibold rounded-xl bg-slate-900 hover:bg-slate-800 text-white shadow-2xs hover:shadow-xs transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
+                  title="Print / Save as PDF in Landscape"
+                >
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                  <span>Print / Save as PDF</span>
+                </button>
               </div>
-            </button>
-
-            <!-- Vertical trunk down from COO -->
-            <div class="w-0.5 h-6 bg-slate-300"></div>
+            </div>
           </div>
 
-          <!-- Connecting Bus Bar to Senior Managers -->
-          <div class="w-full max-w-6xl px-1 sm:px-2 flex flex-col items-center">
-            <!-- Horizontal crossbar linking the 4 Senior Manager branches -->
-            <div class="hidden lg:block w-[78%] h-0.5 bg-slate-300 relative">
-              <div class="absolute left-0 top-0 w-0.5 h-4 bg-slate-300"></div>
-              <div class="absolute left-[33%] top-0 w-0.5 h-4 bg-slate-300"></div>
-              <div class="absolute left-[66%] top-0 w-0.5 h-4 bg-slate-300"></div>
-              <div class="absolute right-0 top-0 w-0.5 h-4 bg-slate-300"></div>
+          <!-- LEVEL 1: COO FPCL CARD -->
+          <div class="org-anim-level-1 relative flex flex-col items-center">
+            <div
+              role="button"
+              tabindex="0"
+              onclick="FPCL_KPI_SUITE.openCooHighlightsPopup()"
+              onkeydown="if(event.key==='Enter'||event.key===' ')FPCL_KPI_SUITE.openCooHighlightsPopup()"
+              class="org-card-hover group relative flex flex-col p-5 rounded-2xl cursor-pointer text-left overflow-hidden border transition-all duration-200"
+              style="width: 375px; max-width: 100%; background: linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #312E81 100%); border-color: rgba(245, 158, 11, 0.45); box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.4), 0 8px 10px -6px rgba(15, 23, 42, 0.3);"
+              title="Executive Scope: COO FPCL • Click to open Corporate KPI Scorecard Table"
+            >
+              <!-- Top Ribbon: Weightage Badge with Tooltip & Subordinates Chip -->
+              <div class="flex items-center justify-between gap-2 mb-3.5">
+                <span
+                  class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-amber-400/15 text-amber-300 border border-amber-400/30 cursor-help"
+                  title="Weightage in the corporate KPI scorecard"
+                  data-tooltip="Weightage in the corporate KPI scorecard"
+                >
+                  ${SVG_ICONS.crown}
+                  <span>${root.tag}</span>
+                </span>
+                <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-white/10 text-slate-300 border border-white/10">
+                  ${root.subordinatesCount} subordinates
+                </span>
+              </div>
+
+              <!-- Header Info with Circular Badge -->
+              <div class="flex items-start gap-3.5 w-full cursor-pointer" onclick="FPCL_KPI_SUITE.openCooHighlightsPopup()">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 via-amber-500 to-yellow-500 text-slate-950 flex items-center justify-center shrink-0 shadow-md shadow-amber-500/20 group-hover:scale-105 transition-transform">
+                  ${SVG_ICONS.crown}
+                </div>
+                <div class="flex-1 min-w-0">
+                  <h3 class="text-lg sm:text-[19px] font-bold text-white tracking-tight leading-tight">
+                    ${root.title}
+                  </h3>
+                  <p class="text-[13px] text-slate-300 font-medium mt-0.5">${root.subtitle}</p>
+                </div>
+              </div>
+
+              <!-- Corporate KPI Scorecard Table Action -->
+              <div class="mt-4 pt-3 border-t border-white/15 w-full flex items-center justify-between text-xs font-semibold">
+                <button
+                  type="button"
+                  onclick="event.stopPropagation(); FPCL_KPI_SUITE.openCooHighlightsPopup()"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-amber-300 bg-white/10 hover:bg-white/20 border border-amber-400/30 transition-all cursor-pointer shadow-xs active:scale-95 text-xs font-bold"
+                  title="Open Corporate KPI Scorecard Table"
+                >
+                  ${SVG_ICONS.table}
+                  <span>Corporate KPI Scorecard Table</span>
+                </button>
+                <span class="text-amber-300/80 text-[11px] font-medium hidden sm:inline">
+                  Click to open
+                </span>
+              </div>
             </div>
 
-            <!-- LEVEL 2 & 3: The 4 Branches (Senior Managers & reporting Managers) -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 w-full mt-4">
-
-              <!-- BRANCH 1: Senior Manager Production -> Manager Production (P&U) -->
-              <div class="flex flex-col items-center space-y-2.5 w-full">
-                <!-- Senior Manager Production (Royal Indigo Theme) -->
-                <button
-                  type="button"
-                  onclick="FPCL_KPI_SUITE.selectOrganogramNode('sm-production')"
-                  class="w-full text-left p-3.5 rounded-xl border-2 transition-all duration-150 cursor-pointer relative group flex flex-col justify-between overflow-hidden shadow-2xs
-                    ${activeId === 'sm-production' ? 'bg-indigo-100 border-indigo-700 shadow-md ring-2 ring-indigo-400/40' : 'bg-indigo-50/90 border-indigo-300 hover:border-indigo-500 hover:bg-indigo-100/80 hover:shadow-xs'}"
-                >
-                  <div class="flex items-start gap-2.5 w-full">
-                    <div class="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-xs font-bold text-xs mt-0.5">
-                      <i data-lucide="factory" class="w-4 h-4"></i>
-                    </div>
-                    <div class="min-w-0 flex-1">
-                      <div class="text-xs sm:text-[13px] font-black text-slate-900 leading-snug break-words">Senior Manager Production</div>
-                      <div class="text-[10px] sm:text-[11px] text-slate-600 font-semibold mt-0.5 break-words">Reports to COO FPCL</div>
-                    </div>
-                  </div>
-                  <div class="mt-3 pt-2 border-t border-indigo-200/80 flex flex-wrap items-center justify-between gap-1 text-[10px]">
-                    <span class="px-2 py-0.5 rounded font-bold bg-indigo-100 text-indigo-900 border border-indigo-200">Production &amp; Ops</span>
-                    <span class="text-slate-500 font-semibold">1 subordinate</span>
-                  </div>
-                </button>
-
-                <!-- Connector line to Manager -->
-                <div class="w-0.5 h-3 bg-slate-300"></div>
-
-                <!-- Manager Production (P&U) (Crisp Teal Theme) -->
-                <button
-                  type="button"
-                  onclick="FPCL_KPI_SUITE.selectOrganogramNode('m-production-pu')"
-                  class="w-full text-left p-3 rounded-xl border-2 transition-all duration-150 cursor-pointer relative group flex flex-col justify-center overflow-hidden shadow-2xs
-                    ${activeId === 'm-production-pu' ? 'bg-teal-100 border-teal-700 shadow-md ring-2 ring-teal-400/40' : 'bg-teal-50/90 border-teal-300 hover:border-teal-500 hover:bg-teal-100/80 hover:shadow-xs'}"
-                >
-                  <div class="flex items-center gap-2.5 w-full">
-                    <div class="w-7 h-7 rounded-md bg-teal-600 text-white flex items-center justify-center shrink-0 shadow-xs text-xs">
-                      <i data-lucide="activity" class="w-3.5 h-3.5"></i>
-                    </div>
-                    <div class="min-w-0 flex-1">
-                      <div class="text-[11px] sm:text-xs font-black text-slate-900 leading-snug break-words">Manager Production (P&amp;U)</div>
-                      <div class="text-[10px] sm:text-[11px] text-teal-800 font-semibold break-words mt-0.5">Power &amp; Utilities</div>
-                    </div>
-                  </div>
-                </button>
-              </div>
-
-              <!-- BRANCH 2: Senior Manager Commercial (Direct reporting to COO) -->
-              <div class="flex flex-col items-center space-y-2.5 w-full">
-                <!-- Senior Manager Commercial (Royal Indigo Theme) -->
-                <button
-                  type="button"
-                  onclick="FPCL_KPI_SUITE.selectOrganogramNode('sm-commercial')"
-                  class="w-full text-left p-3.5 rounded-xl border-2 transition-all duration-150 cursor-pointer relative group flex flex-col justify-between overflow-hidden shadow-2xs
-                    ${activeId === 'sm-commercial' ? 'bg-indigo-100 border-indigo-700 shadow-md ring-2 ring-indigo-400/40' : 'bg-indigo-50/90 border-indigo-300 hover:border-indigo-500 hover:bg-indigo-100/80 hover:shadow-xs'}"
-                >
-                  <div class="flex items-start gap-2.5 w-full">
-                    <div class="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-xs font-bold text-xs mt-0.5">
-                      <i data-lucide="trending-up" class="w-4 h-4"></i>
-                    </div>
-                    <div class="min-w-0 flex-1">
-                      <div class="text-xs sm:text-[13px] font-black text-slate-900 leading-snug break-words">Senior Manager Commercial</div>
-                      <div class="text-[10px] sm:text-[11px] text-slate-600 font-semibold mt-0.5 break-words">Reports to COO FPCL</div>
-                    </div>
-                  </div>
-                  <div class="mt-3 pt-2 border-t border-indigo-200/80 flex flex-wrap items-center justify-between gap-1 text-[10px]">
-                    <span class="px-2 py-0.5 rounded font-bold bg-indigo-100 text-indigo-900 border border-indigo-200">Commercial &amp; SCM</span>
-                    <span class="text-slate-500 font-semibold">Direct report</span>
-                  </div>
-                </button>
-
-                <!-- Connector line -->
-                <div class="w-0.5 h-3 bg-slate-300"></div>
-
-                <!-- Commercial & Fuel Portfolio (Crisp Teal Theme) -->
-                <div class="w-full text-left p-3 rounded-xl border-2 border-dashed border-teal-300 bg-teal-50/70 flex flex-col justify-center overflow-hidden shadow-2xs">
-                  <div class="flex items-center gap-2.5 w-full">
-                    <div class="w-7 h-7 rounded-md bg-teal-600 text-white flex items-center justify-center shrink-0 shadow-xs text-xs">
-                      <i data-lucide="shield" class="w-3.5 h-3.5"></i>
-                    </div>
-                    <div class="min-w-0 flex-1">
-                      <div class="text-[11px] sm:text-xs font-black text-slate-900 leading-snug break-words">Commercial &amp; Fuel Portfolio</div>
-                      <div class="text-[10px] sm:text-[11px] text-teal-800 font-semibold break-words mt-0.5">Direct reporting to COO</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- BRANCH 3: Senior Manager E&I -> Manager Electrical & Manager Instrument -->
-              <div class="flex flex-col items-center space-y-2.5 w-full">
-                <!-- Senior Manager E&I (Royal Indigo Theme) -->
-                <button
-                  type="button"
-                  onclick="FPCL_KPI_SUITE.selectOrganogramNode('sm-ei')"
-                  class="w-full text-left p-3.5 rounded-xl border-2 transition-all duration-150 cursor-pointer relative group flex flex-col justify-between overflow-hidden shadow-2xs
-                    ${activeId === 'sm-ei' ? 'bg-indigo-100 border-indigo-700 shadow-md ring-2 ring-indigo-400/40' : 'bg-indigo-50/90 border-indigo-300 hover:border-indigo-500 hover:bg-indigo-100/80 hover:shadow-xs'}"
-                >
-                  <div class="flex items-start gap-2.5 w-full">
-                    <div class="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-xs font-bold text-xs mt-0.5">
-                      <i data-lucide="zap" class="w-4 h-4"></i>
-                    </div>
-                    <div class="min-w-0 flex-1">
-                      <div class="text-xs sm:text-[13px] font-black text-slate-900 leading-snug break-words">Senior Manager E&amp;I</div>
-                      <div class="text-[10px] sm:text-[11px] text-slate-600 font-semibold mt-0.5 break-words">Reports to COO FPCL</div>
-                    </div>
-                  </div>
-                  <div class="mt-3 pt-2 border-t border-indigo-200/80 flex flex-wrap items-center justify-between gap-1 text-[10px]">
-                    <span class="px-2 py-0.5 rounded font-bold bg-indigo-100 text-indigo-900 border border-indigo-200">Electrical &amp; Inst</span>
-                    <span class="text-slate-500 font-semibold">2 subordinates</span>
-                  </div>
-                </button>
-
-                <!-- Connector line to Managers -->
-                <div class="w-0.5 h-3 bg-slate-300"></div>
-
-                <div class="w-full space-y-2">
-                  <!-- Manager Electrical (Crisp Teal Theme) -->
-                  <button
-                    type="button"
-                    onclick="FPCL_KPI_SUITE.selectOrganogramNode('m-electrical')"
-                    class="w-full text-left p-3 rounded-xl border-2 transition-all duration-150 cursor-pointer relative group flex flex-col justify-center overflow-hidden shadow-2xs
-                      ${activeId === 'm-electrical' ? 'bg-teal-100 border-teal-700 shadow-md ring-2 ring-teal-400/40' : 'bg-teal-50/90 border-teal-300 hover:border-teal-500 hover:bg-teal-100/80 hover:shadow-xs'}"
-                  >
-                    <div class="flex items-center gap-2.5 w-full">
-                      <div class="w-7 h-7 rounded-md bg-teal-600 text-white flex items-center justify-center shrink-0 shadow-xs text-xs">
-                        <i data-lucide="cpu" class="w-3.5 h-3.5"></i>
-                      </div>
-                      <div class="min-w-0 flex-1">
-                        <div class="text-[11px] sm:text-xs font-black text-slate-900 leading-snug break-words">Manager Electrical</div>
-                        <div class="text-[10px] sm:text-[11px] text-teal-800 font-semibold break-words mt-0.5">Electrical Systems</div>
-                      </div>
-                    </div>
-                  </button>
-
-                  <!-- Manager Instrument (Crisp Teal Theme) -->
-                  <button
-                    type="button"
-                    onclick="FPCL_KPI_SUITE.selectOrganogramNode('m-instrument')"
-                    class="w-full text-left p-3 rounded-xl border-2 transition-all duration-150 cursor-pointer relative group flex flex-col justify-center overflow-hidden shadow-2xs
-                      ${activeId === 'm-instrument' ? 'bg-teal-100 border-teal-700 shadow-md ring-2 ring-teal-400/40' : 'bg-teal-50/90 border-teal-300 hover:border-teal-500 hover:bg-teal-100/80 hover:shadow-xs'}"
-                  >
-                    <div class="flex items-center gap-2.5 w-full">
-                      <div class="w-7 h-7 rounded-md bg-teal-600 text-white flex items-center justify-center shrink-0 shadow-xs text-xs">
-                        <i data-lucide="sliders" class="w-3.5 h-3.5"></i>
-                      </div>
-                      <div class="min-w-0 flex-1">
-                        <div class="text-[11px] sm:text-xs font-black text-slate-900 leading-snug break-words">Manager Instrument</div>
-                        <div class="text-[10px] sm:text-[11px] text-teal-800 font-semibold break-words mt-0.5">Instrumentation &amp; Controls</div>
-                      </div>
-                    </div>
-                  </button>
-                </div>
-              </div>
-
-              <!-- BRANCH 4: Senior Manager Mech Maint -> Manager Equipment, Manager Machinery, Manager Planning -->
-              <div class="flex flex-col items-center space-y-2.5 w-full">
-                <!-- Senior Manager Mech Maint (Royal Indigo Theme) -->
-                <button
-                  type="button"
-                  onclick="FPCL_KPI_SUITE.selectOrganogramNode('sm-mech-maint')"
-                  class="w-full text-left p-3.5 rounded-xl border-2 transition-all duration-150 cursor-pointer relative group flex flex-col justify-between overflow-hidden shadow-2xs
-                    ${activeId === 'sm-mech-maint' ? 'bg-indigo-100 border-indigo-700 shadow-md ring-2 ring-indigo-400/40' : 'bg-indigo-50/90 border-indigo-300 hover:border-indigo-500 hover:bg-indigo-100/80 hover:shadow-xs'}"
-                >
-                  <div class="flex items-start gap-2.5 w-full">
-                    <div class="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-xs font-bold text-xs mt-0.5">
-                      <i data-lucide="wrench" class="w-4 h-4"></i>
-                    </div>
-                    <div class="min-w-0 flex-1">
-                      <div class="text-xs sm:text-[13px] font-black text-slate-900 leading-snug break-words">Senior Manager Mech Maint</div>
-                      <div class="text-[10px] sm:text-[11px] text-slate-600 font-semibold mt-0.5 break-words">Reports to COO FPCL</div>
-                    </div>
-                  </div>
-                  <div class="mt-3 pt-2 border-t border-indigo-200/80 flex flex-wrap items-center justify-between gap-1 text-[10px]">
-                    <span class="px-2 py-0.5 rounded font-bold bg-indigo-100 text-indigo-900 border border-indigo-200">Mechanical Maint</span>
-                    <span class="text-slate-500 font-semibold">3 subordinates</span>
-                  </div>
-                </button>
-
-                <!-- Connector line to Managers -->
-                <div class="w-0.5 h-3 bg-slate-300"></div>
-
-                <div class="w-full space-y-2">
-                  <!-- Manager Equipment (Crisp Teal Theme) -->
-                  <button
-                    type="button"
-                    onclick="FPCL_KPI_SUITE.selectOrganogramNode('m-equipment')"
-                    class="w-full text-left p-3 rounded-xl border-2 transition-all duration-150 cursor-pointer relative group flex flex-col justify-center overflow-hidden shadow-2xs
-                      ${activeId === 'm-equipment' ? 'bg-teal-100 border-teal-700 shadow-md ring-2 ring-teal-400/40' : 'bg-teal-50/90 border-teal-300 hover:border-teal-500 hover:bg-teal-100/80 hover:shadow-xs'}"
-                  >
-                    <div class="flex items-center gap-2.5 w-full">
-                      <div class="w-7 h-7 rounded-md bg-teal-600 text-white flex items-center justify-center shrink-0 shadow-xs text-xs">
-                        <i data-lucide="box" class="w-3.5 h-3.5"></i>
-                      </div>
-                      <div class="min-w-0 flex-1">
-                        <div class="text-[11px] sm:text-xs font-black text-slate-900 leading-snug break-words">Manager Equipment</div>
-                        <div class="text-[10px] sm:text-[11px] text-teal-800 font-semibold break-words mt-0.5">Static Equipment</div>
-                      </div>
-                    </div>
-                  </button>
-
-                  <!-- Manager Machinery (Crisp Teal Theme) -->
-                  <button
-                    type="button"
-                    onclick="FPCL_KPI_SUITE.selectOrganogramNode('m-machinery')"
-                    class="w-full text-left p-3 rounded-xl border-2 transition-all duration-150 cursor-pointer relative group flex flex-col justify-center overflow-hidden shadow-2xs
-                      ${activeId === 'm-machinery' ? 'bg-teal-100 border-teal-700 shadow-md ring-2 ring-teal-400/40' : 'bg-teal-50/90 border-teal-300 hover:border-teal-500 hover:bg-teal-100/80 hover:shadow-xs'}"
-                  >
-                    <div class="flex items-center gap-2.5 w-full">
-                      <div class="w-7 h-7 rounded-md bg-teal-600 text-white flex items-center justify-center shrink-0 shadow-xs text-xs">
-                        <i data-lucide="cog" class="w-3.5 h-3.5"></i>
-                      </div>
-                      <div class="min-w-0 flex-1">
-                        <div class="text-[11px] sm:text-xs font-black text-slate-900 leading-snug break-words">Manager Machinery</div>
-                        <div class="text-[10px] sm:text-[11px] text-teal-800 font-semibold break-words mt-0.5">Rotating Machinery</div>
-                      </div>
-                    </div>
-                  </button>
-
-                  <!-- Manager Planning (Crisp Teal Theme) -->
-                  <button
-                    type="button"
-                    onclick="FPCL_KPI_SUITE.selectOrganogramNode('m-planning')"
-                    class="w-full text-left p-3 rounded-xl border-2 transition-all duration-150 cursor-pointer relative group flex flex-col justify-center overflow-hidden shadow-2xs
-                      ${activeId === 'm-planning' ? 'bg-teal-100 border-teal-700 shadow-md ring-2 ring-teal-400/40' : 'bg-teal-50/90 border-teal-300 hover:border-teal-500 hover:bg-teal-100/80 hover:shadow-xs'}"
-                  >
-                    <div class="flex items-center gap-2.5 w-full">
-                      <div class="w-7 h-7 rounded-md bg-teal-600 text-white flex items-center justify-center shrink-0 shadow-xs text-xs">
-                        <i data-lucide="calendar" class="w-3.5 h-3.5"></i>
-                      </div>
-                      <div class="min-w-0 flex-1">
-                        <div class="text-[11px] sm:text-xs font-black text-slate-900 leading-snug break-words">Manager Planning</div>
-                        <div class="text-[10px] sm:text-[11px] text-teal-800 font-semibold break-words mt-0.5">Planning &amp; TA</div>
-                      </div>
-                    </div>
-                  </button>
-                </div>
-              </div>
-
+            <!-- Vertical trunk down from COO -->
+            <div class="w-0.5 h-6 bg-slate-300 relative">
+              <div class="w-2 h-2 rounded-full bg-slate-400 absolute bottom-0 -left-[3px]"></div>
             </div>
+          </div>
+
+          <!-- DESKTOP HORIZONTAL TREE (Width >= 900px) -->
+          <div class="hidden min-[900px]:flex flex-col items-center w-full max-w-7xl">
+            <!-- Connecting Bus Bar to Senior Managers -->
+            <div class="w-[78%] h-6 relative">
+              <div class="h-0.5 bg-slate-300 w-full relative top-0">
+                <!-- Drop into Col 1 (Production) -->
+                <div class="absolute left-0 top-0 w-0.5 h-6 bg-slate-300">
+                  <div class="w-1.5 h-1.5 rounded-full bg-slate-400 absolute bottom-0 -left-[2px]"></div>
+                </div>
+                <!-- Drop into Col 2 (Commercial) -->
+                <div class="absolute left-[33.33%] top-0 w-0.5 h-6 bg-slate-300">
+                  <div class="w-1.5 h-1.5 rounded-full bg-slate-400 absolute bottom-0 -left-[2px]"></div>
+                </div>
+                <!-- Drop into Col 3 (E&I) -->
+                <div class="absolute left-[66.66%] top-0 w-0.5 h-6 bg-slate-300">
+                  <div class="w-1.5 h-1.5 rounded-full bg-slate-400 absolute bottom-0 -left-[2px]"></div>
+                </div>
+                <!-- Drop into Col 4 (Mechanical) -->
+                <div class="absolute right-0 top-0 w-0.5 h-6 bg-slate-300">
+                  <div class="w-1.5 h-1.5 rounded-full bg-slate-400 absolute bottom-0 -left-[2px]"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- The 4 Columns Grid -->
+            <div class="grid grid-cols-4 gap-5 w-full mt-2">
+              ${root.children.map((sm, colIdx) => {
+                const isBranchCollapsed = collapsed[sm.id] === true;
+                const isColActive = activeId === sm.id;
+
+                return `
+                  <!-- COLUMN: ${sm.department} -->
+                  <div class="org-anim-level-2 flex flex-col items-center w-full" style="animation-delay: ${0.08 * (colIdx + 1)}s">
+                    <!-- LEVEL 2: Senior Manager Card -->
+                    <div
+                      role="button"
+                      tabindex="0"
+                      aria-expanded="${!isBranchCollapsed}"
+                      onclick="FPCL_KPI_SUITE.toggleBranch('${sm.id}')"
+                      onkeydown="if(event.key==='Enter'||event.key===' ')FPCL_KPI_SUITE.toggleBranch('${sm.id}')"
+                      class="org-card-hover group relative flex flex-col justify-between w-full p-4 rounded-2xl bg-white border border-slate-200/90 shadow-md cursor-pointer transition-all duration-200 overflow-hidden ${isColActive ? 'ring-2 ring-indigo-500/40' : ''}"
+                      style="border-top: 4px solid ${sm.borderTop}; min-height: 140px;"
+                    >
+                      <!-- Top Tag & Subordinates Pill -->
+                      <div class="flex items-center justify-between gap-1 mb-2.5">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider" style="background-color: ${sm.tagBg}; color: ${sm.tagText}; border: 1px solid ${sm.tagBorder};">
+                          ${sm.tag}
+                        </span>
+                        <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500">
+                          <span>${sm.subordinatesCount} ${sm.subordinatesCount === 1 ? 'subordinate' : 'subordinates'}</span>
+                          <span class="transition-transform duration-200 text-slate-400 ${isBranchCollapsed ? '' : 'rotate-180'}">
+                            ${SVG_ICONS.chevronDown}
+                          </span>
+                        </span>
+                      </div>
+
+                      <!-- Circular Icon Badge & Title -->
+                      <div class="flex items-start gap-3 w-full">
+                        <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform" style="background-color: ${sm.bgTint}; color: ${sm.color}; border: 1px solid ${sm.borderTint};">
+                          ${SVG_ICONS[sm.icon] || ''}
+                        </div>
+                        <div class="min-w-0 flex-1">
+                          <h4 class="text-[15px] font-bold text-slate-900 leading-snug break-words">
+                            ${sm.title}
+                          </h4>
+                          <p class="text-[13px] text-slate-500 font-medium mt-0.5 break-words">${sm.subtitle}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- LEVEL 3: Subordinates Container with Smooth Animation -->
+                    <div class="w-full flex flex-col items-center transition-all duration-300 ease-in-out ${isBranchCollapsed ? 'max-h-0 opacity-0 overflow-hidden pointer-events-none' : 'max-h-[800px] opacity-100 overflow-visible mt-2'}">
+                      <!-- Connector line from Senior Manager to Manager(s) -->
+                      <div class="w-0.5 h-4 ${sm.id === 'sm-commercial' ? 'border-l-2 border-dashed border-indigo-400' : 'bg-slate-300'} relative">
+                        <div class="w-1.5 h-1.5 rounded-full ${sm.id === 'sm-commercial' ? 'bg-indigo-400' : 'bg-slate-400'} absolute bottom-0 -left-[2px]"></div>
+                      </div>
+
+                      <!-- Stacked Managers -->
+                      <div class="w-full space-y-2.5">
+                        ${sm.children.map(m => {
+                          const isMActive = activeId === m.id;
+
+                          if (m.dashedCard) {
+                            // Commercial & Fuel Portfolio (Functional dashed card, NO ICON as strictly requested)
+                            return `
+                              <div
+                                role="button"
+                                tabindex="0"
+                                onclick="FPCL_KPI_SUITE.selectOrganogramNode('${m.id}')"
+                                onkeydown="if(event.key==='Enter'||event.key===' ')FPCL_KPI_SUITE.selectOrganogramNode('${m.id}')"
+                                class="org-card-hover group relative flex flex-col p-3.5 rounded-2xl border-2 border-dashed border-[#C7D2FE] bg-[#F5F3FF] cursor-pointer transition-all duration-150 overflow-hidden shadow-2xs ${isMActive ? 'ring-2 ring-indigo-500/40' : ''}"
+                              >
+                                <div class="flex items-center justify-between gap-1 mb-1.5">
+                                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-white text-indigo-800 border border-indigo-200">
+                                    ${m.tag}
+                                  </span>
+                                  <span class="text-[10px] font-semibold text-indigo-700">Functional</span>
+                                </div>
+                                <div>
+                                  <h5 class="text-[13px] font-bold text-slate-900 leading-snug break-words">${m.title}</h5>
+                                  <p class="text-[12px] text-slate-500 font-medium mt-0.5 break-words">${m.subtitle}</p>
+                                </div>
+                              </div>
+                            `;
+                          }
+
+                          // Regular Manager Card (Lighter tinted parent color, subtle shadow, circular icon)
+                          return `
+                            <div
+                              role="button"
+                              tabindex="0"
+                              onclick="FPCL_KPI_SUITE.selectOrganogramNode('${m.id}')"
+                              onkeydown="if(event.key==='Enter'||event.key===' ')FPCL_KPI_SUITE.selectOrganogramNode('${m.id}')"
+                              class="org-card-hover group relative flex items-center gap-3 w-full p-3 rounded-2xl border border-slate-200/80 cursor-pointer transition-all duration-150 overflow-hidden shadow-xs ${isMActive ? 'ring-2 ring-indigo-500/40' : ''}"
+                              style="background-color: ${m.cardBg}; border-color: ${m.cardBorder};"
+                            >
+                              <div class="w-8 h-8 rounded-lg bg-white flex items-center justify-center shrink-0 shadow-2xs" style="color: ${sm.color}; border: 1px solid ${sm.borderTint};">
+                                ${SVG_ICONS[m.icon] || ''}
+                              </div>
+                              <div class="min-w-0 flex-1">
+                                <h5 class="text-[13px] font-bold text-slate-900 leading-snug truncate">${m.title}</h5>
+                                <p class="text-[11px] text-slate-500 font-medium truncate mt-0.5">${m.subtitle}</p>
+                              </div>
+                            </div>
+                          `;
+                        }).join('')}
+                      </div>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+
+          <!-- MOBILE & TABLET VERTICAL INDENTED TREE (Width < 900px) -->
+          <div class="flex min-[900px]:hidden flex-col w-full max-w-xl mx-auto space-y-4 mt-2">
+            ${root.children.map((sm) => {
+              const isBranchCollapsed = collapsed[sm.id] === true;
+              const isColActive = activeId === sm.id;
+
+              return `
+                <div class="w-full bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden" style="border-left: 4px solid ${sm.borderTop};">
+                  <!-- Senior Manager Mobile Header -->
+                  <div
+                    role="button"
+                    tabindex="0"
+                    aria-expanded="${!isBranchCollapsed}"
+                    onclick="FPCL_KPI_SUITE.toggleBranch('${sm.id}')"
+                    class="p-4 flex items-center justify-between gap-3 cursor-pointer hover:bg-slate-50/80 transition-colors ${isColActive ? 'bg-slate-50' : ''}"
+                  >
+                    <div class="flex items-center gap-3 min-w-0">
+                      <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style="background-color: ${sm.bgTint}; color: ${sm.color}; border: 1px solid ${sm.borderTint};">
+                        ${SVG_ICONS[sm.icon] || ''}
+                      </div>
+                      <div class="min-w-0">
+                        <div class="flex items-center gap-2">
+                          <h4 class="text-sm font-bold text-slate-900 leading-snug truncate">${sm.title}</h4>
+                          <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold uppercase" style="background-color: ${sm.tagBg}; color: ${sm.tagText};">
+                            ${sm.tag}
+                          </span>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-0.5">${sm.subtitle}</p>
+                      </div>
+                    </div>
+                    <div class="flex items-center gap-1.5 shrink-0 text-slate-400">
+                      <span class="text-xs font-semibold text-slate-500">${sm.subordinatesCount}</span>
+                      <span class="transition-transform duration-200 ${isBranchCollapsed ? '' : 'rotate-180'}">
+                        ${SVG_ICONS.chevronDown}
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Subordinates Indented List -->
+                  <div class="transition-all duration-300 ease-in-out ${isBranchCollapsed ? 'max-h-0 opacity-0 overflow-hidden' : 'max-h-[600px] opacity-100 overflow-visible border-t border-slate-100'}">
+                    <div class="p-3 pl-8 space-y-2 bg-slate-50/60 relative">
+                      <div class="absolute left-5 top-3 bottom-3 w-0.5 ${sm.id === 'sm-commercial' ? 'border-l-2 border-dashed border-indigo-300' : 'bg-slate-300'}"></div>
+                      ${sm.children.map(m => {
+                        if (m.dashedCard) {
+                          return `
+                            <div
+                              role="button"
+                              tabindex="0"
+                              onclick="FPCL_KPI_SUITE.selectOrganogramNode('${m.id}')"
+                              class="p-2.5 rounded-xl border-2 border-dashed border-[#C7D2FE] bg-[#F5F3FF] cursor-pointer"
+                            >
+                              <div class="text-xs font-bold text-slate-900">${m.title}</div>
+                              <div class="text-[11px] text-slate-500">${m.subtitle}</div>
+                            </div>
+                          `;
+                        }
+                        return `
+                          <div
+                            role="button"
+                            tabindex="0"
+                            onclick="FPCL_KPI_SUITE.selectOrganogramNode('${m.id}')"
+                            class="p-2.5 rounded-xl border border-slate-200 bg-white flex items-center gap-2.5 cursor-pointer shadow-2xs"
+                          >
+                            <div class="w-6 h-6 rounded-md flex items-center justify-center shrink-0" style="color: ${sm.color};">
+                              ${SVG_ICONS[m.icon] || ''}
+                            </div>
+                            <div class="min-w-0 flex-1">
+                              <div class="text-xs font-bold text-slate-900 truncate">${m.title}</div>
+                              <div class="text-[11px] text-slate-500 truncate">${m.subtitle}</div>
+                            </div>
+                          </div>
+                        `;
+                      }).join('')}
+                    </div>
+                  </div>
+                </div>
+              `;
+            }).join('')}
           </div>
         </div>
       `;
