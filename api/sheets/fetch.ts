@@ -99,6 +99,12 @@ export default async function handler(req: any, res: any) {
       url = process.env.KPIS_SHEET_URL || process.env.KPIS || `https://docs.google.com/spreadsheets/d/1gkO-kV44ABOuB2JB72FQbwLYdAcAZKBzcIBMBZnR8Ts/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(targetTab)}`;
     }
 
+    // Direct COO Self Assigned Actions match by sheet ID (Sheet ID: 1s5czmIVCXiOPTRc69QffJ51JFW2-gAErPitstUar2dU, Tab: COO)
+    if (sheetIdParam === '1s5czmIVCXiOPTRc69QffJ51JFW2-gAErPitstUar2dU' || (typeof url === 'string' && url.includes('1s5czmIVCXiOPTRc69QffJ51JFW2-gAErPitstUar2dU'))) {
+      const targetTab = sheetTab || 'COO';
+      url = process.env.COO_SELF_ASSIGNED_SHEET_URL || process.env.COO_SHEET_URL || `https://docs.google.com/spreadsheets/d/1s5czmIVCXiOPTRc69QffJ51JFW2-gAErPitstUar2dU/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(targetTab)}`;
+    }
+
     // Resolve URL from environment variables or registry if not provided or pointing to placeholder
     if (!url || typeof url !== 'string' || url.includes('1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms')) {
       const sLower = (sheetTab || '').toLowerCase();

@@ -1533,6 +1533,12 @@ app.all('/api/sheets/fetch', async (req: Request, res: Response): Promise<void> 
       url = process.env.KPIS_SHEET_URL || process.env.KPIS || `https://docs.google.com/spreadsheets/d/1gkO-kV44ABOuB2JB72FQbwLYdAcAZKBzcIBMBZnR8Ts/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(kTab)}`;
     }
 
+    // Direct COO Self Assigned Actions match by sheet ID (Sheet ID: 1s5czmIVCXiOPTRc69QffJ51JFW2-gAErPitstUar2dU, Tab: COO)
+    if (sheetIdParam === '1s5czmIVCXiOPTRc69QffJ51JFW2-gAErPitstUar2dU' || (typeof url === 'string' && url.includes('1s5czmIVCXiOPTRc69QffJ51JFW2-gAErPitstUar2dU')) || (sheetTab && sheetTab.toLowerCase() === 'coo' && (tileId.includes('coo') || tileId.includes('self')))) {
+      const cooTab = sheetTab || 'COO';
+      url = process.env.COO_SELF_ASSIGNED_SHEET_URL || process.env.COO_SHEET_URL || `https://docs.google.com/spreadsheets/d/1s5czmIVCXiOPTRc69QffJ51JFW2-gAErPitstUar2dU/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(cooTab)}`;
+    }
+
     // Resolve URL from environment variables if not provided or default placeholder
     if (!url || typeof url !== 'string' || url.includes('1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms')) {
       const sLower = (sheetTab || '').toLowerCase();

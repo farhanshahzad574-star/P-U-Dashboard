@@ -66,6 +66,16 @@
       masterPageSize: 15,
       masterLastSynced: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       sheetConfigModalTileId: null,
+      // COO Dashboard Sub-Tabs: 'self-assigned' | 'all-department'
+      cooSubTab: 'self-assigned',
+      cooSelfFilterSearch: '',
+      cooSelfFilterColC: 'all',
+      cooSelfFilterColF: 'all',
+      cooSelfFilterColH: 'all',
+      cooSelfPage: 1,
+      cooSelfPageSize: 15,
+      cooSelfLastSynced: 'Live',
+      cooSelfIsSyncing: false,
       visibility: {
         auth: false,
         old: false,
@@ -79,7 +89,9 @@
     init() {
       window.FPCL_STRATEGIC_SUITE = this;
       this.loadStoredData();
+      this.loadCooStoredActions();
       this.fetchServerSheetConfigs();
+      this.fetchCooSelfAssignedActions();
       window.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
           const authModal = document.getElementById('strategic-auth-modal');
@@ -219,6 +231,371 @@
         localStorage.setItem(STORAGE_KEYS.EMPLOYEE_SHEETS, JSON.stringify(this.customSheets));
       } catch (e) {
         console.error('Failed to save sheets:', e);
+      }
+    },
+
+    loadCooStoredActions() {
+      try {
+        const stored = localStorage.getItem('fpcl_coo_self_actions_v1');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            this.cooSelfActions = parsed;
+            return;
+          }
+        }
+      } catch (e) {}
+
+      // Verified seed baseline directly from Sheet ID 1s5czmIVCXiOPTRc69QffJ51JFW2-gAErPitstUar2dU, Tab COO
+      this.cooSelfActions = [
+        {
+          sNo: '1',
+          action: 'COO',
+          category: 'ECM',
+          assignedTo: 'abcd',
+          targetDate: '29/09/2026',
+          statusDetail: 'Open',
+          remarks: '',
+          ackBy: 'abc',
+          rawColumns: {
+            'S_No': '1',
+            'Assigned Action': 'COO',
+            'Action category': 'ECM',
+            'Assigned to': 'abcd',
+            'Target date': '29/09/2026',
+            'Status detail': 'Open',
+            'Remarks': '',
+            'Ack by': 'abc'
+          }
+        },
+        {
+          sNo: '2',
+          action: 'efgh',
+          category: 'Audit committee',
+          assignedTo: 'def',
+          targetDate: '30/09/2026',
+          statusDetail: 'Open',
+          remarks: 'dfd',
+          ackBy: 'abcd',
+          rawColumns: {
+            'S_No': '2',
+            'Assigned Action': 'efgh',
+            'Action category': 'Audit committee',
+            'Assigned to': 'def',
+            'Target date': '30/09/2026',
+            'Status detail': 'Open',
+            'Remarks': 'dfd',
+            'Ack by': 'abcd'
+          }
+        }
+      ];
+    },
+
+    saveCooStoredActions() {
+      try {
+        localStorage.setItem('fpcl_coo_self_actions_v1', JSON.stringify(this.cooSelfActions));
+      } catch (e) {}
+    },
+
+    parseCooSelfCsv(csvText) {
+      if (!csvText || typeof csvText !== 'string') return [];
+      const lines = csvText.split(/\r\n|\n|\r/).filter(l => l.trim().length > 0);
+      if (lines.length <= 1) return [];
+
+      const parseRow = (line) => {
+        const row = [];
+        let inQuotes = false;
+        let token = '';
+        for (let i = 0; i < line.length; i++) {
+          const ch = line[i];
+          if (ch === '"') {
+            if (inQuotes && line[i + 1] === '"') {
+              token += '"';
+              i++;
+            } else {
+              inQuotes = !inQuotes;
+            }
+          } else if (ch === ',' && !inQuotes) {
+            row.push(token.trim().replace(/^"|"$/g, ''));
+            token = '';
+          } else {
+            token += ch;
+          }
+        }
+        row.push(token.trim().replace(/^"|"$/g, ''));
+        return row;
+      };
+
+      const rawHeaders = parseRow(lines[0]);
+      const normHeaders = rawHeaders.map(h => h.trim().toLowerCase());
+
+      const findIdx = (names) => normHeaders.findIndex(h => names.some(n => h === n || h.includes(n)));
+
+      const sNoIdx = findIdx(['s_no', 's.no', 'sr', 'sno', 'no']);
+      const actionIdx = findIdx(['assigned action', 'action', 'title', 'task', 'description']);
+      const catIdx = findIdx(['action category', 'category', 'cat']);
+      const assignedIdx = findIdx(['assigned to', 'assignee', 'assigned']);
+      const targetIdx = findIdx(['target date', 'target', 'due date', 'due']);
+      const statusIdx = findIdx(['status detail', 'status', 'state']);
+      const remarksIdx = findIdx(['remarks', 'remark', 'note']);
+      const ackIdx = findIdx(['ack by', 'ack', 'acknowledged by']);
+
+      const items = [];
+      for (let i = 1; i < lines.length; i++) {
+        const cells = parseRow(lines[i]);
+        const sNo = (sNoIdx !== -1 && cells[sNoIdx]) ? cells[sNoIdx].trim() : String(i);
+        const actionTitle = (actionIdx !== -1 && cells[actionIdx]) ? cells[actionIdx].trim() : (cells[1] || '');
+        if (!actionTitle && !sNo) continue;
+
+        const actionCat = (catIdx !== -1 && cells[catIdx]) ? cells[catIdx].trim() : 'General';
+        const assignedTo = (assignedIdx !== -1 && cells[assignedIdx]) ? cells[assignedIdx].trim() : '-';
+        const targetDate = (targetIdx !== -1 && cells[targetIdx]) ? cells[targetIdx].trim() : '-';
+        const rawStatus = (statusIdx !== -1 && cells[statusIdx]) ? cells[statusIdx].trim() : 'Open';
+        const remarks = (remarksIdx !== -1 && cells[remarksIdx]) ? cells[remarksIdx].trim() : '';
+        const ackBy = (ackIdx !== -1 && cells[ackIdx]) ? cells[ackIdx].trim() : '-';
+
+        const rawColumns = {};
+        rawHeaders.forEach((h, hIdx) => {
+          if (h) rawColumns[h] = cells[hIdx] || '';
+        });
+        rawColumns['S_No'] = sNo;
+        rawColumns['Assigned Action'] = actionTitle;
+        rawColumns['Action category'] = actionCat;
+        rawColumns['Assigned to'] = assignedTo;
+        rawColumns['Target date'] = targetDate;
+        rawColumns['Status detail'] = rawStatus;
+        rawColumns['Remarks'] = remarks;
+        rawColumns['Ack by'] = ackBy;
+
+        items.push({
+          sNo: sNo || String(i),
+          action: actionTitle,
+          category: actionCat || 'General',
+          assignedTo: assignedTo || '-',
+          targetDate: targetDate || '-',
+          statusDetail: rawStatus || 'Open',
+          remarks: remarks || '',
+          ackBy: ackBy || '-',
+          rawColumns
+        });
+      }
+      return items;
+    },
+
+    async fetchCooSelfAssignedActions(force = false) {
+      const SHEET_ID = '1s5czmIVCXiOPTRc69QffJ51JFW2-gAErPitstUar2dU';
+      const TAB_NAME = 'COO';
+      this.state.cooSelfIsSyncing = true;
+      this.render();
+
+      const endpoints = [
+        `/api/sheets/fetch?sheetId=${SHEET_ID}&sheet=${encodeURIComponent(TAB_NAME)}${force ? '&force=true' : ''}`,
+        `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(TAB_NAME)}&_t=${Date.now()}`,
+        `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&sheet=${encodeURIComponent(TAB_NAME)}&_t=${Date.now()}`
+      ];
+
+      let csvText = '';
+      for (const ep of endpoints) {
+        try {
+          const res = await fetch(ep, { cache: 'no-store' });
+          if (res.ok) {
+            if (ep.startsWith('/api/sheets/fetch')) {
+              const json = await res.json();
+              if (json && json.csvText && json.csvText.length > 20) {
+                csvText = json.csvText;
+                break;
+              }
+            } else {
+              const text = await res.text();
+              if (text && !text.includes('<!DOCTYPE html') && text.length > 20) {
+                csvText = text;
+                break;
+              }
+            }
+          }
+        } catch (e) {
+          // continue to next endpoint
+        }
+      }
+
+      if (csvText) {
+        const parsed = this.parseCooSelfCsv(csvText);
+        if (parsed.length > 0) {
+          this.cooSelfActions = parsed;
+          this.saveCooStoredActions();
+          this.state.cooSelfLastSynced = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+      }
+
+      this.state.cooSelfIsSyncing = false;
+      this.render();
+    },
+
+    setCooSubTab(tab) {
+      this.state.cooSubTab = tab;
+      if (tab === 'self-assigned') {
+        if (!this.cooSelfActions || this.cooSelfActions.length === 0) {
+          this.fetchCooSelfAssignedActions();
+        }
+      }
+      this.render();
+    },
+
+    setCooSelfFilter(key, val) {
+      this.state[key] = val;
+      this.state.cooSelfPage = 1;
+      this.render();
+    },
+
+    clearCooSelfFilters() {
+      this.state.cooSelfFilterSearch = '';
+      this.state.cooSelfFilterColC = 'all';
+      this.state.cooSelfFilterColF = 'all';
+      this.state.cooSelfFilterColH = 'all';
+      this.state.cooSelfPage = 1;
+      this.render();
+    },
+
+    setCooSelfPage(page) {
+      this.state.cooSelfPage = Math.max(1, page);
+      this.render();
+    },
+
+    setCooSelfPageSize(size) {
+      this.state.cooSelfPageSize = size === 'all' ? 9999 : Number(size);
+      this.state.cooSelfPage = 1;
+      this.render();
+    },
+
+    classifyStatusDetail(val) {
+      const s = String(val || '').trim().toLowerCase();
+      if (/drop|cancelled|abandoned/i.test(s)) return 'Dropped';
+      if (/overdue/i.test(s)) return 'Overdue';
+      if (/close|validation|uploaded|passed|done|complete|resolved/i.test(s)) return 'Closed';
+      if (/open|pending|documents remaining|remaining|active|in progress/i.test(s)) return 'Open';
+      if (s) return s.charAt(0).toUpperCase() + s.slice(1);
+      return 'Open';
+    },
+
+    getFilteredCooSelfActions() {
+      const actions = this.cooSelfActions || [];
+      const q = (this.state.cooSelfFilterSearch || '').toLowerCase().trim();
+      const catFilter = (this.state.cooSelfFilterColC || 'all').trim();
+      const statusFilter = (this.state.cooSelfFilterColF || 'all').trim();
+      const ackFilter = (this.state.cooSelfFilterColH || 'all').trim();
+
+      return actions.filter(a => {
+        // Column C: Action category filter
+        if (catFilter !== 'all') {
+          if ((a.category || '').toLowerCase() !== catFilter.toLowerCase()) return false;
+        }
+
+        // Column F: Status detail filter
+        if (statusFilter !== 'all') {
+          const classified = this.classifyStatusDetail(a.statusDetail);
+          if (statusFilter === 'Open' && classified !== 'Open') return false;
+          if (statusFilter === 'Closed' && classified !== 'Closed') return false;
+          if (statusFilter === 'Overdue' && classified !== 'Overdue') return false;
+          if (statusFilter === 'Dropped' && classified !== 'Dropped') return false;
+          if (!['Open', 'Closed', 'Overdue', 'Dropped'].includes(statusFilter)) {
+            if ((a.statusDetail || '').toLowerCase() !== statusFilter.toLowerCase()) return false;
+          }
+        }
+
+        // Column H: Ack by filter
+        if (ackFilter !== 'all') {
+          if ((a.ackBy || '').toLowerCase() !== ackFilter.toLowerCase()) return false;
+        }
+
+        // Search filter
+        if (q) {
+          const match =
+            (a.sNo && String(a.sNo).toLowerCase().includes(q)) ||
+            (a.action && a.action.toLowerCase().includes(q)) ||
+            (a.category && a.category.toLowerCase().includes(q)) ||
+            (a.assignedTo && a.assignedTo.toLowerCase().includes(q)) ||
+            (a.statusDetail && a.statusDetail.toLowerCase().includes(q)) ||
+            (a.remarks && a.remarks.toLowerCase().includes(q)) ||
+            (a.ackBy && a.ackBy.toLowerCase().includes(q));
+          if (!match) return false;
+        }
+
+        return true;
+      });
+    },
+
+    exportCooSelfCSV() {
+      const filtered = this.getFilteredCooSelfActions();
+      const headers = ['S_No', 'Assigned Action', 'Action category', 'Assigned to', 'Target date', 'Status detail', 'Remarks', 'Ack by'];
+      const rows = [headers.join(',')];
+
+      filtered.forEach(a => {
+        const cols = [
+          `"${String(a.sNo || '').replace(/"/g, '""')}"`,
+          `"${String(a.action || '').replace(/"/g, '""')}"`,
+          `"${String(a.category || '').replace(/"/g, '""')}"`,
+          `"${String(a.assignedTo || '').replace(/"/g, '""')}"`,
+          `"${String(a.targetDate || '').replace(/"/g, '""')}"`,
+          `"${String(a.statusDetail || '').replace(/"/g, '""')}"`,
+          `"${String(a.remarks || '').replace(/"/g, '""')}"`,
+          `"${String(a.ackBy || '').replace(/"/g, '""')}"`
+        ];
+        rows.push(cols.join(','));
+      });
+
+      const blob = new Blob([rows.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `COO_Self_Assigned_Actions_${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    },
+
+    showCooTooltip(e, category, total, open, closed) {
+      let tip = document.getElementById('coo-custom-tooltip');
+      if (!tip) {
+        tip = document.createElement('div');
+        tip.id = 'coo-custom-tooltip';
+        tip.className = 'fixed pointer-events-none z-50 bg-white rounded-xl shadow-2xl border-t-4 border-t-[#1D4ED8] p-3 text-xs min-w-[150px] transition-opacity duration-150';
+        document.body.appendChild(tip);
+      }
+      tip.innerHTML = `
+        <div class="font-extrabold text-slate-800 border-b border-slate-100 pb-1 mb-1.5">${category}</div>
+        <div class="space-y-1">
+          <div class="flex items-center justify-between text-[#1E3A8A] font-black">
+            <span>Total:</span>
+            <span class="font-mono text-xs">${total}</span>
+          </div>
+          <div class="flex items-center justify-between text-[#DC2626] font-bold">
+            <span>Open:</span>
+            <span class="font-mono text-xs">${open}</span>
+          </div>
+          <div class="flex items-center justify-between text-[#0B8A5A] font-bold">
+            <span>Closed:</span>
+            <span class="font-mono text-xs">${closed}</span>
+          </div>
+        </div>
+      `;
+      tip.style.display = 'block';
+      this.moveCooTooltip(e);
+    },
+
+    moveCooTooltip(e) {
+      const tip = document.getElementById('coo-custom-tooltip');
+      if (!tip || tip.style.display === 'none') return;
+      const x = e.clientX + 14;
+      const y = e.clientY + 14;
+      tip.style.left = `${Math.min(x, window.innerWidth - 170)}px`;
+      tip.style.top = `${Math.min(y, window.innerHeight - 100)}px`;
+    },
+
+    hideCooTooltip() {
+      const tip = document.getElementById('coo-custom-tooltip');
+      if (tip) {
+        tip.style.display = 'none';
       }
     },
 
@@ -1852,9 +2229,687 @@
     },
 
     // =========================================================================
+    // RENDER: COO SELF ASSIGNED ACTIONS DASHBOARD (SHEET ID: 1s5czmIVCXiOPTRc69QffJ51JFW2-gAErPitstUar2dU, TAB: COO)
+    // =========================================================================
+    renderCooSelfAssignedDashboard() {
+      const allActions = this.cooSelfActions || [];
+      const filteredActions = this.getFilteredCooSelfActions();
+
+      // Filtered KPIs (strictly reflects all applied filters across whole dashboard)
+      const totalCount = filteredActions.length;
+      const closedCount = filteredActions.filter(a => this.classifyStatusDetail(a.statusDetail) === 'Closed').length;
+      const openCount = filteredActions.filter(a => this.classifyStatusDetail(a.statusDetail) === 'Open').length;
+      const overdueCount = filteredActions.filter(a => this.classifyStatusDetail(a.statusDetail) === 'Overdue').length;
+      const droppedCount = filteredActions.filter(a => this.classifyStatusDetail(a.statusDetail) === 'Dropped').length;
+
+      // 6- Overall progress by KPI 1 and KPI 3 and 4 I.e count open actions and overdue both as open actions for calculation
+      const openPoints = openCount + overdueCount;
+      const overallProgress = totalCount > 0 ? Math.max(0, Math.min(100, Math.round(((totalCount - openPoints) / totalCount) * 100))) : 0;
+
+      // Pagination for Excel Scrollable Table
+      const page = this.state.cooSelfPage || 1;
+      const pageSize = this.state.cooSelfPageSize || 15;
+      const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+      const safePage = Math.min(page, totalPages);
+      const startIdx = (safePage - 1) * pageSize;
+      const endIdx = Math.min(totalCount, startIdx + pageSize);
+      const pagedActions = filteredActions.slice(startIdx, endIdx);
+
+      // Unique dropdown options from full COO dataset
+      const uniqueCats = [...new Set(allActions.map(a => a.category).filter(Boolean))].sort();
+      const uniqueAckBy = [...new Set(allActions.map(a => a.ackBy).filter(Boolean))].sort();
+      const isFiltered = Boolean(
+        this.state.cooSelfFilterSearch ||
+        (this.state.cooSelfFilterColC && this.state.cooSelfFilterColC !== 'all') ||
+        (this.state.cooSelfFilterColF && this.state.cooSelfFilterColF !== 'all') ||
+        (this.state.cooSelfFilterColH && this.state.cooSelfFilterColH !== 'all')
+      );
+
+      // Category breakdown for horizontal stacked bar chart and donut chart
+      const catMap = {};
+      const baseCats = uniqueCats.length > 0 ? uniqueCats : ['ECM', 'Audit committee'];
+      baseCats.forEach(c => {
+        catMap[c] = { category: c, total: 0, closed: 0, open: 0, overdue: 0 };
+      });
+      filteredActions.forEach(a => {
+        const c = a.category || 'General';
+        if (!catMap[c]) {
+          catMap[c] = { category: c, total: 0, closed: 0, open: 0, overdue: 0 };
+        }
+        catMap[c].total++;
+        const st = this.classifyStatusDetail(a.statusDetail);
+        if (st === 'Closed') {
+          catMap[c].closed++;
+        } else if (st === 'Overdue') {
+          catMap[c].overdue++;
+          catMap[c].open++;
+        } else {
+          catMap[c].open++;
+        }
+      });
+      const catRows = Object.values(catMap);
+      const maxCatVal = Math.max(1, ...catRows.map(r => r.total));
+
+      return `
+        <div class="space-y-2.5 sm:space-y-3">
+          <!-- 1. COLORFUL EYE-CATCHING BANNER -->
+          <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-900 via-[#1e1b4b] to-slate-950 p-3 sm:p-3.5 text-white border-2 border-amber-400/40 shadow-lg">
+            <!-- Shimmering Metallic Gold Top Edge Stripe -->
+            <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 via-yellow-300 via-amber-400 to-yellow-500 shadow-xs"></div>
+
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 pt-0.5">
+              <div class="flex items-center gap-3">
+                <button
+                  type="button"
+                  onclick="window.FPCL_STRATEGIC_SUITE.backToGrid()"
+                  class="w-9 h-9 rounded-xl bg-white/10 hover:bg-amber-400 hover:text-slate-950 text-white flex items-center justify-center transition-all cursor-pointer shrink-0 border border-white/15 shadow-sm"
+                  title="Back to Strategic Dashboard Matrix"
+                >
+                  <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                </button>
+
+                <div>
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-600 text-slate-950 shadow-xs">
+                      <i data-lucide="crown" class="w-3 h-3 text-slate-950"></i>
+                      <span>COO Executive Suite</span>
+                    </span>
+                  </div>
+                  <h2 class="text-base sm:text-lg font-black text-white tracking-tight leading-snug mt-0.5">
+                    Self assigned actions
+                  </h2>
+                </div>
+              </div>
+
+              <!-- Action Bar Buttons: Sync, Export, Reset & Lock -->
+              <div class="flex items-center gap-2 flex-wrap">
+                <!-- Sync Live Google Sheet -->
+                <button
+                  type="button"
+                  onclick="window.FPCL_STRATEGIC_SUITE.fetchCooSelfAssignedActions(true)"
+                  class="px-3.5 py-2 text-xs font-black rounded-xl bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 hover:from-amber-500 hover:to-yellow-400 text-slate-950 transition-all cursor-pointer flex items-center gap-1.5 shadow-md hover:shadow-lg hover:-translate-y-0.5"
+                  title="Sync live Google Sheet (Sheet ID: 1s5czmIVCXiOPTRc69QffJ51JFW2-gAErPitstUar2dU, Tab: COO)"
+                >
+                  <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-slate-950 ${this.state.cooSelfIsSyncing ? 'animate-spin' : ''}"></i>
+                  <span>Sync Sheet</span>
+                  <span class="text-[10px] opacity-75 font-mono font-bold">(${this.state.cooSelfLastSynced || 'Live'})</span>
+                </button>
+
+                <!-- Export CSV based on applied filter -->
+                <button
+                  type="button"
+                  onclick="window.FPCL_STRATEGIC_SUITE.exportCooSelfCSV()"
+                  class="px-3.5 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white transition-all cursor-pointer flex items-center gap-1.5 shadow-md hover:shadow-lg hover:-translate-y-0.5"
+                  title="Download CSV based on applied filters"
+                >
+                  <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                  <span>Export CSV (${totalCount})</span>
+                </button>
+
+                ${isFiltered ? `
+                  <button
+                    type="button"
+                    onclick="window.FPCL_STRATEGIC_SUITE.clearCooSelfFilters()"
+                    class="px-3 py-2 text-xs font-semibold rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 transition-colors cursor-pointer flex items-center gap-1"
+                    title="Clear filters"
+                  >
+                    <i data-lucide="filter-x" class="w-3.5 h-3.5"></i>
+                    <span>Reset</span>
+                  </button>
+                ` : ''}
+
+                <!-- Lock & Return -->
+                <button
+                  type="button"
+                  onclick="window.FPCL_STRATEGIC_SUITE.backToGrid()"
+                  class="px-3 py-2 text-xs font-bold rounded-xl bg-white/10 hover:bg-rose-500/20 text-white hover:text-rose-200 border border-white/20 hover:border-rose-400/40 transition-all cursor-pointer flex items-center gap-1 shadow-sm"
+                  title="Lock dashboard immediately and return to grid"
+                >
+                  <i data-lucide="lock" class="w-3.5 h-3.5"></i>
+                  <span>Lock & Return</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- COO SUB-TABS: All Department Actions & Self assigned actions (DISPLAYED BELOW BANNER) -->
+          <div class="bg-white border-2 border-slate-200/90 rounded-2xl p-1.5 shadow-xs flex items-center gap-2 flex-wrap sm:flex-nowrap">
+            <button
+              type="button"
+              onclick="window.FPCL_STRATEGIC_SUITE.setCooSubTab('all-department')"
+              class="flex-1 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-black transition-all cursor-pointer flex items-center justify-center gap-2 bg-slate-50 text-slate-700 hover:text-slate-950 hover:bg-slate-100 border border-slate-200"
+            >
+              <i data-lucide="building-2" class="w-4 h-4"></i>
+              <span>All Department Actions</span>
+            </button>
+            <button
+              type="button"
+              onclick="window.FPCL_STRATEGIC_SUITE.setCooSubTab('self-assigned')"
+              class="flex-1 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-black transition-all cursor-pointer flex items-center justify-center gap-2 bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-slate-950 shadow-md ring-2 ring-amber-400/60"
+            >
+              <i data-lucide="check-square" class="w-4 h-4"></i>
+              <span>Self assigned actions</span>
+            </button>
+          </div>
+
+          <!-- 2. 6 KPI CARDS (LARGE FONT SIZE, CENTER ALIGNED, EYE-CATCHING PROFESSIONAL COLORS, ONLY HEADING & VALUE, RED FOR OPEN) -->
+          <!-- In mobile view: side by side view (grid-cols-2) -->
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3">
+            <!-- 1- TOTAL actions from column A named S_No -->
+            <div class="relative overflow-hidden rounded-2xl border-2 border-indigo-200 bg-gradient-to-b from-indigo-50/70 via-white to-indigo-50/30 p-3 sm:p-4 shadow-xs text-center flex flex-col items-center justify-center">
+              <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-indigo-600 via-blue-500 to-indigo-700"></div>
+              <span class="text-xs font-extrabold uppercase tracking-wider text-indigo-900 text-center">TOTAL actions</span>
+              <div class="text-4xl sm:text-5xl font-black font-mono tracking-tight text-[#1E3A8A] mt-1.5 text-center">${totalCount}</div>
+            </div>
+
+            <!-- 2- Closed Actions from column F named Status detail -->
+            <div class="relative overflow-hidden rounded-2xl border-2 border-emerald-200 bg-gradient-to-b from-emerald-50/70 via-white to-emerald-50/30 p-3 sm:p-4 shadow-xs text-center flex flex-col items-center justify-center">
+              <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-600"></div>
+              <span class="text-xs font-extrabold uppercase tracking-wider text-emerald-900 text-center">Closed Actions</span>
+              <div class="text-4xl sm:text-5xl font-black font-mono tracking-tight text-[#0B8A5A] mt-1.5 text-center">${closedCount}</div>
+            </div>
+
+            <!-- 3- Open Actions from F named Status detail (RED COLOR) -->
+            <div class="relative overflow-hidden rounded-2xl border-2 border-red-200 bg-gradient-to-b from-red-50/70 via-white to-red-50/30 p-3 sm:p-4 shadow-xs text-center flex flex-col items-center justify-center">
+              <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-red-500 via-rose-500 to-red-600"></div>
+              <span class="text-xs font-extrabold uppercase tracking-wider text-red-900 text-center">Open Actions</span>
+              <div class="text-4xl sm:text-5xl font-black font-mono tracking-tight text-[#DC2626] mt-1.5 text-center">${openCount}</div>
+            </div>
+
+            <!-- 4- Overdue Actions from from F named Status detail (RED COLOR FOR OPEN POINTS) -->
+            <div class="relative overflow-hidden rounded-2xl border-2 border-rose-200 bg-gradient-to-b from-rose-50/70 via-white to-rose-50/30 p-3 sm:p-4 shadow-xs text-center flex flex-col items-center justify-center">
+              <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-red-600 via-rose-600 to-amber-500"></div>
+              <span class="text-xs font-extrabold uppercase tracking-wider text-rose-900 text-center">Overdue Actions</span>
+              <div class="text-4xl sm:text-5xl font-black font-mono tracking-tight text-[#DC2626] mt-1.5 text-center">${overdueCount}</div>
+            </div>
+
+            <!-- 5- Dropped Actions from from F named Status detail -->
+            <div class="relative overflow-hidden rounded-2xl border-2 border-slate-200 bg-gradient-to-b from-slate-50/70 via-white to-slate-100/40 p-3 sm:p-4 shadow-xs text-center flex flex-col items-center justify-center">
+              <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-slate-500 via-slate-400 to-zinc-600"></div>
+              <span class="text-xs font-extrabold uppercase tracking-wider text-slate-800 text-center">Dropped Actions</span>
+              <div class="text-4xl sm:text-5xl font-black font-mono tracking-tight text-[#64748B] mt-1.5 text-center">${droppedCount}</div>
+            </div>
+
+            <!-- 6- Overall progress by KPI 1 and KPI 3 and 4 (count open actions and overdue both as open actions for calculation) -->
+            <div class="relative overflow-hidden rounded-2xl border-2 border-amber-300 bg-gradient-to-b from-amber-50/70 via-white to-amber-50/30 p-3 sm:p-4 shadow-xs text-center flex flex-col items-center justify-center">
+              <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500"></div>
+              <span class="text-xs font-extrabold uppercase tracking-wider text-amber-950 text-center">Overall progress</span>
+              <div class="text-4xl sm:text-5xl font-black font-mono tracking-tight text-amber-800 mt-1.5 text-center">${overallProgress}%</div>
+            </div>
+          </div>
+
+          <!-- 3. FILTERS (BELOW KPIS, NO HEADING, MOBILE SIDE-BY-SIDE, APPLIES TO WHOLE DASHBOARD, COL C, F, H) -->
+          <div class="bg-white border-2 border-slate-200/90 rounded-2xl p-2.5 sm:p-3 shadow-xs">
+            <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-2">
+              <!-- Search Filter -->
+              <div class="relative col-span-2 sm:col-span-1">
+                <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-slate-400">
+                  <i data-lucide="search" class="w-3.5 h-3.5"></i>
+                </div>
+                <input
+                  type="text"
+                  value="${this.escapeHtml(this.state.cooSelfFilterSearch || '')}"
+                  placeholder="Search actions..."
+                  class="w-full pl-8 pr-7 py-1.5 bg-slate-50 hover:bg-white focus:bg-white text-slate-900 border border-slate-300 focus:border-indigo-500 rounded-xl text-xs font-medium outline-none transition-all"
+                  oninput="window.FPCL_STRATEGIC_SUITE.setCooSelfFilter('cooSelfFilterSearch', this.value)"
+                />
+                ${this.state.cooSelfFilterSearch ? `
+                  <button
+                    onclick="window.FPCL_STRATEGIC_SUITE.setCooSelfFilter('cooSelfFilterSearch', '')"
+                    class="absolute inset-y-0 right-0 pr-2 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer"
+                  >
+                    <i data-lucide="x" class="w-3 h-3"></i>
+                  </button>
+                ` : ''}
+              </div>
+
+              <!-- Column C: Action category -->
+              <div class="relative">
+                <select
+                  class="w-full py-1.5 pl-2.5 pr-7 bg-slate-50 hover:bg-white focus:bg-white text-slate-900 border ${this.state.cooSelfFilterColC && this.state.cooSelfFilterColC !== 'all' ? 'border-indigo-500 bg-indigo-50/50 text-indigo-950 font-bold' : 'border-slate-300'} focus:border-indigo-500 rounded-xl text-xs font-semibold outline-none transition-all cursor-pointer appearance-none truncate"
+                  onchange="window.FPCL_STRATEGIC_SUITE.setCooSelfFilter('cooSelfFilterColC', this.value)"
+                >
+                  <option value="all">Action category: All</option>
+                  ${uniqueCats.map(c => `
+                    <option value="${this.escapeHtml(c)}" ${this.state.cooSelfFilterColC === c ? 'selected' : ''}>${this.escapeHtml(c)}</option>
+                  `).join('')}
+                </select>
+                <div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none text-slate-400">
+                  <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
+                </div>
+              </div>
+
+              <!-- Column F: Status detail -->
+              <div class="relative">
+                <select
+                  class="w-full py-1.5 pl-2.5 pr-7 bg-slate-50 hover:bg-white focus:bg-white text-slate-800 border ${this.state.cooSelfFilterColF && this.state.cooSelfFilterColF !== 'all' ? 'border-indigo-500 bg-indigo-50/50 text-indigo-950 font-bold' : 'border-slate-300'} focus:border-indigo-500 rounded-xl text-xs font-semibold outline-none transition-all cursor-pointer appearance-none truncate"
+                  onchange="window.FPCL_STRATEGIC_SUITE.setCooSelfFilter('cooSelfFilterColF', this.value)"
+                >
+                  <option value="all">Status detail: All</option>
+                  <option value="Open" ${this.state.cooSelfFilterColF === 'Open' ? 'selected' : ''}>Open</option>
+                  <option value="Closed" ${this.state.cooSelfFilterColF === 'Closed' ? 'selected' : ''}>Closed</option>
+                  <option value="Overdue" ${this.state.cooSelfFilterColF === 'Overdue' ? 'selected' : ''}>Overdue</option>
+                  <option value="Dropped" ${this.state.cooSelfFilterColF === 'Dropped' ? 'selected' : ''}>Dropped</option>
+                </select>
+                <div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none text-slate-400">
+                  <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
+                </div>
+              </div>
+
+              <!-- Column H: Ack by -->
+              <div class="relative">
+                <select
+                  class="w-full py-1.5 pl-2.5 pr-7 bg-slate-50 hover:bg-white focus:bg-white text-slate-900 border ${this.state.cooSelfFilterColH && this.state.cooSelfFilterColH !== 'all' ? 'border-indigo-500 bg-indigo-50/50 text-indigo-950 font-bold' : 'border-slate-300'} focus:border-indigo-500 rounded-xl text-xs font-semibold outline-none transition-all cursor-pointer appearance-none truncate"
+                  onchange="window.FPCL_STRATEGIC_SUITE.setCooSelfFilter('cooSelfFilterColH', this.value)"
+                >
+                  <option value="all">Ack by: All</option>
+                  ${uniqueAckBy.map(h => `
+                    <option value="${this.escapeHtml(h)}" ${this.state.cooSelfFilterColH === h ? 'selected' : ''}>${this.escapeHtml(h)}</option>
+                  `).join('')}
+                </select>
+                <div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none text-slate-400">
+                  <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
+                </div>
+              </div>
+
+              <!-- Quick Export & Clear buttons -->
+              <div class="col-span-2 sm:col-span-1 flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onclick="window.FPCL_STRATEGIC_SUITE.exportCooSelfCSV()"
+                  class="flex-1 py-1.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1 shadow-xs"
+                  title="Export CSV based on applied filters"
+                >
+                  <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                  <span>Export CSV</span>
+                </button>
+                ${isFiltered ? `
+                  <button
+                    type="button"
+                    onclick="window.FPCL_STRATEGIC_SUITE.clearCooSelfFilters()"
+                    class="py-1.5 px-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1"
+                    title="Clear filters"
+                  >
+                    <i data-lucide="filter-x" class="w-3.5 h-3.5"></i>
+                    <span>Reset</span>
+                  </button>
+                ` : ''}
+              </div>
+            </div>
+          </div>
+
+          <!-- 4 & 5. HORIZONTAL STACKED BAR CHART & DONUT CHART -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4 items-stretch">
+            <!-- 4. HORIZONTAL STACKED BAR CHART: COO self assigned Actions Status -->
+            <div class="lg:col-span-7 relative overflow-hidden bg-white border-2 border-slate-200 rounded-2xl p-3.5 sm:p-4 shadow-xs space-y-2.5 flex flex-col justify-between">
+              <div>
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-100">
+                  <h3 class="text-sm sm:text-base font-black text-slate-900 leading-tight">
+                    COO self assigned Actions Status
+                  </h3>
+
+                  <!-- Legend Chips with light tinted backgrounds -->
+                  <div class="flex items-center gap-1.5 sm:gap-2 text-xs font-bold flex-wrap">
+                    <div class="flex items-center gap-1 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-200">
+                      <span class="w-2.5 h-2.5 rounded-full bg-[#1D4ED8] shrink-0"></span>
+                      <span class="text-[#1E3A8A] text-xs font-bold">Total:</span>
+                      <span class="font-mono text-[#1E3A8A] font-black text-xs sm:text-sm">${totalCount}</span>
+                    </div>
+                    <div class="flex items-center gap-1 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
+                      <span class="w-2.5 h-2.5 rounded-full bg-[#0B8A5A] shrink-0"></span>
+                      <span class="text-[#0B8A5A] text-xs font-bold">Closed:</span>
+                      <span class="font-mono text-[#0B8A5A] font-black text-xs sm:text-sm">${closedCount}</span>
+                    </div>
+                    <div class="flex items-center gap-1 bg-red-50 px-2.5 py-1 rounded-lg border border-red-200">
+                      <span class="w-2.5 h-2.5 rounded-full bg-[#DC2626] shrink-0"></span>
+                      <span class="text-[#DC2626] text-xs font-bold">Open:</span>
+                      <span class="font-mono text-[#DC2626] font-black text-xs sm:text-sm">${openCount}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- SVG Horizontal Stacked Bar Chart with Font Size 12 -->
+                <div class="pt-2">
+                  ${this.renderCooSelfStackedBarChartSvg(catRows, maxCatVal)}
+                </div>
+              </div>
+            </div>
+
+            <!-- 5. DONUT CHART: Actions closure by category (ENLARGED) -->
+            <div class="lg:col-span-5 relative overflow-hidden bg-white border-2 border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col justify-between">
+              <div class="pb-2 border-b border-slate-100">
+                <h3 class="text-sm sm:text-base font-black text-slate-900 leading-tight">
+                  Actions closure by category
+                </h3>
+              </div>
+
+              ${this.renderCooSelfDonutChartSvg(catRows, closedCount, totalCount, overallProgress)}
+            </div>
+          </div>
+
+          <!-- 6. EXCEL SCROLLABLE TABLE -->
+          <div class="bg-white border-2 border-slate-200 rounded-2xl shadow-xs overflow-hidden">
+            <div class="p-3.5 sm:p-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/60">
+              <div class="flex items-center gap-2">
+                <i data-lucide="table" class="w-4 h-4 text-indigo-700"></i>
+                <h3 class="text-sm sm:text-base font-black text-slate-800">
+                  COO Self Assigned Action Items (${totalCount} records)
+                </h3>
+              </div>
+
+              <!-- Rows per page selector -->
+              <div class="flex items-center gap-2 text-xs sm:text-sm text-slate-600">
+                <span class="font-medium">Rows per page:</span>
+                <select
+                  onchange="window.FPCL_STRATEGIC_SUITE.setCooSelfPageSize(this.value)"
+                  class="px-2.5 py-1 rounded-lg border border-slate-300 bg-white text-xs sm:text-sm font-semibold focus:outline-none cursor-pointer"
+                >
+                  <option value="15" ${pageSize === 15 ? 'selected' : ''}>15</option>
+                  <option value="25" ${pageSize === 25 ? 'selected' : ''}>25</option>
+                  <option value="50" ${pageSize === 50 ? 'selected' : ''}>50</option>
+                  <option value="all" ${pageSize === 9999 ? 'selected' : ''}>All</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="overflow-x-auto max-h-[520px] overflow-y-auto">
+              <table class="w-full text-left text-xs sm:text-sm border-collapse">
+                <thead>
+                  <tr class="sticky top-0 bg-slate-100/95 backdrop-blur-xs border-b border-slate-200 text-slate-700 font-bold text-xs sm:text-sm z-10">
+                    <th class="py-3 px-3.5 whitespace-nowrap">S_No</th>
+                    <th class="py-3 px-3.5 min-w-[240px]">Assigned Action</th>
+                    <th class="py-3 px-3.5 whitespace-nowrap">Action category</th>
+                    <th class="py-3 px-3.5 whitespace-nowrap">Assigned to</th>
+                    <th class="py-3 px-3.5 whitespace-nowrap">Target date</th>
+                    <th class="py-3 px-3.5 whitespace-nowrap">Status detail</th>
+                    <th class="py-3 px-3.5 min-w-[160px]">Remarks</th>
+                    <th class="py-3 px-3.5 whitespace-nowrap">Ack by</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-xs sm:text-sm">
+                  ${pagedActions.length === 0 ? `
+                    <tr>
+                      <td colspan="8" class="py-10 text-center text-slate-400 font-medium text-sm">
+                        No actions match the active search or filters.
+                      </td>
+                    </tr>
+                  ` : pagedActions.map(a => {
+                    const st = this.classifyStatusDetail(a.statusDetail);
+                    const isClosed = st === 'Closed';
+                    const isOpen = st === 'Open';
+                    const isOverdue = st === 'Overdue';
+                    const isDropped = st === 'Dropped';
+
+                    let badgeClass = 'bg-slate-100 text-slate-700 border border-slate-200';
+                    let dotColor = '#64748B';
+                    if (isClosed) {
+                      badgeClass = 'bg-emerald-50 text-[#0B8A5A] border border-emerald-200';
+                      dotColor = '#0B8A5A';
+                    } else if (isOpen) {
+                      badgeClass = 'bg-red-50 text-[#DC2626] border border-red-200';
+                      dotColor = '#DC2626';
+                    } else if (isOverdue) {
+                      badgeClass = 'bg-rose-50 text-[#DC2626] border border-rose-200';
+                      dotColor = '#DC2626';
+                    } else if (isDropped) {
+                      badgeClass = 'bg-slate-100 text-slate-700 border border-slate-200';
+                      dotColor = '#64748B';
+                    }
+
+                    return `
+                      <tr class="hover:bg-slate-50/80 transition-colors">
+                        <td class="py-3 px-3.5 font-mono font-bold text-slate-800 text-xs sm:text-sm whitespace-nowrap">${this.escapeHtml(a.sNo)}</td>
+                        <td class="py-3 px-3.5 text-slate-900 font-medium min-w-[240px]">${this.escapeHtml(a.action)}</td>
+                        <td class="py-3 px-3.5 whitespace-nowrap">
+                          <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold bg-indigo-50 text-indigo-900 border border-indigo-200/60">
+                            ${this.escapeHtml(a.category)}
+                          </span>
+                        </td>
+                        <td class="py-3 px-3.5 text-slate-700 font-medium whitespace-nowrap">${this.escapeHtml(a.assignedTo)}</td>
+                        <td class="py-3 px-3.5 text-slate-600 font-mono text-xs whitespace-nowrap">${this.escapeHtml(a.targetDate)}</td>
+                        <td class="py-3 px-3.5 whitespace-nowrap">
+                          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${badgeClass}">
+                            <span class="w-1.5 h-1.5 rounded-full" style="background-color: ${dotColor}"></span>
+                            ${this.escapeHtml(a.statusDetail)}
+                          </span>
+                        </td>
+                        <td class="py-3 px-3.5 text-slate-600 min-w-[160px]">${this.escapeHtml(a.remarks || '-')}</td>
+                        <td class="py-3 px-3.5 text-slate-600 font-medium whitespace-nowrap">${this.escapeHtml(a.ackBy || '-')}</td>
+                      </tr>
+                    `;
+                  }).join('')}
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Pagination Footer -->
+            ${totalPages > 1 ? `
+              <div class="p-3.5 border-t border-slate-200 flex items-center justify-between text-xs text-slate-600">
+                <span>Page ${safePage} of ${totalPages}</span>
+                <div class="flex items-center gap-1">
+                  <button
+                    type="button"
+                    ${safePage <= 1 ? 'disabled' : ''}
+                    onclick="window.FPCL_STRATEGIC_SUITE.setCooSelfPage(${safePage - 1})"
+                    class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed font-semibold cursor-pointer"
+                  >
+                    Previous
+                  </button>
+                  <button
+                    type="button"
+                    ${safePage >= totalPages ? 'disabled' : ''}
+                    onclick="window.FPCL_STRATEGIC_SUITE.setCooSelfPage(${safePage + 1})"
+                    class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed font-semibold cursor-pointer"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            ` : ''}
+          </div>
+        </div>
+      `;
+    },
+
+    // RENDER: HORIZONTAL STACKED BAR CHART (COO self assigned Actions Status)
+    renderCooSelfStackedBarChartSvg(catRows, maxVal) {
+      if (!catRows || catRows.length === 0) {
+        return `<div class="p-6 text-center text-xs text-slate-400">No actions recorded</div>`;
+      }
+
+      const svgWidth = 720;
+      const padLeft = 175;
+      const padRight = 55;
+      const padTop = 18;
+      const rowHeight = 54;
+      const barHeight = 28;
+      const availWidth = svgWidth - padLeft - padRight;
+      const svgHeight = padTop + catRows.length * rowHeight + 28;
+
+      // Dashed vertical reference gridlines and numbers
+      const gridSteps = 4;
+      const gridLines = [];
+      for (let g = 0; g <= gridSteps; g++) {
+        const frac = g / gridSteps;
+        const gx = padLeft + frac * availWidth;
+        const val = Math.round(frac * maxVal);
+        gridLines.push(`
+          <line x1="${gx}" y1="${padTop - 6}" x2="${gx}" y2="${svgHeight - 20}" stroke="#F1F5F9" stroke-dasharray="3,3" stroke-width="1" />
+          <text x="${gx}" y="${svgHeight - 8}" fill="#94A3B8" font-size="10" font-family="'JetBrains Mono', monospace" text-anchor="middle">${val}</text>
+        `);
+      }
+
+      const rowElements = catRows.map((r, idx) => {
+        const y = padTop + idx * rowHeight;
+        const total = r.total || 0;
+        const closed = r.closed || 0;
+        const open = r.open || 0;
+
+        const closedW = maxVal > 0 ? (closed / maxVal) * availWidth : 0;
+        const openW = maxVal > 0 ? (open / maxVal) * availWidth : 0;
+        const closedPct = total > 0 ? Math.round((closed / total) * 100) : 0;
+        const openPct = total > 0 ? Math.round((open / total) * 100) : 0;
+
+        // Label on left with 12px font size
+        const labelText = this.escapeHtml(r.category || 'General');
+
+        // Light grey dashed horizontal gridline on a plain white background
+        const hGrid = `<line x1="${padLeft}" y1="${y + barHeight + 12}" x2="${svgWidth - padRight}" y2="${y + barHeight + 12}" stroke="#E2E8F0" stroke-dasharray="4,4" stroke-width="1" />`;
+
+        // Stack segments:
+        // Closed/Validation/uploaded/ Passed = solid green #0B8A5A at bottom of stack
+        // Open/Pending/Documents Remaining = solid red #DC2626 on top with slightly rounded top corners
+        const closedBar = closedW > 0 ? `
+          <rect x="${padLeft}" y="${y}" width="${closedW}" height="${barHeight}" fill="#0B8A5A" ${openW === 0 ? 'rx="4" ry="4"' : 'rx="2" ry="2"'} />
+          ${closedW >= 24 ? `
+            <text x="${padLeft + closedW / 2}" y="${y + barHeight / 2}" fill="#FFFFFF" font-size="12" font-weight="800" text-anchor="middle" dominant-baseline="central">${closed} (${closedPct}%)</text>
+          ` : ''}
+        ` : '';
+
+        const openBar = openW > 0 ? `
+          <rect x="${padLeft + closedW}" y="${y}" width="${openW}" height="${barHeight}" fill="#DC2626" rx="4" ry="4" />
+          ${openW >= 24 ? `
+            <text x="${padLeft + closedW + openW / 2}" y="${y + barHeight / 2}" fill="#FFFFFF" font-size="12" font-weight="800" text-anchor="middle" dominant-baseline="central">${open} (${openPct}%)</text>
+          ` : ''}
+        ` : '';
+
+        // Total number written outside bar on right in navy #1E3A8A text
+        const totalText = `
+          <text x="${padLeft + closedW + openW + 10}" y="${y + barHeight / 2}" fill="#1E3A8A" font-size="12" font-weight="900" font-family="'JetBrains Mono', monospace" dominant-baseline="central">${total}</text>
+        `;
+
+        // Row group with white rounded tooltip and blue top border
+        const safeCat = String(r.category || 'General').replace(/'/g, "\\'");
+        return `
+          <g class="cursor-pointer group"
+             onmouseenter="window.FPCL_STRATEGIC_SUITE.showCooTooltip(event, '${safeCat}', ${total}, ${open}, ${closed})"
+             onmousemove="window.FPCL_STRATEGIC_SUITE.moveCooTooltip(event)"
+             onmouseleave="window.FPCL_STRATEGIC_SUITE.hideCooTooltip()">
+            <title>Category: ${r.category}&#10;Total: ${total}&#10;Open: ${open}&#10;Closed: ${closed}</title>
+            <text x="${padLeft - 12}" y="${y + barHeight / 2}" fill="#1E293B" font-size="12" font-weight="700" text-anchor="end" dominant-baseline="central">${labelText}</text>
+            ${closedBar}
+            ${openBar}
+            ${totalText}
+            ${hGrid}
+          </g>
+        `;
+      }).join('');
+
+      return `
+        <div class="w-full overflow-x-auto touch-pan-x bg-white rounded-xl p-1 select-none">
+          <svg viewBox="0 0 ${svgWidth} ${svgHeight}" class="w-full max-w-[760px] mx-auto h-auto" style="min-width: 520px; font-family: 'Plus Jakarta Sans', system-ui, sans-serif;">
+            <rect width="100%" height="100%" fill="#FFFFFF" />
+            ${gridLines.join('')}
+            ${rowElements}
+          </svg>
+        </div>
+      `;
+    },
+
+    // RENDER: DONUT CHART (Actions closure by category)
+    renderCooSelfDonutChartSvg(catRows, totalClosed, totalActions, overallProgress) {
+      const size = 360;
+      const center = size / 2;
+      const outerR = 138;
+      const innerR = 82;
+      const colors = ['#0B8A5A', '#1D4ED8', '#7C3AED', '#EA580C', '#0284C7', '#059669', '#D97706', '#E11D48'];
+
+      let paths = '';
+      if (totalActions === 0) {
+        // Empty placeholder ring
+        paths = `
+          <circle cx="${center}" cy="${center}" r="${(outerR + innerR) / 2}" stroke="#E2E8F0" stroke-width="${outerR - innerR}" fill="none" />
+        `;
+      } else {
+        let currentAngle = -Math.PI / 2;
+        const total = totalActions;
+
+        paths = catRows.map((r, idx) => {
+          if (!r.total || r.total <= 0) return '';
+          const sliceFraction = r.total / total;
+          const sweepAngle = sliceFraction * Math.PI * 2;
+          const endAngle = currentAngle + sweepAngle;
+
+          const x1 = center + outerR * Math.cos(currentAngle);
+          const y1 = center + outerR * Math.sin(currentAngle);
+          const x2 = center + outerR * Math.cos(endAngle);
+          const y2 = center + outerR * Math.sin(endAngle);
+
+          const x3 = center + innerR * Math.cos(endAngle);
+          const y3 = center + innerR * Math.sin(endAngle);
+          const x4 = center + innerR * Math.cos(currentAngle);
+          const y4 = center + innerR * Math.sin(currentAngle);
+
+          const largeArc = sweepAngle > Math.PI ? 1 : 0;
+          const color = colors[idx % colors.length];
+
+          const d = [
+            `M ${x1} ${y1}`,
+            `A ${outerR} ${outerR} 0 ${largeArc} 1 ${x2} ${y2}`,
+            `L ${x3} ${y3}`,
+            `A ${innerR} ${innerR} 0 ${largeArc} 0 ${x4} ${y4}`,
+            'Z'
+          ].join(' ');
+
+          currentAngle = endAngle;
+
+          return `
+            <path d="${d}" fill="${color}" stroke="#FFFFFF" stroke-width="2.5" class="transition-opacity hover:opacity-85 cursor-pointer">
+              <title>${r.category}: ${r.total} actions (${Math.round(sliceFraction * 100)}%)&#10;Closed: ${r.closed} | Open: ${r.open}</title>
+            </path>
+          `;
+        }).join('');
+      }
+
+      // Legends at bottom
+      const legendsHtml = catRows.map((r, idx) => {
+        const color = colors[idx % colors.length];
+        const pct = totalActions > 0 ? Math.round((r.total / totalActions) * 100) : 0;
+        const closureRate = r.total > 0 ? Math.round((r.closed / r.total) * 100) : 0;
+        return `
+          <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs shadow-2xs">
+            <span class="w-3 h-3 rounded-full shrink-0" style="background-color: ${color}"></span>
+            <span class="font-bold text-slate-800">${this.escapeHtml(r.category)}:</span>
+            <span class="font-mono font-bold text-slate-600">${r.total} (${pct}%)</span>
+            <span class="font-mono font-black text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded text-[11px] border border-emerald-200/60">${closureRate}% Cls</span>
+          </div>
+        `;
+      }).join('');
+
+      return `
+        <div class="flex flex-col items-center justify-between w-full h-full space-y-3 sm:space-y-4">
+          <div class="relative flex items-center justify-center w-full py-2">
+            <svg viewBox="0 0 ${size} ${size}" class="w-72 h-72 sm:w-80 sm:h-80 md:w-88 md:h-88 lg:w-92 lg:h-92 max-w-full select-none mx-auto drop-shadow-sm">
+              ${paths}
+              <!-- Center Text (Comfortably fits inside 164px diameter inner circle) -->
+              <text x="${center}" y="${center - 10}" fill="#0F172A" font-size="38" font-weight="900" font-family="'JetBrains Mono', monospace" text-anchor="middle" dominant-baseline="central">
+                ${overallProgress}%
+              </text>
+              <text x="${center}" y="${center + 20}" fill="#64748B" font-size="11.5" font-weight="800" text-anchor="middle" dominant-baseline="central" letter-spacing="0.08em">
+                OVERALL PROGRESS
+              </text>
+              <text x="${center}" y="${center + 38}" fill="#0B8A5A" font-size="11.5" font-weight="700" text-anchor="middle" dominant-baseline="central">
+                ${totalClosed} of ${totalActions} Closed
+              </text>
+            </svg>
+          </div>
+
+          <!-- Legends at bottom -->
+          <div class="w-full flex flex-wrap items-center justify-center gap-2 pt-3 border-t border-slate-100">
+            ${legendsHtml || '<div class="text-xs text-slate-400">No category breakdown</div>'}
+          </div>
+        </div>
+      `;
+    },
+
+    // =========================================================================
     // RENDER: STRATEGIC DASHBOARD ROLLUP (TAKES DATA FROM ALL TILES)
     // =========================================================================
     renderBossDashboard() {
+      if (this.state.cooSubTab === 'self-assigned') {
+        return this.renderCooSelfAssignedDashboard();
+      }
+
       const rollup = this.getBossRollup();
       const allActions = rollup.allActionsList || [];
       const filteredActions = this.getFilteredMasterActions();
@@ -1926,7 +2981,7 @@
                     </span>
                   </div>
                   <h2 class="text-base sm:text-lg font-black text-white tracking-tight leading-snug mt-0.5">
-                    COO Executive Dashboard
+                    All Department Actions
                   </h2>
                 </div>
               </div>
@@ -1978,6 +3033,26 @@
                 </button>
               </div>
             </div>
+          </div>
+
+          <!-- COO SUB-TABS: All Department Actions & Self assigned actions (DISPLAYED BELOW BANNER) -->
+          <div class="bg-white border-2 border-slate-200/90 rounded-2xl p-1.5 shadow-xs flex items-center gap-2 flex-wrap sm:flex-nowrap">
+            <button
+              type="button"
+              onclick="window.FPCL_STRATEGIC_SUITE.setCooSubTab('all-department')"
+              class="flex-1 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-black transition-all cursor-pointer flex items-center justify-center gap-2 bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-slate-950 shadow-md ring-2 ring-amber-400/60"
+            >
+              <i data-lucide="building-2" class="w-4 h-4"></i>
+              <span>All Department Actions</span>
+            </button>
+            <button
+              type="button"
+              onclick="window.FPCL_STRATEGIC_SUITE.setCooSubTab('self-assigned')"
+              class="flex-1 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-black transition-all cursor-pointer flex items-center justify-center gap-2 bg-slate-50 text-slate-700 hover:text-slate-950 hover:bg-slate-100 border border-slate-200"
+            >
+              <i data-lucide="check-square" class="w-4 h-4"></i>
+              <span>Self assigned actions</span>
+            </button>
           </div>
 
           <!-- COO FILTER TOOLBAR (COLUMNS C, D, F, H, DEPT & SEARCH) -->
