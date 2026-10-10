@@ -139,9 +139,9 @@
     <script src="/assets/safetyTalkSuite.js?v=20261006a"></script>
     <!-- FPCL Live Telephone Directory Suite (Google Sheets ID: 1SrPdaxzEXbOFVbWin4zJvrc-m9TQKtxFjcyZYamXfpg) -->
     <script src="/assets/fpclDirectorySuite.js?v=20260930b"></script>
-    <!-- Crew Week Shift Roster Dataset & Specialized Executive Suite (Google Sheets ID: 1vbclqX2smmSq2C4tu_fw44mApg1ng6wVZ9bgPC7aUBk, Tab: Crew_Week) -->
-    <script src="/assets/crewWeekData.js?v=20261008a"></script>
-    <script src="/assets/crewWeekSuite.js?v=20261008a"></script>
+    <!-- Crew Week Shift Roster Dataset & Specialized Executive Suite (Google Sheets ID: 1vbclqX2smmSq2C4tu_fw44mApg1ng6wVZ9bgPC7aUBk, Tabs: Crew_Week & Group) -->
+    <script src="/assets/crewWeekData.js?v=20261010a"></script>
+    <script src="/assets/crewWeekSuite.js?v=20261010d"></script>
     <!-- Executive KPIs & Organogram Suite (Google Sheets ID: 1gkO-kV44ABOuB2JB72FQbwLYdAcAZKBzcIBMBZnR8Ts, Tab: KPIs) -->
     <script src="/assets/kpiData.js?v=20261008b"></script>
     <script src="/assets/kpiSuite.js?v=20261009c"></script>
@@ -1324,7 +1324,7 @@
             <!-- 1. Safe Million Manhours (Emerald / Green) -->
             <div
               onclick="portalApp.openHseqTrendModal('safeManhours')"
-              class="card-hover-effect cursor-pointer relative overflow-hidden rounded-xl border border-emerald-200/90 bg-gradient-to-b from-emerald-50/70 via-white to-emerald-50/30 p-2 sm:p-3 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between items-center text-center min-h-[112px] sm:min-h-[148px]"
+              class="card-hover-effect cursor-pointer relative overflow-hidden rounded-xl border border-emerald-200/90 bg-gradient-to-b from-emerald-50/70 via-white to-emerald-50/30 p-2 sm:p-2.5 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between items-center text-center min-h-[148px] sm:min-h-[168px]"
               title="Click to view Safe Million Manhours Trend"
             >
               <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-500 to-teal-500"></div>
@@ -1347,15 +1347,27 @@
                 </button>
               </div>
 
-              <!-- Main Value -->
-              <div class="flex-1 flex flex-col justify-center items-center text-center min-w-0 w-full overflow-hidden my-auto py-1">
-                <div id="kpi-val-safe-manhours" class="text-xl min-[360px]:text-2xl min-[400px]:text-[1.65rem] sm:text-3xl lg:text-[1.55rem] xl:text-[1.95rem] font-black font-mono tracking-tight text-emerald-800 leading-none whitespace-nowrap text-center -mx-2 sm:mx-0 my-auto cursor-pointer" title="Safe Million Manhours (Click to view trend)">
-                  11.105 M
+              <!-- Top: Total Safe Million Manhours -->
+              <div class="flex-1 flex flex-col justify-center items-center text-center min-w-0 w-full overflow-hidden my-auto py-0.5">
+                <div id="kpi-val-safe-manhours" class="text-xl min-[360px]:text-2xl min-[400px]:text-[1.65rem] sm:text-3xl lg:text-[1.65rem] xl:text-[1.95rem] font-black font-mono tracking-tight text-emerald-800 leading-none whitespace-nowrap text-center cursor-pointer" title="Total Safe Million Manhours (Click to view trend)">
+                  11.9M
+                </div>
+              </div>
+
+              <!-- Separate values below total: Regular employees & Daily wages -->
+              <div class="w-full grid grid-cols-2 gap-1 sm:gap-1.5 my-1 pt-1 border-t border-emerald-200/80">
+                <div class="flex flex-col items-center justify-center bg-white/85 rounded-md py-1 px-1 border border-emerald-200/80 shadow-2xs">
+                  <span class="text-[8px] sm:text-[9px] font-bold text-slate-600 tracking-tight leading-tight text-center">Regular employees</span>
+                  <span id="kpi-val-safe-regular" class="text-[11px] sm:text-xs font-black font-mono text-emerald-900 leading-tight mt-0.5">11.39M</span>
+                </div>
+                <div class="flex flex-col items-center justify-center bg-white/85 rounded-md py-1 px-1 border border-emerald-200/80 shadow-2xs">
+                  <span class="text-[8px] sm:text-[9px] font-bold text-slate-600 tracking-tight leading-tight text-center">Daily wages</span>
+                  <span id="kpi-val-safe-daily" class="text-[11px] sm:text-xs font-black font-mono text-emerald-900 leading-tight mt-0.5">0.56M</span>
                 </div>
               </div>
 
               <!-- Card Bottom: dynamic month name previous to current month -->
-              <div class="mt-auto pt-1 w-full flex items-center justify-center">
+              <div class="mt-auto pt-0.5 w-full flex items-center justify-center">
                 <span id="kpi-safe-manhours-month" class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-emerald-700/90 font-mono">
                   TILL SEP
                 </span>
@@ -3015,14 +3027,7 @@
               <i data-lucide="calendar" class="w-5 h-5 sm:w-6 sm:h-6"></i>
             </span>
             <div>
-              <div class="flex items-center gap-2 flex-wrap">
-                <h3 class="text-base sm:text-lg font-black tracking-tight text-white m-0">Crew Week</h3>
-                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/20 text-blue-300 border border-blue-400/30">
-                  <span class="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></span>
-                  Plant Site &amp; Head Office Operations
-                </span>
-              </div>
-              <p class="text-[11px] text-slate-300 mt-0.5">FFBL Power Company Limited • Operations Shift Roster &amp; Personnel Deployment</p>
+              <h3 class="text-base sm:text-lg font-black tracking-tight text-white m-0">Crew Week</h3>
             </div>
           </div>
 
@@ -3031,9 +3036,9 @@
             <button
               type="button"
               id="crew-week-refresh-btn"
-              onclick="if(window.FPCL_CREW_WEEK_SUITE) FPCL_CREW_WEEK_SUITE.fetchLiveGoogleSheetData({silent:false})"
+              onclick="if(window.FPCL_CREW_WEEK_SUITE) FPCL_CREW_WEEK_SUITE.refreshCurrentTab({silent:false})"
               class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white/10 hover:bg-white/20 text-white border border-white/20 transition-all cursor-pointer shadow-xs select-none"
-              title="Refresh Roster Data"
+              title="Refresh Live Google Sheet Data"
             >
               <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
               <span>Refresh</span>
@@ -3041,12 +3046,13 @@
 
             <button
               type="button"
-              onclick="if(window.FPCL_CREW_WEEK_SUITE) FPCL_CREW_WEEK_SUITE.exportCsv()"
+              id="crew-week-export-btn"
+              onclick="if(window.FPCL_CREW_WEEK_SUITE) FPCL_CREW_WEEK_SUITE.exportCurrentTab()"
               class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white border border-indigo-400/40 transition-all cursor-pointer shadow-xs select-none"
-              title="Export Filtered Records to CSV"
+              title="Export Current Table to CSV"
             >
               <i data-lucide="download" class="w-3.5 h-3.5"></i>
-              <span>Export CSV</span>
+              <span id="crew-week-export-label">Export CSV</span>
             </button>
 
             <!-- Close Button -->
@@ -3057,6 +3063,34 @@
               title="Close Crew Week Modal (Esc)"
             >
               <i data-lucide="x" class="w-5 h-5 sm:w-6 sm:h-6"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Navigation Tabs Ribbon: Crew Week Roster & Group Tab -->
+        <div class="bg-slate-100/95 border-b border-slate-200 px-4 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-3 shrink-0">
+          <div class="flex items-center gap-2.5">
+            <!-- Tab 1: Crew Week Roster (Distinct Royal Blue / Indigo Theme) -->
+            <button
+              type="button"
+              id="crew-tab-roster-btn"
+              onclick="if(window.FPCL_CREW_WEEK_SUITE) FPCL_CREW_WEEK_SUITE.switchTab('roster')"
+              class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all shadow-md bg-gradient-to-r from-blue-600 via-indigo-600 to-indigo-700 text-white border border-blue-500 ring-2 ring-indigo-400/30 cursor-pointer select-none"
+            >
+              <i data-lucide="users" class="w-4 h-4 text-white"></i>
+              <span>Crew Week Roster</span>
+              <span id="crew-tab-roster-count" class="px-2 py-0.5 rounded-full text-[10px] font-black bg-white/20 text-white border border-white/30">162</span>
+            </button>
+
+            <!-- Tab 2: Group (Distinct Emerald / Teal Theme) -->
+            <button
+              type="button"
+              id="crew-tab-group-btn"
+              onclick="if(window.FPCL_CREW_WEEK_SUITE) FPCL_CREW_WEEK_SUITE.switchTab('group')"
+              class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-300 shadow-xs cursor-pointer select-none"
+            >
+              <i data-lucide="calendar-days" class="w-4 h-4 text-emerald-600"></i>
+              <span>Group</span>
             </button>
           </div>
         </div>
@@ -6332,7 +6366,9 @@
             // Default baseline fallback if offline
             if (!this.state.hseqTotals) {
               this.state.hseqTotals = {
-                safeManhours: 59877849,
+                safeManhours: 60166213,
+                safeManhoursDailyWages: 560000,
+                totalSafeManhours: 60726213,
                 trirPlanned: 0.6,
                 trirActual: 0,
                 lti: 0,
@@ -6421,7 +6457,11 @@
             // Column H (index 7) named 'Year'
             const year = getRowVal(values, ['year', 'yr'], 2017 + rIdx, 7);
             const sNo = getRowVal(values, ['s', 'sno', 's_#', 'sr'], rIdx + 1, 0);
+            // Column B (index 1) named 'Safe Manhours' (Regular employees)
             const safeManhours = getRowVal(values, ['safemanhours', 'manhours'], 0, 1);
+            // Column K (index 10) named 'Safe Manhours Daily wages'
+            const safeManhoursDailyWages = getRowVal(values, ['safemanhoursdailywages', 'safemanhoursdailywage', 'dailywages', 'dailywage'], 0, 10);
+            const totalSafeManhours = safeManhours + safeManhoursDailyWages;
             const fire = getRowVal(values, ['fire', 'fireincidents'], 0, 2);
             const lti = getRowVal(values, ['lti', 'losttimeinjury'], 0, 3);
             const medicalTreatment = getRowVal(values, ['medicaltreatment', 'medical'], 0, 4);
@@ -6435,6 +6475,8 @@
                 sNo,
                 year,
                 safeManhours,
+                safeManhoursDailyWages,
+                totalSafeManhours,
                 fire,
                 lti,
                 medicalTreatment,
@@ -6449,6 +6491,8 @@
           yearlyData.sort((a, b) => Number(a.year) - Number(b.year));
           const totals = {
             safeManhours: yearlyData.reduce((acc, row) => acc + (row.safeManhours || 0), 0),
+            safeManhoursDailyWages: yearlyData.reduce((acc, row) => acc + (row.safeManhoursDailyWages || 0), 0),
+            totalSafeManhours: yearlyData.reduce((acc, row) => acc + (row.totalSafeManhours !== undefined ? row.totalSafeManhours : ((row.safeManhours || 0) + (row.safeManhoursDailyWages || 0))), 0),
             fire: yearlyData.reduce((acc, row) => acc + (row.fire || 0), 0),
             lti: yearlyData.reduce((acc, row) => acc + (row.lti || 0), 0),
             medicalTreatment: yearlyData.reduce((acc, row) => acc + (row.medicalTreatment || 0), 0),
@@ -6467,6 +6511,8 @@
             totals,
             kpis: {
               safeManhours: latest ? latest.safeManhours : totals.safeManhours,
+              safeManhoursDailyWages: latest ? (latest.safeManhoursDailyWages || 0) : totals.safeManhoursDailyWages,
+              totalSafeManhours: latest ? (latest.totalSafeManhours || (latest.safeManhours + (latest.safeManhoursDailyWages || 0))) : totals.totalSafeManhours,
               fire: totals.fire,
               lti: totals.lti,
               medicalTreatment: totals.medicalTreatment,
@@ -6776,7 +6822,9 @@
 
           if (isAll) {
             dataToDisplay = this.state.hseqTotals || {
-              safeManhours: 59877849,
+              safeManhours: 60166213,
+              safeManhoursDailyWages: 560000,
+              totalSafeManhours: 60726213,
               trirPlanned: 0.6,
               trirActual: 0,
               lti: 0,
@@ -6791,7 +6839,7 @@
             }
 
             subTextMap = {
-              safeManhours: `Sum: ${Number(dataToDisplay.safeManhours || 0).toLocaleString()}`,
+              safeManhours: `Sum: ${Number(dataToDisplay.totalSafeManhours || dataToDisplay.safeManhours || 0).toLocaleString()}`,
               trir: `Sum: Plan ${dataToDisplay.trirPlanned || 0.6} | Act ${dataToDisplay.trirActual || 0}`,
               lti: `Sum: ${dataToDisplay.lti || 0} (Zero LTI)`,
               medicalTreatment: `Sum: ${dataToDisplay.medicalTreatment || 0} (Zero Cases)`,
@@ -6804,7 +6852,9 @@
             const found = yearlyList.find(r => String(r.year) === String(selectedYear));
 
             dataToDisplay = found || {
-              safeManhours: 11105365,
+              safeManhours: 11385834,
+              safeManhoursDailyWages: 560000,
+              totalSafeManhours: 11945834,
               trirPlanned: 0.6,
               trirActual: 0,
               lti: 0,
@@ -6818,7 +6868,7 @@
               badgeEl.className = 'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg text-[11px] font-bold text-emerald-800 bg-emerald-50/90 border border-emerald-200 shadow-2xs';
             }
 
-            const totalSafe = (this.state.hseqTotals && this.state.hseqTotals.safeManhours) || 59877849;
+            const totalSafe = (this.state.hseqTotals && (this.state.hseqTotals.totalSafeManhours || this.state.hseqTotals.safeManhours)) || 60726213;
             const totalFA = (this.state.hseqTotals && this.state.hseqTotals.firstAidCase) || 34;
             const totalNM = (this.state.hseqTotals && this.state.hseqTotals.nearmiss) || 125;
 
@@ -6842,14 +6892,41 @@
           if (!kpis) return;
 
           // 1. Safe Million Manhours
+          // At top of KPI card: display total Safe million manhours by sum of Safe Manhours from column B (Safe Manhours)
+          // and column K (Safe Manhours Daily wages) dynamically against current year from column H (Year).
+          // Display separate values below total with title Regular employees for column B and title Daily wages for column K.
+          // Display values till one decimal place and show all values in million.
+          const regularVal = Number(kpis.safeManhours || 0);
+          const dailyVal = Number(kpis.safeManhoursDailyWages || 0);
+          const totalVal = (kpis.totalSafeManhours !== undefined && kpis.totalSafeManhours !== null)
+            ? Number(kpis.totalSafeManhours)
+            : (regularVal + dailyVal);
+
+          const toMillionStr = (val, decimals = 1) => {
+            const num = Number(val) || 0;
+            return (num / 1000000).toFixed(decimals) + 'M';
+          };
+
           const safeManhoursEl = document.getElementById('kpi-val-safe-manhours');
           if (safeManhoursEl) {
-            const rawVal = (kpis.safeManhours !== undefined && kpis.safeManhours !== null) ? kpis.safeManhours : 0;
-            const num = Number(rawVal) || 0;
-            const formattedVal = (num >= 100000 ? (num / 1000000).toFixed(3) : (num > 0 && num < 1000 ? num.toFixed(3) : (num / 1000000).toFixed(3))) + ' M';
-            safeManhoursEl.textContent = formattedVal;
-            safeManhoursEl.title = `${formattedVal} (${Number(rawVal).toLocaleString()} Safe Manhours)`;
+            const formattedTotal = toMillionStr(totalVal, 1);
+            safeManhoursEl.textContent = formattedTotal;
+            safeManhoursEl.title = `Total Safe Million Manhours: ${formattedTotal} (${totalVal.toLocaleString()} Safe Manhours)`;
             this.fitSafeManhoursText();
+          }
+
+          const safeRegularEl = document.getElementById('kpi-val-safe-regular');
+          if (safeRegularEl) {
+            const formattedRegular = toMillionStr(regularVal, 2);
+            safeRegularEl.textContent = formattedRegular;
+            safeRegularEl.title = `Regular employees: ${formattedRegular} (${regularVal.toLocaleString()} Safe Manhours)`;
+          }
+
+          const safeDailyEl = document.getElementById('kpi-val-safe-daily');
+          if (safeDailyEl) {
+            const formattedDaily = toMillionStr(dailyVal, 2);
+            safeDailyEl.textContent = formattedDaily;
+            safeDailyEl.title = `Daily wages: ${formattedDaily} (${dailyVal.toLocaleString()} Safe Manhours Daily wages)`;
           }
 
           // Mention month name previous to current month dynamically e.g if today is October then write TILL SEP
@@ -7035,22 +7112,30 @@
           let yearlyList = (this.state.hseqYearlyData && this.state.hseqYearlyData.length > 0)
             ? [...this.state.hseqYearlyData]
             : [
-                { sNo: 1, year: 2017, safeManhours: 392077, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 0, nearmiss: 0, trirActual: 0, trirPlanned: 0.6 },
-                { sNo: 2, year: 2018, safeManhours: 1635908, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 0, nearmiss: 0, trirActual: 0, trirPlanned: 0.6 },
-                { sNo: 3, year: 2019, safeManhours: 2948991, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 4, nearmiss: 31, trirActual: 0, trirPlanned: 0.6 },
-                { sNo: 4, year: 2020, safeManhours: 4201942, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 5, nearmiss: 38, trirActual: 0, trirPlanned: 0.6 },
-                { sNo: 5, year: 2021, safeManhours: 5406727, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 4, nearmiss: 4, trirActual: 0, trirPlanned: 0.6 },
-                { sNo: 6, year: 2022, safeManhours: 6588709, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 4, nearmiss: 18, trirActual: 0, trirPlanned: 0.6 },
-                { sNo: 7, year: 2023, safeManhours: 7842960, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 1, nearmiss: 4, trirActual: 0, trirPlanned: 0.6 },
-                { sNo: 8, year: 2024, safeManhours: 9257227, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 6, nearmiss: 7, trirActual: 0, trirPlanned: 0.6 },
-                { sNo: 9, year: 2025, safeManhours: 10497943, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 4, nearmiss: 15, trirActual: 0, trirPlanned: 0.6 },
-                { sNo: 10, year: 2026, safeManhours: 11105365, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 6, nearmiss: 8, trirActual: 0, trirPlanned: 0.6 }
+                { sNo: 1, year: 2017, safeManhours: 392077, safeManhoursDailyWages: 0, totalSafeManhours: 392077, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 0, nearmiss: 0, trirActual: 0, trirPlanned: 0.6 },
+                { sNo: 2, year: 2018, safeManhours: 1635908, safeManhoursDailyWages: 0, totalSafeManhours: 1635908, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 0, nearmiss: 0, trirActual: 0, trirPlanned: 0.6 },
+                { sNo: 3, year: 2019, safeManhours: 2948991, safeManhoursDailyWages: 0, totalSafeManhours: 2948991, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 4, nearmiss: 31, trirActual: 0, trirPlanned: 0.6 },
+                { sNo: 4, year: 2020, safeManhours: 4201942, safeManhoursDailyWages: 0, totalSafeManhours: 4201942, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 5, nearmiss: 38, trirActual: 0, trirPlanned: 0.6 },
+                { sNo: 5, year: 2021, safeManhours: 5406727, safeManhoursDailyWages: 0, totalSafeManhours: 5406727, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 4, nearmiss: 4, trirActual: 0, trirPlanned: 0.6 },
+                { sNo: 6, year: 2022, safeManhours: 6588709, safeManhoursDailyWages: 0, totalSafeManhours: 6588709, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 4, nearmiss: 18, trirActual: 0, trirPlanned: 0.6 },
+                { sNo: 7, year: 2023, safeManhours: 7842960, safeManhoursDailyWages: 0, totalSafeManhours: 7842960, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 1, nearmiss: 4, trirActual: 0, trirPlanned: 0.6 },
+                { sNo: 8, year: 2024, safeManhours: 9257227, safeManhoursDailyWages: 0, totalSafeManhours: 9257227, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 6, nearmiss: 7, trirActual: 0, trirPlanned: 0.6 },
+                { sNo: 9, year: 2025, safeManhours: 10497943, safeManhoursDailyWages: 0, totalSafeManhours: 10497943, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 4, nearmiss: 15, trirActual: 0, trirPlanned: 0.6 },
+                { sNo: 10, year: 2026, safeManhours: 11385834, safeManhoursDailyWages: 560000, totalSafeManhours: 11945834, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 6, nearmiss: 8, trirActual: 0, trirPlanned: 0.6 }
               ];
 
           // Sort chronologically (oldest to newest: 2017 -> 2026) for plotting left-to-right
           yearlyList.sort((a, b) => Number(a.year) - Number(b.year));
 
           const n = yearlyList.length;
+
+          // Helper to get metric value (Safe Manhours uses total sum of Safe Manhours + Daily wages)
+          const getMetricVal = (r) => {
+            if (metricKey === 'safeManhours') {
+              return Number(r.totalSafeManhours !== undefined ? r.totalSafeManhours : ((r.safeManhours || 0) + (r.safeManhoursDailyWages || 0)));
+            }
+            return Number(r[metricKey] || 0);
+          };
 
           // ==========================================
           // SVG Plotted Line Chart Calculation
@@ -7149,7 +7234,7 @@
             `;
           } else {
             // Single plotted line with smooth gradient fill
-            const vals = yearlyList.map(r => Number(r[metricKey] || 0));
+            const vals = yearlyList.map(r => getMetricVal(r));
             const maxRecorded = Math.max(...vals, 1);
             const topVal = maxRecorded * 1.25;
 
@@ -7167,7 +7252,10 @@
             }).join('');
 
             // Points
-            const points = yearlyList.map((r, i) => ({ x: getX(i), y: getY(Number(r[metricKey] || 0)), val: Number(r[metricKey] || 0), year: r.year }));
+            const points = yearlyList.map((r, i) => {
+              const v = getMetricVal(r);
+              return { x: getX(i), y: getY(v), val: v, year: r.year };
+            });
             const linePath = `M ` + points.map(p => `${p.x},${p.y}`).join(' L ');
             const areaPath = `M ` + points.map(p => `${p.x},${p.y}`).join(' L ') + ` L ${points[points.length - 1].x},${padT + plotH} L ${points[0].x},${padT + plotH} Z`;
 

@@ -437,7 +437,11 @@ app.get('/api/hseq-kpi', async (req: Request, res: Response): Promise<void> => {
       const sNo = getRowVal(values, ['s', 'sno', 's_#', 'sr'], rIdx + 1, 0);
       // Column H (index 7) named 'Year'
       const year = getRowVal(values, ['year', 'yr'], 2017 + rIdx, 7);
+      // Column B (index 1) named 'Safe Manhours' (Regular employees)
       const safeManhours = getRowVal(values, ['safemanhours', 'manhours'], 0, 1);
+      // Column K (index 10) named 'Safe Manhours Daily wages'
+      const safeManhoursDailyWages = getRowVal(values, ['safemanhoursdailywages', 'safemanhoursdailywage', 'dailywages', 'dailywage'], 0, 10);
+      const totalSafeManhours = safeManhours + safeManhoursDailyWages;
       const fire = getRowVal(values, ['fire', 'fireincidents'], 0, 2);
       const lti = getRowVal(values, ['lti', 'losttimeinjury'], 0, 3);
       const medicalTreatment = getRowVal(values, ['medicaltreatment', 'medical'], 0, 4);
@@ -451,6 +455,8 @@ app.get('/api/hseq-kpi', async (req: Request, res: Response): Promise<void> => {
           sNo,
           year,
           safeManhours,
+          safeManhoursDailyWages,
+          totalSafeManhours,
           fire,
           lti,
           medicalTreatment,
@@ -465,16 +471,16 @@ app.get('/api/hseq-kpi', async (req: Request, res: Response): Promise<void> => {
     // Fallback if parsing yielded no rows
     if (yearlyData.length === 0) {
       const fallbackRows = [
-        { sNo: 1, year: 2017, safeManhours: 392077, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 0, nearmiss: 0, trirActual: 0, trirPlanned: 0.6 },
-        { sNo: 2, year: 2018, safeManhours: 1635908, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 0, nearmiss: 0, trirActual: 0, trirPlanned: 0.6 },
-        { sNo: 3, year: 2019, safeManhours: 2948991, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 4, nearmiss: 31, trirActual: 0, trirPlanned: 0.6 },
-        { sNo: 4, year: 2020, safeManhours: 4201942, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 5, nearmiss: 38, trirActual: 0, trirPlanned: 0.6 },
-        { sNo: 5, year: 2021, safeManhours: 5406727, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 4, nearmiss: 4, trirActual: 0, trirPlanned: 0.6 },
-        { sNo: 6, year: 2022, safeManhours: 6588709, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 4, nearmiss: 18, trirActual: 0, trirPlanned: 0.6 },
-        { sNo: 7, year: 2023, safeManhours: 7842960, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 1, nearmiss: 4, trirActual: 0, trirPlanned: 0.6 },
-        { sNo: 8, year: 2024, safeManhours: 9257227, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 6, nearmiss: 7, trirActual: 0, trirPlanned: 0.6 },
-        { sNo: 9, year: 2025, safeManhours: 10497943, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 4, nearmiss: 15, trirActual: 0, trirPlanned: 0.6 },
-        { sNo: 10, year: 2026, safeManhours: 11105365, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 6, nearmiss: 8, trirActual: 0, trirPlanned: 0.6 }
+        { sNo: 1, year: 2017, safeManhours: 392077, safeManhoursDailyWages: 0, totalSafeManhours: 392077, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 0, nearmiss: 0, trirActual: 0, trirPlanned: 0.6 },
+        { sNo: 2, year: 2018, safeManhours: 1635908, safeManhoursDailyWages: 0, totalSafeManhours: 1635908, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 0, nearmiss: 0, trirActual: 0, trirPlanned: 0.6 },
+        { sNo: 3, year: 2019, safeManhours: 2948991, safeManhoursDailyWages: 0, totalSafeManhours: 2948991, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 4, nearmiss: 31, trirActual: 0, trirPlanned: 0.6 },
+        { sNo: 4, year: 2020, safeManhours: 4201942, safeManhoursDailyWages: 0, totalSafeManhours: 4201942, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 5, nearmiss: 38, trirActual: 0, trirPlanned: 0.6 },
+        { sNo: 5, year: 2021, safeManhours: 5406727, safeManhoursDailyWages: 0, totalSafeManhours: 5406727, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 4, nearmiss: 4, trirActual: 0, trirPlanned: 0.6 },
+        { sNo: 6, year: 2022, safeManhours: 6588709, safeManhoursDailyWages: 0, totalSafeManhours: 6588709, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 4, nearmiss: 18, trirActual: 0, trirPlanned: 0.6 },
+        { sNo: 7, year: 2023, safeManhours: 7842960, safeManhoursDailyWages: 0, totalSafeManhours: 7842960, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 1, nearmiss: 4, trirActual: 0, trirPlanned: 0.6 },
+        { sNo: 8, year: 2024, safeManhours: 9257227, safeManhoursDailyWages: 0, totalSafeManhours: 9257227, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 6, nearmiss: 7, trirActual: 0, trirPlanned: 0.6 },
+        { sNo: 9, year: 2025, safeManhours: 10497943, safeManhoursDailyWages: 0, totalSafeManhours: 10497943, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 4, nearmiss: 15, trirActual: 0, trirPlanned: 0.6 },
+        { sNo: 10, year: 2026, safeManhours: 11385834, safeManhoursDailyWages: 560000, totalSafeManhours: 11945834, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 6, nearmiss: 8, trirActual: 0, trirPlanned: 0.6 }
       ];
       yearlyData.push(...fallbackRows);
     }
@@ -485,6 +491,8 @@ app.get('/api/hseq-kpi', async (req: Request, res: Response): Promise<void> => {
     // Calculate sum of all values per category
     const totals = {
       safeManhours: yearlyData.reduce((acc, row) => acc + (row.safeManhours || 0), 0),
+      safeManhoursDailyWages: yearlyData.reduce((acc, row) => acc + (row.safeManhoursDailyWages || 0), 0),
+      totalSafeManhours: yearlyData.reduce((acc, row) => acc + (row.totalSafeManhours !== undefined ? row.totalSafeManhours : ((row.safeManhours || 0) + (row.safeManhoursDailyWages || 0))), 0),
       fire: yearlyData.reduce((acc, row) => acc + (row.fire || 0), 0),
       lti: yearlyData.reduce((acc, row) => acc + (row.lti || 0), 0),
       medicalTreatment: yearlyData.reduce((acc, row) => acc + (row.medicalTreatment || 0), 0),
@@ -505,6 +513,8 @@ app.get('/api/hseq-kpi', async (req: Request, res: Response): Promise<void> => {
       totals,
       kpis: {
         safeManhours: latest ? latest.safeManhours : totals.safeManhours,
+        safeManhoursDailyWages: latest ? (latest.safeManhoursDailyWages || 0) : totals.safeManhoursDailyWages,
+        totalSafeManhours: latest ? (latest.totalSafeManhours || (latest.safeManhours + (latest.safeManhoursDailyWages || 0))) : totals.totalSafeManhours,
         fire: totals.fire,
         lti: totals.lti,
         medicalTreatment: totals.medicalTreatment,
@@ -523,16 +533,16 @@ app.get('/api/hseq-kpi', async (req: Request, res: Response): Promise<void> => {
   } catch (err: any) {
     console.error('Error in /api/hseq-kpi:', err);
     const fallbackRows = [
-      { sNo: 1, year: 2017, safeManhours: 392077, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 0, nearmiss: 0, trirActual: 0, trirPlanned: 0.6 },
-      { sNo: 2, year: 2018, safeManhours: 1635908, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 0, nearmiss: 0, trirActual: 0, trirPlanned: 0.6 },
-      { sNo: 3, year: 2019, safeManhours: 2948991, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 4, nearmiss: 31, trirActual: 0, trirPlanned: 0.6 },
-      { sNo: 4, year: 2020, safeManhours: 4201942, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 5, nearmiss: 38, trirActual: 0, trirPlanned: 0.6 },
-      { sNo: 5, year: 2021, safeManhours: 5406727, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 4, nearmiss: 4, trirActual: 0, trirPlanned: 0.6 },
-      { sNo: 6, year: 2022, safeManhours: 6588709, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 4, nearmiss: 18, trirActual: 0, trirPlanned: 0.6 },
-      { sNo: 7, year: 2023, safeManhours: 7842960, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 1, nearmiss: 4, trirActual: 0, trirPlanned: 0.6 },
-      { sNo: 8, year: 2024, safeManhours: 9257227, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 6, nearmiss: 7, trirActual: 0, trirPlanned: 0.6 },
-      { sNo: 9, year: 2025, safeManhours: 10497943, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 4, nearmiss: 15, trirActual: 0, trirPlanned: 0.6 },
-      { sNo: 10, year: 2026, safeManhours: 11105365, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 6, nearmiss: 8, trirActual: 0, trirPlanned: 0.6 }
+      { sNo: 1, year: 2017, safeManhours: 392077, safeManhoursDailyWages: 0, totalSafeManhours: 392077, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 0, nearmiss: 0, trirActual: 0, trirPlanned: 0.6 },
+      { sNo: 2, year: 2018, safeManhours: 1635908, safeManhoursDailyWages: 0, totalSafeManhours: 1635908, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 0, nearmiss: 0, trirActual: 0, trirPlanned: 0.6 },
+      { sNo: 3, year: 2019, safeManhours: 2948991, safeManhoursDailyWages: 0, totalSafeManhours: 2948991, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 4, nearmiss: 31, trirActual: 0, trirPlanned: 0.6 },
+      { sNo: 4, year: 2020, safeManhours: 4201942, safeManhoursDailyWages: 0, totalSafeManhours: 4201942, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 5, nearmiss: 38, trirActual: 0, trirPlanned: 0.6 },
+      { sNo: 5, year: 2021, safeManhours: 5406727, safeManhoursDailyWages: 0, totalSafeManhours: 5406727, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 4, nearmiss: 4, trirActual: 0, trirPlanned: 0.6 },
+      { sNo: 6, year: 2022, safeManhours: 6588709, safeManhoursDailyWages: 0, totalSafeManhours: 6588709, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 4, nearmiss: 18, trirActual: 0, trirPlanned: 0.6 },
+      { sNo: 7, year: 2023, safeManhours: 7842960, safeManhoursDailyWages: 0, totalSafeManhours: 7842960, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 1, nearmiss: 4, trirActual: 0, trirPlanned: 0.6 },
+      { sNo: 8, year: 2024, safeManhours: 9257227, safeManhoursDailyWages: 0, totalSafeManhours: 9257227, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 6, nearmiss: 7, trirActual: 0, trirPlanned: 0.6 },
+      { sNo: 9, year: 2025, safeManhours: 10497943, safeManhoursDailyWages: 0, totalSafeManhours: 10497943, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 4, nearmiss: 15, trirActual: 0, trirPlanned: 0.6 },
+      { sNo: 10, year: 2026, safeManhours: 11385834, safeManhoursDailyWages: 560000, totalSafeManhours: 11945834, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 6, nearmiss: 8, trirActual: 0, trirPlanned: 0.6 }
     ];
     res.json({
       success: false,
@@ -540,7 +550,9 @@ app.get('/api/hseq-kpi', async (req: Request, res: Response): Promise<void> => {
       sheetName: 'HSEQ_KPI',
       updatedAt: new Date().toISOString(),
       totals: {
-        safeManhours: 59885744,
+        safeManhours: 60166213,
+        safeManhoursDailyWages: 560000,
+        totalSafeManhours: 60726213,
         fire: 0,
         lti: 0,
         medicalTreatment: 0,
@@ -550,7 +562,9 @@ app.get('/api/hseq-kpi', async (req: Request, res: Response): Promise<void> => {
         trirPlanned: 0.6
       },
       kpis: {
-        safeManhours: 11105365,
+        safeManhours: 11385834,
+        safeManhoursDailyWages: 560000,
+        totalSafeManhours: 11945834,
         fire: 0,
         lti: 0,
         medicalTreatment: 0,
@@ -1231,42 +1245,45 @@ app.get('/api/fpcl-directory', async (_req: Request, res: Response): Promise<voi
   });
 });
 
-// Cache for Crew Week data
-let crewWeekCache: { timestamp: number; data: any[]; rawCsv: string } = {
-  timestamp: 0,
-  data: [],
-  rawCsv: ''
-};
+// Cache for Crew Week and Group data
+let crewWeekCacheMap: Record<string, { timestamp: number; data: any[]; headers?: string[]; rawCsv: string }> = {};
 
-// GET /api/crew-week - Live Crew Week Shift Roster from Google Sheet
-app.get('/api/crew-week', async (_req: Request, res: Response): Promise<void> => {
+// GET /api/crew-week - Live Crew Week Shift Roster & Group Tab from Google Sheet
+app.get('/api/crew-week', async (req: Request, res: Response): Promise<void> => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
   res.setHeader('Pragma', 'no-cache');
   res.setHeader('Expires', '0');
 
+  const sheetId = process.env.CREW_WEEK_SHEET_ID || '1vbclqX2smmSq2C4tu_fw44mApg1ng6wVZ9bgPC7aUBk';
+  const requestedTab = (req.query.tab as string) || (req.query.sheetTab as string) || process.env.CREW_WEEK_SHEET_TAB || 'Crew_Week';
+  const isGroupTab = requestedTab.toLowerCase() === 'group';
+  const tabName = isGroupTab ? 'Group' : (process.env.CREW_WEEK_SHEET_TAB || 'Crew_Week');
+  const cacheKey = tabName.toLowerCase();
+
   const now = Date.now();
+  const cached = crewWeekCacheMap[cacheKey];
+
   // Return cached data if under 20 seconds old
-  if (crewWeekCache.data.length > 0 && now - crewWeekCache.timestamp < 20000) {
+  if (cached && cached.data.length > 0 && now - cached.timestamp < 20000) {
     res.json({
       success: true,
-      count: crewWeekCache.data.length,
-      data: crewWeekCache.data,
-      rawCsv: crewWeekCache.rawCsv,
+      count: cached.data.length,
+      data: cached.data,
+      headers: cached.headers || [],
+      rawCsv: cached.rawCsv,
       source: 'cache',
-      sheetId: process.env.CREW_WEEK_SHEET_ID || '1vbclqX2smmSq2C4tu_fw44mApg1ng6wVZ9bgPC7aUBk',
-      tabName: process.env.CREW_WEEK_SHEET_TAB || 'Crew_Week',
-      lastUpdated: new Date(crewWeekCache.timestamp).toISOString()
+      sheetId,
+      tabName,
+      lastUpdated: new Date(cached.timestamp).toISOString()
     });
     return;
   }
 
-  const sheetId = process.env.CREW_WEEK_SHEET_ID || '1vbclqX2smmSq2C4tu_fw44mApg1ng6wVZ9bgPC7aUBk';
-  const tabName = process.env.CREW_WEEK_SHEET_TAB || 'Crew_Week';
   const nonce = Math.floor(Math.random() * 10000000);
 
   const candidateUrls: string[] = [];
   const customUrl = process.env.CREW_WEEK_SHEET_URL || process.env.CREW_WEEK;
-  if (customUrl) candidateUrls.push(customUrl);
+  if (customUrl && !isGroupTab) candidateUrls.push(customUrl);
 
   candidateUrls.push(
     `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tabName)}&_t=${now}&_nocache=${nonce}`,
@@ -1326,7 +1343,7 @@ app.get('/api/crew-week', async (_req: Request, res: Response): Promise<void> =>
         } else if (c === '\n' || c === '\r') {
           if (c === '\r' && rawCsv[i + 1] === '\n') i++;
           curRow.push(curField.trim());
-          if (curRow.length > 1 || curRow[0] !== '') rows.push(curRow);
+          if (curRow.length > 1 || (curRow.length === 1 && curRow[0] !== '')) rows.push(curRow);
           curRow = [];
           curField = '';
         } else {
@@ -1336,7 +1353,39 @@ app.get('/api/crew-week', async (_req: Request, res: Response): Promise<void> =>
     }
     if (curField || curRow.length) {
       curRow.push(curField.trim());
-      if (curRow.length > 1 || curRow[0] !== '') rows.push(curRow);
+      if (curRow.length > 1 || (curRow.length === 1 && curRow[0] !== '')) rows.push(curRow);
+    }
+
+    if (isGroupTab) {
+      const headers = rows.length > 0 ? rows[0].map(h => (h || '').trim()) : [];
+      const parsedGroupRows = rows.slice(1).map((r, idx) => ({
+        cycle: idx + 1,
+        groupA: (r[0] || '').trim(),
+        groupB: (r[1] || '').trim(),
+        groupC: (r[2] || '').trim(),
+        groupD: (r[3] || '').trim(),
+        values: r.map(v => (v || '').trim())
+      }));
+
+      crewWeekCacheMap[cacheKey] = {
+        timestamp: now,
+        data: parsedGroupRows,
+        headers,
+        rawCsv
+      };
+
+      res.json({
+        success: true,
+        count: parsedGroupRows.length,
+        headers,
+        data: parsedGroupRows,
+        rawCsv,
+        source: 'live',
+        sheetId,
+        tabName: 'Group',
+        lastUpdated: new Date(now).toISOString()
+      });
+      return;
     }
 
     const dataRows = (rows.length > 0 && (rows[0][0] || '').toLowerCase().includes('sr')) ? rows.slice(1) : rows;
@@ -1352,7 +1401,7 @@ app.get('/api/crew-week', async (_req: Request, res: Response): Promise<void> =>
       }));
 
     if (parsed.length > 0) {
-      crewWeekCache = {
+      crewWeekCacheMap[cacheKey] = {
         timestamp: now,
         data: parsed,
         rawCsv
@@ -1371,23 +1420,24 @@ app.get('/api/crew-week', async (_req: Request, res: Response): Promise<void> =>
     }
   }
 
-  if (crewWeekCache.data.length > 0) {
+  if (cached && cached.data.length > 0) {
     res.json({
       success: true,
-      count: crewWeekCache.data.length,
-      data: crewWeekCache.data,
-      rawCsv: crewWeekCache.rawCsv,
+      count: cached.data.length,
+      data: cached.data,
+      headers: cached.headers || [],
+      rawCsv: cached.rawCsv,
       source: 'stale-cache',
       sheetId,
       tabName,
-      lastUpdated: new Date(crewWeekCache.timestamp).toISOString()
+      lastUpdated: new Date(cached.timestamp).toISOString()
     });
     return;
   }
 
   res.status(502).json({
     success: false,
-    error: 'Could not fetch Crew Week from Google Sheet',
+    error: `Could not fetch ${tabName} from Google Sheet`,
     sheetId,
     tabName
   });
@@ -1635,8 +1685,8 @@ app.all('/api/sheets/fetch', async (req: Request, res: Response): Promise<void> 
       extraStTabs.forEach(t => {
         if (!candidateTabs.includes(t)) candidateTabs.push(t);
       });
-    } else if (sLower === 'crew_week' || sLower.includes('crew_week') || sLower.includes('crew week') || tileId === 'crew-week' || tileId === 'crew_week' || trimmedUrl.includes('1vbclqX2smmSq2C4tu_fw44mApg1ng6wVZ9bgPC7aUBk')) {
-      const extraCrewTabs = ['Crew_Week', 'Crew Week', 'crew_week', 'crew week', 'CrewWeek', 'Sheet1'];
+    } else if (sLower === 'crew_week' || sLower.includes('crew_week') || sLower.includes('crew week') || sLower === 'group' || sLower.includes('group') || tileId === 'crew-week' || tileId === 'crew_week' || trimmedUrl.includes('1vbclqX2smmSq2C4tu_fw44mApg1ng6wVZ9bgPC7aUBk')) {
+      const extraCrewTabs = ['Crew_Week', 'Crew Week', 'Group', 'group', 'crew_week', 'crew week', 'CrewWeek', 'Sheet1'];
       extraCrewTabs.forEach(t => {
         if (!candidateTabs.includes(t)) candidateTabs.push(t);
       });

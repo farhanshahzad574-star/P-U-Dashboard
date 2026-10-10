@@ -124,7 +124,11 @@ export default async function handler(req: any, res: any) {
       const sNo = getRowVal(values, ['s', 'sno', 's_#', 'sr'], rIdx + 1, 0);
       // Column H (index 7) named 'Year'
       const year = getRowVal(values, ['year', 'yr'], 2017 + rIdx, 7);
+      // Column B (index 1) named 'Safe Manhours' (Regular employees)
       const safeManhours = getRowVal(values, ['safemanhours', 'manhours'], 0, 1);
+      // Column K (index 10) named 'Safe Manhours Daily wages'
+      const safeManhoursDailyWages = getRowVal(values, ['safemanhoursdailywages', 'safemanhoursdailywage', 'dailywages', 'dailywage'], 0, 10);
+      const totalSafeManhours = safeManhours + safeManhoursDailyWages;
       const fire = getRowVal(values, ['fire', 'fireincidents'], 0, 2);
       const lti = getRowVal(values, ['lti', 'losttimeinjury'], 0, 3);
       const medicalTreatment = getRowVal(values, ['medicaltreatment', 'medical'], 0, 4);
@@ -138,6 +142,8 @@ export default async function handler(req: any, res: any) {
           sNo,
           year,
           safeManhours,
+          safeManhoursDailyWages,
+          totalSafeManhours,
           fire,
           lti,
           medicalTreatment,
@@ -152,16 +158,16 @@ export default async function handler(req: any, res: any) {
     // Fallback if parsing yielded no rows
     if (yearlyData.length === 0) {
       const fallbackRows = [
-        { sNo: 1, year: 2017, safeManhours: 392077, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 0, nearmiss: 0, trirActual: 0, trirPlanned: 0.6 },
-        { sNo: 2, year: 2018, safeManhours: 1635908, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 0, nearmiss: 0, trirActual: 0, trirPlanned: 0.6 },
-        { sNo: 3, year: 2019, safeManhours: 2948991, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 4, nearmiss: 31, trirActual: 0, trirPlanned: 0.6 },
-        { sNo: 4, year: 2020, safeManhours: 4201942, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 5, nearmiss: 38, trirActual: 0, trirPlanned: 0.6 },
-        { sNo: 5, year: 2021, safeManhours: 5406727, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 4, nearmiss: 4, trirActual: 0, trirPlanned: 0.6 },
-        { sNo: 6, year: 2022, safeManhours: 6588709, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 4, nearmiss: 18, trirActual: 0, trirPlanned: 0.6 },
-        { sNo: 7, year: 2023, safeManhours: 7842960, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 1, nearmiss: 4, trirActual: 0, trirPlanned: 0.6 },
-        { sNo: 8, year: 2024, safeManhours: 9257227, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 6, nearmiss: 7, trirActual: 0, trirPlanned: 0.6 },
-        { sNo: 9, year: 2025, safeManhours: 10497943, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 4, nearmiss: 15, trirActual: 0, trirPlanned: 0.6 },
-        { sNo: 10, year: 2026, safeManhours: 11105365, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 6, nearmiss: 8, trirActual: 0, trirPlanned: 0.6 }
+        { sNo: 1, year: 2017, safeManhours: 392077, safeManhoursDailyWages: 0, totalSafeManhours: 392077, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 0, nearmiss: 0, trirActual: 0, trirPlanned: 0.6 },
+        { sNo: 2, year: 2018, safeManhours: 1635908, safeManhoursDailyWages: 0, totalSafeManhours: 1635908, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 0, nearmiss: 0, trirActual: 0, trirPlanned: 0.6 },
+        { sNo: 3, year: 2019, safeManhours: 2948991, safeManhoursDailyWages: 0, totalSafeManhours: 2948991, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 4, nearmiss: 31, trirActual: 0, trirPlanned: 0.6 },
+        { sNo: 4, year: 2020, safeManhours: 4201942, safeManhoursDailyWages: 0, totalSafeManhours: 4201942, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 5, nearmiss: 38, trirActual: 0, trirPlanned: 0.6 },
+        { sNo: 5, year: 2021, safeManhours: 5406727, safeManhoursDailyWages: 0, totalSafeManhours: 5406727, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 4, nearmiss: 4, trirActual: 0, trirPlanned: 0.6 },
+        { sNo: 6, year: 2022, safeManhours: 6588709, safeManhoursDailyWages: 0, totalSafeManhours: 6588709, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 4, nearmiss: 18, trirActual: 0, trirPlanned: 0.6 },
+        { sNo: 7, year: 2023, safeManhours: 7842960, safeManhoursDailyWages: 0, totalSafeManhours: 7842960, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 1, nearmiss: 4, trirActual: 0, trirPlanned: 0.6 },
+        { sNo: 8, year: 2024, safeManhours: 9257227, safeManhoursDailyWages: 0, totalSafeManhours: 9257227, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 6, nearmiss: 7, trirActual: 0, trirPlanned: 0.6 },
+        { sNo: 9, year: 2025, safeManhours: 10497943, safeManhoursDailyWages: 0, totalSafeManhours: 10497943, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 4, nearmiss: 15, trirActual: 0, trirPlanned: 0.6 },
+        { sNo: 10, year: 2026, safeManhours: 11385834, safeManhoursDailyWages: 560000, totalSafeManhours: 11945834, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 6, nearmiss: 8, trirActual: 0, trirPlanned: 0.6 }
       ];
       yearlyData.push(...fallbackRows);
     }
@@ -172,6 +178,8 @@ export default async function handler(req: any, res: any) {
     // Calculate sum of all values per category
     const totals = {
       safeManhours: yearlyData.reduce((acc, row) => acc + (row.safeManhours || 0), 0),
+      safeManhoursDailyWages: yearlyData.reduce((acc, row) => acc + (row.safeManhoursDailyWages || 0), 0),
+      totalSafeManhours: yearlyData.reduce((acc, row) => acc + (row.totalSafeManhours !== undefined ? row.totalSafeManhours : ((row.safeManhours || 0) + (row.safeManhoursDailyWages || 0))), 0),
       fire: yearlyData.reduce((acc, row) => acc + (row.fire || 0), 0),
       lti: yearlyData.reduce((acc, row) => acc + (row.lti || 0), 0),
       medicalTreatment: yearlyData.reduce((acc, row) => acc + (row.medicalTreatment || 0), 0),
@@ -192,6 +200,8 @@ export default async function handler(req: any, res: any) {
       totals,
       kpis: {
         safeManhours: latest ? latest.safeManhours : totals.safeManhours,
+        safeManhoursDailyWages: latest ? (latest.safeManhoursDailyWages || 0) : totals.safeManhoursDailyWages,
+        totalSafeManhours: latest ? (latest.totalSafeManhours || (latest.safeManhours + (latest.safeManhoursDailyWages || 0))) : totals.totalSafeManhours,
         fire: totals.fire,
         lti: totals.lti,
         medicalTreatment: totals.medicalTreatment,
@@ -209,16 +219,16 @@ export default async function handler(req: any, res: any) {
     });
   } catch (err: any) {
     const fallbackRows = [
-      { sNo: 1, year: 2017, safeManhours: 392077, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 0, nearmiss: 0, trirActual: 0, trirPlanned: 0.6 },
-      { sNo: 2, year: 2018, safeManhours: 1635908, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 0, nearmiss: 0, trirActual: 0, trirPlanned: 0.6 },
-      { sNo: 3, year: 2019, safeManhours: 2948991, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 4, nearmiss: 31, trirActual: 0, trirPlanned: 0.6 },
-      { sNo: 4, year: 2020, safeManhours: 4201942, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 5, nearmiss: 38, trirActual: 0, trirPlanned: 0.6 },
-      { sNo: 5, year: 2021, safeManhours: 5406727, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 4, nearmiss: 4, trirActual: 0, trirPlanned: 0.6 },
-      { sNo: 6, year: 2022, safeManhours: 6588709, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 4, nearmiss: 18, trirActual: 0, trirPlanned: 0.6 },
-      { sNo: 7, year: 2023, safeManhours: 7842960, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 1, nearmiss: 4, trirActual: 0, trirPlanned: 0.6 },
-      { sNo: 8, year: 2024, safeManhours: 9257227, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 6, nearmiss: 7, trirActual: 0, trirPlanned: 0.6 },
-      { sNo: 9, year: 2025, safeManhours: 10497943, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 4, nearmiss: 15, trirActual: 0, trirPlanned: 0.6 },
-      { sNo: 10, year: 2026, safeManhours: 11105365, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 6, nearmiss: 8, trirActual: 0, trirPlanned: 0.6 }
+      { sNo: 1, year: 2017, safeManhours: 392077, safeManhoursDailyWages: 0, totalSafeManhours: 392077, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 0, nearmiss: 0, trirActual: 0, trirPlanned: 0.6 },
+      { sNo: 2, year: 2018, safeManhours: 1635908, safeManhoursDailyWages: 0, totalSafeManhours: 1635908, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 0, nearmiss: 0, trirActual: 0, trirPlanned: 0.6 },
+      { sNo: 3, year: 2019, safeManhours: 2948991, safeManhoursDailyWages: 0, totalSafeManhours: 2948991, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 4, nearmiss: 31, trirActual: 0, trirPlanned: 0.6 },
+      { sNo: 4, year: 2020, safeManhours: 4201942, safeManhoursDailyWages: 0, totalSafeManhours: 4201942, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 5, nearmiss: 38, trirActual: 0, trirPlanned: 0.6 },
+      { sNo: 5, year: 2021, safeManhours: 5406727, safeManhoursDailyWages: 0, totalSafeManhours: 5406727, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 4, nearmiss: 4, trirActual: 0, trirPlanned: 0.6 },
+      { sNo: 6, year: 2022, safeManhours: 6588709, safeManhoursDailyWages: 0, totalSafeManhours: 6588709, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 4, nearmiss: 18, trirActual: 0, trirPlanned: 0.6 },
+      { sNo: 7, year: 2023, safeManhours: 7842960, safeManhoursDailyWages: 0, totalSafeManhours: 7842960, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 1, nearmiss: 4, trirActual: 0, trirPlanned: 0.6 },
+      { sNo: 8, year: 2024, safeManhours: 9257227, safeManhoursDailyWages: 0, totalSafeManhours: 9257227, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 6, nearmiss: 7, trirActual: 0, trirPlanned: 0.6 },
+      { sNo: 9, year: 2025, safeManhours: 10497943, safeManhoursDailyWages: 0, totalSafeManhours: 10497943, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 4, nearmiss: 15, trirActual: 0, trirPlanned: 0.6 },
+      { sNo: 10, year: 2026, safeManhours: 11385834, safeManhoursDailyWages: 560000, totalSafeManhours: 11945834, fire: 0, lti: 0, medicalTreatment: 0, firstAidCase: 6, nearmiss: 8, trirActual: 0, trirPlanned: 0.6 }
     ];
     res.json({
       success: false,
@@ -226,7 +236,9 @@ export default async function handler(req: any, res: any) {
       sheetName: 'HSEQ_KPI',
       updatedAt: new Date().toISOString(),
       totals: {
-        safeManhours: 59885744,
+        safeManhours: 60166213,
+        safeManhoursDailyWages: 560000,
+        totalSafeManhours: 60726213,
         fire: 0,
         lti: 0,
         medicalTreatment: 0,
@@ -236,7 +248,9 @@ export default async function handler(req: any, res: any) {
         trirPlanned: 0.6
       },
       kpis: {
-        safeManhours: 11105365,
+        safeManhours: 11385834,
+        safeManhoursDailyWages: 560000,
+        totalSafeManhours: 11945834,
         fire: 0,
         lti: 0,
         medicalTreatment: 0,

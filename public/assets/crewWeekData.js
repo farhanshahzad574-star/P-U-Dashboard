@@ -1301,3 +1301,20 @@ window.FPCL_CREW_WEEK_INITIAL_SEED = [
     "orgUnit": "Administration & Security Plant"
   }
 ];
+
+/**
+ * Initial Seed Data for Group Shift Rotation Tab
+ * Google Sheet ID: 1vbclqX2smmSq2C4tu_fw44mApg1ng6wVZ9bgPC7aUBk
+ * Tab: Group
+ */
+window.FPCL_GROUP_INITIAL_SEED = [
+  { "cycle": 1, "groupA": "10-Jan-26", "groupB": "17-Jan-26", "groupC": "24-Jan-26", "groupD": "31-Jan-26" },
+  { "cycle": 2, "groupA": "07-Feb-26", "groupB": "14-Feb-26", "groupC": "21-Feb-26", "groupD": "28-Feb-26" },
+  { "cycle": 3, "groupA": "07-Mar-26", "groupB": "14-Mar-26", "groupC": "21-Mar-26", "groupD": "28-Mar-26" },
+  { "cycle": 4, "groupA": "04-Apr-26", "groupB": "11-Apr-26", "groupC": "18-Apr-26", "groupD": "25-Apr-26" },
+  { "cycle": 5, "groupA": "02-May-26", "groupB": "09-May-26", "groupC": "16-May-26", "groupD": "23-May-26" },
+  { "cycle": 6, "groupA": "30-May-26", "groupB": "06-Jun-26", "groupC": "13-Jun-26", "groupD": "20-Jun-26" },
+  { "cycle": 7, "groupA": "27-Jun-26", "groupB": "04-Jul-26", "groupC": "11-Jul-26", "groupD": "18-Jul-26" },
+  { "cycle": 8, "groupA": "25-Jul-26", "groupB": "01-Aug-26", "groupC": "08-Aug-26", "groupD": "15-Aug-26" }
+];
+

@@ -81,6 +81,65 @@ export function parseCrewWeekCsv(csvText: string): CrewWeekPersonnel[] {
     }));
 }
 
+export function parseGroupCsv(csvText: string): { headers: string[]; rows: any[] } {
+  if (!csvText || typeof csvText !== 'string') return { headers: [], rows: [] };
+  const rows: string[][] = [];
+  let curRow: string[] = [];
+  let curField = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < csvText.length; i++) {
+    const c = csvText[i];
+    if (inQuotes) {
+      if (c === '"' && csvText[i + 1] === '"') {
+        curField += '"';
+        i++;
+      } else if (c === '"') {
+        inQuotes = false;
+      } else {
+        curField += c;
+      }
+    } else {
+      if (c === '"') {
+        inQuotes = true;
+      } else if (c === ',') {
+        curRow.push(curField.trim());
+        curField = '';
+      } else if (c === '\n' || c === '\r') {
+        if (c === '\r' && csvText[i + 1] === '\n') i++;
+        curRow.push(curField.trim());
+        if (curRow.length > 1 || (curRow.length === 1 && curRow[0] !== '')) {
+          rows.push(curRow);
+        }
+        curRow = [];
+        curField = '';
+      } else {
+        curField += c;
+      }
+    }
+  }
+  if (curField || curRow.length) {
+    curRow.push(curField.trim());
+    if (curRow.length > 1 || (curRow.length === 1 && curRow[0] !== '')) {
+      rows.push(curRow);
+    }
+  }
+
+  if (rows.length === 0) return { headers: [], rows: [] };
+
+  const headers = rows[0].map(h => (h || '').trim());
+  const dataRows = rows.slice(1).map((r, idx) => ({
+    cycle: idx + 1,
+    groupA: (r[0] || '').trim(),
+    groupB: (r[1] || '').trim(),
+    groupC: (r[2] || '').trim(),
+    groupD: (r[3] || '').trim(),
+    values: r.map(v => (v || '').trim())
+  }));
+
+  return { headers, rows: dataRows };
+}
+
 export default async function handler(req: any, res: any) {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -95,19 +154,23 @@ export default async function handler(req: any, res: any) {
     return;
   }
 
+  const requestedTab = (req.query?.tab as string) || (req.query?.sheetTab as string) || SHEET_TAB;
+  const isGroupTab = requestedTab.toLowerCase() === 'group';
+  const effectiveTab = isGroupTab ? 'Group' : SHEET_TAB;
+
   const now = Date.now();
   const nonce = Math.floor(Math.random() * 10000000);
 
   const customUrl = process.env.CREW_WEEK_SHEET_URL || process.env.CREW_WEEK;
   const candidateUrls: string[] = [];
 
-  if (customUrl) {
+  if (customUrl && !isGroupTab) {
     candidateUrls.push(customUrl);
   }
 
   candidateUrls.push(
-    `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_TAB)}&_t=${now}&_nocache=${nonce}`,
-    `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&sheet=${encodeURIComponent(SHEET_TAB)}&_t=${now}&_nocache=${nonce}`,
+    `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(effectiveTab)}&_t=${now}&_nocache=${nonce}`,
+    `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&sheet=${encodeURIComponent(effectiveTab)}&_t=${now}&_nocache=${nonce}`,
     `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&_t=${now}`
   );
 
@@ -143,9 +206,25 @@ export default async function handler(req: any, res: any) {
   if (!rawCsv) {
     res.status(502).json({
       success: false,
-      error: 'Unable to reach Google Sheets endpoints for Crew_Week',
+      error: `Unable to reach Google Sheets endpoints for tab: ${effectiveTab}`,
       sheetId: SHEET_ID,
-      tab: SHEET_TAB,
+      tab: effectiveTab,
+    });
+    return;
+  }
+
+  if (isGroupTab) {
+    const { headers, rows } = parseGroupCsv(rawCsv);
+    res.json({
+      success: true,
+      sheetId: SHEET_ID,
+      tab: 'Group',
+      sourceUrl,
+      headers,
+      count: rows.length,
+      data: rows,
+      rawCsv,
+      timestamp: new Date().toISOString(),
     });
     return;
   }
