@@ -138,9 +138,9 @@
         level: 2,
         department: 'Commercial',
         deptKey: 'commercial',
-        tag: 'Commercial', // Changed from Commercial & SCM to Commercial
+        tag: 'Commercial',
         icon: 'trending-up',
-        subordinatesCount: 1,
+        subordinatesCount: 0,
         color: '#4F46E5',
         borderTop: '#4F46E5',
         bgTint: '#EEF2FF',
@@ -148,24 +148,7 @@
         tagBg: '#EEF2FF',
         tagText: '#3730A3',
         tagBorder: '#C7D2FE',
-        children: [
-          {
-            id: 'm-commercial-fuel',
-            title: 'Commercial & Fuel Portfolio',
-            subtitle: 'Direct reporting to COO',
-            level: 3,
-            department: 'Commercial',
-            deptKey: 'commercial',
-            tag: 'Commercial',
-            icon: null,
-            hasIcon: false, // Strictly removed commercial and fuel portfolio icon as requested
-            reportingType: 'functional',
-            dashedCard: true, // Dashed card representation
-            subordinatesCount: 0,
-            cardBg: '#F5F3FF',
-            cardBorder: '#C7D2FE'
-          }
-        ]
+        children: []
       },
       {
         id: 'sm-ei',
@@ -1505,9 +1488,10 @@
                         </span>
                         <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500">
                           <span>${sm.subordinatesCount} ${sm.subordinatesCount === 1 ? 'subordinate' : 'subordinates'}</span>
+                          ${(sm.children && sm.children.length > 0) ? `
                           <span class="transition-transform duration-200 text-slate-400 ${isBranchCollapsed ? '' : 'rotate-180'}">
                             ${SVG_ICONS.chevronDown}
-                          </span>
+                          </span>` : ''}
                         </span>
                       </div>
 
@@ -1526,40 +1510,17 @@
                     </div>
 
                     <!-- LEVEL 3: Subordinates Container with Smooth Animation -->
+                    ${(sm.children && sm.children.length > 0) ? `
                     <div class="w-full flex flex-col items-center transition-all duration-300 ease-in-out ${isBranchCollapsed ? 'max-h-0 opacity-0 overflow-hidden pointer-events-none' : 'max-h-[800px] opacity-100 overflow-visible mt-2'}">
                       <!-- Connector line from Senior Manager to Manager(s) -->
-                      <div class="w-0.5 h-4 ${sm.id === 'sm-commercial' ? 'border-l-2 border-dashed border-indigo-400' : 'bg-slate-300'} relative">
-                        <div class="w-1.5 h-1.5 rounded-full ${sm.id === 'sm-commercial' ? 'bg-indigo-400' : 'bg-slate-400'} absolute bottom-0 -left-[2px]"></div>
+                      <div class="w-0.5 h-4 bg-slate-300 relative">
+                        <div class="w-1.5 h-1.5 rounded-full bg-slate-400 absolute bottom-0 -left-[2px]"></div>
                       </div>
 
                       <!-- Stacked Managers -->
                       <div class="w-full space-y-2.5">
                         ${sm.children.map(m => {
                           const isMActive = activeId === m.id;
-
-                          if (m.dashedCard) {
-                            // Commercial & Fuel Portfolio (Functional dashed card, NO ICON as strictly requested)
-                            return `
-                              <div
-                                role="button"
-                                tabindex="0"
-                                onclick="FPCL_KPI_SUITE.selectOrganogramNode('${m.id}')"
-                                onkeydown="if(event.key==='Enter'||event.key===' ')FPCL_KPI_SUITE.selectOrganogramNode('${m.id}')"
-                                class="org-card-hover group relative flex flex-col p-3.5 rounded-2xl border-2 border-dashed border-[#C7D2FE] bg-[#F5F3FF] cursor-pointer transition-all duration-150 overflow-hidden shadow-2xs ${isMActive ? 'ring-2 ring-indigo-500/40' : ''}"
-                              >
-                                <div class="flex items-center justify-between gap-1 mb-1.5">
-                                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-white text-indigo-800 border border-indigo-200">
-                                    ${m.tag}
-                                  </span>
-                                  <span class="text-[10px] font-semibold text-indigo-700">Functional</span>
-                                </div>
-                                <div>
-                                  <h5 class="text-[13px] font-bold text-slate-900 leading-snug break-words">${m.title}</h5>
-                                  <p class="text-[12px] text-slate-500 font-medium mt-0.5 break-words">${m.subtitle}</p>
-                                </div>
-                              </div>
-                            `;
-                          }
 
                           // Regular Manager Card (Lighter tinted parent color, subtle shadow, circular icon)
                           return `
@@ -1582,7 +1543,7 @@
                           `;
                         }).join('')}
                       </div>
-                    </div>
+                    </div>` : ''}
                   </div>
                 `;
               }).join('')}
@@ -1621,49 +1582,36 @@
                     </div>
                     <div class="flex items-center gap-1.5 shrink-0 text-slate-400">
                       <span class="text-xs font-semibold text-slate-500">${sm.subordinatesCount}</span>
+                      ${(sm.children && sm.children.length > 0) ? `
                       <span class="transition-transform duration-200 ${isBranchCollapsed ? '' : 'rotate-180'}">
                         ${SVG_ICONS.chevronDown}
-                      </span>
+                      </span>` : ''}
                     </div>
                   </div>
 
                   <!-- Subordinates Indented List -->
+                  ${(sm.children && sm.children.length > 0) ? `
                   <div class="transition-all duration-300 ease-in-out ${isBranchCollapsed ? 'max-h-0 opacity-0 overflow-hidden' : 'max-h-[600px] opacity-100 overflow-visible border-t border-slate-100'}">
                     <div class="p-3 pl-8 space-y-2 bg-slate-50/60 relative">
-                      <div class="absolute left-5 top-3 bottom-3 w-0.5 ${sm.id === 'sm-commercial' ? 'border-l-2 border-dashed border-indigo-300' : 'bg-slate-300'}"></div>
-                      ${sm.children.map(m => {
-                        if (m.dashedCard) {
-                          return `
-                            <div
-                              role="button"
-                              tabindex="0"
-                              onclick="FPCL_KPI_SUITE.selectOrganogramNode('${m.id}')"
-                              class="p-2.5 rounded-xl border-2 border-dashed border-[#C7D2FE] bg-[#F5F3FF] cursor-pointer"
-                            >
-                              <div class="text-xs font-bold text-slate-900">${m.title}</div>
-                              <div class="text-[11px] text-slate-500">${m.subtitle}</div>
-                            </div>
-                          `;
-                        }
-                        return `
-                          <div
-                            role="button"
-                            tabindex="0"
-                            onclick="FPCL_KPI_SUITE.selectOrganogramNode('${m.id}')"
-                            class="p-2.5 rounded-xl border border-slate-200 bg-white flex items-center gap-2.5 cursor-pointer shadow-2xs"
-                          >
-                            <div class="w-6 h-6 rounded-md flex items-center justify-center shrink-0" style="color: ${sm.color};">
-                              ${SVG_ICONS[m.icon] || ''}
-                            </div>
-                            <div class="min-w-0 flex-1">
-                              <div class="text-xs font-bold text-slate-900 truncate">${m.title}</div>
-                              <div class="text-[11px] text-slate-500 truncate">${m.subtitle}</div>
-                            </div>
+                      <div class="absolute left-5 top-3 bottom-3 w-0.5 bg-slate-300"></div>
+                      ${sm.children.map(m => `
+                        <div
+                          role="button"
+                          tabindex="0"
+                          onclick="FPCL_KPI_SUITE.selectOrganogramNode('${m.id}')"
+                          class="p-2.5 rounded-xl border border-slate-200 bg-white flex items-center gap-2.5 cursor-pointer shadow-2xs"
+                        >
+                          <div class="w-6 h-6 rounded-md flex items-center justify-center shrink-0" style="color: ${sm.color};">
+                            ${SVG_ICONS[m.icon] || ''}
                           </div>
-                        `;
-                      }).join('')}
+                          <div class="min-w-0 flex-1">
+                            <div class="text-xs font-bold text-slate-900 truncate">${m.title}</div>
+                            <div class="text-[11px] text-slate-500 truncate">${m.subtitle}</div>
+                          </div>
+                        </div>
+                      `).join('')}
                     </div>
-                  </div>
+                  </div>` : ''}
                 </div>
               `;
             }).join('')}

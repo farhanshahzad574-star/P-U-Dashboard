@@ -706,7 +706,7 @@
           <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
             
             <!-- 1. TOTAL FINDINGS CARD -->
-            <div class="bg-white rounded-xl border border-slate-200/90 shadow-xs hover:shadow-md transition-shadow p-3 sm:p-5 flex flex-col justify-between relative overflow-hidden">
+            <div class="bg-white rounded-xl border border-slate-200/90 shadow-xs hover:shadow-md transition-shadow p-3.5 sm:p-5 lg:p-6 flex flex-col justify-between relative overflow-hidden">
               <div class="flex items-center justify-between gap-1">
                 <span class="text-[11px] sm:text-xs lg:text-sm font-bold text-slate-500 uppercase tracking-wider truncate">1. TOTAL FINDINGS</span>
                 <div class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center border border-slate-200 shrink-0">
@@ -714,12 +714,12 @@
                 </div>
               </div>
               <div class="mt-2 sm:mt-3 flex items-baseline gap-1.5 sm:gap-2">
-                <span class="text-2xl sm:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight leading-none">${totalCount}</span>
+                <span class="text-3xl sm:text-5xl lg:text-6xl xl:text-7xl font-black text-slate-900 tracking-tight leading-none">${totalCount}</span>
               </div>
             </div>
 
             <!-- 2. OPEN FINDINGS CARD -->
-            <div class="bg-white rounded-xl border border-slate-200/90 border-t-4 border-t-rose-500 shadow-xs hover:shadow-md transition-shadow p-3 sm:p-5 flex flex-col justify-between relative overflow-hidden">
+            <div class="bg-white rounded-xl border border-slate-200/90 border-t-4 border-t-rose-500 shadow-xs hover:shadow-md transition-shadow p-3.5 sm:p-5 lg:p-6 flex flex-col justify-between relative overflow-hidden">
               <div class="flex items-center justify-between gap-1">
                 <span class="text-[11px] sm:text-xs lg:text-sm font-bold text-rose-600 uppercase tracking-wider truncate">2. OPEN FINDINGS</span>
                 <div class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center border border-rose-200 shrink-0">
@@ -727,13 +727,13 @@
                 </div>
               </div>
               <div class="mt-2 sm:mt-3 flex items-baseline flex-wrap gap-1 sm:gap-2.5">
-                <span class="text-2xl sm:text-4xl lg:text-5xl font-black text-[#EF4444] tracking-tight leading-none">${openCount}</span>
-                <span class="text-xs sm:text-xl lg:text-2xl font-bold text-rose-500">(${openPctStr})</span>
+                <span class="text-3xl sm:text-5xl lg:text-6xl xl:text-7xl font-black text-[#EF4444] tracking-tight leading-none">${openCount}</span>
+                <span class="text-base sm:text-2xl lg:text-3xl font-extrabold text-rose-500">(${openPctStr})</span>
               </div>
             </div>
 
             <!-- 3. CLOSED FINDINGS CARD -->
-            <div class="bg-white rounded-xl border border-slate-200/90 border-t-4 border-t-emerald-500 shadow-xs hover:shadow-md transition-shadow p-3 sm:p-5 flex flex-col justify-between relative overflow-hidden">
+            <div class="bg-white rounded-xl border border-slate-200/90 border-t-4 border-t-emerald-500 shadow-xs hover:shadow-md transition-shadow p-3.5 sm:p-5 lg:p-6 flex flex-col justify-between relative overflow-hidden">
               <div class="flex items-center justify-between gap-1">
                 <span class="text-[11px] sm:text-xs lg:text-sm font-bold text-emerald-600 uppercase tracking-wider truncate">3. CLOSED FINDINGS</span>
                 <div class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-200 shrink-0">
@@ -741,13 +741,13 @@
                 </div>
               </div>
               <div class="mt-2 sm:mt-3 flex items-baseline flex-wrap gap-1 sm:gap-2.5">
-                <span class="text-2xl sm:text-4xl lg:text-5xl font-black text-[#10B981] tracking-tight leading-none">${closedCount}</span>
-                <span class="text-xs sm:text-xl lg:text-2xl font-bold text-emerald-600">(${closedPctStr})</span>
+                <span class="text-3xl sm:text-5xl lg:text-6xl xl:text-7xl font-black text-[#10B981] tracking-tight leading-none">${closedCount}</span>
+                <span class="text-base sm:text-2xl lg:text-3xl font-extrabold text-emerald-600">(${closedPctStr})</span>
               </div>
             </div>
 
             <!-- 4. % CLOSURE CARD -->
-            <div class="bg-white rounded-xl border border-slate-200/90 border-t-4 border-t-teal-500 shadow-xs hover:shadow-md transition-shadow p-3 sm:p-5 flex flex-col justify-between relative overflow-hidden">
+            <div class="bg-white rounded-xl border border-slate-200/90 border-t-4 border-t-teal-500 shadow-xs hover:shadow-md transition-shadow p-3.5 sm:p-5 lg:p-6 flex flex-col justify-between relative overflow-hidden">
               <div class="flex items-center justify-between gap-1">
                 <span class="text-[11px] sm:text-xs lg:text-sm font-bold text-teal-600 uppercase tracking-wider truncate">4. % CLOSURE</span>
                 <div class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center border border-teal-200 shrink-0">
@@ -755,7 +755,7 @@
                 </div>
               </div>
               <div class="mt-2 sm:mt-3 flex items-baseline gap-1.5 sm:gap-2">
-                <span class="text-2xl sm:text-4xl lg:text-5xl font-black text-[#0D9488] tracking-tight leading-none">${closureRate}</span>
+                <span class="text-3xl sm:text-5xl lg:text-6xl xl:text-7xl font-black text-[#0D9488] tracking-tight leading-none">${closureRate}</span>
               </div>
             </div>
 
