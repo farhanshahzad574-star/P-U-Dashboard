@@ -76,9 +76,9 @@
       employeeName: '',
       employeeRole: '',
       employeeEmail: '',
-      sheetUrl: SHARED_STRATEGIC_SHEET_URL,
-      sheetTab: 'Asset_Integrity_Actions',
-      gid: '1',
+      sheetUrl: 'https://docs.google.com/spreadsheets/d/1al3SsYo9FWHZxc8rYrJE5SV4H3RafPcd1xGSyfcy5Nc/edit',
+      sheetTab: 'ASSET_INTEGRITY_SHEET_URL',
+      gid: '0',
       theme: {
         bg: '#FDF4FF',
         border: '#F0ABFC',
@@ -89,11 +89,8 @@
         badgeBg: 'bg-fuchsia-100 text-fuchsia-800 border-fuchsia-200'
       },
       actions: [
-        { id: 'AI-01', title: 'Execute ultrasonic thickness wall gauging on reformer convective bank tubes', status: 'Closed', dueDate: '2026-02-20', closureDate: '2026-02-18', remarks: 'Remaining wall thickness well within allowable ASME Section VIII limits.' },
-        { id: 'AI-02', title: 'Complete Risk-Based Inspection (RBI) reassessment for primary ammonia storage tank', status: 'Closed', dueDate: '2026-03-01', closureDate: '2026-02-28', remarks: 'RBI models refreshed with API-581 methodology.' },
-        { id: 'AI-03', title: 'Conduct corrosion under insulation (CUI) pulsed eddy-current scans on overhead lines', status: 'Open', dueDate: '2026-04-15', closureDate: '', remarks: 'Scaffolding erection in progress for loops 104 and 106.' },
-        { id: 'AI-04', title: 'Replace aging sacrificial cathodic protection anodes on underground cooling water piping', status: 'Closed', dueDate: '2026-01-25', closureDate: '2026-01-22', remarks: '16 zinc anode beds installed and potential readings normalized.' },
-        { id: 'AI-05', title: 'Finalize structural integrity survey on boiler feed water deaerator vessel', status: 'Open', dueDate: '2026-04-30', closureDate: '', remarks: 'Internal inspection scheduled during upcoming planned turnaround.' }
+        { id: '1', title: 'asset', category: 'ECM', assignedTo: 'abcd', dueDate: '29/09/2026', status: 'Open', closureDate: '', remarks: '', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Assigned Action': 'asset', 'Action category': 'ECM', 'Assigned to': 'abcd', 'Target date': '29/09/2026', 'Status detail': 'Open', 'Remarks': '', 'Ack by': 'M.Afzal' } },
+        { id: '2', title: 'efgh', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '2', 'Assigned Action': 'efgh', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } }
       ]
     },
     {
@@ -106,9 +103,9 @@
       employeeName: '',
       employeeRole: '',
       employeeEmail: '',
-      sheetUrl: SHARED_STRATEGIC_SHEET_URL,
-      sheetTab: 'Business_Development_Actions',
-      gid: '2',
+      sheetUrl: 'https://docs.google.com/spreadsheets/d/1PYQlmmzy2VFMohIlNxipiFsfgKPsopgd2VdAdXhMiB4/edit',
+      sheetTab: 'COMMERCIAL_SHEET_URL',
+      gid: '0',
       theme: {
         bg: '#F0FDF4',
         border: '#BBF7D0',
@@ -119,10 +116,8 @@
         badgeBg: 'bg-emerald-100 text-emerald-800 border-emerald-200'
       },
       actions: [
-        { id: 'BD-01', title: 'Submit off-take tariff optimization proposal to national regulatory board', status: 'Closed', dueDate: '2026-02-10', closureDate: '2026-02-09', remarks: 'Proposal accepted for hearing review.' },
-        { id: 'BD-02', title: 'Prepare feasibility model for 25MW solar hybrid generation integration', status: 'Open', dueDate: '2026-04-20', closureDate: '', remarks: 'Financial model drafted; awaiting grid interconnect study results.' },
-        { id: 'BD-03', title: 'Negotiate long-term industrial CO2 byproduct commercial off-take agreement', status: 'Closed', dueDate: '2026-03-12', closureDate: '2026-03-11', remarks: 'MOU signed with regional beverage and dry-ice consortium.' },
-        { id: 'BD-04', title: 'Evaluate synthetic ammonia downstream chemical expansion opportunities', status: 'Open', dueDate: '2026-05-15', closureDate: '', remarks: 'Market demand forecast report commissioned.' }
+        { id: '1', title: 'asset', category: 'ECM', assignedTo: 'abcd', dueDate: '29/09/2026', status: 'Open', closureDate: '', remarks: '', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Assigned Action': 'asset', 'Action category': 'ECM', 'Assigned to': 'abcd', 'Target date': '29/09/2026', 'Status detail': 'Open', 'Remarks': '', 'Ack by': 'M.Afzal' } },
+        { id: '2', title: 'efgh', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '2', 'Assigned Action': 'efgh', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } }
       ]
     },
     {
@@ -135,9 +130,9 @@
       employeeName: '',
       employeeRole: '',
       employeeEmail: '',
-      sheetUrl: SHARED_STRATEGIC_SHEET_URL,
-      sheetTab: 'Civil_Actions',
-      gid: '3',
+      sheetUrl: 'https://docs.google.com/spreadsheets/d/1EPIHm33gIOTrAfXvjGO3yRQhu5jPl_BjstTaWtWgs_0/edit',
+      sheetTab: 'CIVIL_SHEET_URL',
+      gid: '0',
       theme: {
         bg: '#FFFBEB',
         border: '#FDE68A',
@@ -148,10 +143,8 @@
         badgeBg: 'bg-amber-100 text-amber-800 border-amber-200'
       },
       actions: [
-        { id: 'CIV-01', title: 'Reinforce secondary containment bund walls surrounding chemical acid storage tanks', status: 'Closed', dueDate: '2026-01-20', closureDate: '2026-01-18', remarks: 'Acid-resistant epoxy lining cured and hydrostatic tested.' },
-        { id: 'CIV-02', title: 'Repair heavy plant crane road pavement along heavy transit corridor B', status: 'Closed', dueDate: '2026-02-28', closureDate: '2026-02-26', remarks: 'Asphalt paving and load compaction completed.' },
-        { id: 'CIV-03', title: 'Perform seismic settlement monitoring and optical leveling on turbine foundations', status: 'Open', dueDate: '2026-04-05', closureDate: '', remarks: 'Laser benchmarks established; final differential settlement report due.' },
-        { id: 'CIV-04', title: 'Waterproof electrical substation sub-basement ahead of monsoon season', status: 'Open', dueDate: '2026-04-25', closureDate: '', remarks: 'Injecting crystalline polymer barrier in exterior retaining walls.' }
+        { id: '1', title: 'asset', category: 'ECM', assignedTo: 'abcd', dueDate: '29/09/2026', status: 'Open', closureDate: '', remarks: '', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Assigned Action': 'asset', 'Action category': 'ECM', 'Assigned to': 'abcd', 'Target date': '29/09/2026', 'Status detail': 'Open', 'Remarks': '', 'Ack by': 'M.Afzal' } },
+        { id: '2', title: 'efgh', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '2', 'Assigned Action': 'efgh', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } }
       ]
     },
     {
@@ -164,9 +157,9 @@
       employeeName: '',
       employeeRole: '',
       employeeEmail: '',
-      sheetUrl: SHARED_STRATEGIC_SHEET_URL,
-      sheetTab: 'EI_Actions',
-      gid: '4',
+      sheetUrl: 'https://docs.google.com/spreadsheets/d/1ap9EfOwDUaoere3nKGmfvLNBKoCNp_KB_8KSEc3Y3fA/edit',
+      sheetTab: 'EI_SHEET_URL',
+      gid: '0',
       theme: {
         bg: '#EFF6FF',
         border: '#BFDBFE',
@@ -177,11 +170,8 @@
         badgeBg: 'bg-blue-100 text-blue-800 border-blue-200'
       },
       actions: [
-        { id: 'EI-01', title: 'Calibrate all critical SIL-3 safety trip interlock transmitters in syngas loop', status: 'Closed', dueDate: '2026-02-12', closureDate: '2026-02-11', remarks: 'Hart field calibrator logs recorded with zero deviation.' },
-        { id: 'EI-02', title: 'Thermal infrared scanning of 11kV medium voltage switchgear breaker panels', status: 'Closed', dueDate: '2026-03-02', closureDate: '2026-03-01', remarks: 'No hot spots detected; busbar torque checks verified.' },
-        { id: 'EI-03', title: 'Replace aging DCS redundant controller cards in Unit 2 control room', status: 'Open', dueDate: '2026-04-12', closureDate: '', remarks: 'Cards received; firmware synchronization planned for weekend window.' },
-        { id: 'EI-04', title: 'Commission battery backup bank and UPS load bank test in Substation 3', status: 'Closed', dueDate: '2026-01-15', closureDate: '2026-01-14', remarks: 'Full 8-hour discharge test successfully validated.' },
-        { id: 'EI-05', title: 'Inspect grounding grid resistivity across hazardous area Zone 1 classification zones', status: 'Open', dueDate: '2026-05-10', closureDate: '', remarks: 'Ground resistance testing underway with fall-of-potential meter.' }
+        { id: '1', title: 'asset', category: 'ECM', assignedTo: 'abcd', dueDate: '29/09/2026', status: 'Open', closureDate: '', remarks: '', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Assigned Action': 'asset', 'Action category': 'ECM', 'Assigned to': 'abcd', 'Target date': '29/09/2026', 'Status detail': 'Open', 'Remarks': '', 'Ack by': 'M.Afzal' } },
+        { id: '2', title: 'efgh', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '2', 'Assigned Action': 'efgh', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } }
       ]
     },
     {
@@ -194,9 +184,9 @@
       employeeName: '',
       employeeRole: '',
       employeeEmail: '',
-      sheetUrl: SHARED_STRATEGIC_SHEET_URL,
-      sheetTab: 'Finance_Actions',
-      gid: '5',
+      sheetUrl: 'https://docs.google.com/spreadsheets/d/1hpQsdyMteOhlFCSAm9Yb3GQT_veTVArxcy3inSpkGdA/edit',
+      sheetTab: 'FINANCE_SHEET_URL',
+      gid: '0',
       theme: {
         bg: '#F0FDF4',
         border: '#86EFAC',
@@ -207,10 +197,8 @@
         badgeBg: 'bg-emerald-100 text-emerald-800 border-emerald-300'
       },
       actions: [
-        { id: 'FIN-01', title: 'Finalize Q4 statutory audited financial accounts and external auditor review', status: 'Closed', dueDate: '2026-01-31', closureDate: '2026-01-30', remarks: 'Unqualified audit opinion issued by Big Four auditor.' },
-        { id: 'FIN-02', title: 'Execute interest rate hedging strategy for plant debt restructuring', status: 'Closed', dueDate: '2026-02-28', closureDate: '2026-02-27', remarks: 'Hedging instruments executed at favorable cap rates.' },
-        { id: 'FIN-03', title: 'Implement automated ERP purchase order to vendor three-way matching module', status: 'Open', dueDate: '2026-04-18', closureDate: '', remarks: 'ERP staging integration completed; user training underway.' },
-        { id: 'FIN-04', title: 'Optimize working capital credit facility covenants with consortium banks', status: 'Open', dueDate: '2026-05-05', closureDate: '', remarks: 'Term sheet under discussion with lead syndication bank.' }
+        { id: '1', title: 'asset', category: 'ECM', assignedTo: 'abcd', dueDate: '29/09/2026', status: 'Open', closureDate: '', remarks: '', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Assigned Action': 'asset', 'Action category': 'ECM', 'Assigned to': 'abcd', 'Target date': '29/09/2026', 'Status detail': 'Open', 'Remarks': '', 'Ack by': 'M.Afzal' } },
+        { id: '2', title: 'efgh', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '2', 'Assigned Action': 'efgh', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } }
       ]
     },
     {
@@ -253,9 +241,9 @@
       employeeName: '',
       employeeRole: '',
       employeeEmail: '',
-      sheetUrl: SHARED_STRATEGIC_SHEET_URL,
-      sheetTab: 'HCM_Actions',
-      gid: '7',
+      sheetUrl: 'https://docs.google.com/spreadsheets/d/1Macb6nmGzel3tseZPp61lHuL8NagAxZPZFRQnw4yCU0/edit',
+      sheetTab: 'HCM_SHEET_URL',
+      gid: '0',
       theme: {
         bg: '#FDF2F8',
         border: '#FBCFE8',
@@ -266,11 +254,8 @@
         badgeBg: 'bg-pink-100 text-pink-800 border-pink-200'
       },
       actions: [
-        { id: 'HCM-01', title: 'Complete annual corporate performance appraisals and 360-degree feedback reviews', status: 'Closed', dueDate: '2026-01-31', closureDate: '2026-01-29', remarks: '100% staff evaluation closed and approved by Executive Committee.' },
-        { id: 'HCM-02', title: 'Recruit certified senior rotating equipment reliability engineer', status: 'Closed', dueDate: '2026-02-25', closureDate: '2026-02-24', remarks: 'Candidate onboarded and orientation completed.' },
-        { id: 'HCM-03', title: 'Roll out executive succession planning and critical talent bench assessment', status: 'Open', dueDate: '2026-04-20', closureDate: '', remarks: 'Departmental gap analysis submitted to Plant Director.' },
-        { id: 'HCM-04', title: 'Upgrade plant employee medical insurance coverage and wellness clinic protocols', status: 'Closed', dueDate: '2026-03-01', closureDate: '2026-02-28', remarks: 'New cashless insurance provider cards distributed to all employees.' },
-        { id: 'HCM-05', title: 'Implement digitized overtime approval and shift handover punch portal', status: 'Open', dueDate: '2026-05-10', closureDate: '', remarks: 'Integration testing with SAP payroll module in progress.' }
+        { id: '1', title: 'asset', category: 'ECM', assignedTo: 'abcd', dueDate: '29/09/2026', status: 'Open', closureDate: '', remarks: 'a', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Assigned Action': 'asset', 'Action category': 'ECM', 'Assigned to': 'abcd', 'Target date': '29/09/2026', 'Status detail': 'Open', 'Remarks': 'a', 'Ack by': 'M.Afzal' } },
+        { id: '2', title: 'efgh', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '2', 'Assigned Action': 'efgh', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } }
       ]
     },
     {
@@ -283,9 +268,9 @@
       employeeName: '',
       employeeRole: '',
       employeeEmail: '',
-      sheetUrl: SHARED_STRATEGIC_SHEET_URL,
-      sheetTab: 'IMS_Actions',
-      gid: '8',
+      sheetUrl: 'https://docs.google.com/spreadsheets/d/1kyekkmRkxYCWxXYjKp5zCSM_NAnb6uqmCBnLcgDR6iM/edit',
+      sheetTab: 'IMS_SHEET_URL',
+      gid: '0',
       theme: {
         bg: '#F5F3FF',
         border: '#DDD6FE',
@@ -296,10 +281,8 @@
         badgeBg: 'bg-violet-100 text-violet-800 border-violet-200'
       },
       actions: [
-        { id: 'IMS-01', title: 'Update plant Standard Operating Procedures (SOP) control repository for 2026', status: 'Closed', dueDate: '2026-02-18', closureDate: '2026-02-16', remarks: 'All 142 operating procedures reviewed and archived in electronic DMS.' },
-        { id: 'IMS-02', title: 'Conduct internal Management Review Meeting (MRM) for ISO 9001 quality system', status: 'Closed', dueDate: '2026-03-05', closureDate: '2026-03-04', remarks: 'Minutes of MRM published with management commitment signatures.' },
-        { id: 'IMS-03', title: 'Complete annual enterprise risk register assessment across all 20 departments', status: 'Open', dueDate: '2026-04-15', closureDate: '', remarks: '17 department risk registers submitted; 3 pending review.' },
-        { id: 'IMS-04', title: 'Digitize internal audit finding non-conformance tracking workflows', status: 'Open', dueDate: '2026-05-01', closureDate: '', remarks: 'Workflow automated in Microsoft 365 SharePoint framework.' }
+        { id: '1', title: 'asset', category: 'ECM', assignedTo: 'abcd', dueDate: '29/09/2026', status: 'Open', closureDate: '', remarks: '', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Assigned Action': 'asset', 'Action category': 'ECM', 'Assigned to': 'abcd', 'Target date': '29/09/2026', 'Status detail': 'Open', 'Remarks': '', 'Ack by': 'M.Afzal' } },
+        { id: '2', title: 'efgh', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '2', 'Assigned Action': 'efgh', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } }
       ]
     },
     {
@@ -312,9 +295,9 @@
       employeeName: '',
       employeeRole: '',
       employeeEmail: '',
-      sheetUrl: SHARED_STRATEGIC_SHEET_URL,
-      sheetTab: 'IT_Actions',
-      gid: '9',
+      sheetUrl: 'https://docs.google.com/spreadsheets/d/1wJ-MIlSvfguUMTz06eqJ2brAYt47gtqKB_nPGrGMuaM/edit',
+      sheetTab: 'IT_SHEET_URL',
+      gid: '0',
       theme: {
         bg: '#F8FAFC',
         border: '#94A3B8',
@@ -325,11 +308,8 @@
         badgeBg: 'bg-slate-100 text-slate-800 border-slate-300'
       },
       actions: [
-        { id: 'IT-01', title: 'Deploy hardware next-generation firewall and OT/IT network perimeter DMZ', status: 'Closed', dueDate: '2026-01-25', closureDate: '2026-01-24', remarks: 'Industrial DMZ air-gap strictly isolating plant DCS from corporate network.' },
-        { id: 'IT-02', title: 'Complete annual cyber incident penetration testing and vulnerability scans', status: 'Closed', dueDate: '2026-02-20', closureDate: '2026-02-19', remarks: 'No critical or high vulnerabilities identified; report submitted to Board.' },
-        { id: 'IT-03', title: 'Upgrade datacenter hyper-converged virtualization cluster and backup SAN', status: 'Open', dueDate: '2026-04-10', closureDate: '', remarks: 'Hardware racked and wired; data replication testing in progress.' },
-        { id: 'IT-04', title: 'Implement multi-factor authentication (MFA) enforcement on all remote VPN users', status: 'Closed', dueDate: '2026-03-01', closureDate: '2026-02-28', remarks: 'Zero-trust authenticator requirement applied to 100% remote logins.' },
-        { id: 'IT-05', title: 'Migrate enterprise business intelligence reporting to real-time Google Cloud data lake', status: 'Open', dueDate: '2026-05-15', closureDate: '', remarks: 'ETL pipelines from plant historian 80% operational.' }
+        { id: '1', title: 'asset', category: 'ECM', assignedTo: 'abcd', dueDate: '29/09/2026', status: 'Open', closureDate: '', remarks: '', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Assigned Action': 'asset', 'Action category': 'ECM', 'Assigned to': 'abcd', 'Target date': '29/09/2026', 'Status detail': 'Open', 'Remarks': '', 'Ack by': 'M.Afzal' } },
+        { id: '2', title: 'efgh', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '2', 'Assigned Action': 'efgh', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } }
       ]
     },
     {
@@ -342,9 +322,9 @@
       employeeName: '',
       employeeRole: '',
       employeeEmail: '',
-      sheetUrl: SHARED_STRATEGIC_SHEET_URL,
-      sheetTab: 'Inspection_Actions',
-      gid: '10',
+      sheetUrl: 'https://docs.google.com/spreadsheets/d/1fW4P4HXfD6Yt5uvNnB2B6u4GveOBK8VSEPal-giXCIw/edit',
+      sheetTab: 'INSPECTION_SHEET_URL',
+      gid: '0',
       theme: {
         bg: '#F0F9FF',
         border: '#BAE6FD',
@@ -355,11 +335,8 @@
         badgeBg: 'bg-sky-100 text-sky-800 border-sky-200'
       },
       actions: [
-        { id: 'INSP-01', title: 'Hydrostatic and pop-pressure bench testing of 48 safety relief valves (PSVs)', status: 'Closed', dueDate: '2026-02-15', closureDate: '2026-02-14', remarks: 'All valves re-seated, certified, and sealed with inspection tags.' },
-        { id: 'INSP-02', title: 'Complete non-destructive dye-penetrant testing (PT) on turbine rotor blades', status: 'Closed', dueDate: '2026-03-08', closureDate: '2026-03-07', remarks: 'Zero fatigue surface indications observed; clearance specs met.' },
-        { id: 'INSP-03', title: 'Overhaul centralized machine workshop lathe and CNC milling equipment', status: 'Open', dueDate: '2026-04-18', closureDate: '', remarks: 'Spindle bearing kit awaiting customs clearance.' },
-        { id: 'INSP-04', title: 'Recertify plant overhead gantry and mobile mobile cranes with third-party surveyor', status: 'Closed', dueDate: '2026-01-30', closureDate: '2026-01-29', remarks: 'Load test certifications renewed for 12 months.' },
-        { id: 'INSP-05', title: 'Conduct magnetic particle inspection (MPI) on primary reformer manifold welds', status: 'Open', dueDate: '2026-05-01', closureDate: '', remarks: 'Inspection crew mobilized for upcoming scheduled inspection.' }
+        { id: '1', title: 'asset', category: 'ECM', assignedTo: 'abcd', dueDate: '29/09/2026', status: 'Open', closureDate: '', remarks: '', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Assigned Action': 'asset', 'Action category': 'ECM', 'Assigned to': 'abcd', 'Target date': '29/09/2026', 'Status detail': 'Open', 'Remarks': '', 'Ack by': 'M.Afzal' } },
+        { id: '2', title: 'efgh', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '2', 'Assigned Action': 'efgh', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } }
       ]
     },
     {
@@ -372,9 +349,9 @@
       employeeName: '',
       employeeRole: '',
       employeeEmail: '',
-      sheetUrl: SHARED_STRATEGIC_SHEET_URL,
-      sheetTab: 'LD_Actions',
-      gid: '11',
+      sheetUrl: 'https://docs.google.com/spreadsheets/d/1lWSPmrx5LBX64E4vY-VWafLWwql8K7aBcxicprO3ZE0/edit',
+      sheetTab: 'LD_SHEET_URL',
+      gid: '0',
       theme: {
         bg: '#FFF1F2',
         border: '#FECDD3',
@@ -385,11 +362,8 @@
         badgeBg: 'bg-rose-100 text-rose-800 border-rose-200'
       },
       actions: [
-        { id: 'LD-01', title: 'Execute mandatory process safety management (PSM) refresher training for all operators', status: 'Closed', dueDate: '2026-02-10', closureDate: '2026-02-09', remarks: '98.5% plant operational staff achieved passing score.' },
-        { id: 'LD-02', title: 'Conduct high-voltage electrical safety and Arc Flash prevention certification', status: 'Closed', dueDate: '2026-03-05', closureDate: '2026-03-04', remarks: 'E&I team certified under NFPA 70E standards.' },
-        { id: 'LD-03', title: 'Launch 2026 Young Engineers Mentorship and Professional Development Program', status: 'Closed', dueDate: '2026-01-20', closureDate: '2026-01-19', remarks: '14 graduate trainee engineers assigned senior mentors.' },
-        { id: 'LD-04', title: 'Implement digital interactive dynamic simulation training for emergency shutdowns', status: 'Open', dueDate: '2026-04-25', closureDate: '', remarks: 'Operator training simulator (OTS) software upgrade in progress.' },
-        { id: 'LD-05', title: 'Audit departmental training matrix compliance against annual training targets', status: 'Open', dueDate: '2026-05-10', closureDate: '', remarks: 'Mid-year audit underway; 74% training hours logged.' }
+        { id: '1', title: 'asset', category: 'ECM', assignedTo: 'abcd', dueDate: '29/09/2026', status: 'Open', closureDate: '', remarks: '', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Assigned Action': 'asset', 'Action category': 'ECM', 'Assigned to': 'abcd', 'Target date': '29/09/2026', 'Status detail': 'Open', 'Remarks': '', 'Ack by': 'M.Afzal' } },
+        { id: '2', title: 'efgh', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '2', 'Assigned Action': 'efgh', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } }
       ]
     },
     {
@@ -402,9 +376,9 @@
       employeeName: '',
       employeeRole: '',
       employeeEmail: '',
-      sheetUrl: SHARED_STRATEGIC_SHEET_URL,
-      sheetTab: 'Machinery_Actions',
-      gid: '12',
+      sheetUrl: 'https://docs.google.com/spreadsheets/d/1zRmPlFDlRijQOTboLfhukEjdFHeUR9P5pcRIUeV7rY0/edit',
+      sheetTab: 'MACHINERY_SHEET_URL',
+      gid: '0',
       theme: {
         bg: '#FFF7ED',
         border: '#FED7AA',
@@ -415,11 +389,8 @@
         badgeBg: 'bg-orange-100 text-orange-800 border-orange-200'
       },
       actions: [
-        { id: 'MACH-01', title: 'Complete high-pressure boiler feed water pump mechanical dry gas seal replacement', status: 'Closed', dueDate: '2026-02-18', closureDate: '2026-02-17', remarks: 'Pump re-aligned using laser tool; vibration amplitude < 1.2 mm/s.' },
-        { id: 'MACH-02', title: 'Overhaul synthesis gas centrifugal compressor lube oil console and filtration unit', status: 'Closed', dueDate: '2026-03-01', closureDate: '2026-02-28', remarks: 'Dual filter elements replaced and oil cleanliness NAS Class 6 achieved.' },
-        { id: 'MACH-03', title: 'Install continuous wireless online vibration monitoring sensors on auxiliary cooling fans', status: 'Open', dueDate: '2026-04-20', closureDate: '', remarks: '12 out of 16 sensors mounted; gateway telemetry configured.' },
-        { id: 'MACH-04', title: 'Inspect steam turbine governor hydraulic valve linkages and servo-cylinder travel', status: 'Closed', dueDate: '2026-01-22', closureDate: '2026-01-21', remarks: 'Valve hysteresis test passed with full range stroke repeatability.' },
-        { id: 'MACH-05', title: 'Recondition spare rotor for refrigeration ammonia screw compressor', status: 'Open', dueDate: '2026-05-05', closureDate: '', remarks: 'Rotor sent to OEM specialized facility for dynamic balancing.' }
+        { id: '1', title: 'asset', category: 'ECM', assignedTo: 'abcd', dueDate: '29/09/2026', status: 'Open', closureDate: '', remarks: '', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Assigned Action': 'asset', 'Action category': 'ECM', 'Assigned to': 'abcd', 'Target date': '29/09/2026', 'Status detail': 'Open', 'Remarks': '', 'Ack by': 'M.Afzal' } },
+        { id: '2', title: 'efgh', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '2', 'Assigned Action': 'efgh', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } }
       ]
     },
     {
@@ -432,9 +403,9 @@
       employeeName: '',
       employeeRole: '',
       employeeEmail: '',
-      sheetUrl: SHARED_STRATEGIC_SHEET_URL,
-      sheetTab: 'Mechanical_Actions',
-      gid: '13',
+      sheetUrl: 'https://docs.google.com/spreadsheets/d/1gedfNYWwLaLDL85bz2PuDGi1NZP8QiwW42Vklym5i1w/edit',
+      sheetTab: 'MECHANICAL_SHEET_URL',
+      gid: '0',
       theme: {
         bg: '#F8FAFC',
         border: '#CBD5E1',
@@ -445,11 +416,8 @@
         badgeBg: 'bg-slate-100 text-slate-800 border-slate-300'
       },
       actions: [
-        { id: 'MECH-01', title: 'Hydro-jet cleaning and retubing of cooling water heat exchanger E-201', status: 'Closed', dueDate: '2026-02-14', closureDate: '2026-02-13', remarks: 'Hydro test carried out at 1.5x design pressure with zero leakage.' },
-        { id: 'MECH-02', title: 'Replace severely corroded piping spool on cooling tower recirculating header', status: 'Closed', dueDate: '2026-02-28', closureDate: '2026-02-27', remarks: 'Fabrication, NDT radiography, and flange torqueing signed off.' },
-        { id: 'MECH-03', title: 'Overhaul and reseat manual block isolation gate valves on steam main line', status: 'Open', dueDate: '2026-04-12', closureDate: '', remarks: 'Valve gland packing and wedges prepared for hot-tap isolation.' },
-        { id: 'MECH-04', title: 'Rebuild internal baffles and mist eliminators inside syngas separator vessel', status: 'Closed', dueDate: '2026-01-20', closureDate: '2026-01-19', remarks: 'Stainless steel wire mesh pads renewed and secured.' },
-        { id: 'MECH-05', title: 'Inspect and grease all critical plant manual expansion joints and pipe spring hangers', status: 'Open', dueDate: '2026-04-30', closureDate: '', remarks: 'Spring travel indicators surveyed; 4 hangers need recalibration.' }
+        { id: '1', title: 'asset', category: 'ECM', assignedTo: 'abcd', dueDate: '29/09/2026', status: 'Open', closureDate: '', remarks: '', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Assigned Action': 'asset', 'Action category': 'ECM', 'Assigned to': 'abcd', 'Target date': '29/09/2026', 'Status detail': 'Open', 'Remarks': '', 'Ack by': 'M.Afzal' } },
+        { id: '2', title: 'efgh', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '2', 'Assigned Action': 'efgh', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } }
       ]
     },
     {
@@ -462,9 +430,9 @@
       employeeName: '',
       employeeRole: '',
       employeeEmail: '',
-      sheetUrl: SHARED_STRATEGIC_SHEET_URL,
-      sheetTab: 'Operations_Actions',
-      gid: '14',
+      sheetUrl: 'https://docs.google.com/spreadsheets/d/19iQ_D6k_hvKYP8-FTuBZ51yTcu3Zo2Q0VhXv67wRVZ0/edit',
+      sheetTab: 'OPERATIONS_SHEET_URL',
+      gid: '0',
       theme: {
         bg: '#F0FDF4',
         border: '#86EFAC',
@@ -475,11 +443,8 @@
         badgeBg: 'bg-green-100 text-green-800 border-green-200'
       },
       actions: [
-        { id: 'OPS-01', title: 'Maintain plant steady-state throughput at 102% nameplate design capacity', status: 'Closed', dueDate: '2026-02-28', closureDate: '2026-02-28', remarks: 'Record production achieved with specific energy consumption reduced.' },
-        { id: 'OPS-02', title: 'Execute controlled catalyst regeneration and reduction sequence in converter', status: 'Closed', dueDate: '2026-03-05', closureDate: '2026-03-04', remarks: 'Bed temperature profile remained stable within design envelope.' },
-        { id: 'OPS-03', title: 'Optimize reformer steam-to-carbon ratio to reduce fuel gas consumption', status: 'Open', dueDate: '2026-04-10', closureDate: '', remarks: 'Advanced Process Control (APC) algorithm fine-tuning in progress.' },
-        { id: 'OPS-04', title: 'Perform chemical cleaning of boiler steam drum and demineralized water circuits', status: 'Closed', dueDate: '2026-01-18', closureDate: '2026-01-17', remarks: 'Silica and iron carryover levels within strict boiler specs.' },
-        { id: 'OPS-05', title: 'Conduct quarterly shift operator emergency response and isolation drills', status: 'Open', dueDate: '2026-05-02', closureDate: '', remarks: 'Three out of four shifts completed; last shift planned for next week.' }
+        { id: '1', title: 'asset', category: 'ECM', assignedTo: 'abcd', dueDate: '29/09/2026', status: 'Open', closureDate: '', remarks: '', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Assigned Action': 'asset', 'Action category': 'ECM', 'Assigned to': 'abcd', 'Target date': '29/09/2026', 'Status detail': 'Open', 'Remarks': '', 'Ack by': 'M.Afzal' } },
+        { id: '2', title: 'efgh', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '2', 'Assigned Action': 'efgh', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } }
       ]
     },
     {
@@ -492,9 +457,9 @@
       employeeName: '',
       employeeRole: '',
       employeeEmail: '',
-      sheetUrl: SHARED_STRATEGIC_SHEET_URL,
-      sheetTab: 'Reliability_Actions',
-      gid: '15',
+      sheetUrl: 'https://docs.google.com/spreadsheets/d/15H3FZaEOczMu5_XcGo7Rs576n4CVakY0iRlvHYdbyvk/edit',
+      sheetTab: 'RELIABILITY_SHEET_URL',
+      gid: '0',
       theme: {
         bg: '#FDF4FF',
         border: '#E879F9',
@@ -505,11 +470,8 @@
         badgeBg: 'bg-fuchsia-100 text-fuchsia-800 border-fuchsia-200'
       },
       actions: [
-        { id: 'REL-01', title: 'Perform Root Cause Analysis (RCA) on auxiliary lube oil trip incident', status: 'Closed', dueDate: '2026-02-08', closureDate: '2026-02-07', remarks: 'RCA findings published and fail-safe solenoid replacement executed.' },
-        { id: 'REL-02', title: 'Execute plant lube oil tribology and spectrographic ferrography analysis on all turbines', status: 'Closed', dueDate: '2026-03-02', closureDate: '2026-03-01', remarks: 'No severe metal wear particles detected; oil life verified for 6 months.' },
-        { id: 'REL-03', title: 'Establish AI-powered predictive anomaly detection models for primary rotating assets', status: 'Open', dueDate: '2026-04-20', closureDate: '', remarks: 'Sensor streaming pipelines ingested into plant machine learning model.' },
-        { id: 'REL-04', title: 'Update Bad Actor equipment list and preventive maintenance task frequencies', status: 'Closed', dueDate: '2026-01-31', closureDate: '2026-01-30', remarks: 'Preventive maintenance tasks rationalized in SAP PM module.' },
-        { id: 'REL-05', title: 'Deploy ultrasound acoustic leak detection on plant compressed air and steam traps', status: 'Open', dueDate: '2026-05-12', closureDate: '', remarks: 'Survey 65% complete; 18 defective steam traps identified for turnaround.' }
+        { id: '1', title: 'asset', category: 'ECM', assignedTo: 'abcd', dueDate: '29/09/2026', status: 'Open', closureDate: '', remarks: '', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Assigned Action': 'asset', 'Action category': 'ECM', 'Assigned to': 'abcd', 'Target date': '29/09/2026', 'Status detail': 'Open', 'Remarks': '', 'Ack by': 'M.Afzal' } },
+        { id: '2', title: 'efgh', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '2', 'Assigned Action': 'efgh', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } }
       ]
     },
     {
@@ -522,8 +484,8 @@
       employeeName: '',
       employeeRole: '',
       employeeEmail: '',
-      sheetUrl: SHARED_STRATEGIC_SHEET_URL,
-      sheetTab: 'SCM',
+      sheetUrl: 'https://docs.google.com/spreadsheets/d/1SXhHYiQy21bF1g0PimScyhhyBGNch37VWTSHTgWPbP0/edit',
+      sheetTab: 'SCM_SHEET_URL',
       gid: '0',
       theme: {
         bg: '#FEFCE8',
@@ -535,11 +497,9 @@
         badgeBg: 'bg-amber-100 text-amber-800 border-amber-200'
       },
       actions: [
-        { id: 'SCM-01', title: 'Secure critical turnaround long-lead spare parts and high-alloy valve stock', status: 'Closed', dueDate: '2026-02-15', closureDate: '2026-02-14', remarks: 'All critical spares received in central warehouse with QA inspection certs.' },
-        { id: 'SCM-02', title: 'Negotiate bulk supply agreements for water treatment chemicals and specialty resins', status: 'Closed', dueDate: '2026-03-01', closureDate: '2026-02-28', remarks: 'Annual framework contracts awarded with 8.4% cost savings.' },
-        { id: 'SCM-03', title: 'Audit warehouse inventory accuracy through barcode cyclic stock counts', status: 'Closed', dueDate: '2026-01-25', closureDate: '2026-01-24', remarks: 'Physical inventory match rate verified at 99.4%.' },
-        { id: 'SCM-04', title: 'Establish secondary domestic supplier qualifications for catalyst pre-filters', status: 'Open', dueDate: '2026-04-18', closureDate: '', remarks: 'Sample testing underway in plant quality lab.' },
-        { id: 'SCM-05', title: 'Digitize vendor performance scoring and automated delivery tracking scorecard', status: 'Open', dueDate: '2026-05-08', closureDate: '', remarks: 'Supplier portal integration module currently in user acceptance testing.' }
+        { id: '1', title: 'test scm', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Assigned Action': 'test scm', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } },
+        { id: '2', title: 'abcd gef', category: 'COO', assignedTo: 'abc', dueDate: '30/09/2026', status: 'Closed', closureDate: '30/09/2026', remarks: 'dsf gfgf', ackBy: '', rawColumns: { 'S_No': '2', 'Assigned Action': 'abcd gef', 'Action category': 'COO', 'Assigned to': 'abc', 'Target date': '30/09/2026', 'Status detail': 'Close', 'Remarks': 'dsf gfgf', 'Ack by': '' } },
+        { id: '3', title: 'efgh', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '3', 'Assigned Action': 'efgh', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } }
       ]
     },
     {
@@ -552,9 +512,9 @@
       employeeName: '',
       employeeRole: '',
       employeeEmail: '',
-      sheetUrl: SHARED_STRATEGIC_SHEET_URL,
-      sheetTab: 'Projects_Actions',
-      gid: '17',
+      sheetUrl: 'https://docs.google.com/spreadsheets/d/1Gr0IBANH6GeKMeozJywlHrQccPBdrMuJ5RRctPsQvRI/edit',
+      sheetTab: 'PROJECTS',
+      gid: '0',
       theme: {
         bg: '#F5F5F4',
         border: '#D6D3D1',
@@ -565,11 +525,8 @@
         badgeBg: 'bg-stone-100 text-stone-800 border-stone-300'
       },
       actions: [
-        { id: 'PRJ-01', title: 'Complete civil piling and equipment foundation for off-gas recovery unit project', status: 'Closed', dueDate: '2026-02-22', closureDate: '2026-02-20', remarks: 'Concrete core testing confirmed 40 MPa strength specifications.' },
-        { id: 'PRJ-02', title: 'Receive and inspect heavy-lift distillation column package at port facility', status: 'Closed', dueDate: '2026-03-10', closureDate: '2026-03-09', remarks: 'Customs cleared and heavy multi-axle trailer transport mobilized to plant.' },
-        { id: 'PRJ-03', title: 'Erect structural steel pipe racks for interconnecting utility bridge expansion', status: 'Open', dueDate: '2026-04-22', closureDate: '', remarks: 'Steel framing 70% erected; torque tightening inspections underway.' },
-        { id: 'PRJ-04', title: 'Commission emergency instrument air compressor skid auxiliary tie-ins', status: 'Closed', dueDate: '2026-01-30', closureDate: '2026-01-29', remarks: 'Skid piped up and preliminary no-load run completed.' },
-        { id: 'PRJ-05', title: 'Finalize detailed engineering package for cooling tower cell 5 expansion', status: 'Open', dueDate: '2026-05-15', closureDate: '', remarks: '3D model review 90% completed with EPC engineering partner.' }
+        { id: '1', title: 'asset', category: 'ECM', assignedTo: 'abcd', dueDate: '29/09/2026', status: 'Open', closureDate: '', remarks: '', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Assigned Action': 'asset', 'Action category': 'ECM', 'Assigned to': 'abcd', 'Target date': '29/09/2026', 'Status detail': 'Open', 'Remarks': '', 'Ack by': 'M.Afzal' } },
+        { id: '2', title: 'efgh', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '2', 'Assigned Action': 'efgh', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } }
       ]
     },
     {
@@ -582,9 +539,9 @@
       employeeName: '',
       employeeRole: '',
       employeeEmail: '',
-      sheetUrl: SHARED_STRATEGIC_SHEET_URL,
-      sheetTab: 'Process_Actions',
-      gid: '18',
+      sheetUrl: 'https://docs.google.com/spreadsheets/d/1w3ZgX9ixr4xLbesrDIhDZcTV7iQ8wL9XQ3VivZ5YKWs/edit',
+      sheetTab: 'PROCESS_SHEET_URL',
+      gid: '0',
       theme: {
         bg: '#F0FDFA',
         border: '#99F6E4',
@@ -595,11 +552,8 @@
         badgeBg: 'bg-teal-100 text-teal-800 border-teal-200'
       },
       actions: [
-        { id: 'PROC-01', title: 'Conduct steady-state Aspen HYSYS simulation modeling for synthesis loop debottlenecking', status: 'Closed', dueDate: '2026-02-16', closureDate: '2026-02-15', remarks: 'Validated 4.5% potential throughput gain with minor pressure adjustments.' },
-        { id: 'PROC-02', title: 'Perform comprehensive HAZOP revalidation study on reformer fuel supply headers', status: 'Closed', dueDate: '2026-03-04', closureDate: '2026-03-03', remarks: 'HAZOP workshop concluded with multidisciplinary signoff.' },
-        { id: 'PROC-03', title: 'Optimize carbon dioxide removal amine solvent circulation rate to cut steam duty', status: 'Open', dueDate: '2026-04-14', closureDate: '', remarks: 'Field trial at 92% solvent rate underway with continuous gas sampling.' },
-        { id: 'PROC-04', title: 'Review and approve Management of Change (MOC) engineering safety packages for Q1', status: 'Closed', dueDate: '2026-01-28', closureDate: '2026-01-27', remarks: '19 MOCs reviewed; 17 approved and 2 returned for technical revision.' },
-        { id: 'PROC-05', title: 'Establish energy benchmark metrics and specific steam consumption tracking daily report', status: 'Open', dueDate: '2026-04-28', closureDate: '', remarks: 'Automated calculation scripts deployed to plant information system.' }
+        { id: '1', title: 'asset', category: 'ECM', assignedTo: 'abcd', dueDate: '29/09/2026', status: 'Open', closureDate: '', remarks: '', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Assigned Action': 'asset', 'Action category': 'ECM', 'Assigned to': 'abcd', 'Target date': '29/09/2026', 'Status detail': 'Open', 'Remarks': '', 'Ack by': 'M.Afzal' } },
+        { id: '2', title: 'efgh', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '2', 'Assigned Action': 'efgh', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } }
       ]
     }
   ];

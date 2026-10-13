@@ -76,6 +76,8 @@
       cooSelfPageSize: 15,
       cooSelfLastSynced: 'Live',
       cooSelfIsSyncing: false,
+      isDeptActionsModalOpen: false,
+      deptActionsModalSearch: '',
       visibility: {
         auth: false,
         old: false,
@@ -138,20 +140,40 @@
           const data = await res.json();
           if (data && data.sheets) {
             this.serverSheets = data.sheets;
+            const CANONICAL_TARGET_IDS = {
+              'asset-integrity': '1al3SsYo9FWHZxc8rYrJE5SV4H3RafPcd1xGSyfcy5Nc',
+              'business-development': '1PYQlmmzy2VFMohIlNxipiFsfgKPsopgd2VdAdXhMiB4',
+              'civil': '1EPIHm33gIOTrAfXvjGO3yRQhu5jPl_BjstTaWtWgs_0',
+              'ei': '1ap9EfOwDUaoere3nKGmfvLNBKoCNp_KB_8KSEc3Y3fA',
+              'finance': '1hpQsdyMteOhlFCSAm9Yb3GQT_veTVArxcy3inSpkGdA',
+              'hcm': '1Macb6nmGzel3tseZPp61lHuL8NagAxZPZFRQnw4yCU0',
+              'ims': '1kyekkmRkxYCWxXYjKp5zCSM_NAnb6uqmCBnLcgDR6iM',
+              'it': '1wJ-MIlSvfguUMTz06eqJ2brAYt47gtqKB_nPGrGMuaM',
+              'ld': '1lWSPmrx5LBX64E4vY-VWafLWwql8K7aBcxicprO3ZE0',
+              'inspection': '1fW4P4HXfD6Yt5uvNnB2B6u4GveOBK8VSEPal-giXCIw',
+              'machinery': '1zRmPlFDlRijQOTboLfhukEjdFHeUR9P5pcRIUeV7rY0',
+              'mechanical': '1gedfNYWwLaLDL85bz2PuDGi1NZP8QiwW42Vklym5i1w',
+              'operations': '19iQ_D6k_hvKYP8-FTuBZ51yTcu3Zo2Q0VhXv67wRVZ0',
+              'reliability': '15H3FZaEOczMu5_XcGo7Rs576n4CVakY0iRlvHYdbyvk',
+              'scm': '1SXhHYiQy21bF1g0PimScyhhyBGNch37VWTSHTgWPbP0',
+              'projects': '1Gr0IBANH6GeKMeozJywlHrQccPBdrMuJ5RRctPsQvRI',
+              'process': '1w3ZgX9ixr4xLbesrDIhDZcTV7iQ8wL9XQ3VivZ5YKWs'
+            };
+
             let updated = false;
             for (const [key, conf] of Object.entries(data.sheets)) {
-              if (conf && conf.sheetUrl && conf.fromSecret) {
-                const currentLocal = this.customSheets[key];
-                // Update if not set locally or pointing to placeholder
-                if (!currentLocal || !currentLocal.sheetUrl || currentLocal.sheetUrl.includes('1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms')) {
-                  this.customSheets[key] = {
-                    ...(this.customSheets[key] || {}),
-                    sheetUrl: conf.sheetUrl,
-                    sheetTab: conf.sheetTab || (key === 'scm' ? 'SCM' : 'Sheet1'),
-                    fromSecret: true
-                  };
-                  updated = true;
+              if (conf && conf.sheetUrl) {
+                const designatedId = CANONICAL_TARGET_IDS[key];
+                if (designatedId && !conf.sheetUrl.includes(designatedId)) {
+                  continue;
                 }
+                this.customSheets[key] = {
+                  ...(this.customSheets[key] || {}),
+                  sheetUrl: conf.sheetUrl,
+                  sheetTab: conf.sheetTab || 'Sheet1',
+                  fromSecret: Boolean(conf.fromSecret)
+                };
+                updated = true;
               }
             }
             if (updated) {
@@ -174,12 +196,32 @@
 
     // Persistent storage for custom actions and custom sheet URLs
     loadStoredData() {
+      const CANONICAL_TARGET_IDS = {
+        'asset-integrity': '1al3SsYo9FWHZxc8rYrJE5SV4H3RafPcd1xGSyfcy5Nc',
+        'business-development': '1PYQlmmzy2VFMohIlNxipiFsfgKPsopgd2VdAdXhMiB4',
+        'civil': '1EPIHm33gIOTrAfXvjGO3yRQhu5jPl_BjstTaWtWgs_0',
+        'ei': '1ap9EfOwDUaoere3nKGmfvLNBKoCNp_KB_8KSEc3Y3fA',
+        'finance': '1hpQsdyMteOhlFCSAm9Yb3GQT_veTVArxcy3inSpkGdA',
+        'hcm': '1Macb6nmGzel3tseZPp61lHuL8NagAxZPZFRQnw4yCU0',
+        'ims': '1kyekkmRkxYCWxXYjKp5zCSM_NAnb6uqmCBnLcgDR6iM',
+        'it': '1wJ-MIlSvfguUMTz06eqJ2brAYt47gtqKB_nPGrGMuaM',
+        'ld': '1lWSPmrx5LBX64E4vY-VWafLWwql8K7aBcxicprO3ZE0',
+        'inspection': '1fW4P4HXfD6Yt5uvNnB2B6u4GveOBK8VSEPal-giXCIw',
+        'machinery': '1zRmPlFDlRijQOTboLfhukEjdFHeUR9P5pcRIUeV7rY0',
+        'mechanical': '1gedfNYWwLaLDL85bz2PuDGi1NZP8QiwW42Vklym5i1w',
+        'operations': '19iQ_D6k_hvKYP8-FTuBZ51yTcu3Zo2Q0VhXv67wRVZ0',
+        'reliability': '15H3FZaEOczMu5_XcGo7Rs576n4CVakY0iRlvHYdbyvk',
+        'scm': '1SXhHYiQy21bF1g0PimScyhhyBGNch37VWTSHTgWPbP0',
+        'projects': '1Gr0IBANH6GeKMeozJywlHrQccPBdrMuJ5RRctPsQvRI',
+        'process': '1w3ZgX9ixr4xLbesrDIhDZcTV7iQ8wL9XQ3VivZ5YKWs'
+      };
+
       try {
         const storedActions = localStorage.getItem(STORAGE_KEYS.EMPLOYEE_ACTIONS);
         this.customActions = storedActions ? JSON.parse(storedActions) : {};
 
-        // Auto-purge any stale sample student records from previous runs
         let purged = false;
+        // Purge old mock actions or actions with obsolete keys
         for (const [key, actions] of Object.entries(this.customActions)) {
           if (Array.isArray(actions)) {
             const hasSampleData = actions.some(a => 
@@ -193,6 +235,18 @@
             }
           }
         }
+
+        // Purge old actions from target tiles
+        for (const [tId, _sheetId] of Object.entries(CANONICAL_TARGET_IDS)) {
+          const acts = this.customActions[tId];
+          if (Array.isArray(acts) && acts.some(a => 
+            /reformer convective bank|containment bund|substation sub-basement|CCTV surveillance|Risk-Based Inspection|Secure critical turnaround|valve stock|catalyst pre-filters/i.test(a.title || '')
+          )) {
+            delete this.customActions[tId];
+            purged = true;
+          }
+        }
+
         if (purged) {
           this.saveStoredActions();
         }
@@ -204,12 +258,26 @@
         const storedSheets = localStorage.getItem(STORAGE_KEYS.EMPLOYEE_SHEETS);
         this.customSheets = storedSheets ? JSON.parse(storedSheets) : {};
         let purgedSheets = false;
+
+        // Auto-purge any stale sheets that don't match the designated sheetId
+        for (const [tId, designatedId] of Object.entries(CANONICAL_TARGET_IDS)) {
+          const sheet = this.customSheets[tId];
+          if (sheet && sheet.sheetUrl && !sheet.sheetUrl.includes(designatedId)) {
+            delete this.customSheets[tId];
+            purgedSheets = true;
+          }
+        }
+
         for (const [key, sheet] of Object.entries(this.customSheets)) {
-          if (sheet && sheet.sheetUrl && sheet.sheetUrl.includes('1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms')) {
+          if (sheet && sheet.sheetUrl && (
+            sheet.sheetUrl.includes('1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms') ||
+            sheet.sheetUrl.includes('1PjzKXj1CK3L9wFVlPnijxWJrPqtlCNo8oPI0KJz9gIA') && CANONICAL_TARGET_IDS[key]
+          )) {
             delete this.customSheets[key];
             purgedSheets = true;
           }
         }
+
         if (purgedSheets) {
           this.saveStoredSheets();
         }
@@ -611,22 +679,53 @@
       let sheetTab = config.sheetTab;
       let gid = config.gid;
 
-      if (customSheet.sheetUrl) {
-        sheetUrl = customSheet.sheetUrl;
-        if (customSheet.sheetTab) sheetTab = customSheet.sheetTab;
-        if (customSheet.gid !== undefined) gid = customSheet.gid;
-      } else if (serverSheet.sheetUrl) {
-        sheetUrl = serverSheet.sheetUrl;
-        if (serverSheet.sheetTab) sheetTab = serverSheet.sheetTab;
-        if (serverSheet.gid !== undefined) gid = serverSheet.gid;
-      }
+      const CANONICAL_SHEET_MAP = {
+        'asset-integrity': { id: '1al3SsYo9FWHZxc8rYrJE5SV4H3RafPcd1xGSyfcy5Nc', tab: 'ASSET_INTEGRITY_SHEET_URL', url: 'https://docs.google.com/spreadsheets/d/1al3SsYo9FWHZxc8rYrJE5SV4H3RafPcd1xGSyfcy5Nc/edit' },
+        'business-development': { id: '1PYQlmmzy2VFMohIlNxipiFsfgKPsopgd2VdAdXhMiB4', tab: 'COMMERCIAL_SHEET_URL', url: 'https://docs.google.com/spreadsheets/d/1PYQlmmzy2VFMohIlNxipiFsfgKPsopgd2VdAdXhMiB4/edit' },
+        'civil': { id: '1EPIHm33gIOTrAfXvjGO3yRQhu5jPl_BjstTaWtWgs_0', tab: 'CIVIL_SHEET_URL', url: 'https://docs.google.com/spreadsheets/d/1EPIHm33gIOTrAfXvjGO3yRQhu5jPl_BjstTaWtWgs_0/edit' },
+        'ei': { id: '1ap9EfOwDUaoere3nKGmfvLNBKoCNp_KB_8KSEc3Y3fA', tab: 'EI_SHEET_URL', url: 'https://docs.google.com/spreadsheets/d/1ap9EfOwDUaoere3nKGmfvLNBKoCNp_KB_8KSEc3Y3fA/edit' },
+        'finance': { id: '1hpQsdyMteOhlFCSAm9Yb3GQT_veTVArxcy3inSpkGdA', tab: 'FINANCE_SHEET_URL', url: 'https://docs.google.com/spreadsheets/d/1hpQsdyMteOhlFCSAm9Yb3GQT_veTVArxcy3inSpkGdA/edit' },
+        'hcm': { id: '1Macb6nmGzel3tseZPp61lHuL8NagAxZPZFRQnw4yCU0', tab: 'HCM_SHEET_URL', url: 'https://docs.google.com/spreadsheets/d/1Macb6nmGzel3tseZPp61lHuL8NagAxZPZFRQnw4yCU0/edit' },
+        'ims': { id: '1kyekkmRkxYCWxXYjKp5zCSM_NAnb6uqmCBnLcgDR6iM', tab: 'IMS_SHEET_URL', url: 'https://docs.google.com/spreadsheets/d/1kyekkmRkxYCWxXYjKp5zCSM_NAnb6uqmCBnLcgDR6iM/edit' },
+        'it': { id: '1wJ-MIlSvfguUMTz06eqJ2brAYt47gtqKB_nPGrGMuaM', tab: 'IT_SHEET_URL', url: 'https://docs.google.com/spreadsheets/d/1wJ-MIlSvfguUMTz06eqJ2brAYt47gtqKB_nPGrGMuaM/edit' },
+        'ld': { id: '1lWSPmrx5LBX64E4vY-VWafLWwql8K7aBcxicprO3ZE0', tab: 'LD_SHEET_URL', url: 'https://docs.google.com/spreadsheets/d/1lWSPmrx5LBX64E4vY-VWafLWwql8K7aBcxicprO3ZE0/edit' },
+        'inspection': { id: '1fW4P4HXfD6Yt5uvNnB2B6u4GveOBK8VSEPal-giXCIw', tab: 'INSPECTION_SHEET_URL', url: 'https://docs.google.com/spreadsheets/d/1fW4P4HXfD6Yt5uvNnB2B6u4GveOBK8VSEPal-giXCIw/edit' },
+        'machinery': { id: '1zRmPlFDlRijQOTboLfhukEjdFHeUR9P5pcRIUeV7rY0', tab: 'MACHINERY_SHEET_URL', url: 'https://docs.google.com/spreadsheets/d/1zRmPlFDlRijQOTboLfhukEjdFHeUR9P5pcRIUeV7rY0/edit' },
+        'mechanical': { id: '1gedfNYWwLaLDL85bz2PuDGi1NZP8QiwW42Vklym5i1w', tab: 'MECHANICAL_SHEET_URL', url: 'https://docs.google.com/spreadsheets/d/1gedfNYWwLaLDL85bz2PuDGi1NZP8QiwW42Vklym5i1w/edit' },
+        'operations': { id: '19iQ_D6k_hvKYP8-FTuBZ51yTcu3Zo2Q0VhXv67wRVZ0', tab: 'OPERATIONS_SHEET_URL', url: 'https://docs.google.com/spreadsheets/d/19iQ_D6k_hvKYP8-FTuBZ51yTcu3Zo2Q0VhXv67wRVZ0/edit' },
+        'reliability': { id: '15H3FZaEOczMu5_XcGo7Rs576n4CVakY0iRlvHYdbyvk', tab: 'RELIABILITY_SHEET_URL', url: 'https://docs.google.com/spreadsheets/d/15H3FZaEOczMu5_XcGo7Rs576n4CVakY0iRlvHYdbyvk/edit' },
+        'scm': { id: '1SXhHYiQy21bF1g0PimScyhhyBGNch37VWTSHTgWPbP0', tab: 'SCM_SHEET_URL', url: 'https://docs.google.com/spreadsheets/d/1SXhHYiQy21bF1g0PimScyhhyBGNch37VWTSHTgWPbP0/edit' },
+        'projects': { id: '1Gr0IBANH6GeKMeozJywlHrQccPBdrMuJ5RRctPsQvRI', tab: 'PROJECTS', url: 'https://docs.google.com/spreadsheets/d/1Gr0IBANH6GeKMeozJywlHrQccPBdrMuJ5RRctPsQvRI/edit' },
+        'process': { id: '1w3ZgX9ixr4xLbesrDIhDZcTV7iQ8wL9XQ3VivZ5YKWs', tab: 'PROCESS_SHEET_URL', url: 'https://docs.google.com/spreadsheets/d/1w3ZgX9ixr4xLbesrDIhDZcTV7iQ8wL9XQ3VivZ5YKWs/edit' }
+      };
 
-      // Default sheetTab for SCM and Admin & Security
-      if (tileId === 'scm') {
-        sheetTab = sheetTab || 'SCM';
-      }
-      if (tileId === 'admin-security' || tileId === 'admin_security') {
-        sheetTab = sheetTab || 'Admin_Security_Actions';
+      if (CANONICAL_SHEET_MAP[tileId]) {
+        const canonical = CANONICAL_SHEET_MAP[tileId];
+        sheetUrl = canonical.url;
+        sheetTab = canonical.tab;
+        gid = '0';
+        if (customSheet.sheetUrl && customSheet.sheetUrl.includes(canonical.id)) {
+          sheetUrl = customSheet.sheetUrl;
+          if (customSheet.sheetTab) sheetTab = customSheet.sheetTab;
+          if (customSheet.gid !== undefined) gid = customSheet.gid;
+        } else if (serverSheet.sheetUrl && serverSheet.sheetUrl.includes(canonical.id)) {
+          sheetUrl = serverSheet.sheetUrl;
+          if (serverSheet.sheetTab) sheetTab = serverSheet.sheetTab;
+          if (serverSheet.gid !== undefined) gid = serverSheet.gid;
+        }
+      } else {
+        if (customSheet.sheetUrl) {
+          sheetUrl = customSheet.sheetUrl;
+          if (customSheet.sheetTab) sheetTab = customSheet.sheetTab;
+          if (customSheet.gid !== undefined) gid = customSheet.gid;
+        } else if (serverSheet.sheetUrl) {
+          sheetUrl = serverSheet.sheetUrl;
+          if (serverSheet.sheetTab) sheetTab = serverSheet.sheetTab;
+          if (serverSheet.gid !== undefined) gid = serverSheet.gid;
+        }
+        if (tileId === 'admin-security' || tileId === 'admin_security') {
+          sheetTab = sheetTab || 'Admin_Security_Actions';
+        }
       }
 
       // Merge actions
@@ -696,6 +795,40 @@
           rate
         }
       };
+    },
+
+    getTileSheetEditUrl(tile) {
+      if (!tile) return 'https://docs.google.com/spreadsheets';
+      const CANONICAL_SHEET_MAP = {
+        'asset-integrity': 'https://docs.google.com/spreadsheets/d/1al3SsYo9FWHZxc8rYrJE5SV4H3RafPcd1xGSyfcy5Nc/edit',
+        'business-development': 'https://docs.google.com/spreadsheets/d/1PYQlmmzy2VFMohIlNxipiFsfgKPsopgd2VdAdXhMiB4/edit',
+        'civil': 'https://docs.google.com/spreadsheets/d/1EPIHm33gIOTrAfXvjGO3yRQhu5jPl_BjstTaWtWgs_0/edit',
+        'ei': 'https://docs.google.com/spreadsheets/d/1ap9EfOwDUaoere3nKGmfvLNBKoCNp_KB_8KSEc3Y3fA/edit',
+        'finance': 'https://docs.google.com/spreadsheets/d/1hpQsdyMteOhlFCSAm9Yb3GQT_veTVArxcy3inSpkGdA/edit',
+        'hcm': 'https://docs.google.com/spreadsheets/d/1Macb6nmGzel3tseZPp61lHuL8NagAxZPZFRQnw4yCU0/edit',
+        'ims': 'https://docs.google.com/spreadsheets/d/1kyekkmRkxYCWxXYjKp5zCSM_NAnb6uqmCBnLcgDR6iM/edit',
+        'it': 'https://docs.google.com/spreadsheets/d/1wJ-MIlSvfguUMTz06eqJ2brAYt47gtqKB_nPGrGMuaM/edit',
+        'ld': 'https://docs.google.com/spreadsheets/d/1lWSPmrx5LBX64E4vY-VWafLWwql8K7aBcxicprO3ZE0/edit',
+        'inspection': 'https://docs.google.com/spreadsheets/d/1fW4P4HXfD6Yt5uvNnB2B6u4GveOBK8VSEPal-giXCIw/edit',
+        'machinery': 'https://docs.google.com/spreadsheets/d/1zRmPlFDlRijQOTboLfhukEjdFHeUR9P5pcRIUeV7rY0/edit',
+        'mechanical': 'https://docs.google.com/spreadsheets/d/1gedfNYWwLaLDL85bz2PuDGi1NZP8QiwW42Vklym5i1w/edit',
+        'operations': 'https://docs.google.com/spreadsheets/d/19iQ_D6k_hvKYP8-FTuBZ51yTcu3Zo2Q0VhXv67wRVZ0/edit',
+        'reliability': 'https://docs.google.com/spreadsheets/d/15H3FZaEOczMu5_XcGo7Rs576n4CVakY0iRlvHYdbyvk/edit',
+        'scm': 'https://docs.google.com/spreadsheets/d/1SXhHYiQy21bF1g0PimScyhhyBGNch37VWTSHTgWPbP0/edit',
+        'projects': 'https://docs.google.com/spreadsheets/d/1Gr0IBANH6GeKMeozJywlHrQccPBdrMuJ5RRctPsQvRI/edit',
+        'process': 'https://docs.google.com/spreadsheets/d/1w3ZgX9ixr4xLbesrDIhDZcTV7iQ8wL9XQ3VivZ5YKWs/edit'
+      };
+      if (tile.id && CANONICAL_SHEET_MAP[tile.id]) {
+        return CANONICAL_SHEET_MAP[tile.id];
+      }
+      const rawUrl = tile.sheetUrl || (this.serverSheets && this.serverSheets[tile.id] && this.serverSheets[tile.id].sheetUrl) || '';
+      if (!rawUrl) return 'https://docs.google.com/spreadsheets';
+      const match = rawUrl.match(/\/spreadsheets\/d\/(?:e\/)?([a-zA-Z0-9-_]+)/);
+      if (match) {
+        const sheetId = match[1];
+        return `https://docs.google.com/spreadsheets/d/${sheetId}/edit`;
+      }
+      return rawUrl;
     },
 
     getAllTiles() {
@@ -2323,16 +2456,27 @@
 
               <!-- Action Bar Buttons: Sync, Export, Reset & Lock -->
               <div class="flex items-center gap-2 flex-wrap">
-                <!-- Open Strategic Dashboard Google Sheet -->
+                <!-- Departmental Action Button -->
+                <button
+                  type="button"
+                  onclick="window.FPCL_STRATEGIC_SUITE.openDepartmentalActionsModal()"
+                  class="px-3.5 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 hover:from-purple-500 hover:via-indigo-500 hover:to-purple-600 text-white transition-all cursor-pointer flex items-center gap-1.5 shadow-md hover:shadow-lg hover:-translate-y-0.5 border border-purple-400/40 select-none whitespace-nowrap"
+                  title="Open list of strategic department dashboards and their Google Sheets"
+                >
+                  <i data-lucide="folder-kanban" class="w-3.5 h-3.5 text-purple-200"></i>
+                  <span>departmental action</span>
+                </button>
+
+                <!-- COO self assigned sheet -->
                 <a
                   href="https://docs.google.com/spreadsheets/d/1s5czmIVCXiOPTRc69QffJ51JFW2-gAErPitstUar2dU/edit?usp=sharing"
                   target="_blank"
                   rel="noopener noreferrer"
                   class="px-3.5 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-600 hover:from-emerald-500 hover:via-emerald-400 hover:to-teal-500 text-white transition-all cursor-pointer flex items-center gap-1.5 shadow-md hover:shadow-lg hover:-translate-y-0.5 border border-emerald-400/40 select-none whitespace-nowrap"
-                  title="Open Strategic Dashboard Google Sheet (Sheet ID: 1s5czmIVCXiOPTRc69QffJ51JFW2-gAErPitstUar2dU)"
+                  title="Open COO self assigned sheet (Sheet ID: 1s5czmIVCXiOPTRc69QffJ51JFW2-gAErPitstUar2dU)"
                 >
                   <i data-lucide="sheet" class="w-3.5 h-3.5 text-white"></i>
-                  <span>Open Strategic Dashboard Google Sheet</span>
+                  <span>COO self assigned sheet</span>
                   <i data-lucide="external-link" class="w-3 h-3 text-white/80"></i>
                 </a>
 
@@ -3000,16 +3144,27 @@
               </div>
 
               <div class="flex items-center gap-2 flex-wrap">
-                <!-- Open Strategic Dashboard Google Sheet -->
+                <!-- Departmental Action Button -->
+                <button
+                  type="button"
+                  onclick="window.FPCL_STRATEGIC_SUITE.openDepartmentalActionsModal()"
+                  class="px-3.5 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 hover:from-purple-500 hover:via-indigo-500 hover:to-purple-600 text-white transition-all cursor-pointer flex items-center gap-1.5 shadow-md hover:shadow-lg hover:-translate-y-0.5 border border-purple-400/40 select-none whitespace-nowrap"
+                  title="Open list of strategic department dashboards and their Google Sheets"
+                >
+                  <i data-lucide="folder-kanban" class="w-3.5 h-3.5 text-purple-200"></i>
+                  <span>departmental action</span>
+                </button>
+
+                <!-- COO self assigned sheet -->
                 <a
                   href="https://docs.google.com/spreadsheets/d/1s5czmIVCXiOPTRc69QffJ51JFW2-gAErPitstUar2dU/edit?usp=sharing"
                   target="_blank"
                   rel="noopener noreferrer"
                   class="px-3.5 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-600 hover:from-emerald-500 hover:via-emerald-400 hover:to-teal-500 text-white transition-all cursor-pointer flex items-center gap-1.5 shadow-md hover:shadow-lg hover:-translate-y-0.5 border border-emerald-400/40 select-none whitespace-nowrap"
-                  title="Open Strategic Dashboard Google Sheet (Sheet ID: 1s5czmIVCXiOPTRc69QffJ51JFW2-gAErPitstUar2dU)"
+                  title="Open COO self assigned sheet (Sheet ID: 1s5czmIVCXiOPTRc69QffJ51JFW2-gAErPitstUar2dU)"
                 >
                   <i data-lucide="sheet" class="w-3.5 h-3.5 text-white"></i>
-                  <span>Open Strategic Dashboard Google Sheet</span>
+                  <span>COO self assigned sheet</span>
                   <i data-lucide="external-link" class="w-3 h-3 text-white/80"></i>
                 </a>
 
@@ -4112,8 +4267,21 @@
               </div>
             </div>
 
-            <!-- Header Actions: Sync, Config & Filter-aware CSV Export -->
+            <!-- Header Actions: Google Sheet Link, Sync, Config & Filter-aware CSV Export -->
             <div class="flex items-center gap-2 flex-wrap">
+              <!-- Live Google Sheet Button: Opens the live Google Sheet in a new tab on click -->
+              <a
+                href="${this.getTileSheetEditUrl(tile)}"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="px-3.5 py-2 text-xs sm:text-sm font-bold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition-all cursor-pointer flex items-center gap-2 shadow-xs border border-emerald-500 hover:shadow-md shrink-0"
+                title="Open live Google Sheet in new tab (${tile.name})"
+              >
+                <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+                <span>Open Google Sheet</span>
+                <i data-lucide="external-link" class="w-3.5 h-3.5 opacity-80"></i>
+              </a>
+
               <!-- Sync Option -->
               <button
                 type="button"
@@ -4351,11 +4519,22 @@
           <!-- SIMPLE TABLE FOR TEXT DATA WITH FILTER & PAGINATION -->
           <div id="strategic-tile-table" class="bg-white border border-slate-200 rounded-2xl shadow-xs overflow-hidden">
             <div class="px-4 py-3 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-              <div class="flex items-center gap-2.5">
+              <div class="flex items-center gap-2.5 flex-wrap">
                 <h3 class="text-sm sm:text-base font-black text-slate-900">Action Items</h3>
                 <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200">
                   Showing ${pagedActions.length} of ${filteredTotal}
                 </span>
+                <a
+                  href="${this.getTileSheetEditUrl(tile)}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-300 hover:bg-emerald-100 transition-colors shadow-2xs"
+                  title="Open live Google Sheet in new tab"
+                >
+                  <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-600"></i>
+                  <span>Open Google Sheet</span>
+                  <i data-lucide="external-link" class="w-3 h-3 text-emerald-500"></i>
+                </a>
               </div>
 
               <div class="flex items-center gap-2 text-xs sm:text-sm">
@@ -5643,6 +5822,223 @@
       `;
     },
 
+    getDepartmentalActionsModalHtml() {
+      const isOpen = Boolean(this.state.isDeptActionsModalOpen);
+      const q = (this.state.deptActionsModalSearch || '').toLowerCase().trim();
+      const employeeTiles = this.getAllTiles().filter(t => !t.isBossDashboard);
+      const filtered = employeeTiles.filter(tile => {
+        if (!q) return true;
+        return tile.name.toLowerCase().includes(q) ||
+               tile.code.toLowerCase().includes(q) ||
+               (tile.category && tile.category.toLowerCase().includes(q));
+      });
+
+      return `
+        <!-- STRATEGIC DEPARTMENTAL ACTIONS MODAL -->
+        <div id="strategic-dept-actions-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs ${isOpen ? 'flex' : 'hidden'} items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200" onclick="if(event.target === this) window.FPCL_STRATEGIC_SUITE.closeDepartmentalActionsModal()">
+          <div class="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl max-w-2xl w-full p-4 sm:p-6 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden" onclick="event.stopPropagation()">
+            <!-- Header -->
+            <div class="flex items-center justify-between pb-3 border-b border-slate-200 shrink-0">
+              <div class="flex items-center gap-2.5">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+                  <i data-lucide="folder-kanban" class="w-5 h-5"></i>
+                </div>
+                <div>
+                  <h3 class="text-base sm:text-lg font-black text-slate-900 tracking-tight leading-tight">
+                    Departmental Action Sheets
+                  </h3>
+                  <p class="text-xs text-slate-500 font-medium">
+                    Click any strategic department dashboard below to open its dedicated Google Sheet in a new tab.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onclick="window.FPCL_STRATEGIC_SUITE.closeDepartmentalActionsModal()"
+                class="text-slate-400 hover:text-slate-600 p-1.5 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer"
+                title="Close modal"
+              >
+                <i data-lucide="x" class="w-5 h-5"></i>
+              </button>
+            </div>
+
+            <!-- Search / Filter input -->
+            <div class="pt-3 pb-2 shrink-0">
+              <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                  <i data-lucide="search" class="w-4 h-4"></i>
+                </div>
+                <input
+                  id="dept-actions-modal-search"
+                  type="text"
+                  value="${this.escapeHtml(this.state.deptActionsModalSearch || '')}"
+                  placeholder="Filter department name or code..."
+                  class="w-full pl-9 pr-3 py-2 bg-slate-50 hover:bg-white focus:bg-white text-slate-900 border border-slate-200 focus:border-purple-500 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-purple-200 transition-all shadow-2xs"
+                  oninput="window.FPCL_STRATEGIC_SUITE.filterDepartmentalActionsModal(this.value)"
+                />
+              </div>
+            </div>
+
+            <!-- List of Dashboards Body -->
+            <div id="strategic-dept-actions-modal-list" class="overflow-y-auto pr-1 py-1 space-y-2 flex-1">
+              ${filtered.length === 0 ? `
+                <div class="py-8 text-center text-slate-400">
+                  <i data-lucide="search-x" class="w-8 h-8 mx-auto mb-2 opacity-50"></i>
+                  <p class="text-xs font-semibold text-slate-600">No departments match "${this.escapeHtml(q)}"</p>
+                </div>
+              ` : filtered.map(tile => {
+                const sheetUrl = this.getTileSheetEditUrl(tile);
+                return `
+                  <a
+                    href="${sheetUrl}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="group flex items-center justify-between p-2.5 sm:p-3 rounded-xl border border-slate-200 hover:border-purple-400 bg-slate-50/70 hover:bg-purple-50/60 transition-all cursor-pointer shadow-2xs hover:shadow-sm"
+                    title="Open Google Sheet for ${this.escapeHtml(tile.name)} (${tile.code})"
+                  >
+                    <div class="flex items-center gap-3 min-w-0">
+                      <div
+                        class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border"
+                        style="background-color: ${tile.theme ? tile.theme.bg : '#F8FAFC'}; border-color: ${tile.theme ? tile.theme.border : '#E2E8F0'}; color: ${tile.theme ? tile.theme.primary : '#475569'};"
+                      >
+                        <i data-lucide="${tile.icon || 'file-text'}" class="w-4 h-4"></i>
+                      </div>
+                      <div class="min-w-0">
+                        <div class="flex items-center gap-2 flex-wrap">
+                          <span class="px-1.5 py-0.2 rounded text-[10px] font-mono font-bold uppercase tracking-wider bg-purple-100 text-purple-800 border border-purple-200">
+                            ${tile.code}
+                          </span>
+                          <h4 class="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-purple-700 transition-colors truncate">
+                            ${this.escapeHtml(tile.name)}
+                          </h4>
+                        </div>
+                        <p class="text-[11px] text-slate-500 truncate mt-0.5">
+                          ${this.escapeHtml(tile.category || 'Strategic Department')}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div class="flex items-center gap-2 shrink-0 ml-2">
+                      <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-600 group-hover:from-emerald-500 group-hover:to-teal-500 shadow-2xs transition-all">
+                        <i data-lucide="sheet" class="w-3.5 h-3.5"></i>
+                        <span class="hidden sm:inline">Open Google Sheet</span>
+                        <span class="sm:hidden">Open</span>
+                        <i data-lucide="external-link" class="w-3 h-3 opacity-90"></i>
+                      </span>
+                    </div>
+                  </a>
+                `;
+              }).join('')}
+            </div>
+
+            <!-- Footer -->
+            <div class="pt-3 mt-2 border-t border-slate-200 flex items-center justify-between shrink-0 text-xs text-slate-500">
+              <span id="strategic-dept-actions-count">${filtered.length} of ${employeeTiles.length} strategic department sheets</span>
+              <button
+                type="button"
+                onclick="window.FPCL_STRATEGIC_SUITE.closeDepartmentalActionsModal()"
+                class="px-4 py-1.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    },
+
+    openDepartmentalActionsModal() {
+      this.state.isDeptActionsModalOpen = true;
+      this.state.deptActionsModalSearch = '';
+      this.render();
+      setTimeout(() => {
+        const input = document.getElementById('dept-actions-modal-search');
+        if (input) input.focus();
+      }, 50);
+    },
+
+    closeDepartmentalActionsModal() {
+      this.state.isDeptActionsModalOpen = false;
+      this.state.deptActionsModalSearch = '';
+      this.render();
+    },
+
+    filterDepartmentalActionsModal(query) {
+      this.state.deptActionsModalSearch = query || '';
+      const listContainer = document.getElementById('strategic-dept-actions-modal-list');
+      const countEl = document.getElementById('strategic-dept-actions-count');
+      if (!listContainer) {
+        this.render();
+        return;
+      }
+      const q = (query || '').toLowerCase().trim();
+      const employeeTiles = this.getAllTiles().filter(t => !t.isBossDashboard);
+      const filtered = employeeTiles.filter(tile => {
+        if (!q) return true;
+        return tile.name.toLowerCase().includes(q) ||
+               tile.code.toLowerCase().includes(q) ||
+               (tile.category && tile.category.toLowerCase().includes(q));
+      });
+
+      if (countEl) {
+        countEl.textContent = `${filtered.length} of ${employeeTiles.length} strategic department sheets`;
+      }
+
+      if (filtered.length === 0) {
+        listContainer.innerHTML = `
+          <div class="py-8 text-center text-slate-400">
+            <i data-lucide="search-x" class="w-8 h-8 mx-auto mb-2 opacity-50"></i>
+            <p class="text-xs font-semibold text-slate-600">No departments match "${this.escapeHtml(q)}"</p>
+          </div>
+        `;
+      } else {
+        listContainer.innerHTML = filtered.map(tile => {
+          const sheetUrl = this.getTileSheetEditUrl(tile);
+          return `
+            <a
+              href="${sheetUrl}"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="group flex items-center justify-between p-2.5 sm:p-3 rounded-xl border border-slate-200 hover:border-purple-400 bg-slate-50/70 hover:bg-purple-50/60 transition-all cursor-pointer shadow-2xs hover:shadow-sm"
+              title="Open Google Sheet for ${this.escapeHtml(tile.name)} (${tile.code})"
+            >
+              <div class="flex items-center gap-3 min-w-0">
+                <div
+                  class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border"
+                  style="background-color: ${tile.theme ? tile.theme.bg : '#F8FAFC'}; border-color: ${tile.theme ? tile.theme.border : '#E2E8F0'}; color: ${tile.theme ? tile.theme.primary : '#475569'};"
+                >
+                  <i data-lucide="${tile.icon || 'file-text'}" class="w-4 h-4"></i>
+                </div>
+                <div class="min-w-0">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span class="px-1.5 py-0.2 rounded text-[10px] font-mono font-bold uppercase tracking-wider bg-purple-100 text-purple-800 border border-purple-200">
+                      ${tile.code}
+                    </span>
+                    <h4 class="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-purple-700 transition-colors truncate">
+                      ${this.escapeHtml(tile.name)}
+                    </h4>
+                  </div>
+                  <p class="text-[11px] text-slate-500 truncate mt-0.5">
+                    ${this.escapeHtml(tile.category || 'Strategic Department')}
+                  </p>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-2 shrink-0 ml-2">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-600 group-hover:from-emerald-500 group-hover:to-teal-500 shadow-2xs transition-all">
+                  <i data-lucide="sheet" class="w-3.5 h-3.5"></i>
+                  <span class="hidden sm:inline">Open Google Sheet</span>
+                  <span class="sm:hidden">Open</span>
+                  <i data-lucide="external-link" class="w-3 h-3 opacity-90"></i>
+                </span>
+              </div>
+            </a>
+          `;
+        }).join('');
+      }
+      if (window.lucide) window.lucide.createIcons();
+    },
+
     // RENDER: MAIN TILES GRID OR FULL PAGE DASHBOARD
     render() {
       const container = document.getElementById('strategic-specialized-container');
@@ -5682,6 +6078,8 @@
               ${this.getAuthModalHtml()}
               <!-- SHEET CONFIG MODAL -->
               ${this.getSheetConfigModalHtml()}
+              <!-- DEPARTMENTAL ACTIONS MODAL -->
+              ${this.getDepartmentalActionsModalHtml()}
             </div>
           `;
 
@@ -5726,19 +6124,6 @@
             <p class="text-xs text-slate-300 font-medium max-w-lg">
               Individual department Google Sheet trackers with central COO Executive Dashboard rollup.
             </p>
-            <div class="pt-1">
-              <a
-                href="https://docs.google.com/spreadsheets/d/1PjzKXj1CK3L9wFVlPnijxWJrPqtlCNo8oPI0KJz9gIA/edit?usp=sharing"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-600 hover:from-emerald-500 hover:via-emerald-400 hover:to-teal-500 shadow-md shadow-emerald-950/40 border border-emerald-400/50 hover:border-emerald-300 transition-all transform active:scale-95 cursor-pointer whitespace-nowrap group select-none"
-                title="Open Departmental Actions Google Sheet in a new tab"
-              >
-                <i data-lucide="sheet" class="w-3.5 h-3.5 text-emerald-100 group-hover:scale-110 transition-transform"></i>
-                <span>Departmental Actions Sheet</span>
-                <i data-lucide="external-link" class="w-3 h-3 text-emerald-100/90"></i>
-              </a>
-            </div>
           </div>
         </div>
 
@@ -5769,19 +6154,6 @@
             </div>
 
             <div class="flex items-center justify-center sm:justify-end gap-2 text-xs text-slate-500 flex-wrap">
-              <!-- Departmental Actions Google Sheet Link Button -->
-              <a
-                href="https://docs.google.com/spreadsheets/d/1PjzKXj1CK3L9wFVlPnijxWJrPqtlCNo8oPI0KJz9gIA/edit?usp=sharing"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="px-3.5 py-1.5 text-xs font-bold rounded-xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-600 hover:from-emerald-500 hover:via-emerald-400 hover:to-teal-500 text-white shadow-2xs border border-emerald-400/40 transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap hover:shadow-sm"
-                title="Open Departmental Actions Google Sheet in a new tab"
-              >
-                <i data-lucide="sheet" class="w-3.5 h-3.5 text-emerald-100"></i>
-                <span>Departmental Actions Sheet</span>
-                <i data-lucide="external-link" class="w-3 h-3 text-emerald-100/80"></i>
-              </a>
-
               <button
                 type="button"
                 onclick="window.FPCL_STRATEGIC_SUITE.syncAllEmployeeSheets()"
@@ -5930,6 +6302,8 @@
         ${this.getAuthModalHtml()}
         <!-- SHEET CONFIG MODAL -->
         ${this.getSheetConfigModalHtml()}
+        <!-- DEPARTMENTAL ACTIONS MODAL -->
+        ${this.getDepartmentalActionsModalHtml()}
       `;
 
       container.innerHTML = html;
