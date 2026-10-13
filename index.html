@@ -8074,10 +8074,10 @@
             `}
           `;
 
-          // On Overview dashboard: show all dashboard buttons (excluding HSEQ).
+          // On Overview dashboard: show all dashboard buttons (excluding HSEQ and SR).
           // When a single dashboard is opened: show only that dashboard button; remaining dashboard names at top are not seen.
           let itemsToRender = isOverviewSelected
-            ? DASHBOARD_REGISTRY.filter(item => item.id !== 'hseq')
+            ? DASHBOARD_REGISTRY.filter(item => item.id !== 'hseq' && item.id !== 'sr')
             : DASHBOARD_REGISTRY.filter(item => item.id === activeId && item.id !== 'hseq');
 
           // Relocate MSA button next to PSI button only on the Overview page where dashboard buttons are located
