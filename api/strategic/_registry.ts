@@ -90,11 +90,11 @@ export const STRATEGIC_TILE_REGISTRY: Record<string, StrategicTileConfig> = {
   },
   'hseq': {
     sheetId: '1jXMXuX2b6HAF_U4e6tiGOzWw2adMpCyUPI5kbODxoPI',
-    envKeys: ['HSEQ_SHEET_URL', 'HSEQ_KPI'],
+    envKeys: ['STRATEGIC_HSEQ_SHEET_URL', 'HSEQ_SHEET_URL', 'HSEQ_ACTIONS_SHEET_URL'],
     code: 'HSEQ',
     defaultTab: 'HSEQ_Actions',
     name: 'HSEQ',
-    fallbackUrl: 'https://docs.google.com/spreadsheets/d/1jXMXuX2b6HAF_U4e6tiGOzWw2adMpCyUPI5kbODxoPI/gviz/tq?tqx=out:csv&sheet=HSEQ_SHEET_URL'
+    fallbackUrl: 'https://docs.google.com/spreadsheets/d/1jXMXuX2b6HAF_U4e6tiGOzWw2adMpCyUPI5kbODxoPI/edit'
   },
   'hcm': {
     sheetId: '1Macb6nmGzel3tseZPp61lHuL8NagAxZPZFRQnw4yCU0',

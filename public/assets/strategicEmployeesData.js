@@ -211,9 +211,9 @@
       employeeName: '',
       employeeRole: '',
       employeeEmail: '',
-      sheetUrl: SHARED_STRATEGIC_SHEET_URL,
+      sheetUrl: 'https://docs.google.com/spreadsheets/d/1jXMXuX2b6HAF_U4e6tiGOzWw2adMpCyUPI5kbODxoPI/edit',
       sheetTab: 'HSEQ_Actions',
-      gid: '6',
+      gid: '0',
       theme: {
         bg: '#FEF2F2',
         border: '#FECACA',
@@ -224,11 +224,9 @@
         badgeBg: 'bg-rose-100 text-rose-800 border-rose-200'
       },
       actions: [
-        { id: 'HSEQ-01', title: 'Conduct comprehensive PSM Tier 1 & Tier 2 process safety compliance audit', status: 'Closed', dueDate: '2026-02-05', closureDate: '2026-02-04', remarks: 'Audit concluded with zero critical non-conformances.' },
-        { id: 'HSEQ-02', title: 'Close out all external ISO 14001 and ISO 45001 surveillance audit observations', status: 'Closed', dueDate: '2026-03-10', closureDate: '2026-03-09', remarks: 'Corrective action reports accepted and verified by registrar.' },
-        { id: 'HSEQ-03', title: 'Implement plant-wide behavior-based safety (BBS) observation digital reporting app', status: 'Open', dueDate: '2026-04-15', closureDate: '', remarks: 'Pilot testing in Ammonia unit; rollout to full plant underway.' },
-        { id: 'HSEQ-04', title: 'Conduct full-scale hazardous chemical leak mutual-aid drill with city fire brigade', status: 'Closed', dueDate: '2026-01-28', closureDate: '2026-01-27', remarks: 'Emergency response time achieved within 4.2 minutes.' },
-        { id: 'HSEQ-05', title: 'Update continuous stack emission monitoring system (CEMS) calibration certs', status: 'Open', dueDate: '2026-04-30', closureDate: '', remarks: 'EPA inspector site audit scheduled for end of month.' }
+        { id: '1', title: 'abdc', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Assigned Action': 'abdc', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } },
+        { id: '2', title: 'hseq', category: 'Director M&O', assignedTo: 'hseq', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'abc', ackBy: '', rawColumns: { 'S_No': '2', 'Assigned Action': 'hseq', 'Action category': 'Director M&O', 'Assigned to': 'hseq', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'abc', 'Ack by': '' } },
+        { id: '3', title: 'test', category: 'ACM', assignedTo: 'sdf', dueDate: '30/09/2026', status: 'Closed', closureDate: '30/09/2026', remarks: 'sdf', ackBy: '', rawColumns: { 'S_No': '3', 'Assigned Action': 'test', 'Action category': 'ACM', 'Assigned to': 'sdf', 'Target date': '30/09/2026', 'Status detail': 'Close', 'Remarks': 'sdf', 'Ack by': '' } }
       ]
     },
     {
