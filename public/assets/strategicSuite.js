@@ -4269,8 +4269,21 @@
               </div>
             </div>
 
-            <!-- Header Actions: Google Sheet Link, Sync, Config & Filter-aware CSV Export -->
+            <!-- Header Actions: Departmental Actions (Operations Dashboard), Google Sheet Link, Sync, Config & Filter-aware CSV Export -->
             <div class="flex items-center gap-2 flex-wrap">
+              ${(tile.id === 'operations' || tile.code === 'OPS' || (tile.name && tile.name.toLowerCase() === 'operations')) ? `
+                <!-- Departmental Actions Button (Operations Dashboard Banner) -->
+                <button
+                  type="button"
+                  onclick="window.FPCL_STRATEGIC_SUITE.openDepartmentalActionsModal()"
+                  class="px-3.5 py-2 text-xs sm:text-sm font-bold rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 hover:from-purple-500 hover:via-indigo-500 hover:to-purple-600 text-white transition-all cursor-pointer flex items-center gap-1.5 shadow-md hover:shadow-lg hover:-translate-y-0.5 border border-purple-400/40 select-none whitespace-nowrap shrink-0"
+                  title="Open list of strategic department dashboards and their Google Sheets"
+                >
+                  <i data-lucide="folder-kanban" class="w-3.5 h-3.5 text-purple-200"></i>
+                  <span>departmental Actions</span>
+                </button>
+              ` : ''}
+
               <!-- Live Google Sheet Button: Opens the live Google Sheet in a new tab on click -->
               <a
                 href="${this.getTileSheetEditUrl(tile)}"
