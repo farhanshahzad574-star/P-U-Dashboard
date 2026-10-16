@@ -15,6 +15,49 @@ app.get('/api/health', (_req: Request, res: Response) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Authentication endpoint for Next.js / Express parity
+app.post('/api/auth', (req: Request, res: Response): void => {
+  const { password } = req.body || {};
+  const expectedPassword = process.env.APP_PASSWORD || 'Abcd@1234';
+
+  if (!expectedPassword) {
+    res.status(500).json({ success: false, error: 'Server authentication misconfigured' });
+    return;
+  }
+
+  if (password !== expectedPassword) {
+    res.status(401).json({ success: false, error: 'Incorrect password' });
+    return;
+  }
+
+  const isProduction = process.env.NODE_ENV === 'production';
+  const cookieFlags = [
+    `auth_token=${encodeURIComponent(expectedPassword)}`,
+    'Path=/',
+    'HttpOnly',
+    'SameSite=Strict',
+    `Max-Age=${60 * 60 * 24 * 7}`,
+    isProduction ? 'Secure' : ''
+  ].filter(Boolean).join('; ');
+
+  res.setHeader('Set-Cookie', cookieFlags);
+  res.json({ success: true });
+});
+
+app.get('/api/auth/status', (req: Request, res: Response): void => {
+  const cookieHeader = req.headers.cookie || '';
+  const match = cookieHeader.match(/auth_token=([^;]+)/);
+  const token = match ? decodeURIComponent(match[1]) : null;
+  const expectedPassword = process.env.APP_PASSWORD || 'Abcd@1234';
+  const authenticated = Boolean(token && token === expectedPassword);
+  res.json({ authenticated });
+});
+
+app.post('/api/auth/logout', (_req: Request, res: Response): void => {
+  res.setHeader('Set-Cookie', 'auth_token=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0');
+  res.json({ success: true });
+});
+
 // Lazy initialization of Gemini client
 let aiClient: GoogleGenAI | null = null;
 function getAIClient(): GoogleGenAI | null {
