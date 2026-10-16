@@ -34,6 +34,10 @@ export default function handler(req: any, res: any) {
   sheets['admin_security'] = sheets['admin-security'];
   sheets['asset_integrity'] = sheets['asset-integrity'];
   sheets['business_dev'] = sheets['business-development'];
+  sheets['inspection_workshop'] = sheets['inspection'];
+  sheets['inspection-workshop-services'] = sheets['inspection'];
+  sheets['inspection_workshop_services'] = sheets['inspection'];
+  sheets['inspection & workshop services'] = sheets['inspection'];
 
   res.status(200).json({
     success: true,

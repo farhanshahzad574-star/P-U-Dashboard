@@ -122,7 +122,7 @@
           if (data && data.liveActions) {
             let updated = false;
             for (const [tileId, actions] of Object.entries(data.liveActions)) {
-              if (Array.isArray(actions) && actions.length > 0) {
+              if (Array.isArray(actions) && (actions.length > 0 || (data.data?.[tileId] && (data.data[tileId].rawCsv !== undefined || data.data[tileId].total !== undefined)))) {
                 this.customActions[tileId] = actions;
                 this.state.tileLastSynced[tileId] = data.data?.[tileId]?.lastSynced || 'Just now';
                 updated = true;
@@ -157,6 +157,8 @@
               'it': '1wJ-MIlSvfguUMTz06eqJ2brAYt47gtqKB_nPGrGMuaM',
               'ld': '1lWSPmrx5LBX64E4vY-VWafLWwql8K7aBcxicprO3ZE0',
               'inspection': '1fW4P4HXfD6Yt5uvNnB2B6u4GveOBK8VSEPal-giXCIw',
+              'inspection-workshop-services': '1fW4P4HXfD6Yt5uvNnB2B6u4GveOBK8VSEPal-giXCIw',
+              'inspection_workshop': '1fW4P4HXfD6Yt5uvNnB2B6u4GveOBK8VSEPal-giXCIw',
               'machinery': '1zRmPlFDlRijQOTboLfhukEjdFHeUR9P5pcRIUeV7rY0',
               'mechanical': '1gedfNYWwLaLDL85bz2PuDGi1NZP8QiwW42Vklym5i1w',
               'operations': '19iQ_D6k_hvKYP8-FTuBZ51yTcu3Zo2Q0VhXv67wRVZ0',
@@ -213,6 +215,8 @@
         'it': '1wJ-MIlSvfguUMTz06eqJ2brAYt47gtqKB_nPGrGMuaM',
         'ld': '1lWSPmrx5LBX64E4vY-VWafLWwql8K7aBcxicprO3ZE0',
         'inspection': '1fW4P4HXfD6Yt5uvNnB2B6u4GveOBK8VSEPal-giXCIw',
+        'inspection-workshop-services': '1fW4P4HXfD6Yt5uvNnB2B6u4GveOBK8VSEPal-giXCIw',
+        'inspection_workshop': '1fW4P4HXfD6Yt5uvNnB2B6u4GveOBK8VSEPal-giXCIw',
         'machinery': '1zRmPlFDlRijQOTboLfhukEjdFHeUR9P5pcRIUeV7rY0',
         'mechanical': '1gedfNYWwLaLDL85bz2PuDGi1NZP8QiwW42Vklym5i1w',
         'operations': '19iQ_D6k_hvKYP8-FTuBZ51yTcu3Zo2Q0VhXv67wRVZ0',
@@ -240,6 +244,21 @@
               purged = true;
             }
           }
+        }
+
+        // Purge any stale mock actions stored under inspection that were copied from asset integrity
+        if (Array.isArray(this.customActions['inspection'])) {
+          const hasStale = this.customActions['inspection'].some(a =>
+            /asset|efgh/i.test(a.title || '') || /abcd/i.test(a.assignedTo || '')
+          );
+          if (hasStale) {
+            delete this.customActions['inspection'];
+            purged = true;
+          }
+        }
+        if (this.customActions['inspection-workshop-services']) {
+          delete this.customActions['inspection-workshop-services'];
+          purged = true;
         }
 
         // Ensure Background and Date/Reference are populated on all customActions
@@ -791,6 +810,8 @@
         'it': { id: '1wJ-MIlSvfguUMTz06eqJ2brAYt47gtqKB_nPGrGMuaM', tab: 'IT_SHEET_URL', url: 'https://docs.google.com/spreadsheets/d/1wJ-MIlSvfguUMTz06eqJ2brAYt47gtqKB_nPGrGMuaM/edit' },
         'ld': { id: '1lWSPmrx5LBX64E4vY-VWafLWwql8K7aBcxicprO3ZE0', tab: 'LD_SHEET_URL', url: 'https://docs.google.com/spreadsheets/d/1lWSPmrx5LBX64E4vY-VWafLWwql8K7aBcxicprO3ZE0/edit' },
         'inspection': { id: '1fW4P4HXfD6Yt5uvNnB2B6u4GveOBK8VSEPal-giXCIw', tab: 'INSPECTION_SHEET_URL', url: 'https://docs.google.com/spreadsheets/d/1fW4P4HXfD6Yt5uvNnB2B6u4GveOBK8VSEPal-giXCIw/edit' },
+        'inspection-workshop-services': { id: '1fW4P4HXfD6Yt5uvNnB2B6u4GveOBK8VSEPal-giXCIw', tab: 'INSPECTION_SHEET_URL', url: 'https://docs.google.com/spreadsheets/d/1fW4P4HXfD6Yt5uvNnB2B6u4GveOBK8VSEPal-giXCIw/edit' },
+        'inspection_workshop': { id: '1fW4P4HXfD6Yt5uvNnB2B6u4GveOBK8VSEPal-giXCIw', tab: 'INSPECTION_SHEET_URL', url: 'https://docs.google.com/spreadsheets/d/1fW4P4HXfD6Yt5uvNnB2B6u4GveOBK8VSEPal-giXCIw/edit' },
         'machinery': { id: '1zRmPlFDlRijQOTboLfhukEjdFHeUR9P5pcRIUeV7rY0', tab: 'MACHINERY_SHEET_URL', url: 'https://docs.google.com/spreadsheets/d/1zRmPlFDlRijQOTboLfhukEjdFHeUR9P5pcRIUeV7rY0/edit' },
         'mechanical': { id: '1gedfNYWwLaLDL85bz2PuDGi1NZP8QiwW42Vklym5i1w', tab: 'MECHANICAL_SHEET_URL', url: 'https://docs.google.com/spreadsheets/d/1gedfNYWwLaLDL85bz2PuDGi1NZP8QiwW42Vklym5i1w/edit' },
         'operations': { id: '19iQ_D6k_hvKYP8-FTuBZ51yTcu3Zo2Q0VhXv67wRVZ0', tab: 'OPERATIONS_SHEET_URL', url: 'https://docs.google.com/spreadsheets/d/19iQ_D6k_hvKYP8-FTuBZ51yTcu3Zo2Q0VhXv67wRVZ0/edit' },
@@ -934,6 +955,8 @@
         'it': 'https://docs.google.com/spreadsheets/d/1wJ-MIlSvfguUMTz06eqJ2brAYt47gtqKB_nPGrGMuaM/edit',
         'ld': 'https://docs.google.com/spreadsheets/d/1lWSPmrx5LBX64E4vY-VWafLWwql8K7aBcxicprO3ZE0/edit',
         'inspection': 'https://docs.google.com/spreadsheets/d/1fW4P4HXfD6Yt5uvNnB2B6u4GveOBK8VSEPal-giXCIw/edit',
+        'inspection-workshop-services': 'https://docs.google.com/spreadsheets/d/1fW4P4HXfD6Yt5uvNnB2B6u4GveOBK8VSEPal-giXCIw/edit',
+        'inspection_workshop': 'https://docs.google.com/spreadsheets/d/1fW4P4HXfD6Yt5uvNnB2B6u4GveOBK8VSEPal-giXCIw/edit',
         'machinery': 'https://docs.google.com/spreadsheets/d/1zRmPlFDlRijQOTboLfhukEjdFHeUR9P5pcRIUeV7rY0/edit',
         'mechanical': 'https://docs.google.com/spreadsheets/d/1gedfNYWwLaLDL85bz2PuDGi1NZP8QiwW42Vklym5i1w/edit',
         'operations': 'https://docs.google.com/spreadsheets/d/19iQ_D6k_hvKYP8-FTuBZ51yTcu3Zo2Q0VhXv67wRVZ0/edit',
@@ -2307,7 +2330,7 @@
         const res = await fetch(`/api/strategic/live-data?tileId=${encodeURIComponent(tileId)}&refresh=true&_t=${nonce}`, { cache: 'no-store' });
         if (res.ok) {
           const data = await res.json();
-          if (data && data.liveActions && Array.isArray(data.liveActions[tileId]) && data.liveActions[tileId].length > 0) {
+          if (data && data.liveActions && Array.isArray(data.liveActions[tileId])) {
             const actions = data.liveActions[tileId];
             this.customActions[tileId] = actions;
             this.saveStoredActions();
@@ -2334,7 +2357,7 @@
 
           if (csvText && csvText.length > 30) {
             const parsedActions = this.parseCsvToActions(csvText, tile.code);
-            if (parsedActions && parsedActions.length > 0) {
+            if (parsedActions) {
               this.customActions[tileId] = parsedActions;
               this.saveStoredActions();
               this.state.syncStatus[tileId] = 'success';
@@ -2373,7 +2396,7 @@
           const data = await res.json();
           if (data && data.liveActions) {
             for (const [tileId, actions] of Object.entries(data.liveActions)) {
-              if (Array.isArray(actions) && actions.length > 0) {
+              if (Array.isArray(actions) && (actions.length > 0 || (data.data?.[tileId] && (data.data[tileId].rawCsv !== undefined || data.data[tileId].total !== undefined)))) {
                 this.customActions[tileId] = actions;
                 this.state.tileLastSynced[tileId] = data.data?.[tileId]?.lastSynced || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 successCount++;

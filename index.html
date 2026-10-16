@@ -8074,13 +8074,13 @@
             `}
           `;
 
-          // On Overview dashboard: show all dashboard buttons (excluding HSEQ and SR).
+          // On Overview dashboard: show all dashboard buttons (excluding HSEQ).
           // When a single dashboard is opened: show only that dashboard button; remaining dashboard names at top are not seen.
           let itemsToRender = isOverviewSelected
-            ? DASHBOARD_REGISTRY.filter(item => item.id !== 'hseq' && item.id !== 'sr')
+            ? DASHBOARD_REGISTRY.filter(item => item.id !== 'hseq')
             : DASHBOARD_REGISTRY.filter(item => item.id === activeId && item.id !== 'hseq');
 
-          // Relocate MSA button next to PSI button only on the Overview page where dashboard buttons are located
+          // Relocate buttons on Overview page: MSA next to PSI, Safety Talks next to MSA, and SR next to Safety Talks
           if (isOverviewSelected) {
             const msaIndex = itemsToRender.findIndex(item => item.id === 'msa');
             if (msaIndex !== -1) {
@@ -8100,6 +8100,16 @@
                 itemsToRender.splice(targetMsaIndex + 1, 0, stItem);
               } else {
                 itemsToRender.push(stItem);
+              }
+            }
+            const srIndex = itemsToRender.findIndex(item => item.id === 'sr');
+            if (srIndex !== -1) {
+              const [srItem] = itemsToRender.splice(srIndex, 1);
+              const targetStIndex = itemsToRender.findIndex(item => item.id === 'safety-talks');
+              if (targetStIndex !== -1) {
+                itemsToRender.splice(targetStIndex + 1, 0, srItem);
+              } else {
+                itemsToRender.push(srItem);
               }
             }
           }

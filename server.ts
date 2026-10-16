@@ -1875,7 +1875,7 @@ app.all('/api/sheets/fetch', async (req: Request, res: Response): Promise<void> 
   }
 });
 
-import { STRATEGIC_TILE_REGISTRY, getSheetUrlForTile, getCandidateTabsForTile, parseCsvToStrategicActions } from './api/strategic/_registry.ts';
+import { STRATEGIC_TILE_REGISTRY, getSheetUrlForTile, getCandidateTabsForTile, parseCsvToStrategicActions, normalizeTileId } from './api/strategic/_registry.ts';
 import type { StrategicActionItem } from './api/strategic/_registry.ts';
 
 // In-memory cache for live strategic data
@@ -1916,6 +1916,10 @@ app.get('/api/strategic/sheets', (_req: Request, res: Response): void => {
   sheets['admin_security'] = sheets['admin-security'];
   sheets['asset_integrity'] = sheets['asset-integrity'];
   sheets['business_dev'] = sheets['business-development'];
+  sheets['inspection_workshop'] = sheets['inspection'];
+  sheets['inspection-workshop-services'] = sheets['inspection'];
+  sheets['inspection_workshop_services'] = sheets['inspection'];
+  sheets['inspection & workshop services'] = sheets['inspection'];
 
   res.json({
     success: true,
@@ -1927,7 +1931,7 @@ app.get('/api/strategic/sheets', (_req: Request, res: Response): void => {
 app.get('/api/strategic/live-data', async (req: Request, res: Response): Promise<void> => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
   const rawTileIdQuery = typeof req.query.tileId === 'string' ? req.query.tileId.trim() : '';
-  const tileIdQuery = rawTileIdQuery === 'admin_security' || rawTileIdQuery === 'Admin_&_Security' ? 'admin-security' : rawTileIdQuery;
+  const tileIdQuery = normalizeTileId(rawTileIdQuery);
   const forceRefresh = req.query.refresh === 'true' || req.query.force === 'true';
 
   const now = Date.now();

@@ -105,6 +105,12 @@ export default async function handler(req: any, res: any) {
       url = process.env.COO_SELF_ASSIGNED_SHEET_URL || process.env.COO_SHEET_URL || `https://docs.google.com/spreadsheets/d/1s5czmIVCXiOPTRc69QffJ51JFW2-gAErPitstUar2dU/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(targetTab)}`;
     }
 
+    // Direct Inspection & Workshop Services match by sheet ID (Sheet ID: 1fW4P4HXfD6Yt5uvNnB2B6u4GveOBK8VSEPal-giXCIw, Tab: INSPECTION_SHEET_URL)
+    if (sheetIdParam === '1fW4P4HXfD6Yt5uvNnB2B6u4GveOBK8VSEPal-giXCIw' || (typeof url === 'string' && url.includes('1fW4P4HXfD6Yt5uvNnB2B6u4GveOBK8VSEPal-giXCIw'))) {
+      const targetTab = sheetTab || 'INSPECTION_SHEET_URL';
+      url = process.env.INSPECTION_SHEET_URL || process.env.INSPECTION || `https://docs.google.com/spreadsheets/d/1fW4P4HXfD6Yt5uvNnB2B6u4GveOBK8VSEPal-giXCIw/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(targetTab)}`;
+    }
+
     // Resolve URL from environment variables or registry if not provided or pointing to placeholder
     if (!url || typeof url !== 'string' || url.includes('1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms')) {
       const sLower = (sheetTab || '').toLowerCase();
@@ -282,6 +288,11 @@ export default async function handler(req: any, res: any) {
       extraContactsTabs.forEach(t => {
         if (!candidateTabs.includes(t)) candidateTabs.push(t);
       });
+    } else if (sLower === 'inspection_sheet_url' || sLower.includes('inspection') || normalizedTileId.includes('inspection') || trimmedUrl.includes('1fW4P4HXfD6Yt5uvNnB2B6u4GveOBK8VSEPal-giXCIw')) {
+      const extraInspTabs = ['INSPECTION_SHEET_URL', 'Inspection & workshop Services', 'Inspection & Workshop Services', 'Inspection_Actions', 'Inspection', 'INSP_Actions', 'Sheet1'];
+      extraInspTabs.forEach(t => {
+        if (!candidateTabs.includes(t)) candidateTabs.push(t);
+      });
     }
 
     const candidateUrls: string[] = [];
@@ -298,23 +309,23 @@ export default async function handler(req: any, res: any) {
         candidateUrls.push(trimmedUrl);
       }
     } else {
-      // Prioritize gviz/tq out:csv directly with specific tabs - avoids Google 302 redirects on Vercel IPs
-      for (const tab of candidateTabs) {
-        candidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tab)}`);
-      }
-      if (gid && gid !== '0') {
-        candidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&gid=${gid}`);
-      }
-      if (trimmedUrl.includes('gviz/tq')) {
-        candidateUrls.push(trimmedUrl);
-      }
+      // 1. HIGHEST PRIORITY: export?format=csv (Bypasses Google GViz edge cache to reflect real-time live edits)
       for (const tab of candidateTabs) {
         candidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&sheet=${encodeURIComponent(tab)}`);
       }
       if (gid && gid !== '0') {
         candidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&gid=${gid}`);
       }
-      if (trimmedUrl.includes('output=csv') || trimmedUrl.includes('format=csv')) {
+      candidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv`);
+
+      // 2. SECONDARY: gviz/tq out:csv
+      for (const tab of candidateTabs) {
+        candidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tab)}`);
+      }
+      if (gid && gid !== '0') {
+        candidateUrls.push(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&gid=${gid}`);
+      }
+      if (trimmedUrl.includes('gviz/tq') || trimmedUrl.includes('output=csv') || trimmedUrl.includes('format=csv')) {
         candidateUrls.push(trimmedUrl);
       }
     }

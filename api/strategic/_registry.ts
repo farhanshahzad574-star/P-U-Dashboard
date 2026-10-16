@@ -127,10 +127,18 @@ export const STRATEGIC_TILE_REGISTRY: Record<string, StrategicTileConfig> = {
   },
   'inspection': {
     sheetId: '1fW4P4HXfD6Yt5uvNnB2B6u4GveOBK8VSEPal-giXCIw',
-    envKeys: ['INSPECTION_SHEET_URL', 'INSPECTION', 'Inspection', 'STRATEGIC_INSPECTION_SHEET_URL'],
+    envKeys: [
+      'INSPECTION_SHEET_URL',
+      'INSPECTION',
+      'Inspection',
+      'STRATEGIC_INSPECTION_SHEET_URL',
+      'INSPECTION_WORKSHOP_SHEET_URL',
+      'INSPECTION_AND_WORKSHOP_SERVICES',
+      'INSPECTION_WORKSHOP_SERVICES'
+    ],
     code: 'INSP',
     defaultTab: 'INSPECTION_SHEET_URL',
-    name: 'Inspection',
+    name: 'Inspection & workshop Services',
     fallbackUrl: 'https://docs.google.com/spreadsheets/d/1fW4P4HXfD6Yt5uvNnB2B6u4GveOBK8VSEPal-giXCIw/edit'
   },
   'ld': {
@@ -199,8 +207,24 @@ export const STRATEGIC_TILE_REGISTRY: Record<string, StrategicTileConfig> = {
   }
 };
 
+export function normalizeTileId(tileId: string): string {
+  const t = (tileId || '').trim();
+  if (t === 'admin_security' || t === 'Admin_&_Security' || t === 'admin & security') return 'admin-security';
+  if (t === 'asset_integrity' || t === 'Asset_Integrity' || t === 'asset integrity') return 'asset-integrity';
+  if (t === 'business_dev' || t === 'business-dev' || t === 'business_development') return 'business-development';
+  if (
+    t === 'inspection' ||
+    t === 'inspection-workshop' ||
+    t === 'inspection_workshop' ||
+    t === 'inspection-workshop-services' ||
+    t === 'inspection_workshop_services' ||
+    t.toLowerCase() === 'inspection & workshop services'
+  ) return 'inspection';
+  return t;
+}
+
 export function getCandidateTabsForTile(tileId: string, sheetUrl?: string): string[] {
-  const normalizedId = tileId === 'admin_security' || tileId === 'Admin_&_Security' ? 'admin-security' : tileId;
+  const normalizedId = normalizeTileId(tileId);
   const reg = STRATEGIC_TILE_REGISTRY[normalizedId];
   const candidateTabs: string[] = [];
 
@@ -242,6 +266,10 @@ export function getCandidateTabsForTile(tileId: string, sheetUrl?: string): stri
     ['Admin_Security_Actions', 'Admin_&_Security', 'Admin & Security', 'Admin_Security', 'Admin and Security', 'Admin', 'Security'].forEach(t => {
       if (!candidateTabs.includes(t)) candidateTabs.push(t);
     });
+  } else if (normalizedId === 'inspection') {
+    ['INSPECTION_SHEET_URL', 'Inspection & workshop Services', 'Inspection & Workshop Services', 'Inspection_Actions', 'Inspection', 'INSP_Actions', 'INSP'].forEach(t => {
+      if (!candidateTabs.includes(t)) candidateTabs.push(t);
+    });
   } else if (normalizedId === 'scm') {
     ['SCM_SHEET_URL', 'SCM_Actions', 'SCM', 'SCM Actions', 'Supply Chain', 'Procurement'].forEach(t => {
       if (!candidateTabs.includes(t)) candidateTabs.push(t);
@@ -258,7 +286,7 @@ export function getCandidateTabsForTile(tileId: string, sheetUrl?: string): stri
 }
 
 export function getSheetUrlForTile(tileId: string): string {
-  const normalizedId = tileId === 'admin_security' || tileId === 'Admin_&_Security' ? 'admin-security' : tileId;
+  const normalizedId = normalizeTileId(tileId);
   const reg = STRATEGIC_TILE_REGISTRY[normalizedId];
   if (!reg) return '';
 

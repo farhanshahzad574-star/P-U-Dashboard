@@ -312,7 +312,7 @@
     },
     {
       id: 'inspection',
-      name: 'Inspection & Workshop Services',
+      name: 'Inspection & workshop Services',
       code: 'INSP',
       isBossDashboard: false,
       category: 'Asset Integrity & Engineering',
@@ -332,10 +332,7 @@
         gradient: 'from-sky-600 via-cyan-600 to-blue-700',
         badgeBg: 'bg-sky-100 text-sky-800 border-sky-200'
       },
-      actions: [
-        { id: '1', title: 'asset', background: '', dateReference: '', category: 'ECM', assignedTo: 'abcd', dueDate: '29/09/2026', status: 'Open', closureDate: '', remarks: '', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Background': '', 'Date/Reference': '', 'Assigned Action': 'asset', 'Action category': 'ECM', 'Assigned to': 'abcd', 'Target date': '29/09/2026', 'Status detail': 'Open', 'Remarks': '', 'Ack by': 'M.Afzal' } },
-        { id: '2', title: 'efgh', background: '', dateReference: '', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '2', 'Background': '', 'Date/Reference': '', 'Assigned Action': 'efgh', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } }
-      ]
+      actions: []
     },
     {
       id: 'ld',
