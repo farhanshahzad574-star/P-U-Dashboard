@@ -1,0 +1,84 @@
+# Block all web crawlers and robots from accessing and indexing the site
+User-agent: *
+Disallow: /
+
+# Search Engine Crawlers
+User-agent: Googlebot
+Disallow: /
+
+User-agent: Googlebot-Image
+Disallow: /
+
+User-agent: Googlebot-News
+Disallow: /
+
+User-agent: Bingbot
+Disallow: /
+
+User-agent: msnbot
+Disallow: /
+
+User-agent: Slurp
+Disallow: /
+
+User-agent: DuckDuckBot
+Disallow: /
+
+User-agent: Baiduspider
+Disallow: /
+
+User-agent: YandexBot
+Disallow: /
+
+User-agent: Applebot
+Disallow: /
+
+# Social Media Crawlers
+User-agent: Twitterbot
+Disallow: /
+
+User-agent: facebookexternalhit
+Disallow: /
+
+User-agent: Facebot
+Disallow: /
+
+User-agent: LinkedInBot
+Disallow: /
+
+User-agent: Pinterestbot
+Disallow: /
+
+User-agent: Discordbot
+Disallow: /
+
+User-agent: TelegramBot
+Disallow: /
+
+User-agent: Slackbot
+Disallow: /
+
+User-agent: WhatsApp
+Disallow: /
+
+User-agent: SkypeUriPreview
+Disallow: /
+
+# AI Crawlers & Scrapers
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ChatGPT-User
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: PerplexityBot
+Disallow: /
