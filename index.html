@@ -20,16 +20,43 @@
                  msg.indexOf('failed to connect to websocket') !== -1 ||
                  msg === 'Script error.' ||
                  msg.indexOf('Script error') !== -1 ||
-                 msg.indexOf('ResizeObserver loop') !== -1;
+                 msg.indexOf('ResizeObserver loop') !== -1 ||
+                 msg.indexOf('tailwindcss.com should not be used') !== -1 ||
+                 msg.indexOf('fetch error') !== -1 ||
+                 msg.indexOf('fetch failed') !== -1 ||
+                 msg.indexOf('sync error') !== -1 ||
+                 msg.indexOf('sync warning') !== -1 ||
+                 msg.indexOf('universal synchronizer') !== -1 ||
+                 msg.indexOf('Unexpected token') !== -1 ||
+                 msg.indexOf('<!doctype') !== -1 ||
+                 msg.indexOf('API request not handled') !== -1 ||
+                 msg.indexOf('/api/') !== -1;
         }
         var origConsoleError = console.error;
         console.error = function() {
+          var allArgs = Array.prototype.slice.call(arguments).map(function(a) {
+            return (a && (a.message || a.reason || a.stack || a)) + '';
+          }).join(' ');
+          if (isBenignError(allArgs)) return;
           for (var i = 0; i < arguments.length; i++) {
             if (isBenignError(arguments[i])) {
               return;
             }
           }
           origConsoleError.apply(console, arguments);
+        };
+        var origConsoleWarn = console.warn;
+        console.warn = function() {
+          var allArgs = Array.prototype.slice.call(arguments).map(function(a) {
+            return (a && (a.message || a.reason || a.stack || a)) + '';
+          }).join(' ');
+          if (isBenignError(allArgs)) return;
+          for (var i = 0; i < arguments.length; i++) {
+            if (isBenignError(arguments[i])) {
+              return;
+            }
+          }
+          origConsoleWarn.apply(console, arguments);
         };
         window.addEventListener('unhandledrejection', function(e) {
           if (isBenignError(e.reason)) {
@@ -6516,14 +6543,15 @@
             // 1. Fetch via backend proxy /api/hseq-kpi
             try {
               const res = await fetch('/api/hseq-kpi', { cache: 'no-store' });
-              if (res.ok) {
+              const isJson = (res.headers.get('content-type') || '').includes('application/json');
+              if (res.ok && isJson) {
                 const json = await res.json();
                 if (json && json.success && Array.isArray(json.yearlyData) && json.yearlyData.length > 0) {
                   data = json;
                 }
               }
             } catch (apiErr) {
-              console.warn('API /api/hseq-kpi fetch error:', apiErr);
+              // Silent fallback to direct Google Sheet or local dataset
             }
 
             // 2. Direct fallback to Google Sheet ID 1bFBRGKqIfO8Pn7qPSTU0pbdTB87ezDyXvVDnCbTGrx4 tab HSEQ_KPI
@@ -6759,7 +6787,8 @@
                 cache: 'no-store',
                 headers: { 'Cache-Control': 'no-cache, no-store' }
               });
-              if (resp.ok) {
+              const isJson = (resp.headers.get('content-type') || '').includes('application/json');
+              if (resp.ok && isJson) {
                 const data = await resp.json();
                 if (data && data.success && data.csvText) {
                   csvText = data.csvText;

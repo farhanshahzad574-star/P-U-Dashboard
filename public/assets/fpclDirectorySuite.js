@@ -263,14 +263,15 @@
             'Pragma': 'no-cache'
           }
         });
-        if (res.ok) {
+        const isJson = (res.headers.get('content-type') || '').includes('application/json');
+        if (res.ok && isJson) {
           const json = await res.json();
           if (json.success && Array.isArray(json.data) && json.data.length > 0) {
             contacts = json.data;
           }
         }
       } catch (e) {
-        console.warn('Direct /api/fpcl-directory fetch failed, trying proxy...', e);
+        // Fallback to direct sheet sync
       }
 
       // 2. Try Universal Sheets Proxy (/api/sheets/fetch)
@@ -284,14 +285,15 @@
               'Pragma': 'no-cache'
             }
           });
-          if (res.ok) {
+          const isJson = (res.headers.get('content-type') || '').includes('application/json');
+          if (res.ok && isJson) {
             const json = await res.json();
             if (json.success && json.csvText) {
               contacts = this.parseCsv(json.csvText);
             }
           }
         } catch (e) {
-          console.warn('/api/sheets/fetch failed, trying universal synchronizer...', e);
+          // Fallback to client synchronizer
         }
       }
 

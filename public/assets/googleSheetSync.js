@@ -180,7 +180,8 @@
         body: JSON.stringify({ url: targetUrl, sheetTab, gid, t: now, _nocache: nonce }),
         cache: 'no-store'
       });
-      if (proxyRes.ok) {
+      const isJson = (proxyRes.headers.get('content-type') || '').includes('application/json');
+      if (proxyRes.ok && isJson) {
         const json = await proxyRes.json();
         if (json.success && json.csvText && json.csvText.length > 50) {
           return json.csvText;
