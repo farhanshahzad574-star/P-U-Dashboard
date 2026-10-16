@@ -59,11 +59,11 @@
         badgeBg: 'bg-slate-100 text-slate-800 border-slate-300'
       },
       actions: [
-        { id: 'ADM-01', title: 'Complete annual plant biometric access audit and contractor gate permissions review', status: 'Closed', dueDate: '2026-02-15', closureDate: '2026-02-14', remarks: 'Gate audit finalized with 100% badge compliance verification.' },
-        { id: 'ADM-02', title: 'Upgrade perimeter CCTV surveillance network along East boundary line', status: 'Open', dueDate: '2026-04-10', closureDate: '', remarks: 'Vendor procurement RFP in progress with SCM.' },
-        { id: 'ADM-03', title: 'Renew municipal administrative licenses and security guard deployment roster', status: 'Closed', dueDate: '2026-01-30', closureDate: '2026-01-28', remarks: 'Security contractor agreement renewed for FY 2026.' },
-        { id: 'ADM-04', title: 'Implement smart vehicle tracking and visitor parking automated gate protocol', status: 'Open', dueDate: '2026-05-01', closureDate: '', remarks: 'Sensors delivered, installation scheduled for next shutdown.' },
-        { id: 'ADM-05', title: 'Audit emergency physical evacuation muster points and administrative safety signage', status: 'Closed', dueDate: '2026-03-05', closureDate: '2026-03-04', remarks: 'All 8 muster points updated with high-visibility solar markers.' }
+        { id: 'ADM-01', title: 'Complete annual plant biometric access audit and contractor gate permissions review', background: '', dateReference: '', category: 'ECM', assignedTo: 'Security Lead', dueDate: '2026-02-15', status: 'Closed', closureDate: '2026-02-14', remarks: 'Gate audit finalized with 100% badge compliance verification.', ackBy: 'M.Afzal', rawColumns: { 'S_No': 'ADM-01', 'Background': '', 'Date/Reference': '', 'Assigned Action': 'Complete annual plant biometric access audit and contractor gate permissions review', 'Action category': 'ECM', 'Assigned to': 'Security Lead', 'Target date': '2026-02-15', 'Status detail': 'Closed', 'Remarks': 'Gate audit finalized with 100% badge compliance verification.', 'Ack by': 'M.Afzal' } },
+        { id: 'ADM-02', title: 'Upgrade perimeter CCTV surveillance network along East boundary line', background: '', dateReference: '', category: 'ECM', assignedTo: 'Admin Lead', dueDate: '2026-04-10', status: 'Open', closureDate: '', remarks: 'Vendor procurement RFP in progress with SCM.', ackBy: 'M.Afzal', rawColumns: { 'S_No': 'ADM-02', 'Background': '', 'Date/Reference': '', 'Assigned Action': 'Upgrade perimeter CCTV surveillance network along East boundary line', 'Action category': 'ECM', 'Assigned to': 'Admin Lead', 'Target date': '2026-04-10', 'Status detail': 'Open', 'Remarks': 'Vendor procurement RFP in progress with SCM.', 'Ack by': 'M.Afzal' } },
+        { id: 'ADM-03', title: 'Renew municipal administrative licenses and security guard deployment roster', background: '', dateReference: '', category: 'ECM', assignedTo: 'Admin Lead', dueDate: '2026-01-30', status: 'Closed', closureDate: '2026-01-28', remarks: 'Security contractor agreement renewed for FY 2026.', ackBy: 'M.Afzal', rawColumns: { 'S_No': 'ADM-03', 'Background': '', 'Date/Reference': '', 'Assigned Action': 'Renew municipal administrative licenses and security guard deployment roster', 'Action category': 'ECM', 'Assigned to': 'Admin Lead', 'Target date': '2026-01-30', 'Status detail': 'Closed', 'Remarks': 'Security contractor agreement renewed for FY 2026.', 'Ack by': 'M.Afzal' } },
+        { id: 'ADM-04', title: 'Implement smart vehicle tracking and visitor parking automated gate protocol', background: '', dateReference: '', category: 'ECM', assignedTo: 'Security Lead', dueDate: '2026-05-01', status: 'Open', closureDate: '', remarks: 'Sensors delivered, installation scheduled for next shutdown.', ackBy: 'M.Afzal', rawColumns: { 'S_No': 'ADM-04', 'Background': '', 'Date/Reference': '', 'Assigned Action': 'Implement smart vehicle tracking and visitor parking automated gate protocol', 'Action category': 'ECM', 'Assigned to': 'Security Lead', 'Target date': '2026-05-01', 'Status detail': 'Open', 'Remarks': 'Sensors delivered, installation scheduled for next shutdown.', 'Ack by': 'M.Afzal' } },
+        { id: 'ADM-05', title: 'Audit emergency physical evacuation muster points and administrative safety signage', background: '', dateReference: '', category: 'ECM', assignedTo: 'Security Lead', dueDate: '2026-03-05', status: 'Closed', closureDate: '2026-03-04', remarks: 'All 8 muster points updated with high-visibility solar markers.', ackBy: 'M.Afzal', rawColumns: { 'S_No': 'ADM-05', 'Background': '', 'Date/Reference': '', 'Assigned Action': 'Audit emergency physical evacuation muster points and administrative safety signage', 'Action category': 'ECM', 'Assigned to': 'Security Lead', 'Target date': '2026-03-05', 'Status detail': 'Closed', 'Remarks': 'All 8 muster points updated with high-visibility solar markers.', 'Ack by': 'M.Afzal' } }
       ]
     },
     {
@@ -89,8 +89,8 @@
         badgeBg: 'bg-fuchsia-100 text-fuchsia-800 border-fuchsia-200'
       },
       actions: [
-        { id: '1', title: 'asset', category: 'ECM', assignedTo: 'abcd', dueDate: '29/09/2026', status: 'Open', closureDate: '', remarks: '', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Assigned Action': 'asset', 'Action category': 'ECM', 'Assigned to': 'abcd', 'Target date': '29/09/2026', 'Status detail': 'Open', 'Remarks': '', 'Ack by': 'M.Afzal' } },
-        { id: '2', title: 'efgh', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '2', 'Assigned Action': 'efgh', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } }
+        { id: '1', title: 'asset', background: '', dateReference: '', category: 'ECM', assignedTo: 'abcd', dueDate: '29/09/2026', status: 'Open', closureDate: '', remarks: '', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Background': '', 'Date/Reference': '', 'Assigned Action': 'asset', 'Action category': 'ECM', 'Assigned to': 'abcd', 'Target date': '29/09/2026', 'Status detail': 'Open', 'Remarks': '', 'Ack by': 'M.Afzal' } },
+        { id: '2', title: 'efgh', background: '', dateReference: '', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '2', 'Background': '', 'Date/Reference': '', 'Assigned Action': 'efgh', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } }
       ]
     },
     {
@@ -116,8 +116,8 @@
         badgeBg: 'bg-emerald-100 text-emerald-800 border-emerald-200'
       },
       actions: [
-        { id: '1', title: 'asset', category: 'ECM', assignedTo: 'abcd', dueDate: '29/09/2026', status: 'Open', closureDate: '', remarks: '', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Assigned Action': 'asset', 'Action category': 'ECM', 'Assigned to': 'abcd', 'Target date': '29/09/2026', 'Status detail': 'Open', 'Remarks': '', 'Ack by': 'M.Afzal' } },
-        { id: '2', title: 'efgh', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '2', 'Assigned Action': 'efgh', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } }
+        { id: '1', title: 'asset', background: '', dateReference: '', category: 'ECM', assignedTo: 'abcd', dueDate: '29/09/2026', status: 'Open', closureDate: '', remarks: '', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Background': '', 'Date/Reference': '', 'Assigned Action': 'asset', 'Action category': 'ECM', 'Assigned to': 'abcd', 'Target date': '29/09/2026', 'Status detail': 'Open', 'Remarks': '', 'Ack by': 'M.Afzal' } },
+        { id: '2', title: 'efgh', background: '', dateReference: '', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '2', 'Background': '', 'Date/Reference': '', 'Assigned Action': 'efgh', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } }
       ]
     },
     {
@@ -143,8 +143,8 @@
         badgeBg: 'bg-amber-100 text-amber-800 border-amber-200'
       },
       actions: [
-        { id: '1', title: 'asset', category: 'ECM', assignedTo: 'abcd', dueDate: '29/09/2026', status: 'Open', closureDate: '', remarks: '', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Assigned Action': 'asset', 'Action category': 'ECM', 'Assigned to': 'abcd', 'Target date': '29/09/2026', 'Status detail': 'Open', 'Remarks': '', 'Ack by': 'M.Afzal' } },
-        { id: '2', title: 'efgh', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '2', 'Assigned Action': 'efgh', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } }
+        { id: '1', title: 'asset', background: '', dateReference: '', category: 'ECM', assignedTo: 'abcd', dueDate: '29/09/2026', status: 'Open', closureDate: '', remarks: '', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Background': '', 'Date/Reference': '', 'Assigned Action': 'asset', 'Action category': 'ECM', 'Assigned to': 'abcd', 'Target date': '29/09/2026', 'Status detail': 'Open', 'Remarks': '', 'Ack by': 'M.Afzal' } },
+        { id: '2', title: 'efgh', background: '', dateReference: '', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '2', 'Background': '', 'Date/Reference': '', 'Assigned Action': 'efgh', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } }
       ]
     },
     {
@@ -170,8 +170,8 @@
         badgeBg: 'bg-blue-100 text-blue-800 border-blue-200'
       },
       actions: [
-        { id: '1', title: 'asset', category: 'ECM', assignedTo: 'abcd', dueDate: '29/09/2026', status: 'Open', closureDate: '', remarks: '', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Assigned Action': 'asset', 'Action category': 'ECM', 'Assigned to': 'abcd', 'Target date': '29/09/2026', 'Status detail': 'Open', 'Remarks': '', 'Ack by': 'M.Afzal' } },
-        { id: '2', title: 'efgh', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '2', 'Assigned Action': 'efgh', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } }
+        { id: '1', title: 'asset', background: '', dateReference: '', category: 'ECM', assignedTo: 'abcd', dueDate: '29/09/2026', status: 'Open', closureDate: '', remarks: '', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Background': '', 'Date/Reference': '', 'Assigned Action': 'asset', 'Action category': 'ECM', 'Assigned to': 'abcd', 'Target date': '29/09/2026', 'Status detail': 'Open', 'Remarks': '', 'Ack by': 'M.Afzal' } },
+        { id: '2', title: 'efgh', background: '', dateReference: '', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '2', 'Background': '', 'Date/Reference': '', 'Assigned Action': 'efgh', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } }
       ]
     },
     {
@@ -197,8 +197,8 @@
         badgeBg: 'bg-emerald-100 text-emerald-800 border-emerald-300'
       },
       actions: [
-        { id: '1', title: 'asset', category: 'ECM', assignedTo: 'abcd', dueDate: '29/09/2026', status: 'Open', closureDate: '', remarks: '', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Assigned Action': 'asset', 'Action category': 'ECM', 'Assigned to': 'abcd', 'Target date': '29/09/2026', 'Status detail': 'Open', 'Remarks': '', 'Ack by': 'M.Afzal' } },
-        { id: '2', title: 'efgh', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '2', 'Assigned Action': 'efgh', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } }
+        { id: '1', title: 'asset', background: '', dateReference: '', category: 'ECM', assignedTo: 'abcd', dueDate: '29/09/2026', status: 'Open', closureDate: '', remarks: '', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Background': '', 'Date/Reference': '', 'Assigned Action': 'asset', 'Action category': 'ECM', 'Assigned to': 'abcd', 'Target date': '29/09/2026', 'Status detail': 'Open', 'Remarks': '', 'Ack by': 'M.Afzal' } },
+        { id: '2', title: 'efgh', background: '', dateReference: '', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '2', 'Background': '', 'Date/Reference': '', 'Assigned Action': 'efgh', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } }
       ]
     },
     {
@@ -224,9 +224,9 @@
         badgeBg: 'bg-rose-100 text-rose-800 border-rose-200'
       },
       actions: [
-        { id: '1', title: 'abdc', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Assigned Action': 'abdc', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } },
-        { id: '2', title: 'hseq', category: 'Director M&O', assignedTo: 'hseq', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'abc', ackBy: '', rawColumns: { 'S_No': '2', 'Assigned Action': 'hseq', 'Action category': 'Director M&O', 'Assigned to': 'hseq', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'abc', 'Ack by': '' } },
-        { id: '3', title: 'test', category: 'ACM', assignedTo: 'sdf', dueDate: '30/09/2026', status: 'Closed', closureDate: '30/09/2026', remarks: 'sdf', ackBy: '', rawColumns: { 'S_No': '3', 'Assigned Action': 'test', 'Action category': 'ACM', 'Assigned to': 'sdf', 'Target date': '30/09/2026', 'Status detail': 'Close', 'Remarks': 'sdf', 'Ack by': '' } }
+        { id: '1', title: 'abdc', background: '', dateReference: '', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Background': '', 'Date/Reference': '', 'Assigned Action': 'abdc', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } },
+        { id: '2', title: 'hseq', background: '', dateReference: '', category: 'Director M&O', assignedTo: 'hseq', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'abc', ackBy: '', rawColumns: { 'S_No': '2', 'Background': '', 'Date/Reference': '', 'Assigned Action': 'hseq', 'Action category': 'Director M&O', 'Assigned to': 'hseq', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'abc', 'Ack by': '' } },
+        { id: '3', title: 'test', background: '', dateReference: '', category: 'ACM', assignedTo: 'sdf', dueDate: '30/09/2026', status: 'Closed', closureDate: '30/09/2026', remarks: 'sdf', ackBy: '', rawColumns: { 'S_No': '3', 'Background': '', 'Date/Reference': '', 'Assigned Action': 'test', 'Action category': 'ACM', 'Assigned to': 'sdf', 'Target date': '30/09/2026', 'Status detail': 'Close', 'Remarks': 'sdf', 'Ack by': '' } }
       ]
     },
     {
@@ -252,8 +252,8 @@
         badgeBg: 'bg-pink-100 text-pink-800 border-pink-200'
       },
       actions: [
-        { id: '1', title: 'asset', category: 'ECM', assignedTo: 'abcd', dueDate: '29/09/2026', status: 'Open', closureDate: '', remarks: 'a', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Assigned Action': 'asset', 'Action category': 'ECM', 'Assigned to': 'abcd', 'Target date': '29/09/2026', 'Status detail': 'Open', 'Remarks': 'a', 'Ack by': 'M.Afzal' } },
-        { id: '2', title: 'efgh', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '2', 'Assigned Action': 'efgh', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } }
+        { id: '1', title: 'asset', background: '', dateReference: '', category: 'ECM', assignedTo: 'abcd', dueDate: '29/09/2026', status: 'Open', closureDate: '', remarks: 'a', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Background': '', 'Date/Reference': '', 'Assigned Action': 'asset', 'Action category': 'ECM', 'Assigned to': 'abcd', 'Target date': '29/09/2026', 'Status detail': 'Open', 'Remarks': 'a', 'Ack by': 'M.Afzal' } },
+        { id: '2', title: 'efgh', background: '', dateReference: '', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '2', 'Background': '', 'Date/Reference': '', 'Assigned Action': 'efgh', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } }
       ]
     },
     {
@@ -279,8 +279,8 @@
         badgeBg: 'bg-violet-100 text-violet-800 border-violet-200'
       },
       actions: [
-        { id: '1', title: 'asset', category: 'ECM', assignedTo: 'abcd', dueDate: '29/09/2026', status: 'Open', closureDate: '', remarks: '', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Assigned Action': 'asset', 'Action category': 'ECM', 'Assigned to': 'abcd', 'Target date': '29/09/2026', 'Status detail': 'Open', 'Remarks': '', 'Ack by': 'M.Afzal' } },
-        { id: '2', title: 'efgh', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '2', 'Assigned Action': 'efgh', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } }
+        { id: '1', title: 'asset', background: '', dateReference: '', category: 'ECM', assignedTo: 'abcd', dueDate: '29/09/2026', status: 'Open', closureDate: '', remarks: '', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Background': '', 'Date/Reference': '', 'Assigned Action': 'asset', 'Action category': 'ECM', 'Assigned to': 'abcd', 'Target date': '29/09/2026', 'Status detail': 'Open', 'Remarks': '', 'Ack by': 'M.Afzal' } },
+        { id: '2', title: 'efgh', background: '', dateReference: '', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '2', 'Background': '', 'Date/Reference': '', 'Assigned Action': 'efgh', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } }
       ]
     },
     {
@@ -306,8 +306,8 @@
         badgeBg: 'bg-slate-100 text-slate-800 border-slate-300'
       },
       actions: [
-        { id: '1', title: 'asset', category: 'ECM', assignedTo: 'abcd', dueDate: '29/09/2026', status: 'Open', closureDate: '', remarks: '', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Assigned Action': 'asset', 'Action category': 'ECM', 'Assigned to': 'abcd', 'Target date': '29/09/2026', 'Status detail': 'Open', 'Remarks': '', 'Ack by': 'M.Afzal' } },
-        { id: '2', title: 'efgh', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '2', 'Assigned Action': 'efgh', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } }
+        { id: '1', title: 'asset', background: '', dateReference: '', category: 'ECM', assignedTo: 'abcd', dueDate: '29/09/2026', status: 'Open', closureDate: '', remarks: '', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Background': '', 'Date/Reference': '', 'Assigned Action': 'asset', 'Action category': 'ECM', 'Assigned to': 'abcd', 'Target date': '29/09/2026', 'Status detail': 'Open', 'Remarks': '', 'Ack by': 'M.Afzal' } },
+        { id: '2', title: 'efgh', background: '', dateReference: '', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '2', 'Background': '', 'Date/Reference': '', 'Assigned Action': 'efgh', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } }
       ]
     },
     {
@@ -333,8 +333,8 @@
         badgeBg: 'bg-sky-100 text-sky-800 border-sky-200'
       },
       actions: [
-        { id: '1', title: 'asset', category: 'ECM', assignedTo: 'abcd', dueDate: '29/09/2026', status: 'Open', closureDate: '', remarks: '', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Assigned Action': 'asset', 'Action category': 'ECM', 'Assigned to': 'abcd', 'Target date': '29/09/2026', 'Status detail': 'Open', 'Remarks': '', 'Ack by': 'M.Afzal' } },
-        { id: '2', title: 'efgh', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '2', 'Assigned Action': 'efgh', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } }
+        { id: '1', title: 'asset', background: '', dateReference: '', category: 'ECM', assignedTo: 'abcd', dueDate: '29/09/2026', status: 'Open', closureDate: '', remarks: '', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Background': '', 'Date/Reference': '', 'Assigned Action': 'asset', 'Action category': 'ECM', 'Assigned to': 'abcd', 'Target date': '29/09/2026', 'Status detail': 'Open', 'Remarks': '', 'Ack by': 'M.Afzal' } },
+        { id: '2', title: 'efgh', background: '', dateReference: '', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '2', 'Background': '', 'Date/Reference': '', 'Assigned Action': 'efgh', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } }
       ]
     },
     {
@@ -360,8 +360,8 @@
         badgeBg: 'bg-rose-100 text-rose-800 border-rose-200'
       },
       actions: [
-        { id: '1', title: 'asset', category: 'ECM', assignedTo: 'abcd', dueDate: '29/09/2026', status: 'Open', closureDate: '', remarks: '', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Assigned Action': 'asset', 'Action category': 'ECM', 'Assigned to': 'abcd', 'Target date': '29/09/2026', 'Status detail': 'Open', 'Remarks': '', 'Ack by': 'M.Afzal' } },
-        { id: '2', title: 'efgh', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '2', 'Assigned Action': 'efgh', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } }
+        { id: '1', title: 'asset', background: '', dateReference: '', category: 'ECM', assignedTo: 'abcd', dueDate: '29/09/2026', status: 'Open', closureDate: '', remarks: '', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Background': '', 'Date/Reference': '', 'Assigned Action': 'asset', 'Action category': 'ECM', 'Assigned to': 'abcd', 'Target date': '29/09/2026', 'Status detail': 'Open', 'Remarks': '', 'Ack by': 'M.Afzal' } },
+        { id: '2', title: 'efgh', background: '', dateReference: '', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '2', 'Background': '', 'Date/Reference': '', 'Assigned Action': 'efgh', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } }
       ]
     },
     {
@@ -387,8 +387,8 @@
         badgeBg: 'bg-orange-100 text-orange-800 border-orange-200'
       },
       actions: [
-        { id: '1', title: 'asset', category: 'ECM', assignedTo: 'abcd', dueDate: '29/09/2026', status: 'Open', closureDate: '', remarks: '', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Assigned Action': 'asset', 'Action category': 'ECM', 'Assigned to': 'abcd', 'Target date': '29/09/2026', 'Status detail': 'Open', 'Remarks': '', 'Ack by': 'M.Afzal' } },
-        { id: '2', title: 'efgh', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '2', 'Assigned Action': 'efgh', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } }
+        { id: '1', title: 'asset', background: '', dateReference: '', category: 'ECM', assignedTo: 'abcd', dueDate: '29/09/2026', status: 'Open', closureDate: '', remarks: '', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Background': '', 'Date/Reference': '', 'Assigned Action': 'asset', 'Action category': 'ECM', 'Assigned to': 'abcd', 'Target date': '29/09/2026', 'Status detail': 'Open', 'Remarks': '', 'Ack by': 'M.Afzal' } },
+        { id: '2', title: 'efgh', background: '', dateReference: '', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '2', 'Background': '', 'Date/Reference': '', 'Assigned Action': 'efgh', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } }
       ]
     },
     {
@@ -414,8 +414,8 @@
         badgeBg: 'bg-slate-100 text-slate-800 border-slate-300'
       },
       actions: [
-        { id: '1', title: 'asset', category: 'ECM', assignedTo: 'abcd', dueDate: '29/09/2026', status: 'Open', closureDate: '', remarks: '', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Assigned Action': 'asset', 'Action category': 'ECM', 'Assigned to': 'abcd', 'Target date': '29/09/2026', 'Status detail': 'Open', 'Remarks': '', 'Ack by': 'M.Afzal' } },
-        { id: '2', title: 'efgh', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '2', 'Assigned Action': 'efgh', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } }
+        { id: '1', title: 'asset', background: '', dateReference: '', category: 'ECM', assignedTo: 'abcd', dueDate: '29/09/2026', status: 'Open', closureDate: '', remarks: '', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Background': '', 'Date/Reference': '', 'Assigned Action': 'asset', 'Action category': 'ECM', 'Assigned to': 'abcd', 'Target date': '29/09/2026', 'Status detail': 'Open', 'Remarks': '', 'Ack by': 'M.Afzal' } },
+        { id: '2', title: 'efgh', background: '', dateReference: '', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '2', 'Background': '', 'Date/Reference': '', 'Assigned Action': 'efgh', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } }
       ]
     },
     {
@@ -441,8 +441,8 @@
         badgeBg: 'bg-green-100 text-green-800 border-green-200'
       },
       actions: [
-        { id: '1', title: 'asset', category: 'ECM', assignedTo: 'abcd', dueDate: '29/09/2026', status: 'Open', closureDate: '', remarks: '', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Assigned Action': 'asset', 'Action category': 'ECM', 'Assigned to': 'abcd', 'Target date': '29/09/2026', 'Status detail': 'Open', 'Remarks': '', 'Ack by': 'M.Afzal' } },
-        { id: '2', title: 'efgh', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '2', 'Assigned Action': 'efgh', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } }
+        { id: '1', title: 'asset', background: '', dateReference: '', category: 'ECM', assignedTo: 'abcd', dueDate: '29/09/2026', status: 'Open', closureDate: '', remarks: '', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Background': '', 'Date/Reference': '', 'Assigned Action': 'asset', 'Action category': 'ECM', 'Assigned to': 'abcd', 'Target date': '29/09/2026', 'Status detail': 'Open', 'Remarks': '', 'Ack by': 'M.Afzal' } },
+        { id: '2', title: 'efgh', background: '', dateReference: '', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '2', 'Background': '', 'Date/Reference': '', 'Assigned Action': 'efgh', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } }
       ]
     },
     {
@@ -468,8 +468,8 @@
         badgeBg: 'bg-fuchsia-100 text-fuchsia-800 border-fuchsia-200'
       },
       actions: [
-        { id: '1', title: 'asset', category: 'ECM', assignedTo: 'abcd', dueDate: '29/09/2026', status: 'Open', closureDate: '', remarks: '', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Assigned Action': 'asset', 'Action category': 'ECM', 'Assigned to': 'abcd', 'Target date': '29/09/2026', 'Status detail': 'Open', 'Remarks': '', 'Ack by': 'M.Afzal' } },
-        { id: '2', title: 'efgh', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '2', 'Assigned Action': 'efgh', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } }
+        { id: '1', title: 'asset', background: '', dateReference: '', category: 'ECM', assignedTo: 'abcd', dueDate: '29/09/2026', status: 'Open', closureDate: '', remarks: '', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Background': '', 'Date/Reference': '', 'Assigned Action': 'asset', 'Action category': 'ECM', 'Assigned to': 'abcd', 'Target date': '29/09/2026', 'Status detail': 'Open', 'Remarks': '', 'Ack by': 'M.Afzal' } },
+        { id: '2', title: 'efgh', background: '', dateReference: '', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '2', 'Background': '', 'Date/Reference': '', 'Assigned Action': 'efgh', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } }
       ]
     },
     {
@@ -495,9 +495,9 @@
         badgeBg: 'bg-amber-100 text-amber-800 border-amber-200'
       },
       actions: [
-        { id: '1', title: 'test scm', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Assigned Action': 'test scm', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } },
-        { id: '2', title: 'abcd gef', category: 'COO', assignedTo: 'abc', dueDate: '30/09/2026', status: 'Closed', closureDate: '30/09/2026', remarks: 'dsf gfgf', ackBy: '', rawColumns: { 'S_No': '2', 'Assigned Action': 'abcd gef', 'Action category': 'COO', 'Assigned to': 'abc', 'Target date': '30/09/2026', 'Status detail': 'Close', 'Remarks': 'dsf gfgf', 'Ack by': '' } },
-        { id: '3', title: 'efgh', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '3', 'Assigned Action': 'efgh', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } }
+        { id: '1', title: 'test scm', background: '', dateReference: '', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Background': '', 'Date/Reference': '', 'Assigned Action': 'test scm', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } },
+        { id: '2', title: 'abcd gef', background: '', dateReference: '', category: 'COO', assignedTo: 'abc', dueDate: '30/09/2026', status: 'Closed', closureDate: '30/09/2026', remarks: 'dsf gfgf', ackBy: '', rawColumns: { 'S_No': '2', 'Background': '', 'Date/Reference': '', 'Assigned Action': 'abcd gef', 'Action category': 'COO', 'Assigned to': 'abc', 'Target date': '30/09/2026', 'Status detail': 'Close', 'Remarks': 'dsf gfgf', 'Ack by': '' } },
+        { id: '3', title: 'efgh', background: '', dateReference: '', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '3', 'Background': '', 'Date/Reference': '', 'Assigned Action': 'efgh', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } }
       ]
     },
     {
@@ -523,8 +523,8 @@
         badgeBg: 'bg-stone-100 text-stone-800 border-stone-300'
       },
       actions: [
-        { id: '1', title: 'asset', category: 'ECM', assignedTo: 'abcd', dueDate: '29/09/2026', status: 'Open', closureDate: '', remarks: '', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Assigned Action': 'asset', 'Action category': 'ECM', 'Assigned to': 'abcd', 'Target date': '29/09/2026', 'Status detail': 'Open', 'Remarks': '', 'Ack by': 'M.Afzal' } },
-        { id: '2', title: 'efgh', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '2', 'Assigned Action': 'efgh', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } }
+        { id: '1', title: 'asset', background: '', dateReference: '', category: 'ECM', assignedTo: 'abcd', dueDate: '29/09/2026', status: 'Open', closureDate: '', remarks: '', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Background': '', 'Date/Reference': '', 'Assigned Action': 'asset', 'Action category': 'ECM', 'Assigned to': 'abcd', 'Target date': '29/09/2026', 'Status detail': 'Open', 'Remarks': '', 'Ack by': 'M.Afzal' } },
+        { id: '2', title: 'efgh', background: '', dateReference: '', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '2', 'Background': '', 'Date/Reference': '', 'Assigned Action': 'efgh', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } }
       ]
     },
     {
@@ -550,8 +550,8 @@
         badgeBg: 'bg-teal-100 text-teal-800 border-teal-200'
       },
       actions: [
-        { id: '1', title: 'asset', category: 'ECM', assignedTo: 'abcd', dueDate: '29/09/2026', status: 'Open', closureDate: '', remarks: '', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Assigned Action': 'asset', 'Action category': 'ECM', 'Assigned to': 'abcd', 'Target date': '29/09/2026', 'Status detail': 'Open', 'Remarks': '', 'Ack by': 'M.Afzal' } },
-        { id: '2', title: 'efgh', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '2', 'Assigned Action': 'efgh', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } }
+        { id: '1', title: 'asset', background: '', dateReference: '', category: 'ECM', assignedTo: 'abcd', dueDate: '29/09/2026', status: 'Open', closureDate: '', remarks: '', ackBy: 'M.Afzal', rawColumns: { 'S_No': '1', 'Background': '', 'Date/Reference': '', 'Assigned Action': 'asset', 'Action category': 'ECM', 'Assigned to': 'abcd', 'Target date': '29/09/2026', 'Status detail': 'Open', 'Remarks': '', 'Ack by': 'M.Afzal' } },
+        { id: '2', title: 'efgh', background: '', dateReference: '', category: 'Audit committee', assignedTo: 'def', dueDate: '30/09/2026', status: 'Open', closureDate: '', remarks: 'dfd', ackBy: 'M.Afzal', rawColumns: { 'S_No': '2', 'Background': '', 'Date/Reference': '', 'Assigned Action': 'efgh', 'Action category': 'Audit committee', 'Assigned to': 'def', 'Target date': '30/09/2026', 'Status detail': 'Open', 'Remarks': 'dfd', 'Ack by': 'M.Afzal' } }
       ]
     }
   ];

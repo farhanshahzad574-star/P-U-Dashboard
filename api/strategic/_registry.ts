@@ -1,11 +1,16 @@
 export interface StrategicActionItem {
   id: string;
+  background?: string;
+  dateReference?: string;
   title: string;
+  category?: string;
+  assignedTo?: string;
   priority: 'High' | 'Medium' | 'Low';
   dueDate: string;
   status: 'Open' | 'Closed';
   closureDate: string;
   remarks: string;
+  ackBy?: string;
   rawColumns?: Record<string, string>;
   columnHeaders?: string[];
 }
@@ -281,53 +286,99 @@ export function getSheetUrlForTile(tileId: string): string {
   return reg.fallbackUrl;
 }
 
+export function parseCsvRows(csvText: string): string[][] {
+  const rows: string[][] = [];
+  let currentRow: string[] = [];
+  let currentToken = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < csvText.length; i++) {
+    const ch = csvText[i];
+    const nextCh = csvText[i + 1];
+
+    if (ch === '"') {
+      if (inQuotes && nextCh === '"') {
+        currentToken += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (ch === ',' && !inQuotes) {
+      currentRow.push(currentToken.trim().replace(/^"|"$/g, ''));
+      currentToken = '';
+    } else if ((ch === '\r' || ch === '\n') && !inQuotes) {
+      if (ch === '\r' && nextCh === '\n') {
+        i++;
+      }
+      currentRow.push(currentToken.trim().replace(/^"|"$/g, ''));
+      currentToken = '';
+      if (currentRow.length > 0 && currentRow.some(cell => cell.length > 0)) {
+        rows.push(currentRow);
+      }
+      currentRow = [];
+    } else {
+      currentToken += ch;
+    }
+  }
+
+  if (currentToken.length > 0 || currentRow.length > 0) {
+    currentRow.push(currentToken.trim().replace(/^"|"$/g, ''));
+    if (currentRow.some(cell => cell.length > 0)) {
+      rows.push(currentRow);
+    }
+  }
+
+  return rows;
+}
+
 export function parseCsvToStrategicActions(csvText: string, defaultCode: string): StrategicActionItem[] {
   if (!csvText) return [];
-  const lines = csvText.split(/\r\n|\n|\r/).filter(l => l.trim().length > 0);
-  if (lines.length <= 1) return [];
+  const rows = parseCsvRows(csvText);
+  if (rows.length <= 1) return [];
 
-  const parseRowTokens = (line: string): string[] => {
-    const row: string[] = [];
-    let inQuotes = false;
-    let token = '';
-    for (let c = 0; c < line.length; c++) {
-      const ch = line[c];
-      if (ch === '"') {
-        inQuotes = !inQuotes;
-      } else if (ch === ',' && !inQuotes) {
-        row.push(token.trim().replace(/^"|"$/g, ''));
-        token = '';
-      } else {
-        token += ch;
-      }
-    }
-    row.push(token.trim().replace(/^"|"$/g, ''));
-    return row;
+  const rawHeaders = rows[0].map(h => h.trim()).filter(h => h.length > 0);
+  const headers = rawHeaders.map(h => h.toLowerCase());
+  const findCol = (candidates: string[], exclude: string[] = []) => {
+    let idx = headers.findIndex(h => candidates.some(c => h.trim() === c));
+    if (idx !== -1) return idx;
+    idx = headers.findIndex(h => {
+      if (exclude.some(ex => h.includes(ex))) return false;
+      return candidates.some(c => {
+        if (c.length <= 3) {
+          return new RegExp('\\b' + c + '\\b', 'i').test(h);
+        }
+        return h.includes(c);
+      });
+    });
+    return idx;
   };
 
-  const rawHeaders = parseRowTokens(lines[0]).filter(h => h.length > 0);
-  const headers = rawHeaders.map(h => h.toLowerCase());
-  const findCol = (candidates: string[]) => headers.findIndex(h => candidates.some(c => h.includes(c)));
-
-  const idCol = findCol(['id', 'code', 'action #', 'action#', 'item', 'sr', 's_no', 's.no', 'sno', 'no', '#']);
-  const descCol = findCol(['action', 'task', 'title', 'desc', 'description', 'activity', 'deliverable']);
-  const statusCol = findCol(['status', 'state', 'condition', 'open_close status', 'open_close', 'status detail']);
+  const idCol = findCol(['s_no', 's.no', 'sr', 'sno', 'id', 'code', 'action #', 'action#', 'item', 'no', '#']);
+  const bgCol = findCol(['background', 'bg']);
+  const dateRefCol = findCol(['date/reference', 'date / reference', 'date_reference', 'date-reference', 'datereference', 'date ref', 'date/ref', 'reference', 'ref'], ['target', 'due']);
+  const descCol = findCol(['assigned action', 'action description', 'deliverable', 'description', 'activity', 'action', 'task', 'title', 'desc'], ['category']);
+  const catCol = findCol(['action category', 'category', 'cat']);
+  const assignedCol = findCol(['assigned to', 'assignee', 'assigned person'], ['action']);
+  const dueCol = findCol(['target date', 'due date', 'deadline', 'target', 'due'], ['reference', 'ref']);
+  const statusCol = findCol(['status detail', 'open_close status', 'open_close', 'status', 'state', 'condition']);
   const priorityCol = findCol(['priority', 'prio', 'urgency']);
-  const dueCol = findCol(['due', 'target', 'deadline', 'date', 'target date']);
-  const remarksCol = findCol(['remark', 'note', 'comment', 'closure', 'remarks']);
+  const remarksCol = findCol(['remarks', 'remark', 'note', 'comment', 'closure']);
+  const ackCol = findCol(['ack by', 'acknowledged by', 'ack'], ['background']);
   const closureCol = findCol(['closure date', 'closed on', 'completed date', 'resolved date']);
 
   const parsed: StrategicActionItem[] = [];
-  for (let i = 1; i < lines.length; i++) {
-    const row = parseRowTokens(lines[i]);
+  for (let i = 1; i < rows.length; i++) {
+    const row = rows[i];
 
-    const desc = descCol !== -1 ? (row[descCol] || '') : (row[1] || row[0] || '');
-    if (!desc || desc.trim().length === 0) continue;
+    const background = bgCol !== -1 ? (row[bgCol] || '') : '';
+    const dateReference = dateRefCol !== -1 ? (row[dateRefCol] || '') : '';
+    const desc = descCol !== -1 ? (row[descCol] || '') : (row[3] || row[1] || row[0] || '');
+    if (!desc && !background && !dateReference) continue;
 
     // Ignore placeholder header repeats or sample student data
     if (/student name|extracurricular|alexandra|class level/i.test(desc)) continue;
 
-    const rawStatus = statusCol !== -1 ? (row[statusCol] || 'Open') : 'Open';
+    const rawStatus = statusCol !== -1 ? (row[statusCol] || '') : '';
     const isClosed = /close|done|complete|resolved/i.test(rawStatus);
     const status: 'Open' | 'Closed' = isClosed ? 'Closed' : 'Open';
 
@@ -351,26 +402,49 @@ export function parseCsvToStrategicActions(csvText: string, defaultCode: string)
       priority = i % 2 === 0 ? 'Medium' : 'High';
     }
 
+    const rawCategory = catCol !== -1 ? (row[catCol] || '') : '';
+    const rawAssignedTo = assignedCol !== -1 ? (row[assignedCol] || '') : '';
     const dueDate = dueCol !== -1 ? (row[dueCol] || '') : '';
     const remarks = remarksCol !== -1 ? (row[remarksCol] || '') : '';
+    const rawAckBy = ackCol !== -1 ? (row[ackCol] || '') : '';
     const closureDate = closureCol !== -1 ? (row[closureCol] || '') : (isClosed ? (dueDate || new Date().toISOString().split('T')[0]) : '');
 
     const rawColumns: Record<string, string> = {};
     for (let c = 0; c < rawHeaders.length; c++) {
       const headerName = rawHeaders[c];
-      rawColumns[headerName] = row[c] || '';
+      rawColumns[headerName] = row[c] !== undefined ? row[c] : '';
     }
+    // Set standard aliases only if not already uniquely set
+    if (rawColumns['S_No'] === undefined) rawColumns['S_No'] = id || String(i);
+    if (rawColumns['Background'] === undefined) rawColumns['Background'] = background;
+    if (rawColumns['Date/Reference'] === undefined) rawColumns['Date/Reference'] = dateReference;
+    if (rawColumns['Assigned Action'] === undefined) rawColumns['Assigned Action'] = desc;
+    if (rawColumns['Action category'] === undefined) rawColumns['Action category'] = rawCategory;
+    if (rawColumns['Assigned to'] === undefined) rawColumns['Assigned to'] = rawAssignedTo;
+    if (rawColumns['Target date'] === undefined) rawColumns['Target date'] = dueDate;
+    if (rawColumns['Status detail'] === undefined) rawColumns['Status detail'] = rawStatus;
+    if (rawColumns['Remarks'] === undefined) rawColumns['Remarks'] = remarks;
+    if (rawColumns['Ack by'] === undefined) rawColumns['Ack by'] = rawAckBy;
+
+    const finalHeaders = rawHeaders.length > 0 ? rawHeaders : [
+      'S_No', 'Background', 'Date/Reference', 'Assigned Action', 'Action category', 'Assigned to', 'Target date', 'Status detail', 'Remarks', 'Ack by'
+    ];
 
     parsed.push({
       id,
+      background,
+      dateReference,
       title: desc,
+      category: rawCategory,
+      assignedTo: rawAssignedTo,
       priority,
       dueDate,
       status,
       closureDate,
       remarks,
+      ackBy: rawAckBy,
       rawColumns,
-      columnHeaders: rawHeaders
+      columnHeaders: finalHeaders
     });
   }
   return parsed;

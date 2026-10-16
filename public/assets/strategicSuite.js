@@ -46,22 +46,26 @@
       // Dynamic filters and pagination for Individual Tile Dashboard
       tileFilterSearch: '',
       tileFilterStatus: 'all', // 'all' | 'Open' | 'Closed'
-      tileFilterColC: 'all', // Column C: Action category
-      tileFilterColD: 'all', // Column D: Assigned to
-      tileFilterColF: 'all', // Column F: Status detail
-      tileFilterColH: 'all', // Column H: Ack by
+      tileFilterColE: 'all', // Column E: Action category
+      tileFilterColF: 'all', // Column F: Assigned to
+      tileFilterColH: 'all', // Column H: Status detail
+      tileFilterColJ: 'all', // Column J: Ack by
+      tileFilterColC: 'all', // Legacy alias for Action category
+      tileFilterColD: 'all', // Legacy alias for Assigned to
       tilePage: 1,
       tilePageSize: 15,
       tileLastSynced: {},
       tileActions: {},
-      // Dynamic filters and pagination for Strategic Master Rollup Dashboard
+      // Dynamic filters and pagination for Strategic Master Rollup Dashboard (All Department Actions)
       masterFilterSearch: '',
       masterFilterDept: 'all', // 'all' | tileId
       masterFilterStatus: 'all', // 'all' | 'Open' | 'Closed'
-      masterFilterColC: 'all', // Column C: Action category
-      masterFilterColD: 'all', // Column D: Assigned to
-      masterFilterColF: 'all', // Column F: Status detail
-      masterFilterColH: 'all', // Column H: Ack by
+      masterFilterColE: 'all', // Column E: Action category
+      masterFilterColF: 'all', // Column F: Assigned to
+      masterFilterColH: 'all', // Column H: Status detail
+      masterFilterColJ: 'all', // Column J: Ack by
+      masterFilterColC: 'all', // Legacy alias for Action category
+      masterFilterColD: 'all', // Legacy alias for Assigned to
       masterPage: 1,
       masterPageSize: 15,
       masterLastSynced: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -69,9 +73,11 @@
       // COO Dashboard Sub-Tabs: 'self-assigned' | 'all-department'
       cooSubTab: 'self-assigned',
       cooSelfFilterSearch: '',
+      cooSelfFilterColE: 'all',
+      cooSelfFilterColH: 'all',
+      cooSelfFilterColJ: 'all',
       cooSelfFilterColC: 'all',
       cooSelfFilterColF: 'all',
-      cooSelfFilterColH: 'all',
       cooSelfPage: 1,
       cooSelfPageSize: 15,
       cooSelfLastSynced: 'Live',
@@ -236,18 +242,32 @@
           }
         }
 
-        // Purge old actions from target tiles
-        for (const [tId, _sheetId] of Object.entries(CANONICAL_TARGET_IDS)) {
-          const acts = this.customActions[tId];
-          if (Array.isArray(acts) && acts.some(a => 
-            /reformer convective bank|containment bund|substation sub-basement|CCTV surveillance|Risk-Based Inspection|Secure critical turnaround|valve stock|catalyst pre-filters/i.test(a.title || '')
-          )) {
-            delete this.customActions[tId];
-            purged = true;
+        // Ensure Background and Date/Reference are populated on all customActions
+        let customUpdated = false;
+        const std10Headers = ['S_No', 'Background', 'Date/Reference', 'Assigned Action', 'Action category', 'Assigned to', 'Target date', 'Status detail', 'Remarks', 'Ack by'];
+        for (const [key, actions] of Object.entries(this.customActions)) {
+          if (Array.isArray(actions)) {
+            actions.forEach(a => {
+              if (a) {
+                const raw = a.rawColumns || {};
+                const bg = a.background || raw['Background'] || raw['background'] || raw['Bg'] || raw['bg'] || '';
+                const dateRef = a.dateReference || raw['Date/Reference'] || raw['Date / Reference'] || raw['date/reference'] || raw['date_reference'] || raw['Reference'] || raw['ref'] || '';
+                a.background = bg;
+                a.dateReference = dateRef;
+                if (!a.rawColumns) a.rawColumns = {};
+                a.rawColumns['Background'] = bg;
+                a.rawColumns['Date/Reference'] = dateRef;
+
+                if (!Array.isArray(a.columnHeaders) || !a.columnHeaders.some(h => /background|bg/i.test(h)) || !a.columnHeaders.some(h => /date\/reference|reference/i.test(h))) {
+                  a.columnHeaders = [...std10Headers];
+                  customUpdated = true;
+                }
+              }
+            });
           }
         }
 
-        if (purged) {
+        if (purged || customUpdated) {
           this.saveStoredActions();
         }
       } catch (e) {
@@ -304,12 +324,14 @@
 
     loadCooStoredActions() {
       try {
-        const stored = localStorage.getItem('fpcl_coo_self_actions_v1');
+        const stored = localStorage.getItem('fpcl_coo_self_actions_v3');
         if (stored) {
           const parsed = JSON.parse(stored);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            this.cooSelfActions = parsed;
-            return;
+          if (Array.isArray(parsed) && parsed.length > 0 && ('background' in parsed[0] || 'Background' in (parsed[0].rawColumns || {}))) {
+            if (parsed[0].action !== 'COO' && parsed[0].assignedTo !== 'abcd') {
+              this.cooSelfActions = parsed;
+              return;
+            }
           }
         }
       } catch (e) {}
@@ -318,42 +340,74 @@
       this.cooSelfActions = [
         {
           sNo: '1',
-          action: 'COO',
-          category: 'ECM',
-          assignedTo: 'abcd',
-          targetDate: '29/09/2026',
+          background: '',
+          dateReference: '24/06/26',
+          action: 'Regarding the effective integration of human capital across the organization, transfer of FPCL employees to FFC stream along with harmonization of policies to be ensured. \nInstruction Required from COO-FPCL to HCM',
+          category: 'Director M&O',
+          assignedTo: 'COO',
+          targetDate: '',
           statusDetail: 'Open',
-          remarks: '',
-          ackBy: 'abc',
+          remarks: 'On going. 01 Executive tranfered to digitilization Project',
+          ackBy: '',
           rawColumns: {
             'S_No': '1',
-            'Assigned Action': 'COO',
-            'Action category': 'ECM',
-            'Assigned to': 'abcd',
-            'Target date': '29/09/2026',
+            'Background': '',
+            'Date/Reference': '24/06/26',
+            'Assigned Action': 'Regarding the effective integration of human capital across the organization, transfer of FPCL employees to FFC stream along with harmonization of policies to be ensured. \nInstruction Required from COO-FPCL to HCM',
+            'Action category': 'Director M&O',
+            'Assigned to': 'COO',
+            'Target date': '',
             'Status detail': 'Open',
-            'Remarks': '',
-            'Ack by': 'abc'
+            'Remarks': 'On going. 01 Executive tranfered to digitilization Project',
+            'Ack by': ''
           }
         },
         {
           sNo: '2',
-          action: 'efgh',
-          category: 'Audit committee',
-          assignedTo: 'def',
-          targetDate: '30/09/2026',
-          statusDetail: 'Open',
-          remarks: 'dfd',
-          ackBy: 'abcd',
+          background: '',
+          dateReference: '24/06/26',
+          action: 'Business Development at site to be supported by the Planning and L&D teams of PQ Site. \nAction required by COO-FPCL',
+          category: 'Director M&O',
+          assignedTo: 'COO',
+          targetDate: '',
+          statusDetail: '',
+          remarks: 'Decision Required',
+          ackBy: '',
           rawColumns: {
             'S_No': '2',
-            'Assigned Action': 'efgh',
-            'Action category': 'Audit committee',
-            'Assigned to': 'def',
-            'Target date': '30/09/2026',
-            'Status detail': 'Open',
-            'Remarks': 'dfd',
-            'Ack by': 'abcd'
+            'Background': '',
+            'Date/Reference': '24/06/26',
+            'Assigned Action': 'Business Development at site to be supported by the Planning and L&D teams of PQ Site. \nAction required by COO-FPCL',
+            'Action category': 'Director M&O',
+            'Assigned to': 'COO',
+            'Target date': '',
+            'Status detail': '',
+            'Remarks': 'Decision Required',
+            'Ack by': ''
+          }
+        },
+        {
+          sNo: '3',
+          background: '',
+          dateReference: '8/6/2026',
+          action: 'CE&MD was apprised on Power export to KE since TA-2026 which remained sightly above the Budget but weII below the contractual value. It was pointed out that KE is currently operatiting its RLNG based pIant (BQPS-III) which is weII beIow in merit order (9-10 ranking) vs FPCL (5th ranking). The Management advised to formaIIy take up the matttter with KE if this Merit Order vioIatition persists.\nCOO-FPCL to Decide- Target date was Aug-2026.',
+          category: 'MD',
+          assignedTo: 'COO',
+          targetDate: '',
+          statusDetail: '',
+          remarks: 'Executive high level meeting conducted on 9 Oct 2026, followed by operating committee meeting.',
+          ackBy: '',
+          rawColumns: {
+            'S_No': '3',
+            'Background': '',
+            'Date/Reference': '8/6/2026',
+            'Assigned Action': 'CE&MD was apprised on Power export to KE since TA-2026 which remained sightly above the Budget but weII below the contractual value. It was pointed out that KE is currently operatiting its RLNG based pIant (BQPS-III) which is weII beIow in merit order (9-10 ranking) vs FPCL (5th ranking). The Management advised to formaIIy take up the matttter with KE if this Merit Order vioIatition persists.\nCOO-FPCL to Decide- Target date was Aug-2026.',
+            'Action category': 'MD',
+            'Assigned to': 'COO',
+            'Target date': '',
+            'Status detail': '',
+            'Remarks': 'Executive high level meeting conducted on 9 Oct 2026, followed by operating committee meeting.',
+            'Ack by': ''
           }
         }
       ];
@@ -361,46 +415,81 @@
 
     saveCooStoredActions() {
       try {
-        localStorage.setItem('fpcl_coo_self_actions_v1', JSON.stringify(this.cooSelfActions));
+        localStorage.setItem('fpcl_coo_self_actions_v3', JSON.stringify(this.cooSelfActions));
       } catch (e) {}
     },
 
     parseCooSelfCsv(csvText) {
       if (!csvText || typeof csvText !== 'string') return [];
-      const lines = csvText.split(/\r\n|\n|\r/).filter(l => l.trim().length > 0);
-      if (lines.length <= 1) return [];
 
-      const parseRow = (line) => {
-        const row = [];
-        let inQuotes = false;
-        let token = '';
-        for (let i = 0; i < line.length; i++) {
-          const ch = line[i];
-          if (ch === '"') {
-            if (inQuotes && line[i + 1] === '"') {
-              token += '"';
-              i++;
-            } else {
-              inQuotes = !inQuotes;
-            }
-          } else if (ch === ',' && !inQuotes) {
-            row.push(token.trim().replace(/^"|"$/g, ''));
-            token = '';
+      // Parse CSV respecting quoted multi-line fields (RFC-4180)
+      const rows = [];
+      let currentRow = [];
+      let currentToken = '';
+      let inQuotes = false;
+
+      for (let i = 0; i < csvText.length; i++) {
+        const ch = csvText[i];
+        const nextCh = csvText[i + 1];
+
+        if (ch === '"') {
+          if (inQuotes && nextCh === '"') {
+            currentToken += '"';
+            i++;
           } else {
-            token += ch;
+            inQuotes = !inQuotes;
           }
+        } else if (ch === ',' && !inQuotes) {
+          currentRow.push(currentToken.trim().replace(/^"|"$/g, ''));
+          currentToken = '';
+        } else if ((ch === '\r' || ch === '\n') && !inQuotes) {
+          if (ch === '\r' && nextCh === '\n') {
+            i++;
+          }
+          currentRow.push(currentToken.trim().replace(/^"|"$/g, ''));
+          currentToken = '';
+          if (currentRow.length > 0 && currentRow.some(cell => cell.length > 0)) {
+            rows.push(currentRow);
+          }
+          currentRow = [];
+        } else {
+          currentToken += ch;
         }
-        row.push(token.trim().replace(/^"|"$/g, ''));
-        return row;
+      }
+
+      if (currentToken.length > 0 || currentRow.length > 0) {
+        currentRow.push(currentToken.trim().replace(/^"|"$/g, ''));
+        if (currentRow.some(cell => cell.length > 0)) {
+          rows.push(currentRow);
+        }
+      }
+
+      if (rows.length <= 1) return [];
+
+      const rawHeaders = rows[0];
+      const normHeaders = rawHeaders.map(h => (h || '').trim().toLowerCase());
+
+      const findIdx = (names) => {
+        const exact = normHeaders.findIndex(h => names.some(n => h === n));
+        if (exact !== -1) return exact;
+        return normHeaders.findIndex(h => names.some(n => h.includes(n)));
       };
 
-      const rawHeaders = parseRow(lines[0]);
-      const normHeaders = rawHeaders.map(h => h.trim().toLowerCase());
-
-      const findIdx = (names) => normHeaders.findIndex(h => names.some(n => h === n || h.includes(n)));
-
+      // In Sheet ID 1s5czmIVCXiOPTRc69QffJ51JFW2-gAErPitstUar2dU (Tab: COO):
+      // Col A: S_No
+      // Col B: Background
+      // Col C: Date/Reference
+      // Col D: Assigned Action
+      // Col E: Action category
+      // Col F: Assigned to
+      // Col G: Target date
+      // Col H: Status detail
+      // Col I: Remarks
+      // Col J: Ack by
       const sNoIdx = findIdx(['s_no', 's.no', 'sr', 'sno', 'no']);
-      const actionIdx = findIdx(['assigned action', 'action', 'title', 'task', 'description']);
+      const bgIdx = findIdx(['background', 'bg']);
+      const dateRefIdx = findIdx(['date/reference', 'date / reference', 'date_reference', 'date-reference', 'datereference', 'reference', 'ref']);
+      const actionIdx = findIdx(['assigned action', 'assigned_action', 'action title', 'action', 'title', 'task', 'description']);
       const catIdx = findIdx(['action category', 'category', 'cat']);
       const assignedIdx = findIdx(['assigned to', 'assignee', 'assigned']);
       const targetIdx = findIdx(['target date', 'target', 'due date', 'due']);
@@ -409,24 +498,28 @@
       const ackIdx = findIdx(['ack by', 'ack', 'acknowledged by']);
 
       const items = [];
-      for (let i = 1; i < lines.length; i++) {
-        const cells = parseRow(lines[i]);
-        const sNo = (sNoIdx !== -1 && cells[sNoIdx]) ? cells[sNoIdx].trim() : String(i);
-        const actionTitle = (actionIdx !== -1 && cells[actionIdx]) ? cells[actionIdx].trim() : (cells[1] || '');
-        if (!actionTitle && !sNo) continue;
+      for (let i = 1; i < rows.length; i++) {
+        const cells = rows[i];
+        const sNo = (sNoIdx !== -1 && cells[sNoIdx] !== undefined) ? cells[sNoIdx].trim() : (cells[0] ? cells[0].trim() : String(i));
+        const background = (bgIdx !== -1 && cells[bgIdx] !== undefined) ? cells[bgIdx].trim() : (cells[1] ? cells[1].trim() : '');
+        const dateReference = (dateRefIdx !== -1 && cells[dateRefIdx] !== undefined) ? cells[dateRefIdx].trim() : (cells[2] ? cells[2].trim() : '');
+        const actionTitle = (actionIdx !== -1 && cells[actionIdx] !== undefined) ? cells[actionIdx].trim() : (cells[3] ? cells[3].trim() : '');
+        if (!actionTitle && !sNo && !background && !dateReference) continue;
 
-        const actionCat = (catIdx !== -1 && cells[catIdx]) ? cells[catIdx].trim() : 'General';
-        const assignedTo = (assignedIdx !== -1 && cells[assignedIdx]) ? cells[assignedIdx].trim() : '-';
-        const targetDate = (targetIdx !== -1 && cells[targetIdx]) ? cells[targetIdx].trim() : '-';
-        const rawStatus = (statusIdx !== -1 && cells[statusIdx]) ? cells[statusIdx].trim() : 'Open';
-        const remarks = (remarksIdx !== -1 && cells[remarksIdx]) ? cells[remarksIdx].trim() : '';
-        const ackBy = (ackIdx !== -1 && cells[ackIdx]) ? cells[ackIdx].trim() : '-';
+        const actionCat = (catIdx !== -1 && cells[catIdx] !== undefined) ? cells[catIdx].trim() : (cells[4] ? cells[4].trim() : '');
+        const assignedTo = (assignedIdx !== -1 && cells[assignedIdx] !== undefined) ? cells[assignedIdx].trim() : (cells[5] ? cells[5].trim() : '');
+        const targetDate = (targetIdx !== -1 && cells[targetIdx] !== undefined) ? cells[targetIdx].trim() : (cells[6] ? cells[6].trim() : '');
+        const rawStatus = (statusIdx !== -1 && cells[statusIdx] !== undefined) ? cells[statusIdx].trim() : (cells[7] ? cells[7].trim() : '');
+        const remarks = (remarksIdx !== -1 && cells[remarksIdx] !== undefined) ? cells[remarksIdx].trim() : (cells[8] ? cells[8].trim() : '');
+        const ackBy = (ackIdx !== -1 && cells[ackIdx] !== undefined) ? cells[ackIdx].trim() : (cells[9] ? cells[9].trim() : '');
 
         const rawColumns = {};
         rawHeaders.forEach((h, hIdx) => {
-          if (h) rawColumns[h] = cells[hIdx] || '';
+          if (h) rawColumns[h] = cells[hIdx] !== undefined ? cells[hIdx].trim() : '';
         });
         rawColumns['S_No'] = sNo;
+        rawColumns['Background'] = background;
+        rawColumns['Date/Reference'] = dateReference;
         rawColumns['Assigned Action'] = actionTitle;
         rawColumns['Action category'] = actionCat;
         rawColumns['Assigned to'] = assignedTo;
@@ -437,13 +530,15 @@
 
         items.push({
           sNo: sNo || String(i),
+          background: background || '',
+          dateReference: dateReference || '',
           action: actionTitle,
-          category: actionCat || 'General',
-          assignedTo: assignedTo || '-',
-          targetDate: targetDate || '-',
-          statusDetail: rawStatus || 'Open',
+          category: actionCat || '',
+          assignedTo: assignedTo || '',
+          targetDate: targetDate || '',
+          statusDetail: rawStatus || '',
           remarks: remarks || '',
-          ackBy: ackBy || '-',
+          ackBy: ackBy || '',
           rawColumns
         });
       }
@@ -502,9 +597,7 @@
     setCooSubTab(tab) {
       this.state.cooSubTab = tab;
       if (tab === 'self-assigned') {
-        if (!this.cooSelfActions || this.cooSelfActions.length === 0) {
-          this.fetchCooSelfAssignedActions();
-        }
+        this.fetchCooSelfAssignedActions();
       }
       this.render();
     },
@@ -517,9 +610,11 @@
 
     clearCooSelfFilters() {
       this.state.cooSelfFilterSearch = '';
+      this.state.cooSelfFilterColE = 'all';
+      this.state.cooSelfFilterColH = 'all';
+      this.state.cooSelfFilterColJ = 'all';
       this.state.cooSelfFilterColC = 'all';
       this.state.cooSelfFilterColF = 'all';
-      this.state.cooSelfFilterColH = 'all';
       this.state.cooSelfPage = 1;
       this.render();
     },
@@ -548,17 +643,17 @@
     getFilteredCooSelfActions() {
       const actions = this.cooSelfActions || [];
       const q = (this.state.cooSelfFilterSearch || '').toLowerCase().trim();
-      const catFilter = (this.state.cooSelfFilterColC || 'all').trim();
-      const statusFilter = (this.state.cooSelfFilterColF || 'all').trim();
-      const ackFilter = (this.state.cooSelfFilterColH || 'all').trim();
+      const catFilter = (this.state.cooSelfFilterColE || this.state.cooSelfFilterColC || 'all').trim();
+      const statusFilter = (this.state.cooSelfFilterColH || this.state.cooSelfFilterColF || 'all').trim();
+      const ackFilter = (this.state.cooSelfFilterColJ || 'all').trim();
 
       return actions.filter(a => {
-        // Column C: Action category filter
+        // Column E: Action category filter
         if (catFilter !== 'all') {
           if ((a.category || '').toLowerCase() !== catFilter.toLowerCase()) return false;
         }
 
-        // Column F: Status detail filter
+        // Column H: Status detail filter
         if (statusFilter !== 'all') {
           const classified = this.classifyStatusDetail(a.statusDetail);
           if (statusFilter === 'Open' && classified !== 'Open') return false;
@@ -570,18 +665,21 @@
           }
         }
 
-        // Column H: Ack by filter
+        // Column J: Ack by filter
         if (ackFilter !== 'all') {
           if ((a.ackBy || '').toLowerCase() !== ackFilter.toLowerCase()) return false;
         }
 
-        // Search filter
+        // Search filter (searches across all columns including Background and Date/Reference)
         if (q) {
           const match =
             (a.sNo && String(a.sNo).toLowerCase().includes(q)) ||
+            (a.background && a.background.toLowerCase().includes(q)) ||
+            (a.dateReference && a.dateReference.toLowerCase().includes(q)) ||
             (a.action && a.action.toLowerCase().includes(q)) ||
             (a.category && a.category.toLowerCase().includes(q)) ||
             (a.assignedTo && a.assignedTo.toLowerCase().includes(q)) ||
+            (a.targetDate && a.targetDate.toLowerCase().includes(q)) ||
             (a.statusDetail && a.statusDetail.toLowerCase().includes(q)) ||
             (a.remarks && a.remarks.toLowerCase().includes(q)) ||
             (a.ackBy && a.ackBy.toLowerCase().includes(q));
@@ -594,12 +692,14 @@
 
     exportCooSelfCSV() {
       const filtered = this.getFilteredCooSelfActions();
-      const headers = ['S_No', 'Assigned Action', 'Action category', 'Assigned to', 'Target date', 'Status detail', 'Remarks', 'Ack by'];
+      const headers = ['S_No', 'Background', 'Date/Reference', 'Assigned Action', 'Action category', 'Assigned to', 'Target date', 'Status detail', 'Remarks', 'Ack by'];
       const rows = [headers.join(',')];
 
       filtered.forEach(a => {
         const cols = [
           `"${String(a.sNo || '').replace(/"/g, '""')}"`,
+          `"${String(a.background || '').replace(/"/g, '""')}"`,
+          `"${String(a.dateReference || '').replace(/"/g, '""')}"`,
           `"${String(a.action || '').replace(/"/g, '""')}"`,
           `"${String(a.category || '').replace(/"/g, '""')}"`,
           `"${String(a.assignedTo || '').replace(/"/g, '""')}"`,
@@ -743,6 +843,8 @@
       actions = actions.map((a, idx) => {
         const raw = a.rawColumns || {};
         const sNo = raw['S_No'] || raw['S.No'] || raw['s_no'] || raw['Sr'] || raw['sno'] || a.sNo || (a.id ? String(a.id).replace(/^[A-Za-z]+-0*/i, '') : '') || String(idx + 1);
+        const background = raw['Background'] || raw['background'] || raw['Bg'] || raw['bg'] || a.background || '';
+        const dateReference = raw['Date/Reference'] || raw['Date / Reference'] || raw['date/reference'] || raw['date_reference'] || raw['Date_Reference'] || raw['Reference'] || raw['reference'] || raw['ref'] || a.dateReference || '';
         const actionTitle = raw['Assigned Action'] || raw['Action'] || raw['action'] || a.title || a.action || a.desc || '';
         const actionCat = raw['Action category'] || raw['Category'] || raw['category'] || a.category || (a.priority === 'High' ? 'ECM' : 'ACM');
         const assignedTo = raw['Assigned to'] || raw['Assignee'] || raw['assigned'] || a.assignedTo || 'Operations Team';
@@ -755,6 +857,8 @@
 
         const standardizedRaw = {
           'S_No': sNo,
+          'Background': background,
+          'Date/Reference': dateReference,
           'Assigned Action': actionTitle,
           'Action category': actionCat,
           'Assigned to': assignedTo,
@@ -764,16 +868,34 @@
           'Ack by': ackBy,
           ...raw
         };
+        standardizedRaw['Background'] = background;
+        standardizedRaw['Date/Reference'] = dateReference;
+
+        const std10Headers = ['S_No', 'Background', 'Date/Reference', 'Assigned Action', 'Action category', 'Assigned to', 'Target date', 'Status detail', 'Remarks', 'Ack by'];
+        let actionHeaders = std10Headers;
+        if (Array.isArray(a.columnHeaders) && a.columnHeaders.length >= 8) {
+          const hasBg = a.columnHeaders.some(h => /background|bg/i.test(h));
+          const hasDateRef = a.columnHeaders.some(h => /date\/reference|reference|date_reference/i.test(h));
+          if (hasBg && hasDateRef) {
+            actionHeaders = a.columnHeaders;
+          } else {
+            const sNoHdr = a.columnHeaders.find(h => /s_no|sr|s\.no|#|id/i.test(h)) || 'S_No';
+            const rest = a.columnHeaders.filter(h => !/s_no|sr|s\.no|#|id|background|bg|date\/reference|reference|date_reference/i.test(h));
+            actionHeaders = [sNoHdr, 'Background', 'Date/Reference', ...rest];
+          }
+        }
 
         return {
           ...a,
           id: a.id || `${config.code || 'ACT'}-${String(idx + 1).padStart(2, '0')}`,
+          background,
+          dateReference,
           title: actionTitle,
           status: statusDetail,
           dueDate: targetDate,
           remarks: remarks,
           rawColumns: standardizedRaw,
-          columnHeaders: ['S_No', 'Assigned Action', 'Action category', 'Assigned to', 'Target date', 'Status detail', 'Remarks', 'Ack by']
+          columnHeaders: actionHeaders
         };
       });
 
@@ -1430,11 +1552,33 @@
 
       const newAction = {
         id: newId,
+        sNo: String(nextNum),
+        background: '',
+        dateReference: '',
         title: descInput.value.trim(),
+        action: descInput.value.trim(),
+        category: 'ECM',
+        assignedTo: 'Operations Team',
         dueDate: dueInput ? dueInput.value : new Date().toISOString().split('T')[0],
+        targetDate: dueInput ? dueInput.value : new Date().toISOString().split('T')[0],
         status,
+        statusDetail: status,
         closureDate: status === 'Closed' ? new Date().toISOString().split('T')[0] : '',
-        remarks: 'Directly logged into Action Sheet.'
+        remarks: 'Directly logged into Action Sheet.',
+        ackBy: 'M.Afzal',
+        rawColumns: {
+          'S_No': String(nextNum),
+          'Background': '',
+          'Date/Reference': '',
+          'Assigned Action': descInput.value.trim(),
+          'Action category': 'ECM',
+          'Assigned to': 'Operations Team',
+          'Target date': dueInput ? dueInput.value : new Date().toISOString().split('T')[0],
+          'Status detail': status,
+          'Remarks': 'Directly logged into Action Sheet.',
+          'Ack by': 'M.Afzal'
+        },
+        columnHeaders: ['S_No', 'Background', 'Date/Reference', 'Assigned Action', 'Action category', 'Assigned to', 'Target date', 'Status detail', 'Remarks', 'Ack by']
       };
 
       actions.unshift(newAction);
@@ -1483,60 +1627,94 @@
         .replace(/'/g, '&#039;');
     },
 
-    // Extract exact value for requested column (A-H) from live Google Sheet action item
-    // Column C: Action category
-    // Column D: Assigned to
-    // Column F: Status detail
-    // Column H: Ack by
+    // Extract exact value for requested column from live Google Sheet action item
+    // Standard Column Mapping:
+    // Column A: S_No
+    // Column B: Background (New)
+    // Column C: Date/Reference (New)
+    // Column D: Assigned Action
+    // Column E: Action category
+    // Column F: Assigned to
+    // Column G: Target date
+    // Column H: Status detail
+    // Column I: Remarks
+    // Column J: Ack by
     getActionColVal(action, col) {
       if (!action) return '';
       const raw = action.rawColumns || {};
       const headers = action.columnHeaders || [];
+      const colUpper = String(col || '').toUpperCase().trim();
 
-      // Col A (index 0): S_No
-      // Col B (index 1): Assigned Action
-      // Col C (index 2): Action category
-      // Col D (index 3): Assigned to
-      // Col E (index 4): Target date
-      // Col F (index 5): Status detail
-      // Col G (index 6): Remarks
-      // Col H (index 7): Ack by
-      const colMap = { 'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5, 'G': 6, 'H': 7 };
-      const idx = colMap[col.toUpperCase()];
+      // Semantic / Named column helpers
+      if (colUpper === 'BACKGROUND' || colUpper === 'BG' || colUpper === 'B') {
+        const v = raw['Background'] || raw['background'] || raw['Bg'] || raw['bg'] || raw['Col B'] || action.background;
+        return v ? String(v).trim() : '';
+      }
+      if (colUpper === 'DATE_REF' || colUpper === 'DATE/REFERENCE' || colUpper === 'DATEREFERENCE' || colUpper === 'DATE_REFERENCE') {
+        const v = raw['Date/Reference'] || raw['date/reference'] || raw['Date / Reference'] || raw['date_reference'] || raw['Reference'] || action.dateReference;
+        return v ? String(v).trim() : '';
+      }
+      if (colUpper === 'ACTION' || colUpper === 'TITLE' || colUpper === 'ASSIGNED ACTION' || colUpper === 'ASSIGNED_ACTION') {
+        const v = raw['Assigned Action'] || raw['Action'] || raw['action'] || action.title || action.action || action.desc;
+        return v ? String(v).trim() : '';
+      }
+      if (colUpper === 'CATEGORY' || colUpper === 'ACTION_CATEGORY' || colUpper === 'E') {
+        const v = raw['Action category'] || raw['Action Category'] || raw['Category'] || raw['category'] || raw['Col E'] || action.category;
+        return v ? String(v).trim() : (action.priority === 'High' ? 'ECM' : 'ACM');
+      }
+      if (colUpper === 'ASSIGNED' || colUpper === 'ASSIGNED_TO' || colUpper === 'F') {
+        const v = raw['Assigned to'] || raw['Assigned To'] || raw['Assignee'] || raw['assignee'] || raw['assigned'] || raw['Col F'] || action.assignedTo;
+        return v ? String(v).trim() : '';
+      }
+      if (colUpper === 'TARGET_DATE' || colUpper === 'DUE_DATE' || colUpper === 'G') {
+        const v = raw['Target date'] || raw['Target Date'] || raw['Due Date'] || raw['due date'] || raw['Col G'] || action.dueDate;
+        return v ? String(v).trim() : '';
+      }
+      if (colUpper === 'STATUS' || colUpper === 'STATUS_DETAIL' || colUpper === 'H') {
+        const v = raw['Status detail'] || raw['Status Detail'] || raw['Status'] || raw['status'] || raw['Col H'] || action.statusDetail || action.status;
+        const s = v ? String(v).trim() : '';
+        if (/close|done|complete|resolved/i.test(s)) return 'Closed';
+        if (/open|pending|in progress|active/i.test(s)) return 'Open';
+        return s || (action.status === 'Closed' ? 'Closed' : 'Open');
+      }
+      if (colUpper === 'REMARKS' || colUpper === 'I') {
+        const v = raw['Remarks'] || raw['Remark'] || raw['remarks'] || raw['Col I'] || action.remarks;
+        return v ? String(v).trim() : '';
+      }
+      if (colUpper === 'ACK' || colUpper === 'ACK_BY' || colUpper === 'J') {
+        const v = raw['Ack by'] || raw['Ack By'] || raw['ack by'] || raw['Acknowledged by'] || raw['Acknowledged By'] || raw['Col J'] || action.ackBy;
+        return v ? String(v).trim() : '';
+      }
 
+      // Exact index lookup if available from raw column headers
+      const colMap = { 'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5, 'G': 6, 'H': 7, 'I': 8, 'J': 9 };
+      const idx = colMap[colUpper];
       if (idx !== undefined && headers[idx] && raw[headers[idx]] !== undefined) {
         const v = String(raw[headers[idx]]).trim();
         if (v) return v;
       }
 
-      // Check standard aliases & fallback properties
-      if (col === 'C') {
-        const v = raw['Action category'] || raw['Action Category'] || raw['Category'] || raw['category'] || raw['Col C'] || raw['Column C'] || action.category;
-        return v ? String(v).trim() : (action.priority === 'High' ? 'ECM' : 'ACM');
-      } else if (col === 'D') {
-        const v = raw['Assigned to'] || raw['Assigned To'] || raw['Assignee'] || raw['assignee'] || raw['assigned'] || raw['Col D'] || raw['Column D'] || action.assignedTo;
-        return v ? String(v).trim() : '';
-      } else if (col === 'F') {
-        const v = raw['Status detail'] || raw['Status Detail'] || raw['Status'] || raw['status'] || raw['Col F'] || raw['Column F'] || action.status;
-        const s = v ? String(v).trim() : '';
-        if (/close|done|complete|resolved/i.test(s)) return 'Closed';
-        if (/open|pending|in progress|active/i.test(s)) return 'Open';
-        return s || (action.status === 'Closed' ? 'Closed' : 'Open');
-      } else if (col === 'H') {
-        const v = raw['Ack by'] || raw['Ack By'] || raw['ack by'] || raw['Acknowledged by'] || raw['Acknowledged By'] || raw['Col H'] || raw['Column H'] || action.ackBy;
+      // Legacy fallback for callers requesting 'C', 'D'
+      if (colUpper === 'C') {
+        const v = raw['Date/Reference'] || raw['date/reference'] || raw['Date / Reference'] || action.dateReference;
+        if (v) return String(v).trim();
+        const cat = raw['Action category'] || raw['Category'] || action.category;
+        return cat ? String(cat).trim() : '';
+      } else if (colUpper === 'D') {
+        const v = raw['Assigned Action'] || action.title || raw['Assigned to'] || action.assignedTo;
         return v ? String(v).trim() : '';
       }
 
       return '';
     },
 
-    filterActionList(actions, { colC = 'all', colD = 'all', colF = 'all', colH = 'all', search = '', dept = 'all' } = {}) {
+    filterActionList(actions, { colC = 'all', colD = 'all', colE = 'all', colF = 'all', colH = 'all', colJ = 'all', search = '', dept = 'all' } = {}) {
       if (!Array.isArray(actions)) return [];
       const q = (search || '').toLowerCase().trim();
-      const colCF = (colC || 'all').trim();
-      const colDF = (colD || 'all').trim();
-      const colFF = (colF || 'all').trim();
-      const colHF = (colH || 'all').trim();
+      const colEF = (colE !== 'all' ? colE : colC).trim();
+      const colFF = (colF !== 'all' && colF !== 'Open' && colF !== 'Closed' ? colF : colD).trim();
+      const colHF = (colH !== 'all' ? colH : ((colF === 'Open' || colF === 'Closed') ? colF : 'all')).trim();
+      const colJF = (colJ !== 'all' ? colJ : 'all').trim();
       const deptF = (dept || 'all').toLowerCase().trim();
 
       return actions.filter(a => {
@@ -1548,37 +1726,39 @@
           if (tId !== deptF && tCode !== deptF && tDept !== deptF) return false;
         }
 
-        // Column F: Status detail filter (All / Open / Closed)
-        if (colFF !== 'all') {
-          const valF = this.getActionColVal(a, 'F');
-          const isClosed = valF === 'Closed' || a.status === 'Closed' || a.status === 'Completed' || (a.status || '').toLowerCase().includes('close');
-          if (colFF === 'Open' && isClosed) return false;
-          if (colFF === 'Closed' && !isClosed) return false;
-          if (colFF !== 'Open' && colFF !== 'Closed' && valF.toLowerCase() !== colFF.toLowerCase()) return false;
-        }
-
-        // Column C: Action category filter
-        if (colCF !== 'all') {
-          const valC = this.getActionColVal(a, 'C');
-          if (valC.toLowerCase() !== colCF.toLowerCase()) return false;
-        }
-
-        // Column D: Assigned to filter
-        if (colDF !== 'all') {
-          const valD = this.getActionColVal(a, 'D');
-          if (valD.toLowerCase() !== colDF.toLowerCase()) return false;
-        }
-
-        // Column H: Ack by filter
+        // Column H: Status detail filter (All / Open / Closed)
         if (colHF !== 'all') {
-          const valH = this.getActionColVal(a, 'H');
-          if (valH.toLowerCase() !== colHF.toLowerCase()) return false;
+          const valH = this.getActionColVal(a, 'STATUS');
+          const isClosed = valH === 'Closed' || a.status === 'Closed' || a.status === 'Completed' || (a.status || '').toLowerCase().includes('close');
+          if (colHF === 'Open' && isClosed) return false;
+          if (colHF === 'Closed' && !isClosed) return false;
+          if (colHF !== 'Open' && colHF !== 'Closed' && valH.toLowerCase() !== colHF.toLowerCase()) return false;
+        }
+
+        // Column E: Action category filter
+        if (colEF !== 'all') {
+          const valE = this.getActionColVal(a, 'CATEGORY');
+          if (valE.toLowerCase() !== colEF.toLowerCase()) return false;
+        }
+
+        // Column F: Assigned to filter
+        if (colFF !== 'all') {
+          const valF = this.getActionColVal(a, 'ASSIGNED');
+          if (valF.toLowerCase() !== colFF.toLowerCase()) return false;
+        }
+
+        // Column J: Ack by filter
+        if (colJF !== 'all') {
+          const valJ = this.getActionColVal(a, 'ACK');
+          if (valJ.toLowerCase() !== colJF.toLowerCase()) return false;
         }
 
         // Search text filter
         if (q) {
-          const matchId = (a.id || '').toLowerCase().includes(q);
+          const matchId = (a.id || a.sNo || '').toLowerCase().includes(q);
           const matchTitle = (a.title || a.action || a.desc || '').toLowerCase().includes(q);
+          const matchBg = (a.background || (a.rawColumns && a.rawColumns['Background']) || '').toLowerCase().includes(q);
+          const matchDateRef = (a.dateReference || (a.rawColumns && a.rawColumns['Date/Reference']) || '').toLowerCase().includes(q);
           const matchDept = (a.department || '').toLowerCase().includes(q);
           const matchCode = (a.code || '').toLowerCase() === q || (a.code || '').toLowerCase().includes(q);
           const matchRemarks = (a.remarks || '').toLowerCase().includes(q);
@@ -1587,7 +1767,7 @@
           if (a.rawColumns && typeof a.rawColumns === 'object') {
             matchRaw = Object.values(a.rawColumns).some(v => String(v || '').toLowerCase().includes(q));
           }
-          if (!matchId && !matchTitle && !matchDept && !matchCode && !matchRemarks && !matchDue && !matchRaw) return false;
+          if (!matchId && !matchTitle && !matchBg && !matchDateRef && !matchDept && !matchCode && !matchRemarks && !matchDue && !matchRaw) return false;
         }
 
         return true;
@@ -1598,10 +1778,10 @@
       const tile = this.getTileData(tileId);
       if (!tile || !tile.actions) return [];
       return this.filterActionList(tile.actions, {
-        colC: this.state.tileFilterColC,
-        colD: this.state.tileFilterColD,
-        colF: this.state.tileFilterColF || this.state.tileFilterStatus,
-        colH: this.state.tileFilterColH,
+        colE: this.state.tileFilterColE !== 'all' ? this.state.tileFilterColE : this.state.tileFilterColC,
+        colF: this.state.tileFilterColF !== 'all' ? this.state.tileFilterColF : this.state.tileFilterColD,
+        colH: this.state.tileFilterColH !== 'all' ? this.state.tileFilterColH : (this.state.tileFilterStatus !== 'all' ? this.state.tileFilterStatus : 'all'),
+        colJ: this.state.tileFilterColJ !== 'all' ? this.state.tileFilterColJ : 'all',
         search: this.state.tileFilterSearch
       });
     },
@@ -1609,9 +1789,17 @@
     setTileFilter(key, val) {
       this.state[key] = val;
       if (key === 'tileFilterStatus') {
-        this.state.tileFilterColF = val;
-      } else if (key === 'tileFilterColF') {
+        this.state.tileFilterColH = val;
+      } else if (key === 'tileFilterColH') {
         this.state.tileFilterStatus = val;
+      } else if (key === 'tileFilterColE') {
+        this.state.tileFilterColC = val;
+      } else if (key === 'tileFilterColC') {
+        this.state.tileFilterColE = val;
+      } else if (key === 'tileFilterColF') {
+        this.state.tileFilterColD = val;
+      } else if (key === 'tileFilterColD') {
+        this.state.tileFilterColF = val;
       }
       this.state.tilePage = 1;
       this.render();
@@ -1620,10 +1808,12 @@
     clearTileFilters() {
       this.state.tileFilterSearch = '';
       this.state.tileFilterStatus = 'all';
-      this.state.tileFilterColC = 'all';
-      this.state.tileFilterColD = 'all';
+      this.state.tileFilterColE = 'all';
       this.state.tileFilterColF = 'all';
       this.state.tileFilterColH = 'all';
+      this.state.tileFilterColJ = 'all';
+      this.state.tileFilterColC = 'all';
+      this.state.tileFilterColD = 'all';
       this.state.tilePage = 1;
       this.render();
     },
@@ -1654,7 +1844,14 @@
       const firstWithHeaders = data.find(a => Array.isArray(a.columnHeaders) && a.columnHeaders.length > 0);
       let headers = [];
       if (firstWithHeaders && firstWithHeaders.columnHeaders.length > 0) {
-        headers = ['S_No', ...firstWithHeaders.columnHeaders.filter(h => !/^(s_no|sr|s\.no|#)$/i.test(h))];
+        let cols = ['S_No', ...firstWithHeaders.columnHeaders.filter(h => !/^(s_no|sr|s\.no|#)$/i.test(h))];
+        const hasBg = cols.some(c => /background|bg/i.test(c));
+        const hasDateRef = cols.some(c => /date\/reference|reference|date_reference/i.test(c));
+        if (!hasBg || !hasDateRef) {
+          const rest = cols.filter(c => !/^(s_no|sr|s\.no|#|background|bg|date\/reference|reference|date_reference)$/i.test(c));
+          cols = ['S_No', 'Background', 'Date/Reference', ...rest];
+        }
+        headers = cols;
       } else {
         const colSet = new Set();
         for (const a of data) {
@@ -1667,7 +1864,7 @@
         if (colSet.size > 0) {
           headers = ['S_No', ...Array.from(colSet)];
         } else {
-          headers = ['S_No', 'Assigned Action', 'Action category', 'Assigned to', 'Target date', 'Status detail', 'Remarks', 'Ack by'];
+          headers = ['S_No', 'Background', 'Date/Reference', 'Assigned Action', 'Action category', 'Assigned to', 'Target date', 'Status detail', 'Remarks', 'Ack by'];
         }
       }
 
@@ -1688,10 +1885,12 @@
             }
           }
           if (!val && val !== 0) {
-            if (/category|col\s*c/i.test(colLower)) val = this.getActionColVal(d, 'C');
-            else if (/assigned\s*to|assignee|col\s*d/i.test(colLower)) val = this.getActionColVal(d, 'D');
-            else if (/status\s*detail|condition|col\s*f/i.test(colLower)) val = this.getActionColVal(d, 'F') || (d.status === 'Closed' ? 'Closed' : 'Open');
-            else if (/ack\s*by|acknowledged|col\s*h/i.test(colLower)) val = this.getActionColVal(d, 'H');
+            if (/background|bg/i.test(colLower)) val = raw['Background'] || d.background || '';
+            else if (/date\/reference|reference|date_reference|date \/ reference/i.test(colLower)) val = raw['Date/Reference'] || d.dateReference || '';
+            else if (/category/i.test(colLower)) val = this.getActionColVal(d, 'CATEGORY');
+            else if (/assigned\s*to|assignee/i.test(colLower)) val = this.getActionColVal(d, 'ASSIGNED');
+            else if (/status\s*detail|condition/i.test(colLower)) val = this.getActionColVal(d, 'STATUS') || (d.status === 'Closed' ? 'Closed' : 'Open');
+            else if (/ack\s*by|acknowledged/i.test(colLower)) val = this.getActionColVal(d, 'ACK');
             else if (/action|title|task|desc|deliverable/i.test(colLower)) val = raw['Assigned Action'] || d.title || d.action || '';
             else if (/due|target|deadline/i.test(colLower)) val = raw['Target date'] || d.dueDate || '';
             else if (/status/i.test(colLower)) val = d.status || '';
@@ -1747,10 +1946,10 @@
       const all = rollup.allActionsList || [];
       return this.filterActionList(all, {
         dept: this.state.masterFilterDept,
-        colC: this.state.masterFilterColC,
-        colD: this.state.masterFilterColD,
-        colF: this.state.masterFilterColF || this.state.masterFilterStatus,
-        colH: this.state.masterFilterColH,
+        colE: this.state.masterFilterColE !== 'all' ? this.state.masterFilterColE : this.state.masterFilterColC,
+        colF: this.state.masterFilterColF !== 'all' ? this.state.masterFilterColF : this.state.masterFilterColD,
+        colH: this.state.masterFilterColH !== 'all' ? this.state.masterFilterColH : (this.state.masterFilterStatus !== 'all' ? this.state.masterFilterStatus : 'all'),
+        colJ: this.state.masterFilterColJ !== 'all' ? this.state.masterFilterColJ : 'all',
         search: this.state.masterFilterSearch
       });
     },
@@ -1758,9 +1957,17 @@
     setMasterFilter(key, val) {
       this.state[key] = val;
       if (key === 'masterFilterStatus') {
-        this.state.masterFilterColF = val;
-      } else if (key === 'masterFilterColF') {
+        this.state.masterFilterColH = val;
+      } else if (key === 'masterFilterColH') {
         this.state.masterFilterStatus = val;
+      } else if (key === 'masterFilterColE') {
+        this.state.masterFilterColC = val;
+      } else if (key === 'masterFilterColC') {
+        this.state.masterFilterColE = val;
+      } else if (key === 'masterFilterColF') {
+        this.state.masterFilterColD = val;
+      } else if (key === 'masterFilterColD') {
+        this.state.masterFilterColF = val;
       }
       this.state.masterPage = 1;
       this.render();
@@ -1788,10 +1995,12 @@
       this.state.masterFilterSearch = '';
       this.state.masterFilterDept = 'all';
       this.state.masterFilterStatus = 'all';
-      this.state.masterFilterColC = 'all';
-      this.state.masterFilterColD = 'all';
+      this.state.masterFilterColE = 'all';
       this.state.masterFilterColF = 'all';
       this.state.masterFilterColH = 'all';
+      this.state.masterFilterColJ = 'all';
+      this.state.masterFilterColC = 'all';
+      this.state.masterFilterColD = 'all';
       this.state.masterPage = 1;
       this.render();
     },
@@ -1818,29 +2027,34 @@
 
       const deptF = this.state.masterFilterDept || 'all';
       const statusF = this.state.masterFilterStatus || 'all';
-      const colCF = this.state.masterFilterColC || 'all';
-      const colDF = this.state.masterFilterColD || 'all';
+      const colEF = (this.state.masterFilterColE !== 'all' ? this.state.masterFilterColE : this.state.masterFilterColC) || 'all';
+      const colFF = (this.state.masterFilterColF !== 'all' ? this.state.masterFilterColF : this.state.masterFilterColD) || 'all';
       const colHF = this.state.masterFilterColH || 'all';
+      const colJF = this.state.masterFilterColJ || 'all';
       const q = (this.state.masterFilterSearch || '').trim();
 
-      const headers = ['S_No', 'Department', 'Assigned Action', 'Action category', 'Assigned to', 'Target date', 'Status detail', 'Remarks', 'Ack by'];
+      const headers = ['S_No', 'Department', 'Background', 'Date/Reference', 'Assigned Action', 'Action category', 'Assigned to', 'Target date', 'Status detail', 'Remarks', 'Ack by'];
       const rows = data.map((d, i) => {
         const raw = d.rawColumns || {};
         const sNo = raw['S_No'] || raw['S.No'] || raw['s_no'] || raw['Sr'] || raw['sno'] || d.sNo || (d.id ? String(d.id).replace(/^[A-Za-z]+-0*/i, '') : '') || String(i + 1);
         const dept = d.department || d.code || '';
+        const background = raw['Background'] || raw['background'] || d.background || '';
+        const dateReference = raw['Date/Reference'] || raw['Date / Reference'] || d.dateReference || '';
         const actionTitle = raw['Assigned Action'] || raw['Action'] || raw['action'] || d.title || d.action || d.desc || '';
-        const actionCat = this.getActionColVal(d, 'C') || raw['Action category'] || raw['Category'] || raw['category'] || d.category || (d.priority === 'High' ? 'ECM' : 'ACM');
-        const assignedTo = this.getActionColVal(d, 'D') || raw['Assigned to'] || raw['Assignee'] || raw['assigned'] || d.assignedTo || 'Operations Team';
+        const actionCat = this.getActionColVal(d, 'CATEGORY') || raw['Action category'] || raw['Category'] || raw['category'] || d.category || (d.priority === 'High' ? 'ECM' : 'ACM');
+        const assignedTo = this.getActionColVal(d, 'ASSIGNED') || raw['Assigned to'] || raw['Assignee'] || raw['assigned'] || d.assignedTo || 'Operations Team';
         const targetDate = raw['Target date'] || raw['Due Date'] || raw['due date'] || d.dueDate || '';
-        const valF = this.getActionColVal(d, 'F');
-        const isClosed = valF === 'Closed' || d.status === 'Closed' || d.status === 'Completed' || /close|done|complete|resolved/i.test(String(raw['Status detail'] || raw['Status'] || d.status || ''));
-        const statusDetail = valF || (isClosed ? 'Closed' : 'Open');
+        const valH = this.getActionColVal(d, 'STATUS');
+        const isClosed = valH === 'Closed' || d.status === 'Closed' || d.status === 'Completed' || /close|done|complete|resolved/i.test(String(raw['Status detail'] || raw['Status'] || d.status || ''));
+        const statusDetail = valH || (isClosed ? 'Closed' : 'Open');
         const remarks = raw['Remarks'] || raw['Remark'] || raw['remarks'] || d.remarks || '';
-        const ackBy = this.getActionColVal(d, 'H') || raw['Ack by'] || raw['Ack By'] || raw['ack by'] || d.ackBy || 'M.Afzal';
+        const ackBy = this.getActionColVal(d, 'ACK') || raw['Ack by'] || raw['Ack By'] || raw['ack by'] || d.ackBy || 'M.Afzal';
 
         return [
           sNo,
           `"${String(dept).replace(/"/g, '""')}"`,
+          `"${String(background).replace(/"/g, '""')}"`,
+          `"${String(dateReference).replace(/"/g, '""')}"`,
           `"${String(actionTitle).replace(/"/g, '""')}"`,
           `"${String(actionCat).replace(/"/g, '""')}"`,
           `"${String(assignedTo).replace(/"/g, '""')}"`,
@@ -2205,53 +2419,98 @@
       this.render();
     },
 
+    // Robust RFC 4180 CSV row tokenizer supporting multiline cells with embedded quotes and newlines
+    parseCsvRows(csvText) {
+      const rows = [];
+      let currentRow = [];
+      let currentToken = '';
+      let inQuotes = false;
+
+      for (let i = 0; i < csvText.length; i++) {
+        const ch = csvText[i];
+        const nextCh = csvText[i + 1];
+
+        if (ch === '"') {
+          if (inQuotes && nextCh === '"') {
+            currentToken += '"';
+            i++;
+          } else {
+            inQuotes = !inQuotes;
+          }
+        } else if (ch === ',' && !inQuotes) {
+          currentRow.push(currentToken.trim().replace(/^"|"$/g, ''));
+          currentToken = '';
+        } else if ((ch === '\r' || ch === '\n') && !inQuotes) {
+          if (ch === '\r' && nextCh === '\n') {
+            i++;
+          }
+          currentRow.push(currentToken.trim().replace(/^"|"$/g, ''));
+          currentToken = '';
+          if (currentRow.length > 0 && currentRow.some(cell => cell.length > 0)) {
+            rows.push(currentRow);
+          }
+          currentRow = [];
+        } else {
+          currentToken += ch;
+        }
+      }
+
+      if (currentToken.length > 0 || currentRow.length > 0) {
+        currentRow.push(currentToken.trim().replace(/^"|"$/g, ''));
+        if (currentRow.some(cell => cell.length > 0)) {
+          rows.push(currentRow);
+        }
+      }
+
+      return rows;
+    },
+
     // CSV parsing logic for employee action sheets
     parseCsvToActions(csvText, defaultCode) {
       if (!csvText) return [];
-      const lines = csvText.split(/\r\n|\n|\r/).filter(l => l.trim().length > 0);
-      if (lines.length <= 1) return [];
+      const rows = this.parseCsvRows(csvText);
+      if (rows.length <= 1) return [];
 
-      const parseRowTokens = (line) => {
-        const row = [];
-        let inQuotes = false;
-        let token = '';
-        for (let c = 0; c < line.length; c++) {
-          const ch = line[c];
-          if (ch === '"') {
-            inQuotes = !inQuotes;
-          } else if (ch === ',' && !inQuotes) {
-            row.push(token.trim().replace(/^"|"$/g, ''));
-            token = '';
-          } else {
-            token += ch;
-          }
-        }
-        row.push(token.trim().replace(/^"|"$/g, ''));
-        return row;
-      };
-
-      const rawHeaders = parseRowTokens(lines[0]).filter(h => h.length > 0);
+      const rawHeaders = rows[0].map(h => h.trim()).filter(h => h.length > 0);
       const headers = rawHeaders.map(h => h.toLowerCase());
-      const findCol = (candidates) => {
-        return headers.findIndex(h => candidates.some(c => h.includes(c)));
+      const findCol = (candidates, exclude = []) => {
+        let idx = headers.findIndex(h => candidates.some(c => h.trim() === c));
+        if (idx !== -1) return idx;
+        idx = headers.findIndex(h => {
+          if (exclude.some(ex => h.includes(ex))) return false;
+          return candidates.some(c => {
+            if (c.length <= 3) {
+              return new RegExp('\\b' + c + '\\b', 'i').test(h);
+            }
+            return h.includes(c);
+          });
+        });
+        return idx;
       };
 
-      const idCol = findCol(['id', 'code', 'action #', 'action#', 'item', 'sr', 's_no', 's.no', 'sno', 'no', '#']);
-      const descCol = findCol(['action', 'task', 'title', 'desc', 'description', 'activity', 'deliverable']);
-      const statusCol = findCol(['status', 'state', 'condition', 'open_close status', 'open_close']);
+      const idCol = findCol(['s_no', 's.no', 'sr', 'sno', 'id', 'code', 'action #', 'action#', 'item', 'no', '#']);
+      const bgCol = findCol(['background', 'bg']);
+      const dateRefCol = findCol(['date/reference', 'date / reference', 'date_reference', 'date-reference', 'datereference', 'date ref', 'date/ref', 'reference', 'ref'], ['target', 'due']);
+      const descCol = findCol(['assigned action', 'action description', 'deliverable', 'description', 'activity', 'action', 'task', 'title', 'desc'], ['category']);
+      const catCol = findCol(['action category', 'category', 'cat']);
+      const assignedCol = findCol(['assigned to', 'assignee', 'assigned person'], ['action']);
+      const dueCol = findCol(['target date', 'due date', 'deadline', 'target', 'due'], ['reference', 'ref']);
+      const statusCol = findCol(['status detail', 'open_close status', 'open_close', 'status', 'state', 'condition']);
       const priorityCol = findCol(['priority', 'prio', 'urgency']);
-      const dueCol = findCol(['due', 'target', 'deadline', 'date', 'target date']);
-      const remarksCol = findCol(['remark', 'note', 'comment', 'closure', 'remarks']);
+      const remarksCol = findCol(['remarks', 'remark', 'note', 'comment', 'closure']);
+      const ackCol = findCol(['ack by', 'acknowledged by', 'ack'], ['background']);
       const closureCol = findCol(['closure date', 'closed on', 'completed date', 'resolved date']);
 
       const parsed = [];
-      for (let i = 1; i < lines.length; i++) {
-        const row = parseRowTokens(lines[i]);
+      for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
 
-        const desc = descCol !== -1 ? (row[descCol] || '') : (row[1] || row[0] || '');
-        if (!desc || desc.trim().length === 0) continue;
+        const background = bgCol !== -1 ? (row[bgCol] || '') : '';
+        const dateReference = dateRefCol !== -1 ? (row[dateRefCol] || '') : '';
+        const desc = descCol !== -1 ? (row[descCol] || '') : (row[3] || row[1] || row[0] || '');
+        if (!desc && !background && !dateReference) continue;
 
-        const rawStatus = statusCol !== -1 ? (row[statusCol] || 'Open') : 'Open';
+        const rawStatus = statusCol !== -1 ? (row[statusCol] || '') : '';
         const isClosed = /close|done|complete|resolved/i.test(rawStatus);
         const status = isClosed ? 'Closed' : 'Open';
 
@@ -2262,6 +2521,12 @@
         } else if (/^\d+$/.test(id)) {
           id = `${defaultCode}-${id.padStart(2, '0')}`;
         }
+
+        const rawCategory = catCol !== -1 ? (row[catCol] || '') : '';
+        const rawAssignedTo = assignedCol !== -1 ? (row[assignedCol] || '') : '';
+        const dueDate = dueCol !== -1 ? (row[dueCol] || '') : '';
+        const remarks = remarksCol !== -1 ? (row[remarksCol] || '') : '';
+        const ackBy = ackCol !== -1 ? (row[ackCol] || '') : '';
 
         const rawPriority = priorityCol !== -1 ? (row[priorityCol] || '') : '';
         let priority = 'High';
@@ -2275,27 +2540,48 @@
           priority = i % 2 === 0 ? 'Medium' : 'High';
         }
 
-        const dueDate = dueCol !== -1 ? (row[dueCol] || '') : '';
-        const remarks = remarksCol !== -1 ? (row[remarksCol] || '') : '';
         const closureDate = closureCol !== -1 ? (row[closureCol] || '') : (isClosed ? (dueDate || new Date().toISOString().split('T')[0]) : '');
 
         // Capture raw columns dictionary for dynamic table rendering
         const rawColumns = {};
         for (let c = 0; c < rawHeaders.length; c++) {
           const headerName = rawHeaders[c];
-          rawColumns[headerName] = row[c] || '';
+          rawColumns[headerName] = row[c] !== undefined ? row[c] : '';
         }
+        if (rawColumns['S_No'] === undefined) rawColumns['S_No'] = id || String(i);
+        if (rawColumns['Background'] === undefined) rawColumns['Background'] = background;
+        if (rawColumns['Date/Reference'] === undefined) rawColumns['Date/Reference'] = dateReference;
+        if (rawColumns['Assigned Action'] === undefined) rawColumns['Assigned Action'] = desc;
+        if (rawColumns['Action category'] === undefined) rawColumns['Action category'] = rawCategory;
+        if (rawColumns['Assigned to'] === undefined) rawColumns['Assigned to'] = rawAssignedTo;
+        if (rawColumns['Target date'] === undefined) rawColumns['Target date'] = dueDate;
+        if (rawColumns['Status detail'] === undefined) rawColumns['Status detail'] = rawStatus;
+        if (rawColumns['Remarks'] === undefined) rawColumns['Remarks'] = remarks;
+        if (rawColumns['Ack by'] === undefined) rawColumns['Ack by'] = ackBy;
+
+        const finalHeaders = rawHeaders.length > 0 ? rawHeaders : [
+          'S_No', 'Background', 'Date/Reference', 'Assigned Action', 'Action category', 'Assigned to', 'Target date', 'Status detail', 'Remarks', 'Ack by'
+        ];
 
         parsed.push({
           id,
+          sNo: id || String(i),
+          background,
+          dateReference,
           title: desc,
+          action: desc,
+          category: rawCategory,
+          assignedTo: rawAssignedTo,
           priority,
           dueDate,
+          targetDate: dueDate,
           status,
+          statusDetail: rawStatus,
           closureDate,
           remarks,
+          ackBy,
           rawColumns,
-          columnHeaders: rawHeaders
+          columnHeaders: finalHeaders
         });
       }
 
@@ -2395,14 +2681,16 @@
       const uniqueAckBy = [...new Set(allActions.map(a => a.ackBy).filter(Boolean))].sort();
       const isFiltered = Boolean(
         this.state.cooSelfFilterSearch ||
+        (this.state.cooSelfFilterColE && this.state.cooSelfFilterColE !== 'all') ||
+        (this.state.cooSelfFilterColH && this.state.cooSelfFilterColH !== 'all') ||
+        (this.state.cooSelfFilterColJ && this.state.cooSelfFilterColJ !== 'all') ||
         (this.state.cooSelfFilterColC && this.state.cooSelfFilterColC !== 'all') ||
-        (this.state.cooSelfFilterColF && this.state.cooSelfFilterColF !== 'all') ||
-        (this.state.cooSelfFilterColH && this.state.cooSelfFilterColH !== 'all')
+        (this.state.cooSelfFilterColF && this.state.cooSelfFilterColF !== 'all')
       );
 
       // Category breakdown for horizontal stacked bar chart and donut chart
       const catMap = {};
-      const baseCats = uniqueCats.length > 0 ? uniqueCats : ['ECM', 'Audit committee'];
+      const baseCats = uniqueCats.length > 0 ? uniqueCats : ['Director M&O', 'MD'];
       baseCats.forEach(c => {
         catMap[c] = { category: c, total: 0, closed: 0, open: 0, overdue: 0 };
       });
@@ -2561,28 +2849,28 @@
               <div class="text-4xl sm:text-5xl font-black font-mono tracking-tight text-[#1E3A8A] mt-1.5 text-center">${totalCount}</div>
             </div>
 
-            <!-- 2- Closed Actions from column F named Status detail -->
+            <!-- 2- Closed Actions from column H named Status detail -->
             <div class="relative overflow-hidden rounded-2xl border-2 border-emerald-200 bg-gradient-to-b from-emerald-50/70 via-white to-emerald-50/30 p-3 sm:p-4 shadow-xs text-center flex flex-col items-center justify-center">
               <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-600"></div>
               <span class="text-xs font-extrabold uppercase tracking-wider text-emerald-900 text-center">Closed Actions</span>
               <div class="text-4xl sm:text-5xl font-black font-mono tracking-tight text-[#0B8A5A] mt-1.5 text-center">${closedCount}</div>
             </div>
 
-            <!-- 3- Open Actions from F named Status detail (RED COLOR) -->
+            <!-- 3- Open Actions from column H named Status detail (RED COLOR) -->
             <div class="relative overflow-hidden rounded-2xl border-2 border-red-200 bg-gradient-to-b from-red-50/70 via-white to-red-50/30 p-3 sm:p-4 shadow-xs text-center flex flex-col items-center justify-center">
               <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-red-500 via-rose-500 to-red-600"></div>
               <span class="text-xs font-extrabold uppercase tracking-wider text-red-900 text-center">Open Actions</span>
               <div class="text-4xl sm:text-5xl font-black font-mono tracking-tight text-[#DC2626] mt-1.5 text-center">${openCount}</div>
             </div>
 
-            <!-- 4- Overdue Actions from from F named Status detail (RED COLOR FOR OPEN POINTS) -->
+            <!-- 4- Overdue Actions from column H named Status detail (RED COLOR FOR OPEN POINTS) -->
             <div class="relative overflow-hidden rounded-2xl border-2 border-rose-200 bg-gradient-to-b from-rose-50/70 via-white to-rose-50/30 p-3 sm:p-4 shadow-xs text-center flex flex-col items-center justify-center">
               <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-red-600 via-rose-600 to-amber-500"></div>
               <span class="text-xs font-extrabold uppercase tracking-wider text-rose-900 text-center">Overdue Actions</span>
               <div class="text-4xl sm:text-5xl font-black font-mono tracking-tight text-[#DC2626] mt-1.5 text-center">${overdueCount}</div>
             </div>
 
-            <!-- 5- Dropped Actions from from F named Status detail -->
+            <!-- 5- Dropped Actions from column H named Status detail -->
             <div class="relative overflow-hidden rounded-2xl border-2 border-slate-200 bg-gradient-to-b from-slate-50/70 via-white to-slate-100/40 p-3 sm:p-4 shadow-xs text-center flex flex-col items-center justify-center">
               <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-slate-500 via-slate-400 to-zinc-600"></div>
               <span class="text-xs font-extrabold uppercase tracking-wider text-slate-800 text-center">Dropped Actions</span>
@@ -2597,7 +2885,7 @@
             </div>
           </div>
 
-          <!-- 3. FILTERS (BELOW KPIS, NO HEADING, MOBILE SIDE-BY-SIDE, APPLIES TO WHOLE DASHBOARD, COL C, F, H) -->
+          <!-- 3. FILTERS (BELOW KPIS, NO HEADING, MOBILE SIDE-BY-SIDE, APPLIES TO WHOLE DASHBOARD, COL E, H, J) -->
           <div class="bg-white border-2 border-slate-200/90 rounded-2xl p-2.5 sm:p-3 shadow-xs">
             <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-2">
               <!-- Search Filter -->
@@ -2622,15 +2910,15 @@
                 ` : ''}
               </div>
 
-              <!-- Column C: Action category -->
+              <!-- Column E: Action category -->
               <div class="relative">
                 <select
-                  class="w-full py-1.5 pl-2.5 pr-7 bg-slate-50 hover:bg-white focus:bg-white text-slate-900 border ${this.state.cooSelfFilterColC && this.state.cooSelfFilterColC !== 'all' ? 'border-indigo-500 bg-indigo-50/50 text-indigo-950 font-bold' : 'border-slate-300'} focus:border-indigo-500 rounded-xl text-xs font-semibold outline-none transition-all cursor-pointer appearance-none truncate"
-                  onchange="window.FPCL_STRATEGIC_SUITE.setCooSelfFilter('cooSelfFilterColC', this.value)"
+                  class="w-full py-1.5 pl-2.5 pr-7 bg-slate-50 hover:bg-white focus:bg-white text-slate-900 border ${(this.state.cooSelfFilterColE && this.state.cooSelfFilterColE !== 'all') || (this.state.cooSelfFilterColC && this.state.cooSelfFilterColC !== 'all') ? 'border-indigo-500 bg-indigo-50/50 text-indigo-950 font-bold' : 'border-slate-300'} focus:border-indigo-500 rounded-xl text-xs font-semibold outline-none transition-all cursor-pointer appearance-none truncate"
+                  onchange="window.FPCL_STRATEGIC_SUITE.setCooSelfFilter('cooSelfFilterColE', this.value); window.FPCL_STRATEGIC_SUITE.setCooSelfFilter('cooSelfFilterColC', this.value);"
                 >
-                  <option value="all">Action category: All</option>
+                  <option value="all">Column E: Action category (All)</option>
                   ${uniqueCats.map(c => `
-                    <option value="${this.escapeHtml(c)}" ${this.state.cooSelfFilterColC === c ? 'selected' : ''}>${this.escapeHtml(c)}</option>
+                    <option value="${this.escapeHtml(c)}" ${(this.state.cooSelfFilterColE === c || this.state.cooSelfFilterColC === c) ? 'selected' : ''}>${this.escapeHtml(c)}</option>
                   `).join('')}
                 </select>
                 <div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none text-slate-400">
@@ -2638,32 +2926,32 @@
                 </div>
               </div>
 
-              <!-- Column F: Status detail -->
+              <!-- Column H: Status detail -->
               <div class="relative">
                 <select
-                  class="w-full py-1.5 pl-2.5 pr-7 bg-slate-50 hover:bg-white focus:bg-white text-slate-800 border ${this.state.cooSelfFilterColF && this.state.cooSelfFilterColF !== 'all' ? 'border-indigo-500 bg-indigo-50/50 text-indigo-950 font-bold' : 'border-slate-300'} focus:border-indigo-500 rounded-xl text-xs font-semibold outline-none transition-all cursor-pointer appearance-none truncate"
-                  onchange="window.FPCL_STRATEGIC_SUITE.setCooSelfFilter('cooSelfFilterColF', this.value)"
+                  class="w-full py-1.5 pl-2.5 pr-7 bg-slate-50 hover:bg-white focus:bg-white text-slate-800 border ${(this.state.cooSelfFilterColH && this.state.cooSelfFilterColH !== 'all') || (this.state.cooSelfFilterColF && this.state.cooSelfFilterColF !== 'all') ? 'border-indigo-500 bg-indigo-50/50 text-indigo-950 font-bold' : 'border-slate-300'} focus:border-indigo-500 rounded-xl text-xs font-semibold outline-none transition-all cursor-pointer appearance-none truncate"
+                  onchange="window.FPCL_STRATEGIC_SUITE.setCooSelfFilter('cooSelfFilterColH', this.value); window.FPCL_STRATEGIC_SUITE.setCooSelfFilter('cooSelfFilterColF', this.value);"
                 >
-                  <option value="all">Status detail: All</option>
-                  <option value="Open" ${this.state.cooSelfFilterColF === 'Open' ? 'selected' : ''}>Open</option>
-                  <option value="Closed" ${this.state.cooSelfFilterColF === 'Closed' ? 'selected' : ''}>Closed</option>
-                  <option value="Overdue" ${this.state.cooSelfFilterColF === 'Overdue' ? 'selected' : ''}>Overdue</option>
-                  <option value="Dropped" ${this.state.cooSelfFilterColF === 'Dropped' ? 'selected' : ''}>Dropped</option>
+                  <option value="all">Column H: Status detail (All)</option>
+                  <option value="Open" ${(this.state.cooSelfFilterColH === 'Open' || this.state.cooSelfFilterColF === 'Open') ? 'selected' : ''}>Open</option>
+                  <option value="Closed" ${(this.state.cooSelfFilterColH === 'Closed' || this.state.cooSelfFilterColF === 'Closed') ? 'selected' : ''}>Closed</option>
+                  <option value="Overdue" ${(this.state.cooSelfFilterColH === 'Overdue' || this.state.cooSelfFilterColF === 'Overdue') ? 'selected' : ''}>Overdue</option>
+                  <option value="Dropped" ${(this.state.cooSelfFilterColH === 'Dropped' || this.state.cooSelfFilterColF === 'Dropped') ? 'selected' : ''}>Dropped</option>
                 </select>
                 <div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none text-slate-400">
                   <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
                 </div>
               </div>
 
-              <!-- Column H: Ack by -->
+              <!-- Column J: Ack by -->
               <div class="relative">
                 <select
-                  class="w-full py-1.5 pl-2.5 pr-7 bg-slate-50 hover:bg-white focus:bg-white text-slate-900 border ${this.state.cooSelfFilterColH && this.state.cooSelfFilterColH !== 'all' ? 'border-indigo-500 bg-indigo-50/50 text-indigo-950 font-bold' : 'border-slate-300'} focus:border-indigo-500 rounded-xl text-xs font-semibold outline-none transition-all cursor-pointer appearance-none truncate"
-                  onchange="window.FPCL_STRATEGIC_SUITE.setCooSelfFilter('cooSelfFilterColH', this.value)"
+                  class="w-full py-1.5 pl-2.5 pr-7 bg-slate-50 hover:bg-white focus:bg-white text-slate-900 border ${this.state.cooSelfFilterColJ && this.state.cooSelfFilterColJ !== 'all' ? 'border-indigo-500 bg-indigo-50/50 text-indigo-950 font-bold' : 'border-slate-300'} focus:border-indigo-500 rounded-xl text-xs font-semibold outline-none transition-all cursor-pointer appearance-none truncate"
+                  onchange="window.FPCL_STRATEGIC_SUITE.setCooSelfFilter('cooSelfFilterColJ', this.value)"
                 >
-                  <option value="all">Ack by: All</option>
+                  <option value="all">Column J: Ack by (All)</option>
                   ${uniqueAckBy.map(h => `
-                    <option value="${this.escapeHtml(h)}" ${this.state.cooSelfFilterColH === h ? 'selected' : ''}>${this.escapeHtml(h)}</option>
+                    <option value="${this.escapeHtml(h)}" ${this.state.cooSelfFilterColJ === h ? 'selected' : ''}>${this.escapeHtml(h)}</option>
                   `).join('')}
                 </select>
                 <div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none text-slate-400">
@@ -2752,7 +3040,7 @@
               <div class="flex items-center gap-2">
                 <i data-lucide="table" class="w-4 h-4 text-indigo-700"></i>
                 <h3 class="text-sm sm:text-base font-black text-slate-800">
-                  COO Self Assigned Action Items (${totalCount} records)
+                  Company Action Items and Action Item Master Roster (COO Self Assigned - ${totalCount} records)
                 </h3>
               </div>
 
@@ -2771,29 +3059,32 @@
               </div>
             </div>
 
-            <div class="overflow-x-auto max-h-[520px] overflow-y-auto">
-              <table class="w-full text-left text-xs sm:text-sm border-collapse">
+            <div class="overflow-x-auto max-h-[600px] overflow-y-auto">
+              <table class="w-full text-left text-xs sm:text-sm border-collapse table-auto">
                 <thead>
                   <tr class="sticky top-0 bg-slate-100/95 backdrop-blur-xs border-b border-slate-200 text-slate-700 font-bold text-xs sm:text-sm z-10">
-                    <th class="py-3 px-3.5 whitespace-nowrap">S_No</th>
-                    <th class="py-3 px-3.5 min-w-[240px]">Assigned Action</th>
-                    <th class="py-3 px-3.5 whitespace-nowrap">Action category</th>
-                    <th class="py-3 px-3.5 whitespace-nowrap">Assigned to</th>
-                    <th class="py-3 px-3.5 whitespace-nowrap">Target date</th>
-                    <th class="py-3 px-3.5 whitespace-nowrap">Status detail</th>
-                    <th class="py-3 px-3.5 min-w-[160px]">Remarks</th>
-                    <th class="py-3 px-3.5 whitespace-nowrap">Ack by</th>
+                    <th class="py-3 px-3.5 min-w-[60px] whitespace-nowrap">S_No</th>
+                    <th class="py-3 px-3.5 min-w-[120px] max-w-[220px] whitespace-normal break-words">Background</th>
+                    <th class="py-3 px-3.5 min-w-[100px] max-w-[150px] whitespace-normal break-words">Date/Reference</th>
+                    <th class="py-3 px-3.5 min-w-[300px] max-w-[540px] whitespace-normal break-words">Assigned Action</th>
+                    <th class="py-3 px-3.5 min-w-[120px] max-w-[180px] whitespace-normal break-words">Action category</th>
+                    <th class="py-3 px-3.5 min-w-[100px] max-w-[150px] whitespace-normal break-words">Assigned to</th>
+                    <th class="py-3 px-3.5 min-w-[100px] max-w-[140px] whitespace-normal break-words">Target date</th>
+                    <th class="py-3 px-3.5 min-w-[110px] max-w-[160px] whitespace-normal break-words">Status detail</th>
+                    <th class="py-3 px-3.5 min-w-[200px] max-w-[380px] whitespace-normal break-words">Remarks</th>
+                    <th class="py-3 px-3.5 min-w-[100px] max-w-[140px] whitespace-normal break-words">Ack by</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 text-xs sm:text-sm">
                   ${pagedActions.length === 0 ? `
                     <tr>
-                      <td colspan="8" class="py-10 text-center text-slate-400 font-medium text-sm">
+                      <td colspan="10" class="py-10 text-center text-slate-400 font-medium text-sm">
                         No actions match the active search or filters.
                       </td>
                     </tr>
                   ` : pagedActions.map(a => {
-                    const st = this.classifyStatusDetail(a.statusDetail);
+                    const stRaw = (a.statusDetail || '').trim();
+                    const st = this.classifyStatusDetail(stRaw);
                     const isClosed = st === 'Closed';
                     const isOpen = st === 'Open';
                     const isOverdue = st === 'Overdue';
@@ -2816,24 +3107,30 @@
                     }
 
                     return `
-                      <tr class="hover:bg-slate-50/80 transition-colors">
-                        <td class="py-3 px-3.5 font-mono font-bold text-slate-800 text-xs sm:text-sm whitespace-nowrap">${this.escapeHtml(a.sNo)}</td>
-                        <td class="py-3 px-3.5 text-slate-900 font-medium min-w-[240px]">${this.escapeHtml(a.action)}</td>
-                        <td class="py-3 px-3.5 whitespace-nowrap">
-                          <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold bg-indigo-50 text-indigo-900 border border-indigo-200/60">
-                            ${this.escapeHtml(a.category)}
-                          </span>
+                      <tr class="hover:bg-slate-50/80 transition-colors align-top">
+                        <td class="py-3 px-3.5 font-mono font-bold text-slate-800 text-xs sm:text-sm whitespace-nowrap align-top">${this.escapeHtml(a.sNo)}</td>
+                        <td class="py-3 px-3.5 text-slate-700 text-xs sm:text-sm min-w-[120px] max-w-[220px] whitespace-pre-line break-words [overflow-wrap:anywhere] leading-relaxed align-top">${this.escapeHtml(a.background) || '<span class="text-slate-400 font-mono text-xs">-</span>'}</td>
+                        <td class="py-3 px-3.5 text-slate-600 font-mono text-xs min-w-[100px] max-w-[150px] whitespace-pre-line break-words [overflow-wrap:anywhere] align-top">${this.escapeHtml(a.dateReference) || '<span class="text-slate-400 font-mono text-xs">-</span>'}</td>
+                        <td class="py-3 px-3.5 text-slate-900 font-medium text-xs sm:text-sm min-w-[300px] max-w-[540px] whitespace-pre-line break-words [overflow-wrap:anywhere] leading-relaxed align-top">${this.escapeHtml(a.action)}</td>
+                        <td class="py-3 px-3.5 min-w-[120px] max-w-[180px] whitespace-pre-line break-words [overflow-wrap:anywhere] align-top">
+                          ${a.category ? `
+                            <span class="inline-block px-2.5 py-1 rounded-md text-xs font-semibold bg-indigo-50 text-indigo-900 border border-indigo-200/60 whitespace-pre-line break-words [overflow-wrap:anywhere]">
+                              ${this.escapeHtml(a.category)}
+                            </span>
+                          ` : '<span class="text-slate-400 font-mono text-xs">-</span>'}
                         </td>
-                        <td class="py-3 px-3.5 text-slate-700 font-medium whitespace-nowrap">${this.escapeHtml(a.assignedTo)}</td>
-                        <td class="py-3 px-3.5 text-slate-600 font-mono text-xs whitespace-nowrap">${this.escapeHtml(a.targetDate)}</td>
-                        <td class="py-3 px-3.5 whitespace-nowrap">
-                          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${badgeClass}">
-                            <span class="w-1.5 h-1.5 rounded-full" style="background-color: ${dotColor}"></span>
-                            ${this.escapeHtml(a.statusDetail)}
-                          </span>
+                        <td class="py-3 px-3.5 text-slate-700 font-medium text-xs sm:text-sm min-w-[100px] max-w-[150px] whitespace-pre-line break-words [overflow-wrap:anywhere] align-top">${this.escapeHtml(a.assignedTo) || '<span class="text-slate-400 font-mono text-xs">-</span>'}</td>
+                        <td class="py-3 px-3.5 text-slate-600 font-mono text-xs min-w-[100px] max-w-[140px] whitespace-pre-line break-words [overflow-wrap:anywhere] align-top">${this.escapeHtml(a.targetDate) || '<span class="text-slate-400 font-mono text-xs">-</span>'}</td>
+                        <td class="py-3 px-3.5 min-w-[110px] max-w-[160px] whitespace-pre-line break-words [overflow-wrap:anywhere] align-top">
+                          ${stRaw && stRaw !== '-' ? `
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${badgeClass}">
+                              <span class="w-1.5 h-1.5 rounded-full shrink-0" style="background-color: ${dotColor}"></span>
+                              <span class="whitespace-pre-line break-words [overflow-wrap:anywhere]">${this.escapeHtml(stRaw)}</span>
+                            </span>
+                          ` : '<span class="text-slate-400 font-mono text-xs">-</span>'}
                         </td>
-                        <td class="py-3 px-3.5 text-slate-600 min-w-[160px]">${this.escapeHtml(a.remarks || '-')}</td>
-                        <td class="py-3 px-3.5 text-slate-600 font-medium whitespace-nowrap">${this.escapeHtml(a.ackBy || '-')}</td>
+                        <td class="py-3 px-3.5 text-slate-700 text-xs sm:text-sm min-w-[200px] max-w-[380px] whitespace-pre-line break-words [overflow-wrap:anywhere] leading-relaxed align-top">${this.escapeHtml(a.remarks) || '<span class="text-slate-400 font-mono text-xs">-</span>'}</td>
+                        <td class="py-3 px-3.5 text-slate-600 font-medium text-xs sm:text-sm min-w-[100px] max-w-[140px] whitespace-pre-line break-words [overflow-wrap:anywhere] align-top">${this.escapeHtml(a.ackBy) || '<span class="text-slate-400 font-mono text-xs">-</span>'}</td>
                       </tr>
                     `;
                   }).join('')}
@@ -3076,13 +3373,13 @@
 
       // KPIs based on company-wide data
       const totalActions = allActions.length;
-      const closedActions = allActions.filter(a => a.status === 'Closed' || a.status === 'Completed' || (a.status || '').toLowerCase().includes('close') || this.getActionColVal(a, 'F') === 'Closed').length;
+      const closedActions = allActions.filter(a => a.status === 'Closed' || a.status === 'Completed' || (a.status || '').toLowerCase().includes('close') || this.getActionColVal(a, 'STATUS') === 'Closed').length;
       const openActions = totalActions - closedActions;
       const overallRate = totalActions > 0 ? Math.round((closedActions / totalActions) * 100) : 0;
 
       // Filtered KPIs (strictly reflects all applied filters across whole dashboard)
       const filteredTotal = filteredActions.length;
-      const filteredClosed = filteredActions.filter(a => a.status === 'Closed' || a.status === 'Completed' || (a.status || '').toLowerCase().includes('close') || this.getActionColVal(a, 'F') === 'Closed').length;
+      const filteredClosed = filteredActions.filter(a => a.status === 'Closed' || a.status === 'Completed' || (a.status || '').toLowerCase().includes('close') || this.getActionColVal(a, 'STATUS') === 'Closed').length;
       const filteredOpen = filteredTotal - filteredClosed;
       const filteredRate = filteredTotal > 0 ? Math.round((filteredClosed / filteredTotal) * 100) : 0;
 
@@ -3101,17 +3398,22 @@
       const endIdx = Math.min(filteredTotal, startIdx + pageSize);
       const pagedActions = filteredActions.slice(startIdx, endIdx);
 
-      const uniqueMasterColC = [...new Set(allActions.map(a => this.getActionColVal(a, 'C')).filter(Boolean))].sort();
-      const uniqueMasterColD = [...new Set(allActions.map(a => this.getActionColVal(a, 'D')).filter(Boolean))].sort();
-      const uniqueMasterColH = [...new Set(allActions.map(a => this.getActionColVal(a, 'H')).filter(Boolean))].sort();
+      const uniqueMasterColE = [...new Set(allActions.map(a => this.getActionColVal(a, 'CATEGORY')).filter(Boolean))].sort();
+      const uniqueMasterColF = [...new Set(allActions.map(a => this.getActionColVal(a, 'ASSIGNED')).filter(Boolean))].sort();
+      const uniqueMasterColJ = [...new Set(allActions.map(a => this.getActionColVal(a, 'ACK')).filter(Boolean))].sort();
+      const uniqueMasterColC = uniqueMasterColE;
+      const uniqueMasterColD = uniqueMasterColF;
+      const uniqueMasterColH = uniqueMasterColJ;
       const isFiltered = Boolean(
         this.state.masterFilterSearch || 
         this.state.masterFilterDept !== 'all' || 
         (this.state.masterFilterStatus && this.state.masterFilterStatus !== 'all') ||
-        (this.state.masterFilterColC && this.state.masterFilterColC !== 'all') ||
-        (this.state.masterFilterColD && this.state.masterFilterColD !== 'all') ||
+        (this.state.masterFilterColE && this.state.masterFilterColE !== 'all') ||
         (this.state.masterFilterColF && this.state.masterFilterColF !== 'all') ||
-        (this.state.masterFilterColH && this.state.masterFilterColH !== 'all')
+        (this.state.masterFilterColH && this.state.masterFilterColH !== 'all') ||
+        (this.state.masterFilterColJ && this.state.masterFilterColJ !== 'all') ||
+        (this.state.masterFilterColC && this.state.masterFilterColC !== 'all') ||
+        (this.state.masterFilterColD && this.state.masterFilterColD !== 'all')
       );
 
       return `
@@ -3243,7 +3545,7 @@
             <div class="flex items-center justify-between gap-2 flex-wrap">
               <div class="flex items-center gap-2">
                 <i data-lucide="sliders-horizontal" class="w-4 h-4 text-amber-600"></i>
-                <span class="text-xs font-bold text-slate-800 uppercase tracking-wider">COO Filters (Columns C, D, F, H & Dept)</span>
+                <span class="text-xs font-bold text-slate-800 uppercase tracking-wider">COO Filters (Columns E, F, H, J & Dept)</span>
                 <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-50 text-amber-900 border border-amber-200">
                   ${filteredTotal} of ${chartTotal} actions
                 </span>
@@ -3301,15 +3603,15 @@
                 </div>
               </div>
 
-              <!-- Column C: Action category -->
+              <!-- Column E: Action category -->
               <div class="relative">
                 <select
-                  class="w-full py-1.5 pl-2.5 pr-7 bg-slate-50 hover:bg-white focus:bg-white text-slate-900 border ${this.state.masterFilterColC && this.state.masterFilterColC !== 'all' ? 'border-amber-500 bg-amber-50/50 text-amber-950 font-bold' : 'border-slate-300'} focus:border-amber-500 rounded-xl text-xs font-semibold outline-none transition-all cursor-pointer appearance-none truncate"
-                  onchange="window.FPCL_STRATEGIC_SUITE.setMasterFilter('masterFilterColC', this.value)"
+                  class="w-full py-1.5 pl-2.5 pr-7 bg-slate-50 hover:bg-white focus:bg-white text-slate-900 border ${this.state.masterFilterColE && this.state.masterFilterColE !== 'all' ? 'border-amber-500 bg-amber-50/50 text-amber-950 font-bold' : 'border-slate-300'} focus:border-amber-500 rounded-xl text-xs font-semibold outline-none transition-all cursor-pointer appearance-none truncate"
+                  onchange="window.FPCL_STRATEGIC_SUITE.setMasterFilter('masterFilterColE', this.value)"
                 >
-                  <option value="all">Category [Col C]: All</option>
-                  ${uniqueMasterColC.map(c => `
-                    <option value="${this.escapeHtml(c)}" ${this.state.masterFilterColC === c ? 'selected' : ''}>${this.escapeHtml(c)} (${allActions.filter(a => this.getActionColVal(a, 'C') === c).length})</option>
+                  <option value="all">Category [Col E]: All</option>
+                  ${uniqueMasterColE.map(c => `
+                    <option value="${this.escapeHtml(c)}" ${(this.state.masterFilterColE === c || this.state.masterFilterColC === c) ? 'selected' : ''}>${this.escapeHtml(c)} (${allActions.filter(a => this.getActionColVal(a, 'CATEGORY') === c).length})</option>
                   `).join('')}
                 </select>
                 <div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none text-slate-400">
@@ -3317,15 +3619,15 @@
                 </div>
               </div>
 
-              <!-- Column D: Assigned to -->
+              <!-- Column F: Assigned to -->
               <div class="relative">
                 <select
-                  class="w-full py-1.5 pl-2.5 pr-7 bg-slate-50 hover:bg-white focus:bg-white text-slate-900 border ${this.state.masterFilterColD && this.state.masterFilterColD !== 'all' ? 'border-amber-500 bg-amber-50/50 text-amber-950 font-bold' : 'border-slate-300'} focus:border-amber-500 rounded-xl text-xs font-semibold outline-none transition-all cursor-pointer appearance-none truncate"
-                  onchange="window.FPCL_STRATEGIC_SUITE.setMasterFilter('masterFilterColD', this.value)"
+                  class="w-full py-1.5 pl-2.5 pr-7 bg-slate-50 hover:bg-white focus:bg-white text-slate-900 border ${this.state.masterFilterColF && this.state.masterFilterColF !== 'all' ? 'border-amber-500 bg-amber-50/50 text-amber-950 font-bold' : 'border-slate-300'} focus:border-amber-500 rounded-xl text-xs font-semibold outline-none transition-all cursor-pointer appearance-none truncate"
+                  onchange="window.FPCL_STRATEGIC_SUITE.setMasterFilter('masterFilterColF', this.value)"
                 >
-                  <option value="all">Assigned [Col D]: All</option>
-                  ${uniqueMasterColD.map(d => `
-                    <option value="${this.escapeHtml(d)}" ${this.state.masterFilterColD === d ? 'selected' : ''}>${this.escapeHtml(d)} (${allActions.filter(a => this.getActionColVal(a, 'D') === d).length})</option>
+                  <option value="all">Assigned [Col F]: All</option>
+                  ${uniqueMasterColF.map(d => `
+                    <option value="${this.escapeHtml(d)}" ${(this.state.masterFilterColF === d || this.state.masterFilterColD === d) ? 'selected' : ''}>${this.escapeHtml(d)} (${allActions.filter(a => this.getActionColVal(a, 'ASSIGNED') === d).length})</option>
                   `).join('')}
                 </select>
                 <div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none text-slate-400">
@@ -3333,13 +3635,13 @@
                 </div>
               </div>
 
-              <!-- Column F: Status detail -->
+              <!-- Column H: Status detail -->
               <div class="relative">
                 <select
                   class="w-full py-1.5 pl-2.5 pr-7 bg-slate-50 hover:bg-white focus:bg-white text-slate-800 border ${this.state.masterFilterStatus && this.state.masterFilterStatus !== 'all' ? 'border-amber-500 bg-amber-50/50 text-amber-950 font-bold' : 'border-slate-300'} focus:border-amber-500 rounded-xl text-xs font-semibold outline-none transition-all cursor-pointer appearance-none shadow-2xs truncate"
                   onchange="window.FPCL_STRATEGIC_SUITE.setMasterFilter('masterFilterStatus', this.value)"
                 >
-                  <option value="all">Status [Col F]: All (${chartTotal})</option>
+                  <option value="all">Status [Col H]: All (${chartTotal})</option>
                   <option value="Open" ${this.state.masterFilterStatus === 'Open' ? 'selected' : ''}>Open (${chartOpen})</option>
                   <option value="Closed" ${this.state.masterFilterStatus === 'Closed' ? 'selected' : ''}>Closed (${chartClosed})</option>
                 </select>
@@ -3348,15 +3650,15 @@
                 </div>
               </div>
 
-              <!-- Column H: Ack by -->
+              <!-- Column J: Ack by -->
               <div class="relative col-span-2 sm:col-span-1">
                 <select
-                  class="w-full py-1.5 pl-2.5 pr-7 bg-slate-50 hover:bg-white focus:bg-white text-slate-900 border ${this.state.masterFilterColH && this.state.masterFilterColH !== 'all' ? 'border-amber-500 bg-amber-50/50 text-amber-950 font-bold' : 'border-slate-300'} focus:border-amber-500 rounded-xl text-xs font-semibold outline-none transition-all cursor-pointer appearance-none truncate"
-                  onchange="window.FPCL_STRATEGIC_SUITE.setMasterFilter('masterFilterColH', this.value)"
+                  class="w-full py-1.5 pl-2.5 pr-7 bg-slate-50 hover:bg-white focus:bg-white text-slate-900 border ${(this.state.masterFilterColJ && this.state.masterFilterColJ !== 'all') || (this.state.masterFilterColH && this.state.masterFilterColH !== 'all' && this.state.masterFilterColH !== 'Open' && this.state.masterFilterColH !== 'Closed') ? 'border-amber-500 bg-amber-50/50 text-amber-950 font-bold' : 'border-slate-300'} focus:border-amber-500 rounded-xl text-xs font-semibold outline-none transition-all cursor-pointer appearance-none truncate"
+                  onchange="window.FPCL_STRATEGIC_SUITE.setMasterFilter('masterFilterColJ', this.value)"
                 >
-                  <option value="all">Ack By [Col H]: All</option>
-                  ${uniqueMasterColH.map(h => `
-                    <option value="${this.escapeHtml(h)}" ${this.state.masterFilterColH === h ? 'selected' : ''}>${this.escapeHtml(h)} (${allActions.filter(a => this.getActionColVal(a, 'H') === h).length})</option>
+                  <option value="all">Ack By [Col J]: All</option>
+                  ${uniqueMasterColJ.map(h => `
+                    <option value="${this.escapeHtml(h)}" ${(this.state.masterFilterColJ === h || this.state.masterFilterColH === h) ? 'selected' : ''}>${this.escapeHtml(h)} (${allActions.filter(a => this.getActionColVal(a, 'ACK') === h).length})</option>
                   `).join('')}
                 </select>
                 <div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none text-slate-400">
@@ -3381,28 +3683,28 @@
                     <button onclick="window.FPCL_STRATEGIC_SUITE.setMasterFilter('masterFilterDept', 'all')" class="hover:text-amber-950 cursor-pointer"><i data-lucide="x" class="w-3 h-3"></i></button>
                   </span>
                 ` : ''}
-                ${this.state.masterFilterColC && this.state.masterFilterColC !== 'all' ? `
+                ${(this.state.masterFilterColE && this.state.masterFilterColE !== 'all') || (this.state.masterFilterColC && this.state.masterFilterColC !== 'all') ? `
                   <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 text-amber-900 border border-amber-200 font-medium">
-                    Col C (Category): ${this.escapeHtml(this.state.masterFilterColC)}
-                    <button onclick="window.FPCL_STRATEGIC_SUITE.setMasterFilter('masterFilterColC', 'all')" class="hover:text-amber-950 cursor-pointer"><i data-lucide="x" class="w-3 h-3"></i></button>
+                    Col E (Category): ${this.escapeHtml(this.state.masterFilterColE !== 'all' ? this.state.masterFilterColE : this.state.masterFilterColC)}
+                    <button onclick="window.FPCL_STRATEGIC_SUITE.setMasterFilter('masterFilterColE', 'all')" class="hover:text-amber-950 cursor-pointer"><i data-lucide="x" class="w-3 h-3"></i></button>
                   </span>
                 ` : ''}
-                ${this.state.masterFilterColD && this.state.masterFilterColD !== 'all' ? `
+                ${(this.state.masterFilterColF && this.state.masterFilterColF !== 'all') || (this.state.masterFilterColD && this.state.masterFilterColD !== 'all') ? `
                   <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 text-amber-900 border border-amber-200 font-medium">
-                    Col D (Assigned): ${this.escapeHtml(this.state.masterFilterColD)}
-                    <button onclick="window.FPCL_STRATEGIC_SUITE.setMasterFilter('masterFilterColD', 'all')" class="hover:text-amber-950 cursor-pointer"><i data-lucide="x" class="w-3 h-3"></i></button>
+                    Col F (Assigned): ${this.escapeHtml(this.state.masterFilterColF !== 'all' ? this.state.masterFilterColF : this.state.masterFilterColD)}
+                    <button onclick="window.FPCL_STRATEGIC_SUITE.setMasterFilter('masterFilterColF', 'all')" class="hover:text-amber-950 cursor-pointer"><i data-lucide="x" class="w-3 h-3"></i></button>
                   </span>
                 ` : ''}
                 ${this.state.masterFilterStatus && this.state.masterFilterStatus !== 'all' ? `
                   <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 text-amber-900 border border-amber-200 font-medium">
-                    Col F (Status): ${this.escapeHtml(this.state.masterFilterStatus)}
+                    Col H (Status): ${this.escapeHtml(this.state.masterFilterStatus)}
                     <button onclick="window.FPCL_STRATEGIC_SUITE.setMasterFilter('masterFilterStatus', 'all')" class="hover:text-amber-950 cursor-pointer"><i data-lucide="x" class="w-3 h-3"></i></button>
                   </span>
                 ` : ''}
-                ${this.state.masterFilterColH && this.state.masterFilterColH !== 'all' ? `
+                ${this.state.masterFilterColJ && this.state.masterFilterColJ !== 'all' ? `
                   <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 text-amber-900 border border-amber-200 font-medium">
-                    Col H (Ack by): ${this.escapeHtml(this.state.masterFilterColH)}
-                    <button onclick="window.FPCL_STRATEGIC_SUITE.setMasterFilter('masterFilterColH', 'all')" class="hover:text-amber-950 cursor-pointer"><i data-lucide="x" class="w-3 h-3"></i></button>
+                    Col J (Ack by): ${this.escapeHtml(this.state.masterFilterColJ)}
+                    <button onclick="window.FPCL_STRATEGIC_SUITE.setMasterFilter('masterFilterColJ', 'all')" class="hover:text-amber-950 cursor-pointer"><i data-lucide="x" class="w-3 h-3"></i></button>
                   </span>
                 ` : ''}
               </div>
@@ -3560,14 +3862,14 @@
                 const bossRows = allTiles.map(t => {
                   const tileActions = (t.actions || (this.state?.tileActions?.[t.id]) || []);
                   const actions = this.filterActionList(tileActions, {
-                    colC: this.state.masterFilterColC,
-                    colD: this.state.masterFilterColD,
-                    colF: this.state.masterFilterColF || this.state.masterFilterStatus,
-                    colH: this.state.masterFilterColH,
+                    colE: this.state.masterFilterColE !== 'all' ? this.state.masterFilterColE : this.state.masterFilterColC,
+                    colF: this.state.masterFilterColF !== 'all' ? this.state.masterFilterColF : this.state.masterFilterColD,
+                    colH: this.state.masterFilterColH !== 'all' ? this.state.masterFilterColH : (this.state.masterFilterStatus !== 'all' ? this.state.masterFilterStatus : 'all'),
+                    colJ: this.state.masterFilterColJ,
                     search: this.state.masterFilterSearch
                   });
                   const tTotal = actions.length;
-                  const tClosed = actions.filter(a => a.status === 'Closed' || a.status === 'Completed' || (a.status || '').toLowerCase().includes('close') || this.getActionColVal(a, 'F') === 'Closed').length;
+                  const tClosed = actions.filter(a => a.status === 'Closed' || a.status === 'Completed' || (a.status || '').toLowerCase().includes('close') || this.getActionColVal(a, 'STATUS') === 'Closed').length;
                   const tOpen = tTotal - tClosed;
                   const tRate = tTotal > 0 ? Math.round((tClosed / tTotal) * 100) : 0;
                   return {
@@ -3633,7 +3935,7 @@
             <div class="px-4 py-3 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white border-b-2 border-amber-400 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div class="flex items-center gap-2.5">
                 <span class="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-xs"></span>
-                <h3 class="text-xs sm:text-sm font-black tracking-tight text-white">Company Action Items Master Roster</h3>
+                <h3 class="text-xs sm:text-sm font-black tracking-tight text-white">Company Action Items and Action Item Master Roster</h3>
                 <span class="px-2.5 py-0.5 rounded-full text-[10.5px] font-black bg-amber-400 text-slate-950 shadow-xs">
                   Showing ${pagedActions.length} of ${filteredTotal}
                 </span>
@@ -3657,62 +3959,88 @@
               <table class="w-full text-left text-xs sm:text-sm border-collapse">
                 <thead>
                   <tr class="bg-slate-100/90 border-b border-slate-200 text-slate-700 font-bold text-xs sm:text-sm">
-                    <th class="py-3 px-3.5 whitespace-nowrap">S_No</th>
-                    <th class="py-3 px-3.5 whitespace-nowrap">Department</th>
-                    <th class="py-3 px-3.5 min-w-[240px]">Assigned Action</th>
-                    <th class="py-3 px-3.5 whitespace-nowrap">Action category</th>
-                    <th class="py-3 px-3.5 whitespace-nowrap">Assigned to</th>
-                    <th class="py-3 px-3.5 whitespace-nowrap">Target date</th>
-                    <th class="py-3 px-3.5 whitespace-nowrap">Status detail</th>
-                    <th class="py-3 px-3.5 min-w-[140px]">Remarks</th>
-                    <th class="py-3 px-3.5 whitespace-nowrap">Ack by</th>
+                    <th class="py-3 px-3.5 min-w-[60px] whitespace-normal break-words">S_No</th>
+                    <th class="py-3 px-3.5 min-w-[110px] whitespace-normal break-words">Department</th>
+                    <th class="py-3 px-3.5 min-w-[140px] max-w-[280px] whitespace-normal break-words">Background</th>
+                    <th class="py-3 px-3.5 min-w-[100px] max-w-[160px] whitespace-normal break-words">Date/Reference</th>
+                    <th class="py-3 px-3.5 min-w-[240px] max-w-[420px] whitespace-normal break-words">Assigned Action</th>
+                    <th class="py-3 px-3.5 min-w-[110px] max-w-[180px] whitespace-normal break-words">Action category</th>
+                    <th class="py-3 px-3.5 min-w-[110px] max-w-[180px] whitespace-normal break-words">Assigned to</th>
+                    <th class="py-3 px-3.5 min-w-[95px] max-w-[140px] whitespace-normal break-words">Target date</th>
+                    <th class="py-3 px-3.5 min-w-[100px] max-w-[150px] whitespace-normal break-words">Status detail</th>
+                    <th class="py-3 px-3.5 min-w-[140px] max-w-[280px] whitespace-normal break-words">Remarks</th>
+                    <th class="py-3 px-3.5 min-w-[100px] max-w-[160px] whitespace-normal break-words">Ack by</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 text-xs sm:text-sm">
                   ${pagedActions.length === 0 ? `
                     <tr>
-                      <td colspan="9" class="py-10 text-center text-slate-400 font-medium text-sm">
+                      <td colspan="11" class="py-10 text-center text-slate-400 font-medium text-sm">
                         No actions match the active filters.
                       </td>
                     </tr>
                   ` : pagedActions.map((a, idx) => {
                     const raw = a.rawColumns || {};
-                    const sNo = raw['S_No'] || raw['S.No'] || raw['s_no'] || raw['Sr'] || raw['sno'] || a.sNo || (a.id ? String(a.id).replace(/^[A-Za-z]+-0*/i, '') : '') || String(startIdx + idx + 1);
+                    const getCell = (keys, propFallback = '') => {
+                      if (raw && typeof raw === 'object') {
+                        for (const k of keys) {
+                          if (raw[k] !== undefined && raw[k] !== '') return raw[k];
+                          const match = Object.keys(raw).find(rk => rk.trim().toLowerCase() === k.trim().toLowerCase());
+                          if (match && raw[match] !== undefined && raw[match] !== '') return raw[match];
+                        }
+                      }
+                      return propFallback;
+                    };
+
+                    const sNo = getCell(['S_No', 'S.No', 's_no', 'Sr', 'sno', 'id', 'ID', 'Code', '#'], a.sNo || (a.id ? String(a.id).replace(/^[A-Za-z]+-0*/i, '') : '') || String(startIdx + idx + 1));
                     const deptName = a.department || a.code || 'Operations';
-                    const actionTitle = raw['Assigned Action'] || raw['Action'] || raw['action'] || a.title || a.action || a.desc || '-';
-                    const actionCat = raw['Action category'] || raw['Category'] || raw['category'] || a.category || (a.priority === 'High' ? 'ECM' : 'ACM');
-                    const assignedTo = raw['Assigned to'] || raw['Assignee'] || raw['assigned'] || a.assignedTo || 'Operations Team';
-                    const targetDate = raw['Target date'] || raw['Due Date'] || raw['due date'] || a.dueDate || '-';
-                    const isClosed = a.status === 'Closed' || a.status === 'Completed' || /close|done|complete|resolved/i.test(String(raw['Status detail'] || raw['Status'] || a.status || ''));
-                    const statusDetail = isClosed ? 'Closed' : 'Open';
-                    const remarks = raw['Remarks'] || raw['Remark'] || raw['remarks'] || a.remarks || '-';
-                    const ackBy = raw['Ack by'] || raw['Ack By'] || raw['ack by'] || a.ackBy || 'M.Afzal';
+                    const background = getCell(['Background', 'background', 'Bg', 'bg'], a.background || '');
+                    const dateReference = getCell(['Date/Reference', 'Date / Reference', 'date/reference', 'date_reference', 'Reference', 'Ref'], a.dateReference || '');
+                    const actionTitle = getCell(['Assigned Action', 'assigned action', 'Action Description', 'Action', 'action', 'Title', 'title', 'Deliverable', 'Task', 'Desc'], a.title || a.action || a.desc || '');
+                    const actionCat = getCell(['Action category', 'Action Category', 'action category', 'Category', 'category', 'Cat'], a.category || '');
+                    const assignedTo = getCell(['Assigned to', 'Assigned To', 'assigned to', 'Assignee', 'assignee'], a.assignedTo || '');
+                    const targetDate = getCell(['Target date', 'Target Date', 'target date', 'Due Date', 'Due date', 'due date', 'Deadline', 'Target', 'Due'], a.dueDate || a.targetDate || '');
+                    const rawStatus = getCell(['Status detail', 'Status Detail', 'status detail', 'Open_Close status', 'Status', 'status'], a.statusDetail || a.status || '');
+                    const remarks = getCell(['Remarks', 'remarks', 'Remark', 'remark', 'Note', 'Comment', 'Closure'], a.remarks || '');
+                    const ackBy = getCell(['Ack by', 'Ack By', 'ack by', 'Acknowledged by', 'Acknowledged By', 'Ack'], a.ackBy || '');
+
+                    const statusText = rawStatus || (a.status === 'Closed' ? 'Closed' : 'Open');
+                    const isClosed = /close|done|complete|resolved/i.test(statusText);
+                    const isPending = /on going|ongoing|progress|pending|wip|active/i.test(statusText);
+                    const badgeClass = isClosed 
+                      ? 'bg-emerald-50 text-emerald-800 border-emerald-200' 
+                      : (isPending ? 'bg-amber-50 text-amber-800 border-amber-200' : 'bg-rose-50 text-rose-800 border border-rose-200');
+                    const dotColor = isClosed ? 'bg-emerald-500' : (isPending ? 'bg-amber-500' : 'bg-rose-500');
 
                     return `
                       <tr class="hover:bg-slate-50/80 transition-colors">
-                        <td class="py-3 px-3.5 font-mono font-bold text-slate-800 text-xs sm:text-sm whitespace-nowrap">${sNo}</td>
-                        <td class="py-3 px-3.5 whitespace-nowrap">
-                          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-purple-50 text-purple-900 border border-purple-200">
-                            <span class="w-1.5 h-1.5 rounded-full bg-purple-600"></span>
-                            ${deptName}
+                        <td class="py-3 px-3.5 font-mono font-bold text-slate-800 text-xs sm:text-sm min-w-[60px] whitespace-normal break-words">${this.escapeHtml(sNo)}</td>
+                        <td class="py-3 px-3.5 min-w-[110px] whitespace-normal break-words">
+                          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-purple-50 text-purple-900 border border-purple-200 whitespace-normal break-words">
+                            <span class="w-1.5 h-1.5 rounded-full bg-purple-600 shrink-0"></span>
+                            <span>${this.escapeHtml(deptName)}</span>
                           </span>
                         </td>
-                        <td class="py-3 px-3.5 text-slate-900 font-medium min-w-[240px]">${actionTitle}</td>
-                        <td class="py-3 px-3.5 whitespace-nowrap">
-                          <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200/60">
-                            ${actionCat}
+                        <td class="py-3 px-3.5 text-slate-700 min-w-[140px] max-w-[280px] whitespace-normal break-words leading-relaxed">${this.escapeHtml(background || '-')}</td>
+                        <td class="py-3 px-3.5 text-slate-600 font-mono text-xs min-w-[100px] max-w-[160px] whitespace-normal break-words">${this.escapeHtml(dateReference || '-')}</td>
+                        <td class="py-3 px-3.5 text-slate-900 font-medium min-w-[240px] max-w-[420px] whitespace-normal break-words leading-relaxed">${this.escapeHtml(actionTitle || '-')}</td>
+                        <td class="py-3 px-3.5 min-w-[110px] max-w-[180px] whitespace-normal break-words">
+                          ${actionCat ? `
+                            <span class="inline-block px-2 py-0.5 rounded-md text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200/60 whitespace-normal break-words">
+                              ${this.escapeHtml(actionCat)}
+                            </span>
+                          ` : '<span class="text-slate-400">-</span>'}
+                        </td>
+                        <td class="py-3 px-3.5 text-slate-700 font-medium min-w-[110px] max-w-[180px] whitespace-normal break-words">${this.escapeHtml(assignedTo || '-')}</td>
+                        <td class="py-3 px-3.5 text-slate-600 font-mono text-xs min-w-[95px] max-w-[140px] whitespace-normal break-words">${this.escapeHtml(targetDate || '-')}</td>
+                        <td class="py-3 px-3.5 min-w-[100px] max-w-[150px] whitespace-normal break-words">
+                          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${badgeClass}">
+                            <span class="w-1.5 h-1.5 rounded-full ${dotColor} shrink-0"></span>
+                            <span class="whitespace-normal break-words">${this.escapeHtml(statusText)}</span>
                           </span>
                         </td>
-                        <td class="py-3 px-3.5 text-slate-700 font-medium whitespace-nowrap">${assignedTo}</td>
-                        <td class="py-3 px-3.5 text-slate-600 font-mono text-xs whitespace-nowrap">${targetDate}</td>
-                        <td class="py-3 px-3.5 whitespace-nowrap">
-                          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${isClosed ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-rose-50 text-rose-800 border border-rose-200'}">
-                            <span class="w-1.5 h-1.5 rounded-full ${isClosed ? 'bg-emerald-500' : 'bg-rose-500'}"></span>
-                            ${statusDetail}
-                          </span>
-                        </td>
-                        <td class="py-3 px-3.5 text-slate-600 min-w-[140px]">${remarks}</td>
-                        <td class="py-3 px-3.5 text-slate-600 font-medium whitespace-nowrap">${ackBy}</td>
+                        <td class="py-3 px-3.5 text-slate-600 min-w-[140px] max-w-[280px] whitespace-normal break-words leading-relaxed">${this.escapeHtml(remarks || '-')}</td>
+                        <td class="py-3 px-3.5 text-slate-600 font-medium min-w-[100px] max-w-[160px] whitespace-normal break-words">${this.escapeHtml(ackBy || '-')}</td>
                       </tr>
                     `;
                   }).join('')}
@@ -4183,13 +4511,13 @@
 
       // KPI values for this tile
       const totalActions = allActions.length;
-      const closedActions = allActions.filter(a => a.status === 'Closed' || a.status === 'Completed' || (a.status || '').toLowerCase().includes('close') || this.getActionColVal(a, 'F') === 'Closed').length;
+      const closedActions = allActions.filter(a => a.status === 'Closed' || a.status === 'Completed' || (a.status || '').toLowerCase().includes('close') || this.getActionColVal(a, 'STATUS') === 'Closed').length;
       const openActions = totalActions - closedActions;
       const overallRate = totalActions > 0 ? Math.round((closedActions / totalActions) * 100) : 0;
 
       // Filtered KPIs (reflects active filters across entire tile dashboard)
       const filteredTotal = filteredActions.length;
-      const filteredClosed = filteredActions.filter(a => a.status === 'Closed' || a.status === 'Completed' || (a.status || '').toLowerCase().includes('close') || this.getActionColVal(a, 'F') === 'Closed').length;
+      const filteredClosed = filteredActions.filter(a => a.status === 'Closed' || a.status === 'Completed' || (a.status || '').toLowerCase().includes('close') || this.getActionColVal(a, 'STATUS') === 'Closed').length;
       const filteredOpen = filteredTotal - filteredClosed;
       const filteredRate = filteredTotal > 0 ? Math.round((filteredClosed / filteredTotal) * 100) : 0;
 
@@ -4202,16 +4530,21 @@
       const endIdx = Math.min(filteredTotal, startIdx + pageSize);
       const pagedActions = filteredActions.slice(startIdx, endIdx);
 
-      const uniqueColC = [...new Set(allActions.map(a => this.getActionColVal(a, 'C')).filter(Boolean))].sort();
-      const uniqueColD = [...new Set(allActions.map(a => this.getActionColVal(a, 'D')).filter(Boolean))].sort();
-      const uniqueColH = [...new Set(allActions.map(a => this.getActionColVal(a, 'H')).filter(Boolean))].sort();
+      const uniqueColE = [...new Set(allActions.map(a => this.getActionColVal(a, 'CATEGORY')).filter(Boolean))].sort();
+      const uniqueColF = [...new Set(allActions.map(a => this.getActionColVal(a, 'ASSIGNED')).filter(Boolean))].sort();
+      const uniqueColJ = [...new Set(allActions.map(a => this.getActionColVal(a, 'ACK')).filter(Boolean))].sort();
+      const uniqueColC = uniqueColE;
+      const uniqueColD = uniqueColF;
+      const uniqueColH = uniqueColJ;
       const isFiltered = Boolean(
         this.state.tileFilterSearch ||
         (this.state.tileFilterStatus && this.state.tileFilterStatus !== 'all') ||
-        (this.state.tileFilterColC && this.state.tileFilterColC !== 'all') ||
-        (this.state.tileFilterColD && this.state.tileFilterColD !== 'all') ||
+        (this.state.tileFilterColE && this.state.tileFilterColE !== 'all') ||
         (this.state.tileFilterColF && this.state.tileFilterColF !== 'all') ||
-        (this.state.tileFilterColH && this.state.tileFilterColH !== 'all')
+        (this.state.tileFilterColH && this.state.tileFilterColH !== 'all') ||
+        (this.state.tileFilterColJ && this.state.tileFilterColJ !== 'all') ||
+        (this.state.tileFilterColC && this.state.tileFilterColC !== 'all') ||
+        (this.state.tileFilterColD && this.state.tileFilterColD !== 'all')
       );
       const isSyncing = this.state.syncStatus[tile.id] === 'syncing';
       const lastSynced = this.state.tileLastSynced[tile.id] || 'Active';
@@ -4220,8 +4553,8 @@
       // Note: COO dashboard has its own dedicated master rollup views, while employee dashboards share the Asset Integrity design.
       const isConnected = this.isSheetConnected(tile.id);
 
-      // Determine dynamic columns to show from Excel / Google Sheet data (standardized across all tiles like Admin & Security)
-      const STANDARD_EXCEL_COLUMNS = ['S_No', 'Assigned Action', 'Action category', 'Assigned to', 'Target date', 'Status detail', 'Remarks', 'Ack by'];
+      // Determine dynamic columns to show from Excel / Google Sheet data (exact match of google sheet)
+      const STANDARD_EXCEL_COLUMNS = ['S_No', 'Background', 'Date/Reference', 'Assigned Action', 'Action category', 'Assigned to', 'Target date', 'Status detail', 'Remarks', 'Ack by'];
       let displayColumns = [];
       const firstWithHeaders = allActions.find(a => Array.isArray(a.columnHeaders) && a.columnHeaders.length > 0);
       if (firstWithHeaders && firstWithHeaders.columnHeaders.length > 0) {
@@ -4359,7 +4692,7 @@
             <div class="flex items-center justify-between gap-2 flex-wrap">
               <div class="flex items-center gap-2">
                 <i data-lucide="sliders-horizontal" class="w-4 h-4 text-purple-600"></i>
-                <span class="text-xs font-bold text-slate-800 uppercase tracking-wider">Sheet Filters (Columns C, D, F, H)</span>
+                <span class="text-xs font-bold text-slate-800 uppercase tracking-wider">Sheet Filters (Columns E, F, H, J)</span>
                 <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-slate-100 text-slate-600">
                   ${filteredTotal} of ${totalActions} actions
                 </span>
@@ -4400,15 +4733,15 @@
                 ` : ''}
               </div>
 
-              <!-- Column C: Action category -->
+              <!-- Column E: Action category -->
               <div class="relative">
                 <select
-                  class="w-full py-2 pl-2.5 pr-7 bg-slate-50 hover:bg-white focus:bg-white text-slate-800 border ${this.state.tileFilterColC && this.state.tileFilterColC !== 'all' ? 'border-purple-500 bg-purple-50/50 text-purple-900 font-bold' : 'border-slate-200'} focus:border-purple-500 rounded-xl text-xs font-semibold outline-none transition-all cursor-pointer appearance-none shadow-2xs truncate"
-                  onchange="window.FPCL_STRATEGIC_SUITE.setTileFilter('tileFilterColC', this.value)"
+                  class="w-full py-2 pl-2.5 pr-7 bg-slate-50 hover:bg-white focus:bg-white text-slate-800 border ${(this.state.tileFilterColE && this.state.tileFilterColE !== 'all') || (this.state.tileFilterColC && this.state.tileFilterColC !== 'all') ? 'border-purple-500 bg-purple-50/50 text-purple-900 font-bold' : 'border-slate-200'} focus:border-purple-500 rounded-xl text-xs font-semibold outline-none transition-all cursor-pointer appearance-none shadow-2xs truncate"
+                  onchange="window.FPCL_STRATEGIC_SUITE.setTileFilter('tileFilterColE', this.value)"
                 >
-                  <option value="all">Category [Col C]: All</option>
-                  ${uniqueColC.map(c => `
-                    <option value="${this.escapeHtml(c)}" ${this.state.tileFilterColC === c ? 'selected' : ''}>${this.escapeHtml(c)} (${allActions.filter(a => this.getActionColVal(a, 'C') === c).length})</option>
+                  <option value="all">Category [Col E]: All</option>
+                  ${uniqueColE.map(c => `
+                    <option value="${this.escapeHtml(c)}" ${(this.state.tileFilterColE === c || this.state.tileFilterColC === c) ? 'selected' : ''}>${this.escapeHtml(c)} (${allActions.filter(a => this.getActionColVal(a, 'CATEGORY') === c).length})</option>
                   `).join('')}
                 </select>
                 <div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none text-slate-400">
@@ -4416,15 +4749,15 @@
                 </div>
               </div>
 
-              <!-- Column D: Assigned to -->
+              <!-- Column F: Assigned to -->
               <div class="relative">
                 <select
-                  class="w-full py-2 pl-2.5 pr-7 bg-slate-50 hover:bg-white focus:bg-white text-slate-800 border ${this.state.tileFilterColD && this.state.tileFilterColD !== 'all' ? 'border-purple-500 bg-purple-50/50 text-purple-900 font-bold' : 'border-slate-200'} focus:border-purple-500 rounded-xl text-xs font-semibold outline-none transition-all cursor-pointer appearance-none shadow-2xs truncate"
-                  onchange="window.FPCL_STRATEGIC_SUITE.setTileFilter('tileFilterColD', this.value)"
+                  class="w-full py-2 pl-2.5 pr-7 bg-slate-50 hover:bg-white focus:bg-white text-slate-800 border ${(this.state.tileFilterColF && this.state.tileFilterColF !== 'all') || (this.state.tileFilterColD && this.state.tileFilterColD !== 'all') ? 'border-purple-500 bg-purple-50/50 text-purple-900 font-bold' : 'border-slate-200'} focus:border-purple-500 rounded-xl text-xs font-semibold outline-none transition-all cursor-pointer appearance-none shadow-2xs truncate"
+                  onchange="window.FPCL_STRATEGIC_SUITE.setTileFilter('tileFilterColF', this.value)"
                 >
-                  <option value="all">Assigned [Col D]: All</option>
-                  ${uniqueColD.map(d => `
-                    <option value="${this.escapeHtml(d)}" ${this.state.tileFilterColD === d ? 'selected' : ''}>${this.escapeHtml(d)} (${allActions.filter(a => this.getActionColVal(a, 'D') === d).length})</option>
+                  <option value="all">Assigned [Col F]: All</option>
+                  ${uniqueColF.map(d => `
+                    <option value="${this.escapeHtml(d)}" ${(this.state.tileFilterColF === d || this.state.tileFilterColD === d) ? 'selected' : ''}>${this.escapeHtml(d)} (${allActions.filter(a => this.getActionColVal(a, 'ASSIGNED') === d).length})</option>
                   `).join('')}
                 </select>
                 <div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none text-slate-400">
@@ -4432,13 +4765,13 @@
                 </div>
               </div>
 
-              <!-- Column F: Status detail -->
+              <!-- Column H: Status detail -->
               <div class="relative">
                 <select
                   class="w-full py-2 pl-2.5 pr-7 bg-slate-50 hover:bg-white focus:bg-white text-slate-800 border ${this.state.tileFilterStatus && this.state.tileFilterStatus !== 'all' ? 'border-purple-500 bg-purple-50/50 text-purple-900 font-bold' : 'border-slate-200'} focus:border-purple-500 rounded-xl text-xs font-semibold outline-none transition-all cursor-pointer appearance-none shadow-2xs truncate"
                   onchange="window.FPCL_STRATEGIC_SUITE.setTileFilter('tileFilterStatus', this.value)"
                 >
-                  <option value="all">Status [Col F]: All (${totalActions})</option>
+                  <option value="all">Status [Col H]: All (${totalActions})</option>
                   <option value="Open" ${this.state.tileFilterStatus === 'Open' ? 'selected' : ''}>Open (${openActions})</option>
                   <option value="Closed" ${this.state.tileFilterStatus === 'Closed' ? 'selected' : ''}>Closed (${closedActions})</option>
                 </select>
@@ -4447,15 +4780,15 @@
                 </div>
               </div>
 
-              <!-- Column H: Ack by -->
+              <!-- Column J: Ack by -->
               <div class="relative col-span-2 sm:col-span-1">
                 <select
-                  class="w-full py-2 pl-2.5 pr-7 bg-slate-50 hover:bg-white focus:bg-white text-slate-800 border ${this.state.tileFilterColH && this.state.tileFilterColH !== 'all' ? 'border-purple-500 bg-purple-50/50 text-purple-900 font-bold' : 'border-slate-200'} focus:border-purple-500 rounded-xl text-xs font-semibold outline-none transition-all cursor-pointer appearance-none shadow-2xs truncate"
-                  onchange="window.FPCL_STRATEGIC_SUITE.setTileFilter('tileFilterColH', this.value)"
+                  class="w-full py-2 pl-2.5 pr-7 bg-slate-50 hover:bg-white focus:bg-white text-slate-800 border ${(this.state.tileFilterColJ && this.state.tileFilterColJ !== 'all') || (this.state.tileFilterColH && this.state.tileFilterColH !== 'all' && this.state.tileFilterColH !== 'Open' && this.state.tileFilterColH !== 'Closed') ? 'border-purple-500 bg-purple-50/50 text-purple-900 font-bold' : 'border-slate-200'} focus:border-purple-500 rounded-xl text-xs font-semibold outline-none transition-all cursor-pointer appearance-none shadow-2xs truncate"
+                  onchange="window.FPCL_STRATEGIC_SUITE.setTileFilter('tileFilterColJ', this.value)"
                 >
-                  <option value="all">Ack By [Col H]: All</option>
-                  ${uniqueColH.map(h => `
-                    <option value="${this.escapeHtml(h)}" ${this.state.tileFilterColH === h ? 'selected' : ''}>${this.escapeHtml(h)} (${allActions.filter(a => this.getActionColVal(a, 'H') === h).length})</option>
+                  <option value="all">Ack By [Col J]: All</option>
+                  ${uniqueColJ.map(h => `
+                    <option value="${this.escapeHtml(h)}" ${(this.state.tileFilterColJ === h || this.state.tileFilterColH === h) ? 'selected' : ''}>${this.escapeHtml(h)} (${allActions.filter(a => this.getActionColVal(a, 'ACK') === h).length})</option>
                   `).join('')}
                 </select>
                 <div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none text-slate-400">
@@ -4474,28 +4807,28 @@
                     <button onclick="window.FPCL_STRATEGIC_SUITE.setTileFilter('tileFilterSearch', '')" class="hover:text-purple-900 cursor-pointer"><i data-lucide="x" class="w-3 h-3"></i></button>
                   </span>
                 ` : ''}
-                ${this.state.tileFilterColC && this.state.tileFilterColC !== 'all' ? `
+                ${(this.state.tileFilterColE && this.state.tileFilterColE !== 'all') || (this.state.tileFilterColC && this.state.tileFilterColC !== 'all') ? `
                   <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200 font-medium">
-                    Col C (Category): ${this.escapeHtml(this.state.tileFilterColC)}
-                    <button onclick="window.FPCL_STRATEGIC_SUITE.setTileFilter('tileFilterColC', 'all')" class="hover:text-purple-900 cursor-pointer"><i data-lucide="x" class="w-3 h-3"></i></button>
+                    Col E (Category): ${this.escapeHtml(this.state.tileFilterColE !== 'all' ? this.state.tileFilterColE : this.state.tileFilterColC)}
+                    <button onclick="window.FPCL_STRATEGIC_SUITE.setTileFilter('tileFilterColE', 'all')" class="hover:text-purple-900 cursor-pointer"><i data-lucide="x" class="w-3 h-3"></i></button>
                   </span>
                 ` : ''}
-                ${this.state.tileFilterColD && this.state.tileFilterColD !== 'all' ? `
+                ${(this.state.tileFilterColF && this.state.tileFilterColF !== 'all') || (this.state.tileFilterColD && this.state.tileFilterColD !== 'all') ? `
                   <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200 font-medium">
-                    Col D (Assigned): ${this.escapeHtml(this.state.tileFilterColD)}
-                    <button onclick="window.FPCL_STRATEGIC_SUITE.setTileFilter('tileFilterColD', 'all')" class="hover:text-purple-900 cursor-pointer"><i data-lucide="x" class="w-3 h-3"></i></button>
+                    Col F (Assigned): ${this.escapeHtml(this.state.tileFilterColF !== 'all' ? this.state.tileFilterColF : this.state.tileFilterColD)}
+                    <button onclick="window.FPCL_STRATEGIC_SUITE.setTileFilter('tileFilterColF', 'all')" class="hover:text-purple-900 cursor-pointer"><i data-lucide="x" class="w-3 h-3"></i></button>
                   </span>
                 ` : ''}
                 ${this.state.tileFilterStatus && this.state.tileFilterStatus !== 'all' ? `
                   <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200 font-medium">
-                    Col F (Status): ${this.escapeHtml(this.state.tileFilterStatus)}
+                    Col H (Status): ${this.escapeHtml(this.state.tileFilterStatus)}
                     <button onclick="window.FPCL_STRATEGIC_SUITE.setTileFilter('tileFilterStatus', 'all')" class="hover:text-purple-900 cursor-pointer"><i data-lucide="x" class="w-3 h-3"></i></button>
                   </span>
                 ` : ''}
-                ${this.state.tileFilterColH && this.state.tileFilterColH !== 'all' ? `
+                ${this.state.tileFilterColJ && this.state.tileFilterColJ !== 'all' ? `
                   <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200 font-medium">
-                    Col H (Ack by): ${this.escapeHtml(this.state.tileFilterColH)}
-                    <button onclick="window.FPCL_STRATEGIC_SUITE.setTileFilter('tileFilterColH', 'all')" class="hover:text-purple-900 cursor-pointer"><i data-lucide="x" class="w-3 h-3"></i></button>
+                    Col J (Ack by): ${this.escapeHtml(this.state.tileFilterColJ)}
+                    <button onclick="window.FPCL_STRATEGIC_SUITE.setTileFilter('tileFilterColJ', 'all')" class="hover:text-purple-900 cursor-pointer"><i data-lucide="x" class="w-3 h-3"></i></button>
                   </span>
                 ` : ''}
               </div>
@@ -4535,7 +4868,7 @@
           <div id="strategic-tile-table" class="bg-white border border-slate-200 rounded-2xl shadow-xs overflow-hidden">
             <div class="px-4 py-3 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
               <div class="flex items-center gap-2.5 flex-wrap">
-                <h3 class="text-sm sm:text-base font-black text-slate-900">Action Items</h3>
+                <h3 class="text-sm sm:text-base font-black text-slate-900">Company Action Items and Action Item Master Roster</h3>
                 <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200">
                   Showing ${pagedActions.length} of ${filteredTotal}
                 </span>
@@ -4571,7 +4904,7 @@
                 <thead>
                   <tr class="bg-slate-50 border-b border-slate-200 text-slate-700 font-bold text-xs sm:text-sm">
                     ${displayColumns.map(col => `
-                      <th class="py-3 px-3.5 whitespace-nowrap">${col}</th>
+                      <th class="py-3 px-3.5 text-left font-bold whitespace-normal break-words">${this.escapeHtml(col)}</th>
                     `).join('')}
                   </tr>
                 </thead>
@@ -4583,7 +4916,6 @@
                       </td>
                     </tr>
                   ` : pagedActions.map(a => {
-                    const isClosed = a.status === 'Closed' || a.status === 'Completed';
                     const hasRaw = a.rawColumns && typeof a.rawColumns === 'object' && Object.keys(a.rawColumns).length > 0;
                     
                     return `
@@ -4591,35 +4923,56 @@
                         ${displayColumns.map(col => {
                           const colLower = col.toLowerCase().trim();
                           let val = '';
-                          if (hasRaw && a.rawColumns[col] !== undefined) {
-                            val = a.rawColumns[col];
-                          } else if (hasRaw) {
-                            // Case-insensitive lookup in rawColumns
-                            const foundKey = Object.keys(a.rawColumns).find(k => k.toLowerCase().trim() === colLower);
-                            if (foundKey && a.rawColumns[foundKey] !== undefined) {
-                              val = a.rawColumns[foundKey];
+                          if (hasRaw) {
+                            if (a.rawColumns[col] !== undefined && a.rawColumns[col] !== '') {
+                              val = a.rawColumns[col];
+                            } else {
+                              // Case-insensitive lookup in rawColumns
+                              const foundKey = Object.keys(a.rawColumns).find(k => k.toLowerCase().trim() === colLower);
+                              if (foundKey && a.rawColumns[foundKey] !== undefined && a.rawColumns[foundKey] !== '') {
+                                val = a.rawColumns[foundKey];
+                              } else {
+                                // Normalized alphanumeric lookup (e.g. date/reference vs date_reference)
+                                const cleanCol = colLower.replace(/[^a-z0-9]/g, '');
+                                const foundClean = Object.keys(a.rawColumns).find(k => k.toLowerCase().replace(/[^a-z0-9]/g, '') === cleanCol);
+                                if (foundClean && a.rawColumns[foundClean] !== undefined && a.rawColumns[foundClean] !== '') {
+                                  val = a.rawColumns[foundClean];
+                                }
+                              }
                             }
                           }
 
-                          // Fallbacks if not in rawColumns or standard column names
+                          // Fallbacks only if rawColumns did not supply a value
                           if (!val && val !== 0) {
-                            if (/id|code|sr|#|s_no|item/i.test(colLower)) val = a.id || '';
-                            else if (/action|title|task|desc|deliverable/i.test(colLower)) val = a.title || '';
-                            else if (/due|target|deadline/i.test(colLower)) val = a.dueDate || '';
-                            else if (/status|condition/i.test(colLower)) val = a.status || '';
+                            if (/id|code|sr|#|s_no|s\.no|sno|item/i.test(colLower)) val = a.sNo || a.id || '';
+                            else if (/background|bg/i.test(colLower)) val = a.background || '';
+                            else if (/date\/reference|reference|date_reference|date \/ reference/i.test(colLower)) val = a.dateReference || '';
+                            else if (/action|title|task|desc|deliverable|description/i.test(colLower)) val = a.title || a.action || a.desc || '';
+                            else if (/category/i.test(colLower)) val = a.category || '';
+                            else if (/assigned\s*to|assignee/i.test(colLower)) val = a.assignedTo || '';
+                            else if (/due|target|deadline/i.test(colLower)) val = a.dueDate || a.targetDate || '';
+                            else if (/status|condition|open_close/i.test(colLower)) val = a.statusDetail || a.status || '';
                             else if (/priority|prio/i.test(colLower)) val = a.priority || '';
                             else if (/closure/i.test(colLower)) val = a.closureDate || '';
+                            else if (/ack/i.test(colLower)) val = a.ackBy || '';
                             else if (/remark|comment|note/i.test(colLower)) val = a.remarks || '';
                           }
 
-                          // Special styling for status column
+                          // Status column
                           if (/status|state|condition|open_close/i.test(colLower)) {
-                            const rowClosed = /close|done|complete|resolved/i.test(String(val));
+                            const statusStr = String(val || (a.status === 'Closed' ? 'Closed' : 'Open')).trim();
+                            const isClosed = /close|done|complete|resolved/i.test(statusStr);
+                            const isPending = /on going|ongoing|progress|pending|wip|active/i.test(statusStr);
+                            const badgeClass = isClosed 
+                              ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' 
+                              : (isPending ? 'bg-amber-50 text-amber-800 border border-amber-200' : 'bg-rose-50 text-rose-800 border border-rose-200');
+                            const dotColor = isClosed ? 'bg-emerald-500' : (isPending ? 'bg-amber-500' : 'bg-rose-500');
+
                             return `
-                              <td class="py-3 px-3.5 whitespace-nowrap">
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${rowClosed ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-rose-50 text-rose-800 border border-rose-200'}">
-                                  <span class="w-1.5 h-1.5 rounded-full ${rowClosed ? 'bg-emerald-500' : 'bg-rose-500'}"></span>
-                                  ${val || (rowClosed ? 'Closed' : 'Open')}
+                              <td class="py-3 px-3.5 min-w-[100px] max-w-[160px] whitespace-normal break-words">
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${badgeClass}">
+                                  <span class="w-1.5 h-1.5 rounded-full ${dotColor} shrink-0"></span>
+                                  <span class="whitespace-normal break-words">${this.escapeHtml(statusStr)}</span>
                                 </span>
                               </td>
                             `;
@@ -4628,45 +4981,75 @@
                           // S_No / ID column
                           if (/id|code|action\s*#|action#|sr|s_no|s\.no|sno/i.test(colLower)) {
                             return `
-                              <td class="py-3 px-3.5 font-mono font-bold text-slate-800 text-xs sm:text-sm whitespace-nowrap">${val || '-'}</td>
+                              <td class="py-3 px-3.5 font-mono font-bold text-slate-800 text-xs sm:text-sm min-w-[60px] whitespace-normal break-words">${this.escapeHtml(val || '-')}</td>
+                            `;
+                          }
+
+                          // Background column
+                          if (/background|bg/i.test(colLower)) {
+                            return `
+                              <td class="py-3 px-3.5 text-slate-700 min-w-[140px] max-w-[280px] whitespace-normal break-words leading-relaxed">${this.escapeHtml(val || '-')}</td>
+                            `;
+                          }
+
+                          // Date/Reference column
+                          if (/date\/reference|reference|date_reference|date \/ reference/i.test(colLower)) {
+                            return `
+                              <td class="py-3 px-3.5 text-slate-600 font-mono text-xs min-w-[100px] max-w-[160px] whitespace-normal break-words">${this.escapeHtml(val || '-')}</td>
                             `;
                           }
 
                           // Action category badge
                           if (/category/i.test(colLower)) {
                             return `
-                              <td class="py-3 px-3.5 whitespace-nowrap">
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200/60">
-                                  ${val || '-'}
-                                </span>
+                              <td class="py-3 px-3.5 min-w-[110px] max-w-[180px] whitespace-normal break-words">
+                                ${val ? `
+                                  <span class="inline-block px-2 py-0.5 rounded-md text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200/60 whitespace-normal break-words">
+                                    ${this.escapeHtml(val)}
+                                  </span>
+                                ` : '<span class="text-slate-400">-</span>'}
                               </td>
                             `;
                           }
 
                           // Assigned Action Description column
-                          if (/action|task|title|desc|description/i.test(colLower)) {
+                          if (/action|task|title|desc|description|deliverable/i.test(colLower)) {
                             return `
-                              <td class="py-3 px-3.5 text-slate-900 font-medium min-w-[240px]">${val || '-'}</td>
+                              <td class="py-3 px-3.5 text-slate-900 font-medium min-w-[240px] max-w-[420px] whitespace-normal break-words leading-relaxed">${this.escapeHtml(val || '-')}</td>
                             `;
                           }
 
                           // Target date / Due date
-                          if (/due|target|deadline|date/i.test(colLower)) {
+                          if (/due|target|deadline/i.test(colLower)) {
                             return `
-                              <td class="py-3 px-3.5 text-slate-600 font-mono text-xs whitespace-nowrap">${val || '-'}</td>
+                              <td class="py-3 px-3.5 text-slate-600 font-mono text-xs min-w-[95px] max-w-[140px] whitespace-normal break-words">${this.escapeHtml(val || '-')}</td>
                             `;
                           }
 
-                          // Assigned to / Ack by
-                          if (/assign|ack/i.test(colLower)) {
+                          // Assigned to
+                          if (/assigned\s*to|assignee/i.test(colLower)) {
                             return `
-                              <td class="py-3 px-3.5 text-slate-700 font-medium whitespace-nowrap">${val || '-'}</td>
+                              <td class="py-3 px-3.5 text-slate-700 font-medium min-w-[110px] max-w-[180px] whitespace-normal break-words">${this.escapeHtml(val || '-')}</td>
                             `;
                           }
 
-                          // Remarks / default
+                          // Ack by
+                          if (/ack/i.test(colLower)) {
+                            return `
+                              <td class="py-3 px-3.5 text-slate-600 font-medium min-w-[100px] max-w-[160px] whitespace-normal break-words">${this.escapeHtml(val || '-')}</td>
+                            `;
+                          }
+
+                          // Remarks / notes
+                          if (/remark|comment|note/i.test(colLower)) {
+                            return `
+                              <td class="py-3 px-3.5 text-slate-600 min-w-[140px] max-w-[280px] whitespace-normal break-words leading-relaxed">${this.escapeHtml(val || '-')}</td>
+                            `;
+                          }
+
+                          // Default fallback for any other column in Google Sheet
                           return `
-                            <td class="py-3 px-3.5 text-slate-600 min-w-[140px]">${val || '-'}</td>
+                            <td class="py-3 px-3.5 text-slate-700 min-w-[120px] max-w-[260px] whitespace-normal break-words leading-relaxed">${this.escapeHtml(val || '-')}</td>
                           `;
                         }).join('')}
                       </tr>
@@ -4927,7 +5310,7 @@
               <div class="flex items-center gap-2">
                 <i data-lucide="list-checks" class="w-4 h-4 text-amber-600"></i>
                 <h3 class="text-sm sm:text-base font-black text-slate-800">
-                  SCM Action Deliverables (${filteredTotal} items)
+                  Company Action Items and Action Item Master Roster (${filteredTotal} items)
                 </h3>
               </div>
 
@@ -4951,11 +5334,11 @@
               <table class="w-full text-left text-xs sm:text-sm text-slate-700">
                 <thead class="bg-slate-50 border-b border-slate-200 text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-600">
                   <tr>
-                    <th class="py-3 px-3.5 w-24">Deliverable ID</th>
-                    <th class="py-3 px-3.5 min-w-[280px]">Action & Scope Description</th>
-                    <th class="py-3 px-3.5 w-28">Due Date</th>
-                    <th class="py-3 px-3.5 w-24">Status</th>
-                    <th class="py-3 px-3.5 min-w-[180px]">Remarks / Supplier Details</th>
+                    <th class="py-3 px-3.5 min-w-[70px] whitespace-normal break-words">Deliverable ID</th>
+                    <th class="py-3 px-3.5 min-w-[240px] max-w-[420px] whitespace-normal break-words">Action & Scope Description</th>
+                    <th class="py-3 px-3.5 min-w-[95px] max-w-[140px] whitespace-normal break-words">Due Date</th>
+                    <th class="py-3 px-3.5 min-w-[100px] max-w-[160px] whitespace-normal break-words">Status</th>
+                    <th class="py-3 px-3.5 min-w-[140px] max-w-[280px] whitespace-normal break-words">Remarks / Supplier Details</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
@@ -4967,18 +5350,24 @@
                     </tr>
                   ` : pagedActions.map(a => {
                     const isClosed = a.status === 'Closed' || a.status === 'Completed';
+                    const isPending = /on going|ongoing|progress|pending|wip|active/i.test(String(a.status || ''));
+                    const badgeClass = isClosed 
+                      ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' 
+                      : (isPending ? 'bg-amber-50 text-amber-800 border border-amber-200' : 'bg-rose-50 text-rose-800 border border-rose-200');
+                    const dotColor = isClosed ? 'bg-emerald-500' : (isPending ? 'bg-amber-500' : 'bg-rose-500');
+
                     return `
                       <tr class="hover:bg-slate-50/70 transition-colors">
-                        <td class="py-3 px-3.5 font-mono font-bold text-slate-800">${a.id}</td>
-                        <td class="py-3 px-3.5 text-slate-900 font-medium">${a.title}</td>
-                        <td class="py-3 px-3.5 text-slate-600">${a.dueDate || '-'}</td>
-                        <td class="py-3 px-3.5">
-                          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${isClosed ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-800 border border-amber-200'}">
-                            <span class="w-1.5 h-1.5 rounded-full ${isClosed ? 'bg-emerald-500' : 'bg-amber-500'}"></span>
-                            ${a.status || (isClosed ? 'Closed' : 'Open')}
+                        <td class="py-3 px-3.5 font-mono font-bold text-slate-800 min-w-[70px] whitespace-normal break-words">${this.escapeHtml(a.id)}</td>
+                        <td class="py-3 px-3.5 text-slate-900 font-medium min-w-[240px] max-w-[420px] whitespace-normal break-words leading-relaxed">${this.escapeHtml(a.title)}</td>
+                        <td class="py-3 px-3.5 text-slate-600 min-w-[95px] max-w-[140px] whitespace-normal break-words">${this.escapeHtml(a.dueDate || '-')}</td>
+                        <td class="py-3 px-3.5 min-w-[100px] max-w-[160px] whitespace-normal break-words">
+                          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${badgeClass}">
+                            <span class="w-1.5 h-1.5 rounded-full ${dotColor} shrink-0"></span>
+                            <span class="whitespace-normal break-words">${this.escapeHtml(a.status || (isClosed ? 'Closed' : 'Open'))}</span>
                           </span>
                         </td>
-                        <td class="py-3 px-3.5 text-slate-500">${a.remarks || '-'}</td>
+                        <td class="py-3 px-3.5 text-slate-500 min-w-[140px] max-w-[280px] whitespace-normal break-words leading-relaxed">${this.escapeHtml(a.remarks || '-')}</td>
                       </tr>
                     `;
                   }).join('')}
@@ -5527,7 +5916,7 @@
               <div class="flex items-center gap-2">
                 <i data-lucide="list-checks" class="w-4 h-4 text-slate-700"></i>
                 <h3 class="text-sm sm:text-base font-black text-slate-800">
-                  Admin & Security Action Deliverables (${filteredTotal} items)
+                  Company Action Items and Action Item Master Roster (${filteredTotal} items)
                 </h3>
               </div>
 
@@ -5550,11 +5939,11 @@
               <table class="w-full text-left text-xs sm:text-sm border-collapse">
                 <thead>
                   <tr class="bg-slate-50 border-b border-slate-200 text-slate-700 font-bold text-xs sm:text-sm">
-                    <th class="py-3 px-3.5 w-20">ID</th>
-                    <th class="py-3 px-3.5 min-w-[280px]">Action Description</th>
-                    <th class="py-3 px-3.5 w-28">Due Date</th>
-                    <th class="py-3 px-3.5 w-24">Status</th>
-                    <th class="py-3 px-3.5 min-w-[180px]">Remarks / Contractor Notes</th>
+                    <th class="py-3 px-3.5 min-w-[70px] whitespace-normal break-words">ID</th>
+                    <th class="py-3 px-3.5 min-w-[240px] max-w-[420px] whitespace-normal break-words">Action Description</th>
+                    <th class="py-3 px-3.5 min-w-[95px] max-w-[140px] whitespace-normal break-words">Due Date</th>
+                    <th class="py-3 px-3.5 min-w-[100px] max-w-[160px] whitespace-normal break-words">Status</th>
+                    <th class="py-3 px-3.5 min-w-[140px] max-w-[280px] whitespace-normal break-words">Remarks / Contractor Notes</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 text-xs sm:text-sm">
@@ -5566,18 +5955,24 @@
                     </tr>
                   ` : pagedActions.map(a => {
                     const isClosed = a.status === 'Closed' || a.status === 'Completed';
+                    const isPending = /on going|ongoing|progress|pending|wip|active/i.test(String(a.status || ''));
+                    const badgeClass = isClosed 
+                      ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' 
+                      : (isPending ? 'bg-amber-50 text-amber-800 border border-amber-200' : 'bg-rose-50 text-rose-800 border border-rose-200');
+                    const dotColor = isClosed ? 'bg-emerald-500' : (isPending ? 'bg-amber-500' : 'bg-rose-500');
+
                     return `
                       <tr class="hover:bg-slate-50/80 transition-colors">
-                        <td class="py-3 px-3.5 font-mono font-bold text-slate-800 text-xs sm:text-sm">${a.id}</td>
-                        <td class="py-3 px-3.5 text-slate-900 font-medium">${a.title}</td>
-                        <td class="py-3 px-3.5 text-slate-600 font-mono text-xs">${a.dueDate || '-'}</td>
-                        <td class="py-3 px-3.5">
-                          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${isClosed ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-rose-50 text-rose-800 border border-rose-200'}">
-                            <span class="w-1.5 h-1.5 rounded-full ${isClosed ? 'bg-emerald-500' : 'bg-rose-500'}"></span>
-                            ${a.status || (isClosed ? 'Closed' : 'Open')}
+                        <td class="py-3 px-3.5 font-mono font-bold text-slate-800 text-xs sm:text-sm min-w-[70px] whitespace-normal break-words">${this.escapeHtml(a.id)}</td>
+                        <td class="py-3 px-3.5 text-slate-900 font-medium min-w-[240px] max-w-[420px] whitespace-normal break-words leading-relaxed">${this.escapeHtml(a.title)}</td>
+                        <td class="py-3 px-3.5 text-slate-600 font-mono text-xs min-w-[95px] max-w-[140px] whitespace-normal break-words">${this.escapeHtml(a.dueDate || '-')}</td>
+                        <td class="py-3 px-3.5 min-w-[100px] max-w-[160px] whitespace-normal break-words">
+                          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${badgeClass}">
+                            <span class="w-1.5 h-1.5 rounded-full ${dotColor} shrink-0"></span>
+                            <span class="whitespace-normal break-words">${this.escapeHtml(a.status || (isClosed ? 'Closed' : 'Open'))}</span>
                           </span>
                         </td>
-                        <td class="py-3 px-3.5 text-slate-500">${a.remarks || '-'}</td>
+                        <td class="py-3 px-3.5 text-slate-500 min-w-[140px] max-w-[280px] whitespace-normal break-words leading-relaxed">${this.escapeHtml(a.remarks || '-')}</td>
                       </tr>
                     `;
                   }).join('')}
