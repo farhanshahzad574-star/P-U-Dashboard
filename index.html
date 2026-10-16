@@ -1406,15 +1406,15 @@
                 </div>
               </div>
 
-              <!-- Header Quick Actions: Sync Registry (In line with buttons) -->
+              <!-- Header Quick Actions: Sync All Google Sheets -->
               <button
                 id="btn-refresh-portal"
-                onclick="portalApp.refreshPortalData()"
+                onclick="portalApp.syncAllData({ silent: false })"
                 class="inline-flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-[7px] text-[10px] sm:text-[11px] font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 hover:border-slate-400 transition-colors shadow-2xs cursor-pointer shrink-0"
-                title="Sync & refresh dashboard registry"
+                title="Sync All Google Sheets (Live feeds across all 18 Google Sheet IDs)"
               >
                 <i data-lucide="refresh-cw" class="w-3 h-3 text-slate-600"></i>
-                <span class="hidden sm:inline">Sync Registry</span>
+                <span class="hidden sm:inline">Sync All Sheets</span>
               </button>
 
               <!-- Session Lock / Log Out Button -->
@@ -4324,41 +4324,22 @@
             }
           }
 
-          // Auto-sync live Google Sheet tabs (Recommendations & PLR) using hardcoded sheet config on page load/refresh
-          setTimeout(() => {
-            if (typeof this.syncAllPlrSheets === 'function') {
-              this.syncAllPlrSheets({ silent: true });
+          // Once-per-day automatic synchronization for all Google Sheets (or when manual sync button is clicked)
+          try {
+            const todayStr = new Date().toDateString();
+            const lastDailySync = localStorage.getItem('fpcl_last_daily_sync_date');
+            if (lastDailySync !== todayStr) {
+              setTimeout(() => {
+                if (typeof this.syncAllData === 'function') {
+                  this.syncAllData({ silent: true });
+                  try {
+                    localStorage.setItem('fpcl_last_daily_sync_date', todayStr);
+                  } catch (err) {}
+                }
+              }, 1200);
             }
-          }, 600);
-
-          // Periodic background auto-sync every 60 seconds so changes in Google Sheet reflect continuously
-          if (!this._plrAutoSyncInterval) {
-            this._plrAutoSyncInterval = setInterval(() => {
-              if (typeof this.syncAllPlrSheets === 'function') {
-                this.syncAllPlrSheets({ silent: true });
-              }
-              if (typeof this.fetchHseqKpis === 'function') {
-                this.fetchHseqKpis();
-              }
-              if (typeof this.fetchCapexData === 'function') {
-                this.fetchCapexData({ silent: true });
-              }
-              if (typeof this.fetchSubHsePData === 'function') {
-                this.fetchSubHsePData({ silent: true });
-              }
-              if (typeof this.fetchSubHseEiData === 'function') {
-                this.fetchSubHseEiData({ silent: true });
-              }
-              if (typeof this.fetchEhseData === 'function') {
-                this.fetchEhseData({ silent: true });
-              }
-              if (typeof this.fetchContactsData === 'function') {
-                this.fetchContactsData(true);
-              }
-              if (window.FPCL_PSM_SUITE && typeof window.FPCL_PSM_SUITE.syncLiveFeed === 'function') {
-                window.FPCL_PSM_SUITE.syncLiveFeed({ silent: true });
-              }
-            }, 60000);
+          } catch (e) {
+            console.warn('Daily sync check note:', e);
           }
 
           window.addEventListener('popstate', () => {
@@ -9510,38 +9491,174 @@
         },
 
         /**
-         * Detail Refresh Simulation
+         * Global Unified Google Sheets Synchronizer
+         * Synchronizes all connected Google Sheet IDs and Tabs in parallel with zero caching
          */
+        async syncAllData(options = {}) {
+          const silent = !!options.silent;
+          const btn = document.getElementById('btn-refresh-portal');
+          const icon = btn ? btn.querySelector('[data-lucide="refresh-cw"]') : null;
+          if (btn && !silent) btn.classList.add('opacity-70');
+          if (icon && !silent) icon.classList.add('animate-spin');
+
+          const tasks = [];
+
+          // 1. Overview HSEQ KPIs (1bFBRGKqIfO8Pn7qPSTU0pbdTB87ezDyXvVDnCbTGrx4, Tab: HSEQ_KPI)
+          if (typeof this.fetchHseqKpis === 'function') {
+            tasks.push(Promise.resolve(this.fetchHseqKpis()));
+          }
+
+          // 2. PLR Incidents & Recommendations (Tabs: PLRstatus & Recommendations)
+          if (typeof this.syncAllPlrSheets === 'function') {
+            tasks.push(Promise.resolve(this.syncAllPlrSheets({ silent: true })));
+          }
+
+          // 3. CAPEX (13ys4PbggcQq0H06Rh6cScAtdVnlrY-yyiWxA4e6dDzc, Tab: CAPEX)
+          if (typeof this.fetchCapexData === 'function') {
+            tasks.push(Promise.resolve(this.fetchCapexData({ silent: true })));
+          } else if (window.FPCL_CAPEX_SUITE && typeof window.FPCL_CAPEX_SUITE.syncLiveFeed === 'function') {
+            tasks.push(Promise.resolve(window.FPCL_CAPEX_SUITE.syncLiveFeed({ silent: true })));
+          }
+
+          // 4. Sub HSE - P (1hhO-goFXJlKSr32dSIHQMfEC7XRQsQly7iJCfP39Wjw, Tab: Sub_HSE_P)
+          if (typeof this.fetchSubHsePData === 'function') {
+            tasks.push(Promise.resolve(this.fetchSubHsePData({ silent: true })));
+          } else if (window.FPCL_SUB_HSE_P_SUITE && typeof window.FPCL_SUB_HSE_P_SUITE.syncLiveFeed === 'function') {
+            tasks.push(Promise.resolve(window.FPCL_SUB_HSE_P_SUITE.syncLiveFeed({ silent: true })));
+          }
+
+          // 5. Sub HSE - E&I (1ZcxlHSoQk4MjHFs7m0hfujM_7ud8JNNrMQg0cLq-Ruw, Tab: Sub_HSE _E&I)
+          if (typeof this.fetchSubHseEiData === 'function') {
+            tasks.push(Promise.resolve(this.fetchSubHseEiData({ silent: true })));
+          } else if (window.FPCL_SUB_HSE_EI_SUITE && typeof window.FPCL_SUB_HSE_EI_SUITE.syncLiveFeed === 'function') {
+            tasks.push(Promise.resolve(window.FPCL_SUB_HSE_EI_SUITE.syncLiveFeed({ silent: true })));
+          }
+
+          // 6. Sub HSE - Mech (1Put-VhgQkpG43kAuW_l3cRtj4MH6Dl3aa2gms9IaLqQ, Tab: Sub_HSE_Mech)
+          if (window.FPCL_SUB_HSE_MECH_SUITE && typeof window.FPCL_SUB_HSE_MECH_SUITE.syncLiveFeed === 'function') {
+            tasks.push(Promise.resolve(window.FPCL_SUB_HSE_MECH_SUITE.syncLiveFeed({ silent: true })));
+          }
+
+          // 7. EHSE (1I4oX4kPr6d0_7q--9OcoJWs0W7IQG1dK1rBmNO7BlGo, Tab: EHSE)
+          if (typeof this.fetchEhseData === 'function') {
+            tasks.push(Promise.resolve(this.fetchEhseData({ silent: true })));
+          } else if (window.FPCL_EHSE_SUITE && typeof window.FPCL_EHSE_SUITE.syncLiveFeed === 'function') {
+            tasks.push(Promise.resolve(window.FPCL_EHSE_SUITE.syncLiveFeed({ silent: true })));
+          }
+
+          // 8. Responsibility Matrix / Contacts (1mI5WbcNBYtJc1fQjG0ZYQ1PKQzAHp5Sm3gyi9MibW-g, Tab: Contacts)
+          if (typeof this.fetchContactsData === 'function') {
+            tasks.push(Promise.resolve(this.fetchContactsData(true)));
+          }
+
+          // 9. PSM Audits & Validation (1bFBRGKqIfO8Pn7qPSTU0pbdTB87ezDyXvVDnCbTGrx4, Tabs: PSM, PSM Validation)
+          if (window.FPCL_PSM_SUITE) {
+            if (typeof window.FPCL_PSM_SUITE.syncLiveFeed === 'function') {
+              tasks.push(Promise.resolve(window.FPCL_PSM_SUITE.syncLiveFeed({ silent: true })));
+            }
+            if (typeof window.FPCL_PSM_SUITE.syncValidationLiveFeed === 'function') {
+              tasks.push(Promise.resolve(window.FPCL_PSM_SUITE.syncValidationLiveFeed({ silent: true })));
+            }
+          }
+
+          // 10. PSI & Hold Points (1vWYE3G4W7TxHBVzsUJuu1Z-aufjXD-xFeodTpFUTZtY, Tabs: PSI, Hold_Points)
+          if (window.FPCL_PSI_SUITE) {
+            if (typeof window.FPCL_PSI_SUITE.syncLiveFeed === 'function') {
+              tasks.push(Promise.resolve(window.FPCL_PSI_SUITE.syncLiveFeed({ silent: true, force: true })));
+            }
+            if (typeof window.FPCL_PSI_SUITE.syncHoldPointsFeed === 'function') {
+              tasks.push(Promise.resolve(window.FPCL_PSI_SUITE.syncHoldPointsFeed({ silent: true })));
+            }
+          }
+
+          // 11. MSA (11ggCusY-ZJj09bVcpbikHeupyvFTBxDHlytjhpbNRWw, Tabs: MSA, MSA_Compliance, Compliance_by_Auditor_name)
+          if (window.FPCL_MSA_SUITE && typeof window.FPCL_MSA_SUITE.syncLiveFeed === 'function') {
+            tasks.push(Promise.resolve(window.FPCL_MSA_SUITE.syncLiveFeed({ silent: true })));
+          }
+
+          // 12. Safety Talks (1Fgx9ZEdHAQnH_oCuX0NdNO5_V3gEPHu0xjnqKk6GqWc, Tab: Safety_Talk)
+          if (window.FPCL_SAFETY_TALK_SUITE && typeof window.FPCL_SAFETY_TALK_SUITE.syncLiveFeed === 'function') {
+            tasks.push(Promise.resolve(window.FPCL_SAFETY_TALK_SUITE.syncLiveFeed({ silent: true })));
+          }
+
+          // 13. KPIs & Executive Organogram (1gkO-kV44ABOuB2JB72FQbwLYdAcAZKBzcIBMBZnR8Ts, Tab: KPIs)
+          if (window.FPCL_KPI_SUITE && typeof window.FPCL_KPI_SUITE.fetchLiveData === 'function') {
+            tasks.push(Promise.resolve(window.FPCL_KPI_SUITE.fetchLiveData(true)));
+          }
+
+          // 14. Crew Week Shift Roster (1vbclqX2smmSq2C4tu_fw44mApg1ng6wVZ9bgPC7aUBk, Tabs: Crew_Week, Group)
+          if (window.FPCL_CREW_WEEK_SUITE) {
+            if (typeof window.FPCL_CREW_WEEK_SUITE.fetchLiveGoogleSheetData === 'function') {
+              tasks.push(Promise.resolve(window.FPCL_CREW_WEEK_SUITE.fetchLiveGoogleSheetData({ force: true, silent: true })));
+            }
+            if (typeof window.FPCL_CREW_WEEK_SUITE.fetchLiveGroupSheetData === 'function') {
+              tasks.push(Promise.resolve(window.FPCL_CREW_WEEK_SUITE.fetchLiveGroupSheetData({ force: true, silent: true })));
+            }
+          }
+
+          // 15. FPCL Live Telephone Directory (1SrPdaxzEXbOFVbWin4zJvrc-m9TQKtxFjcyZYamXfpg)
+          if (window.FPCL_DIRECTORY_SUITE && typeof window.FPCL_DIRECTORY_SUITE.fetchLiveData === 'function') {
+            tasks.push(Promise.resolve(window.FPCL_DIRECTORY_SUITE.fetchLiveData(true)));
+          }
+
+          // 16. PSSR (1PjGP79SLOhTJwFv4tPyRJeX07XEW5e9OBFWQ4aUefyY, Tab: PSSR)
+          if (window.FPCL_PSSR_SUITE && typeof window.FPCL_PSSR_SUITE.syncLiveFeed === 'function') {
+            tasks.push(Promise.resolve(window.FPCL_PSSR_SUITE.syncLiveFeed({ silent: true })));
+          }
+
+          // 17. IMS Audits (1amCHA8y_tqgR8dCJgXjjAXgUH5TESAXx8QZycRRHTi0, Tab: IMS_Audit)
+          if (window.FPCL_IMS_SUITE && typeof window.FPCL_IMS_SUITE.syncLiveFeed === 'function') {
+            tasks.push(Promise.resolve(window.FPCL_IMS_SUITE.syncLiveFeed({ silent: true })));
+          }
+
+          // 18. Strategic Departmental Sheets & COO Self-Assigned (1s5czmIVCXiOPTRc69QffJ51JFW2-gAErPitstUar2dU, Tab: COO)
+          if (window.FPCL_STRATEGIC_SUITE) {
+            if (typeof window.FPCL_STRATEGIC_SUITE.fetchServerSheetConfigs === 'function') {
+              tasks.push(Promise.resolve(window.FPCL_STRATEGIC_SUITE.fetchServerSheetConfigs()));
+            }
+            if (typeof window.FPCL_STRATEGIC_SUITE.fetchCooSelfAssignedActions === 'function') {
+              tasks.push(Promise.resolve(window.FPCL_STRATEGIC_SUITE.fetchCooSelfAssignedActions(true)));
+            }
+            if (typeof window.FPCL_STRATEGIC_SUITE.syncAllEmployeeSheets === 'function') {
+              tasks.push(Promise.resolve(window.FPCL_STRATEGIC_SUITE.syncAllEmployeeSheets({ silent: true })));
+            }
+          }
+
+          await Promise.allSettled(tasks);
+
+          this.updateRollupStats();
+          this.renderCards();
+          this.renderComparisonChart();
+          if (typeof this.renderTimelineChart === 'function') {
+            this.renderTimelineChart();
+          }
+
+          const lastSyncEl = document.getElementById('detail-last-sync');
+          const nowStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          if (lastSyncEl) {
+            lastSyncEl.textContent = nowStr;
+          }
+
+          try {
+            const todayStr = new Date().toDateString();
+            localStorage.setItem('fpcl_last_daily_sync_date', todayStr);
+            localStorage.setItem('fpcl_last_sync_timestamp', Date.now().toString());
+          } catch (e) {}
+
+          if (btn && !silent) btn.classList.remove('opacity-70');
+          if (icon && !silent) icon.classList.remove('animate-spin');
+
+          if (!silent) {
+            this.showToast('All Google Sheets Synced', 'Successfully synchronized live feeds across all connected Google Sheets.', 'success');
+          }
+        },
+
         triggerDetailSync() {
-          this.refreshPortalData();
+          return this.syncAllData({ silent: false });
         },
 
         refreshPortalData() {
-          const btn = document.getElementById('btn-refresh-portal');
-          const icon = btn ? btn.querySelector('[data-lucide="refresh-cw"]') : null;
-          if (btn) btn.classList.add('opacity-70');
-          if (icon) icon.classList.add('animate-spin');
-
-          setTimeout(() => {
-            if (btn) btn.classList.remove('opacity-70');
-            if (icon) icon.classList.remove('animate-spin');
-            this.updateRollupStats();
-            this.renderCards();
-            this.fetchHseqKpis();
-            this.fetchCapexData({ silent: true });
-
-            // If viewing PLR dashboard, also sync live Google Sheet tabs
-            if (this.state.activeDashboardId === 'plr' && typeof portalApp.refreshFromLiveSheet === 'function') {
-              portalApp.refreshFromLiveSheet();
-            }
-
-            const lastSyncEl = document.getElementById('detail-last-sync');
-            if (lastSyncEl) {
-              lastSyncEl.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            }
-
-            this.showToast('Portal Registry Synced', 'All dashboard feeds and registries synchronized.', 'info');
-          }, 500);
+          return this.syncAllData({ silent: false });
         },
 
         /**

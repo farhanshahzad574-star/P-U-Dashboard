@@ -62,27 +62,15 @@
       // Propagate stats to overview registry
       this.syncStatsToOverview();
 
-      // Trigger immediate live background sync with Google Sheet
-      setTimeout(() => {
-        this.syncLiveFeed({ silent: true });
-      }, 250);
-
-      // Periodic auto-sync every 15 seconds to track live changes in Google Sheet
-      if (!this._autoSyncTimer) {
-        this._autoSyncTimer = setInterval(() => {
-          this.syncLiveFeed({ silent: true });
-        }, 15000);
-      }
-
-      // Auto-sync when user returns to browser tab
-      if (typeof document !== 'undefined' && !this._visibilityBound) {
-        this._visibilityBound = true;
-        document.addEventListener('visibilitychange', () => {
-          if (!document.hidden) {
+      // Google Sheets synchronization: only once per day or when manually triggered
+      try {
+        const todayStr = new Date().toDateString();
+        if (localStorage.getItem('fpcl_last_daily_sync_date') !== todayStr) {
+          setTimeout(() => {
             this.syncLiveFeed({ silent: true });
-          }
-        });
-      }
+          }, 350);
+        }
+      } catch (e) {}
     },
 
     getRawData() {

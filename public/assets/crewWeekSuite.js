@@ -689,17 +689,8 @@
         // Render whichever tab is currently active
         this.switchTab(this.activeTab || 'roster');
 
-        // Trigger dynamic fetch
+        // Fetch on opening if needed, or when manually refreshed
         this.refreshCurrentTab({ silent: false });
-
-        // Auto poll while modal is open
-        if (!this.autoSyncTimer) {
-          this.autoSyncTimer = setInterval(() => {
-            if (this.isModalOpen()) {
-              this.refreshCurrentTab({ silent: true });
-            }
-          }, 25000);
-        }
       }
     },
 

@@ -6769,19 +6769,18 @@
     }
   });
 
-  // Automated background refresh every 60 seconds for continuous live Google Sheets updates
+  // Google Sheets synchronization: only once per day or when manually triggered
   if (typeof window !== 'undefined') {
-    setTimeout(function () {
-      if (typeof portalApp.syncAllPlrSheets === 'function') {
-        portalApp.syncAllPlrSheets({ silent: true, target: 'both' });
+    try {
+      var todayStr = new Date().toDateString();
+      if (localStorage.getItem('fpcl_last_daily_sync_date') !== todayStr) {
+        setTimeout(function () {
+          if (typeof portalApp.syncAllPlrSheets === 'function') {
+            portalApp.syncAllPlrSheets({ silent: true, target: 'both' });
+          }
+        }, 1200);
       }
-    }, 1200);
-
-    setInterval(function () {
-      if (typeof portalApp.syncAllPlrSheets === 'function') {
-        portalApp.syncAllPlrSheets({ silent: true, target: 'both' });
-      }
-    }, 60000);
+    } catch (e) {}
   }
 
 })();

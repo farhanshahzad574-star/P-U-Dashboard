@@ -73,17 +73,15 @@
       // Setup mutation observer so whenever PSSR container becomes visible, it defaults to current year dynamically
       this.setupOpenObserver();
 
-      // Background live sync on load
-      setTimeout(() => {
-        this.syncLiveFeed({ silent: true });
-      }, 700);
-
-      // Periodic auto-sync every 60 seconds
-      if (!this._autoSyncTimer) {
-        this._autoSyncTimer = setInterval(() => {
-          this.syncLiveFeed({ silent: true });
-        }, 60000);
-      }
+      // Google Sheets synchronization: only once per day or when manually triggered
+      try {
+        const todayStr = new Date().toDateString();
+        if (localStorage.getItem('fpcl_last_daily_sync_date') !== todayStr) {
+          setTimeout(() => {
+            this.syncLiveFeed({ silent: true });
+          }, 700);
+        }
+      } catch (e) {}
     },
 
     /**

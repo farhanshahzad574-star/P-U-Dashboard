@@ -166,19 +166,16 @@
       // Sync initial stats to portal Overview
       this.syncPsmStatsToOverview();
 
-      // Trigger automatic live Google Sheets sync on launch
-      setTimeout(() => {
-        this.syncLiveFeed({ silent: true });
-        this.syncValidationLiveFeed({ silent: true });
-      }, 700);
-
-      // Periodic auto-sync every 60 seconds so sheet additions/deletions reflect live
-      if (!this._autoSyncTimer) {
-        this._autoSyncTimer = setInterval(() => {
-          this.syncLiveFeed({ silent: true });
-          this.syncValidationLiveFeed({ silent: true });
-        }, 60000);
-      }
+      // Google Sheets synchronization: only once per day or when manually triggered
+      try {
+        const todayStr = new Date().toDateString();
+        if (localStorage.getItem('fpcl_last_daily_sync_date') !== todayStr) {
+          setTimeout(() => {
+            this.syncLiveFeed({ silent: true });
+            this.syncValidationLiveFeed({ silent: true });
+          }, 700);
+        }
+      } catch (e) {}
     },
 
     syncPsmStatsToOverview() {

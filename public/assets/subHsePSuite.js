@@ -104,17 +104,15 @@
       // Propagate live stats to overview portal registry
       this.syncStatsToOverview();
 
-      // Trigger automatic live Google Sheets sync
-      setTimeout(() => {
-        this.syncLiveFeed({ silent: true });
-      }, 500);
-
-      // Periodic auto-sync every 45 seconds so live sheet updates reflect immediately
-      if (!this._autoSyncTimer) {
-        this._autoSyncTimer = setInterval(() => {
-          this.syncLiveFeed({ silent: true });
-        }, 45000);
-      }
+      // Google Sheets synchronization: only once per day or when manually triggered
+      try {
+        const todayStr = new Date().toDateString();
+        if (localStorage.getItem('fpcl_last_daily_sync_date') !== todayStr) {
+          setTimeout(() => {
+            this.syncLiveFeed({ silent: true });
+          }, 500);
+        }
+      } catch (e) {}
     },
 
     getRawData() {

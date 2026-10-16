@@ -1129,15 +1129,13 @@
         observer.observe(capexContainer, { attributes: true, attributeFilter: ['class', 'hidden', 'style'] });
       }
 
-      // Immediate live sync from Google Sheet
-      this.syncLiveFeed({ silent: true });
-
-      // Periodic auto-sync every 60 seconds
-      if (!this._syncTimer) {
-        this._syncTimer = setInterval(() => {
+      // Google Sheets synchronization: only once per day or when manually triggered
+      try {
+        const todayStr = new Date().toDateString();
+        if (localStorage.getItem('fpcl_last_daily_sync_date') !== todayStr) {
           this.syncLiveFeed({ silent: true });
-        }, 60000);
-      }
+        }
+      } catch (e) {}
     },
 
     getRawData() {
