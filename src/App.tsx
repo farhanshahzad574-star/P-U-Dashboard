@@ -191,7 +191,7 @@ export default function App() {
             {/* Background Image */}
             <div className="absolute inset-0 z-0">
               <img
-                src="/assets/Wide View of Plant Structure & Environmental Coal Storage Dome.jpg"
+                src="/assets/Wide View of Plant Structure & Environmental Coal Storage Dome.jpeg"
                 alt="FFBL Power company - Actual Aerial Plant View"
                 className="w-full h-full object-cover object-center filter brightness-65 contrast-110"
               />
@@ -327,7 +327,7 @@ export default function App() {
               <div className="lg:col-span-5">
                 <div className="relative rounded-2xl overflow-hidden border-2 border-blue-200 shadow-xl group">
                   <img
-                    src="/assets/Wide View of Plant Structure & Environmental Coal Storage Dome.jpg"
+                    src="/assets/Wide View of Plant Structure & Environmental Coal Storage Dome.jpeg"
                     alt="Wide View of Plant Structure & Environmental Coal Storage"
                     className="w-full h-72 sm:h-80 lg:h-96 object-cover object-center group-hover:scale-105 transition-transform duration-500"
                   />
@@ -451,7 +451,7 @@ export default function App() {
               <div className="lg:col-span-5">
                 <div className="relative rounded-2xl overflow-hidden border-2 border-blue-200 shadow-xl group h-80 sm:h-96">
                   <img
-                    src="/assets/02 × 250 MTPH CFB Boiler Unit & Stack Structure.jpg"
+                    src="/assets/02 × 250 MTPH CFB Boiler Unit & Stack Structure.jpeg"
                     alt="02 × 250 MTPH CFB Boiler Unit & Stack Structure"
                     className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
                   />
