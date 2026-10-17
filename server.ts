@@ -647,14 +647,22 @@ app.get('/api/contacts', async (req: Request, res: Response): Promise<void> => {
   res.setHeader('Expires', '0');
 
   if (csvText) {
-    contactsDataCache = { timestamp: now, csvText };
+    // Strictly isolate: Filter out any strategic dashboard or departmental action rows from the Contacts tab
+    const lines = csvText.split(/\r?\n/);
+    const filteredLines = lines.filter((line, idx) => {
+      if (idx === 0) return true;
+      const lower = line.toLowerCase();
+      return !lower.includes('strategic') && !lower.includes('departmental');
+    });
+    const cleanedCsvText = filteredLines.join('\n');
+    contactsDataCache = { timestamp: now, csvText: cleanedCsvText };
     res.json({
       success: true,
       live: true,
       timestamp: now,
       source: fetchedSource,
-      rowCount: csvText.split('\n').filter(Boolean).length,
-      csvText
+      rowCount: filteredLines.filter(Boolean).length,
+      csvText: cleanedCsvText
     });
   } else if (contactsDataCache) {
     res.json({

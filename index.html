@@ -3827,8 +3827,6 @@
             <span id="contacts-count-label" class="font-bold text-slate-800">13 Contacts</span>
             <span class="text-slate-300">•</span>
             <span class="text-[11px] text-slate-500 hidden sm:inline">Google Sheet Tab: Contacts (Sheet ID: 1mI5WbcNBYtJc1fQjG0ZYQ1PKQzAHp5Sm3gyi9MibW-g)</span>
-            <span class="text-slate-300 hidden sm:inline">•</span>
-            <span id="contacts-footer-sync-time" class="text-[11px] text-emerald-700 font-medium hidden sm:inline">Live Sync Active</span>
           </div>
           <button
             type="button"
@@ -10677,9 +10675,17 @@
           for (let i = 1; i < lines.length; i++) {
             const cols = parseRow(lines[i]);
             if (cols.length < 2 || !cols.some(c => c && c.trim().length > 0)) continue;
+            const dashboardVal = ((dashboardIdx !== -1 ? cols[dashboardIdx] : cols[0]) || '').trim();
+            const respVal = ((respIdx !== -1 ? cols[respIdx] : cols[1]) || '').trim();
+            const dLower = dashboardVal.toLowerCase();
+            const rLower = respVal.toLowerCase();
+            // Strictly exclude any Strategic Dashboard or Departmental Action entries
+            if (dLower.includes('strategic') || dLower.includes('departmental') || rLower.includes('strategic') || rLower.includes('departmental')) {
+              continue;
+            }
             result.push({
-              dashboard: ((dashboardIdx !== -1 ? cols[dashboardIdx] : cols[0]) || '').trim(),
-              responsibility: ((respIdx !== -1 ? cols[respIdx] : cols[1]) || '').trim(),
+              dashboard: dashboardVal,
+              responsibility: respVal,
               email: ((emailIdx !== -1 ? cols[emailIdx] : cols[2]) || '').trim(),
               designation: ((desigIdx !== -1 ? cols[desigIdx] : cols[3]) || '').trim(),
               mobile: ((mobileIdx !== -1 ? cols[mobileIdx] : cols[4]) || '').trim(),
@@ -10692,8 +10698,6 @@
         async fetchContactsData(forceRefresh) {
           const syncIcon = document.getElementById('contacts-sync-icon');
           if (syncIcon) syncIcon.classList.add('animate-spin');
-          const liveStatusEl = document.getElementById('contacts-live-status');
-          if (liveStatusEl) liveStatusEl.textContent = 'Syncing...';
 
           try {
             const urls = [
@@ -10740,7 +10744,6 @@
                 this._contactsLastSyncTime = new Date().toLocaleTimeString();
                 try {
                   localStorage.setItem('fpcl_live_contacts_data', JSON.stringify(parsed));
-                  localStorage.setItem('fpcl_live_contacts_sync_time', this._contactsLastSyncTime);
                 } catch (e) {}
               }
             }
@@ -10750,11 +10753,6 @@
             if (syncIcon) {
               setTimeout(() => syncIcon.classList.remove('animate-spin'), 400);
             }
-            const syncTime = this._contactsLastSyncTime || new Date().toLocaleTimeString();
-            if (liveStatusEl) liveStatusEl.textContent = `Live (${syncTime})`;
-            const footerSyncEl = document.getElementById('contacts-footer-sync-time');
-            if (footerSyncEl) footerSyncEl.textContent = `Live Synchronized (${syncTime})`;
-
             const searchInput = document.getElementById('contacts-modal-search');
             const query = searchInput ? searchInput.value : '';
             this.filterContactsModal(query);
@@ -10767,7 +10765,17 @@
           const noMatchEl = document.getElementById('contacts-no-matches');
           if (!tbody) return;
 
-          const items = itemsToRender || this.contactsList || this.defaultContactsData;
+          const rawItems = itemsToRender || this.contactsList || this.defaultContactsData;
+          // Filter out any Strategic Dashboard or Departmental Action entries
+          const items = rawItems.filter(item => {
+            if (!item) return false;
+            const d = (item.dashboard || '').toLowerCase();
+            const r = (item.responsibility || '').toLowerCase();
+            const des = (item.designation || '').toLowerCase();
+            return !d.includes('strategic') && !d.includes('departmental') &&
+                   !r.includes('strategic') && !r.includes('departmental') &&
+                   !des.includes('strategic') && !des.includes('departmental');
+          });
           const totalCount = items.length;
 
           if (countEl) {
@@ -10897,12 +10905,20 @@
                 const cached = localStorage.getItem('fpcl_live_contacts_data');
                 if (cached) {
                   const parsedCache = JSON.parse(cached);
-                  // Ensure cache does not contain bugged responsibility names (where responsibility equals dashboard name)
-                  const isCorrupted = Array.isArray(parsedCache) && parsedCache.length > 0 && parsedCache.some(item => item && item.dashboard && item.responsibility && item.dashboard.trim().toLowerCase() === item.responsibility.trim().toLowerCase());
+                  // Ensure cache does not contain bugged responsibility names or strategic/departmental entries
+                  const isCorrupted = Array.isArray(parsedCache) && parsedCache.length > 0 && parsedCache.some(item => {
+                    if (!item) return false;
+                    const d = (item.dashboard || '').toLowerCase();
+                    const r = (item.responsibility || '').toLowerCase();
+                    return (d && r && d === r) ||
+                           d.includes('strategic') || d.includes('departmental') ||
+                           r.includes('strategic') || r.includes('departmental');
+                  });
                   if (!isCorrupted && Array.isArray(parsedCache) && parsedCache.length > 0) {
                     this.contactsList = parsedCache;
                   } else {
                     localStorage.removeItem('fpcl_live_contacts_data');
+                    this.contactsList = null;
                   }
                 }
               } catch (e) {}

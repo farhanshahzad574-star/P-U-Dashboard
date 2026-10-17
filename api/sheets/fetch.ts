@@ -439,6 +439,18 @@ export default async function handler(req: any, res: any) {
     }
 
     if (csvText) {
+      // If fetching Contacts tab, ensure no strategic dashboard or departmental action rows leak
+      let finalCsv = csvText;
+      const isContacts = (sheetTab && sheetTab.toLowerCase().includes('contact')) || (spreadsheetId === '1mI5WbcNBYtJc1fQjG0ZYQ1PKQzAHp5Sm3gyi9MibW-g');
+      if (isContacts) {
+        const lines = csvText.split(/\r?\n/);
+        finalCsv = lines.filter((line, idx) => {
+          if (idx === 0) return true;
+          const lower = line.toLowerCase();
+          return !lower.includes('strategic') && !lower.includes('departmental');
+        }).join('\n');
+      }
+
       res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
       res.setHeader('Pragma', 'no-cache');
       res.setHeader('Expires', '0');
@@ -446,8 +458,8 @@ export default async function handler(req: any, res: any) {
         success: true,
         source: successUrl,
         sheetTab: sheetTab,
-        rowCount: csvText.split('\n').filter(Boolean).length,
-        csvText
+        rowCount: finalCsv.split('\n').filter(Boolean).length,
+        csvText: finalCsv
       });
       return;
     }
