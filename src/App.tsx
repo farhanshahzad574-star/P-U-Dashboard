@@ -21,10 +21,156 @@ import {
   Activity,
   Award,
   Globe2,
-  Sparkles
+  Sparkles,
+  Lock,
+  LogOut,
+  Eye,
+  EyeOff,
+  ShieldCheck,
+  AlertCircle
 } from 'lucide-react';
 
-export default function App() {
+interface LoginScreenProps {
+  onLoginSuccess: () => void;
+}
+
+function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!password.trim()) {
+      setError('Please enter your password.');
+      return;
+    }
+
+    setLoading(true);
+    // Accepted passwords: standard FPCL portal credentials
+    const validPasswords = ['Abcd@1234', 'fpcl2026', 'admin'];
+    if (validPasswords.includes(password.trim())) {
+      // Store session flag permanently in localStorage until logout
+      localStorage.setItem('fpcl_auth', 'true');
+      localStorage.setItem('app_authenticated', 'true');
+      onLoginSuccess();
+    } else {
+      setError('Incorrect password. Please try again.');
+      setPassword('');
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#0A101D] text-slate-100 flex items-center justify-center p-4 selection:bg-orange-500/30 selection:text-white relative">
+      {/* Ambient background glow matching FPCL branding */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[620px] h-[620px] bg-gradient-to-tr from-blue-600/15 via-indigo-600/10 to-orange-500/10 rounded-full blur-3xl opacity-75" />
+      </div>
+
+      <div className="relative w-full max-w-md bg-slate-900/90 backdrop-blur-2xl border border-slate-800 rounded-2xl shadow-2xl p-7 sm:p-9 z-10">
+        {/* Brand Header */}
+        <div className="flex flex-col items-center text-center mb-8">
+          {/* FPCL Logo Emblem */}
+          <div className="w-16 h-16 rounded-2xl bg-white border border-blue-200/40 p-2 flex items-center justify-center shadow-lg shadow-blue-500/15 mb-4">
+            <svg viewBox="0 0 135 48" className="w-full h-auto px-0.5" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="2" y="2" width="17" height="23" rx="2" fill="#F97316"/>
+              <polygon points="11,3 6,13 10,13 5,23 14,11 10,11" fill="#0F172A"/>
+              <path d="M 23 2 H 38 V 7 H 28 V 11 H 36 V 16 H 28 V 25 H 23 Z" fill="#0066B3"/>
+              <path d="M 41 2 H 54 C 59 2 62 5 62 10 C 62 15 59 18 54 18 H 46 V 25 H 41 Z M 46 7 V 13 H 53 C 55 13 56 12 56 10 C 56 8 55 7 53 7 Z" fill="#0066B3"/>
+              <path d="M 77 8 L 72 10 C 71 8 69 7 67 7 C 63 7 61 10 61 13.5 C 61 17 63 20 67 20 C 69 20 71 19 72 17 L 77 19 C 75 23 71 26 66 26 C 59 26 55 20.5 55 13.5 C 55 6.5 60 1 67 1 C 71 1 75 4 77 8 Z" fill="#0066B3"/>
+              <path d="M 80 2 H 86 V 20 H 104 V 25 H 80 Z" fill="#0066B3"/>
+              <polygon points="93,2 100,2 86,25 79,25" fill="#F97316"/>
+              <polygon points="86,25 106,25 102,18 84,18" fill="#EA580C"/>
+            </svg>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="font-extrabold text-xl tracking-tight text-white leading-none">
+              FPCL Portal
+            </span>
+            <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-orange-500/15 text-[#FB923C] border border-orange-500/30 font-bold">
+              118 MW
+            </span>
+          </div>
+          <p className="text-xs font-semibold text-slate-400 tracking-wide uppercase mt-1">
+            FFBL Power Company Limited
+          </p>
+          <p className="text-xs text-slate-400 mt-2.5 max-w-xs">
+            Enter your authorization password to access the executive dashboard and plant operations.
+          </p>
+        </div>
+
+        {/* Error Alert */}
+        {error && (
+          <div className="mb-5 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+            <span>{error}</span>
+          </div>
+        )}
+
+        {/* Login Form */}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-xs font-semibold text-slate-300 mb-1.5" htmlFor="password-input">
+              Password
+            </label>
+            <div className="relative">
+              <input
+                id="password-input"
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (error) setError('');
+                }}
+                placeholder="Enter authorization password..."
+                autoFocus
+                autoComplete="current-password"
+                className="w-full px-4 py-3 bg-slate-950/70 border border-slate-700/80 rounded-xl text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors pr-11 text-sm font-sans"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                tabIndex={-1}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 p-1.5 rounded-lg transition-colors cursor-pointer"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gradient-to-r from-[#0066B3] via-[#004B87] to-[#EA580C] hover:opacity-95 active:scale-[0.99] text-white font-bold text-sm shadow-lg shadow-blue-600/20 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-900 transition-all cursor-pointer disabled:opacity-50"
+          >
+            <Lock className="w-4 h-4" />
+            <span>{loading ? 'Verifying...' : 'Enter Dashboard'}</span>
+          </button>
+        </form>
+
+        <div className="mt-7 pt-4 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-500">
+          <span className="flex items-center gap-1.5 text-slate-400">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+            Protected Session
+          </span>
+          <span className="font-mono text-[11px] text-slate-500">
+            localStorage: fpcl_auth
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+interface DashboardLayoutProps {
+  onLogout: () => void;
+}
+
+function DashboardLayout({ onLogout }: DashboardLayoutProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'all' | '60hz' | '50hz'>('all');
 
@@ -111,18 +257,26 @@ export default function App() {
           </nav>
 
           {/* Action CTAs */}
-          <div className="hidden sm:flex items-center gap-3">
+          <div className="hidden sm:flex items-center gap-2.5">
             <button
               onClick={() => scrollToSection('specs')}
-              className="px-4 py-2 rounded-xl text-xs font-bold text-[#0066B3] bg-blue-50 hover:bg-blue-100 border border-blue-200 transition-all cursor-pointer"
+              className="px-3.5 py-2 rounded-xl text-xs font-bold text-[#0066B3] bg-blue-50 hover:bg-blue-100 border border-blue-200 transition-all cursor-pointer"
             >
-              Technical Datasheet
+              Datasheet
             </button>
             <button
               onClick={() => scrollToSection('contact')}
-              className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-[#EA580C] to-[#F97316] hover:from-[#C2410C] hover:to-[#EA580C] shadow-md shadow-orange-500/20 transition-all cursor-pointer active:scale-95"
+              className="px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-[#EA580C] to-[#F97316] hover:from-[#C2410C] hover:to-[#EA580C] shadow-md shadow-orange-500/20 transition-all cursor-pointer active:scale-95"
             >
-              Plant Contact
+              Contact
+            </button>
+            <button
+              onClick={onLogout}
+              className="px-3.5 py-2 rounded-xl text-xs font-bold text-slate-700 hover:text-rose-600 hover:bg-rose-50 border border-slate-200 transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 shadow-xs"
+              title="Logout session"
+            >
+              <LogOut className="w-3.5 h-3.5 text-rose-500" />
+              <span>Logout</span>
             </button>
           </div>
 
@@ -177,6 +331,15 @@ export default function App() {
               >
                 Contact &amp; Addresses
               </button>
+              <div className="pt-2 border-t border-slate-100">
+                <button
+                  onClick={onLogout}
+                  className="w-full text-left py-2 px-3 text-sm font-bold text-rose-600 hover:bg-rose-50 rounded-lg flex items-center gap-2 cursor-pointer"
+                >
+                  <LogOut className="w-4 h-4 text-rose-500" />
+                  <span>Logout Session</span>
+                </button>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -757,3 +920,34 @@ export default function App() {
     </div>
   );
 }
+
+export default function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    return localStorage.getItem('fpcl_auth') === 'true';
+  });
+
+  const handleLogout = () => {
+    localStorage.removeItem('fpcl_auth');
+    localStorage.removeItem('app_authenticated');
+    setIsAuthenticated(false);
+  };
+
+  // Conditional Rendering:
+  // If isAuthenticated is false, render ONLY the clean password entry screen.
+  // Prevent Resource Leaks: any useEffect hooks, intervals, or asset loading inside
+  // dashboard components do NOT run or make API requests while isAuthenticated is false.
+  if (!isAuthenticated) {
+    return (
+      <LoginScreen
+        onLoginSuccess={() => {
+          localStorage.setItem('fpcl_auth', 'true');
+          setIsAuthenticated(true);
+        }}
+      />
+    );
+  }
+
+  // If isAuthenticated is true, render the main dashboard layout
+  return <DashboardLayout onLogout={handleLogout} />;
+}
+
