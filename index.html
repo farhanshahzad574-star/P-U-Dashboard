@@ -1496,10 +1496,9 @@
           <!-- Background Image -->
           <div class="absolute inset-0 z-0">
             <img
-              src="./assets/Wide View of Plant Structure & Environmental Coal Storage.jpeg"
+              src="/assets/Wide View of Plant Structure & Environmental Coal Storage Dome.jpg"
               alt="FFBL Power company - Actual Aerial Plant View"
               class="w-full h-full object-cover object-center filter brightness-65 contrast-110"
-              onerror="if (this.src.indexOf('Fpcl4.jpeg') === -1) { this.src = './assets/Fpcl4.jpeg'; }"
             />
             <!-- Brand Blue & Orange Gradient Overlays -->
             <div class="absolute inset-0 bg-gradient-to-t from-[#001D3D] via-[#003566]/85 to-[#002244]/60"></div>
@@ -1602,10 +1601,9 @@
             <div class="lg:col-span-5">
               <div class="relative rounded-2xl overflow-hidden border-2 border-blue-200 shadow-xl group">
                 <img
-                  src="./assets/Wide View of Plant Structure & Environmental Coal Storage.jpeg"
+                  src="/assets/Wide View of Plant Structure & Environmental Coal Storage Dome.jpg"
                   alt="Wide View of Plant Structure & Environmental Coal Storage"
                   class="w-full h-72 sm:h-80 object-cover object-center group-hover:scale-105 transition-transform duration-500"
-                  onerror="if (this.src.indexOf('Fpcl4.jpeg') === -1) { this.src = './assets/Fpcl4.jpeg'; }"
                 />
                 <div class="absolute inset-0 bg-gradient-to-t from-[#001D3D]/90 via-transparent to-transparent"></div>
                 <div class="absolute bottom-3.5 left-4 right-4">
@@ -1719,10 +1717,9 @@
             <div class="lg:col-span-5">
               <div class="relative rounded-2xl overflow-hidden border-2 border-blue-200 shadow-xl group h-80 sm:h-96">
                 <img
-                  src="./assets/02 × 250 MTPH CFB Boiler Unit & Stack Structure.jpeg"
+                  src="/assets/02 × 250 MTPH CFB Boiler Unit & Stack Structure.jpg"
                   alt="02 × 250 MTPH CFB Boiler Unit & Stack Structure"
                   class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
-                  onerror="if (this.src.indexOf('DSCN9326.jpg') === -1) { this.src = './assets/DSCN9326.jpg'; }"
                 />
                 <div class="absolute inset-0 bg-gradient-to-t from-[#001D3D]/90 via-transparent to-transparent"></div>
                 <div class="absolute bottom-3 left-4 right-4">
@@ -1789,10 +1786,9 @@
           <div class="bg-white rounded-3xl overflow-hidden border-2 border-blue-100 shadow-xl shadow-blue-900/5 group">
             <div class="h-64 sm:h-72 relative overflow-hidden">
               <img
-                src="./assets/Coal shed.jpeg"
+                src="/assets/Coal shed.jpeg"
                 alt="Coal shed & Conveyors"
                 class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
-                onerror="if (this.src.indexOf('DSCN9295.jpg') === -1) { this.src = './assets/DSCN9295.jpg'; }"
               />
               <div class="absolute inset-0 bg-gradient-to-t from-[#001D3D]/90 via-transparent to-transparent"></div>
               <div class="absolute bottom-3.5 left-4 right-4">
@@ -1813,10 +1809,9 @@
           <div class="bg-white rounded-3xl overflow-hidden border-2 border-orange-100 shadow-xl shadow-orange-900/5 group">
             <div class="h-64 sm:h-72 relative overflow-hidden">
               <img
-                src="./assets/Main Control room.jpeg"
+                src="/assets/Main Control room.jpeg"
                 alt="Main Control room"
                 class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
-                onerror="if (this.src.indexOf('DSC_2579.JPG') === -1) { this.src = './assets/DSC_2579.JPG'; }"
               />
               <div class="absolute inset-0 bg-gradient-to-t from-[#001D3D]/90 via-transparent to-transparent"></div>
               <div class="absolute bottom-3.5 left-4 right-4">
@@ -10137,16 +10132,16 @@
             window.FPCL_PSM_SUITE.switchSubDashboard('audits');
             return;
           }
-          this.state.activeDashboardId = null;
-          window.location.hash = '';
+          this.state.activeDashboardId = 'overview';
+          window.location.hash = 'overview';
           this.showLandingView(false);
         },
 
         showLandingView(updateHash = true) {
           if (updateHash) {
-            window.location.hash = '';
+            window.location.hash = 'overview';
           }
-          this.state.activeDashboardId = null;
+          this.state.activeDashboardId = 'overview';
           document.body.removeAttribute('data-active-dashboard');
 
           // Whenever overview page is opened it should open by default on all years

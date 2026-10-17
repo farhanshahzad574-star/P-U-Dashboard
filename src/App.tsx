@@ -191,15 +191,9 @@ export default function App() {
             {/* Background Image */}
             <div className="absolute inset-0 z-0">
               <img
-                src="./assets/Fpcl4.jpeg"
-                alt="FPCL 118 MW Power Plant Actual Aerial View"
+                src="/assets/Wide View of Plant Structure & Environmental Coal Storage Dome.jpg"
+                alt="FFBL Power company - Actual Aerial Plant View"
                 className="w-full h-full object-cover object-center filter brightness-65 contrast-110"
-                onError={(e) => {
-                  const target = e.currentTarget;
-                  if (!target.src.includes('/assets/')) {
-                    target.src = '/assets/Fpcl4.jpeg';
-                  }
-                }}
               />
               {/* Brand Blue & Orange Gradient Overlays */}
               <div className="absolute inset-0 bg-gradient-to-t from-[#001D3D] via-[#003566]/85 to-[#002244]/60" />
@@ -224,7 +218,7 @@ export default function App() {
                 transition={{ delay: 0.1 }}
                 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white leading-tight drop-shadow-md"
               >
-                Pioneering Non-EPC Power Generation in Pakistan
+                FFBL Power company
               </motion.h1>
 
               {/* Sub-headline */}
@@ -333,15 +327,9 @@ export default function App() {
               <div className="lg:col-span-5">
                 <div className="relative rounded-2xl overflow-hidden border-2 border-blue-200 shadow-xl group">
                   <img
-                    src="./assets/Fpcl 2.jpeg"
-                    alt="FPCL Actual Wide Plant and Coal Storage Dome Exterior"
+                    src="/assets/Wide View of Plant Structure & Environmental Coal Storage Dome.jpg"
+                    alt="Wide View of Plant Structure & Environmental Coal Storage"
                     className="w-full h-72 sm:h-80 lg:h-96 object-cover object-center group-hover:scale-105 transition-transform duration-500"
-                    onError={(e) => {
-                      const target = e.currentTarget;
-                      if (!target.src.includes('/assets/')) {
-                        target.src = '/assets/Fpcl 2.jpeg';
-                      }
-                    }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#001D3D]/90 via-transparent to-transparent" />
                   <div className="absolute bottom-3.5 left-4 right-4">
@@ -349,7 +337,7 @@ export default function App() {
                       Port Qasim Complex
                     </span>
                     <p className="text-xs font-bold text-white mt-1.5 drop-shadow-sm">
-                      Wide View of Plant Structure &amp; Environmental Coal Storage Dome
+                      Wide View of Plant Structure &amp; Environmental Coal Storage
                     </p>
                   </div>
                 </div>
@@ -463,15 +451,9 @@ export default function App() {
               <div className="lg:col-span-5">
                 <div className="relative rounded-2xl overflow-hidden border-2 border-blue-200 shadow-xl group h-80 sm:h-96">
                   <img
-                    src="./assets/DSCN9326.jpg"
-                    alt="CFB Boiler Structure and Stack Actual Plant Photo"
+                    src="/assets/02 × 250 MTPH CFB Boiler Unit & Stack Structure.jpg"
+                    alt="02 × 250 MTPH CFB Boiler Unit & Stack Structure"
                     className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
-                    onError={(e) => {
-                      const target = e.currentTarget;
-                      if (!target.src.includes('/assets/')) {
-                        target.src = '/assets/DSCN9326.jpg';
-                      }
-                    }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#001D3D]/90 via-transparent to-transparent" />
                   <div className="absolute bottom-3 left-4 right-4">
@@ -534,7 +516,7 @@ export default function App() {
         </section>
 
         {/* ========================================================================= */}
-        {/* SECTION 5: INFRASTRUCTURE & OPERATIONS (DSCN9295.jpg & DSC_2579.JPG)      */}
+        {/* SECTION 5: INFRASTRUCTURE & OPERATIONS (Coal shed.jpeg & Main Control room.jpeg) */}
         {/* ========================================================================= */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -542,28 +524,22 @@ export default function App() {
             <div className="bg-white rounded-3xl overflow-hidden border-2 border-blue-100 shadow-xl shadow-blue-900/5 group">
               <div className="h-64 sm:h-72 relative overflow-hidden">
                 <img
-                  src="./assets/DSCN9295.jpg"
-                  alt="Inside Coal Storage Dome and Conveyor System Actual Photo"
+                  src="/assets/Coal shed.jpeg"
+                  alt="Coal shed & Conveyors"
                   className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
-                  onError={(e) => {
-                    const target = e.currentTarget;
-                    if (!target.src.includes('/assets/')) {
-                      target.src = '/assets/DSCN9295.jpg';
-                    }
-                  }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#001D3D]/90 via-transparent to-transparent" />
                 <div className="absolute bottom-3.5 left-4 right-4">
                   <span className="text-[10px] font-mono font-bold text-white bg-[#0066B3] px-2.5 py-0.5 rounded shadow-xs">
-                    Bulk Material Handling
+                    Coal shed
                   </span>
                   <h3 className="text-base font-bold text-white mt-1 drop-shadow-sm">
-                    Enclosed Coal Storage Dome &amp; Conveyors
+                    Coal shed &amp; Conveyors
                   </h3>
                 </div>
               </div>
               <div className="p-5 text-xs sm:text-sm text-slate-600 leading-relaxed">
-                Fully covered aerodynamic dome with continuous automated stacker and reclaimer conveyor systems. Eliminates fugitive coal dust and protects the coastal environment.
+                Fully covered aerodynamic coal shed with continuous automated stacker and reclaimer conveyor systems. Eliminates fugitive coal dust and protects the coastal environment.
               </div>
             </div>
 
@@ -571,15 +547,9 @@ export default function App() {
             <div className="bg-white rounded-3xl overflow-hidden border-2 border-orange-100 shadow-xl shadow-orange-900/5 group">
               <div className="h-64 sm:h-72 relative overflow-hidden">
                 <img
-                  src="./assets/DSC_2579.JPG"
-                  alt="Main Control Room Actual Plant Photo"
+                  src="/assets/Main Control room.jpeg"
+                  alt="Main Control room"
                   className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
-                  onError={(e) => {
-                    const target = e.currentTarget;
-                    if (!target.src.includes('/assets/')) {
-                      target.src = '/assets/DSC_2579.JPG';
-                    }
-                  }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#001D3D]/90 via-transparent to-transparent" />
                 <div className="absolute bottom-3.5 left-4 right-4">
