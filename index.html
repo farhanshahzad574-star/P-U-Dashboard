@@ -1444,9 +1444,584 @@
     <main id="main-content" class="flex-1 w-full px-2 sm:px-6 lg:px-8 xl:px-10 2xl:px-12 pt-2 sm:pt-3 pb-6 sm:pb-8">
 
       <!-- ========================================================================= -->
+      <!-- VIEW 0: CORPORATE INDUSTRIAL HOMEPAGE FOR FPCL                             -->
+      <!-- ========================================================================= -->
+      <section id="portal-home-view" class="space-y-6 sm:space-y-8 animate-in fade-in duration-200 bg-gradient-to-b from-[#F0F7FF] via-white to-[#F8FAFC] p-2 sm:p-4 rounded-3xl border border-blue-100 shadow-xs">
+        
+        <!-- Corporate Homepage In-Page Sticky Navigation Bar -->
+        <nav class="sticky top-2 z-30 bg-white/95 backdrop-blur-md rounded-2xl border-2 border-blue-100 px-4 sm:px-6 py-2.5 shadow-lg shadow-blue-900/5 flex items-center justify-between gap-4">
+          <div class="flex items-center gap-2.5 sm:gap-3 cursor-pointer select-none" onclick="document.getElementById('home-hero').scrollIntoView({ behavior: 'smooth' })">
+            <div class="w-8 h-8 rounded-lg bg-white border border-blue-200 flex items-center justify-center p-1 shadow-xs">
+              <svg viewBox="0 0 135 48" class="w-full h-auto" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="2" y="2" width="17" height="23" rx="2" fill="#F97316"/>
+                <polygon points="11,3 6,13 10,13 5,23 14,11" fill="#0F172A"/>
+                <path d="M 23 2 H 38 V 7 H 28 V 11 H 36 V 16 H 28 V 25 H 23 Z" fill="#0066B3"/>
+                <path d="M 41 2 H 54 C 59 2 62 5 62 10 C 62 15 59 18 54 18 H 46 V 25 H 41 Z M 46 7 V 13 H 53 C 55 13 56 12 56 10 C 56 8 55 7 53 7 Z" fill="#0066B3"/>
+                <path d="M 77 8 L 72 10 C 71 8 69 7 67 7 C 63 7 61 10 61 13.5 C 61 17 63 20 67 20 C 69 20 71 19 72 17 L 77 19 C 75 23 71 26 66 26 C 59 26 55 20.5 55 13.5 C 55 6.5 60 1 67 1 C 71 1 75 4 77 8 Z" fill="#0066B3"/>
+                <path d="M 80 2 H 86 V 20 H 104 V 25 H 80 Z" fill="#0066B3"/>
+                <polygon points="93,2 100,2 86,25 79,25" fill="#F97316"/>
+                <polygon points="86,25 106,25 102,18 84,18" fill="#EA580C"/>
+              </svg>
+            </div>
+            <div>
+              <span class="font-extrabold text-sm text-[#0066B3] tracking-tight">FPCL</span>
+              <span class="hidden sm:inline-block text-[11px] font-bold text-slate-500 ml-2">FFBL Power Company Limited</span>
+            </div>
+          </div>
+
+          <!-- Quick Jump Links -->
+          <div class="hidden md:flex items-center gap-5 text-xs font-bold text-slate-600">
+            <button onclick="document.getElementById('home-overview').scrollIntoView({ behavior: 'smooth' })" class="hover:text-[#EA580C] transition-colors cursor-pointer">Overview</button>
+            <button onclick="document.getElementById('home-dual-frequency').scrollIntoView({ behavior: 'smooth' })" class="hover:text-[#0066B3] transition-colors cursor-pointer">Dual Frequency</button>
+            <button onclick="document.getElementById('home-cfb').scrollIntoView({ behavior: 'smooth' })" class="hover:text-[#EA580C] transition-colors cursor-pointer">CFB Technology</button>
+            <button onclick="document.getElementById('home-specs').scrollIntoView({ behavior: 'smooth' })" class="hover:text-[#0066B3] transition-colors cursor-pointer">Technical Specs</button>
+            <button onclick="document.getElementById('home-contact').scrollIntoView({ behavior: 'smooth' })" class="hover:text-[#EA580C] transition-colors cursor-pointer">Contact</button>
+          </div>
+
+          <!-- Switch to Executive Overview Portal -->
+          <div class="flex items-center gap-2">
+            <button
+              onclick="portalApp.handleDropdownSelect('overview')"
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-[#0066B3] to-[#004B87] hover:from-[#005A9C] hover:to-[#003865] shadow-md shadow-blue-900/20 transition-all cursor-pointer"
+              title="Switch to Executive Overview & Live KPI Dashboards"
+            >
+              <i data-lucide="layout-grid" class="w-3.5 h-3.5 text-white"></i>
+              <span>Overview Portal</span>
+            </button>
+          </div>
+        </nav>
+
+        <!-- 1. HERO SECTION (Wide View of Plant Structure & Environmental Coal Storage.jpeg) -->
+        <div id="home-hero" class="relative rounded-3xl overflow-hidden min-h-[480px] sm:min-h-[560px] lg:min-h-[620px] flex items-center justify-center p-6 sm:p-12 lg:p-16 border-2 border-blue-200 shadow-2xl">
+          <!-- Background Image -->
+          <div class="absolute inset-0 z-0">
+            <img
+              src="./assets/Wide View of Plant Structure & Environmental Coal Storage.jpeg"
+              alt="FFBL Power company - Actual Aerial Plant View"
+              class="w-full h-full object-cover object-center filter brightness-65 contrast-110"
+              onerror="if (this.src.indexOf('Fpcl4.jpeg') === -1) { this.src = './assets/Fpcl4.jpeg'; }"
+            />
+            <!-- Brand Blue & Orange Gradient Overlays -->
+            <div class="absolute inset-0 bg-gradient-to-t from-[#001D3D] via-[#003566]/85 to-[#002244]/60"></div>
+            <div class="absolute inset-0 bg-radial from-transparent via-[#001D3D]/40 to-[#001D3D]/90"></div>
+          </div>
+
+          <div class="relative z-10 max-w-4xl mx-auto text-center flex flex-col items-center">
+            <!-- Superheader Badge -->
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-orange-500/25 border border-orange-400/50 text-orange-200 text-xs sm:text-sm font-bold mb-6 shadow-lg backdrop-blur-md">
+              <i data-lucide="sparkles" class="w-4 h-4 text-orange-400"></i>
+              <span>Excellence in Power generation • Port Qasim, Karachi</span>
+            </div>
+
+            <!-- Main Headline: FFBL Power company -->
+            <h1 class="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white leading-tight drop-shadow-md">
+              FFBL Power company
+            </h1>
+
+            <!-- Sub-headline -->
+            <p class="mt-5 text-base sm:text-lg lg:text-xl text-blue-100 max-w-2xl leading-relaxed font-normal">
+              State-of-the-art 118 MW coal-fired power plant delivering dual-frequency reliability to K-Electric and Fauji Fertilizer Bin Qasim.
+            </p>
+
+            <!-- CTAs in Orange and White/Blue -->
+            <div class="mt-8 flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+              <button
+                onclick="document.getElementById('home-specs').scrollIntoView({ behavior: 'smooth' })"
+                class="w-full sm:w-auto px-7 py-3.5 rounded-xl bg-gradient-to-r from-[#EA580C] via-[#F97316] to-[#FB923C] hover:from-[#C2410C] hover:to-[#EA580C] text-white font-extrabold text-xs sm:text-sm shadow-xl shadow-orange-950/40 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+              >
+                <span>Explore Technical Specs</span>
+                <i data-lucide="arrow-right" class="w-4 h-4"></i>
+              </button>
+              <button
+                onclick="document.getElementById('home-contact').scrollIntoView({ behavior: 'smooth' })"
+                class="w-full sm:w-auto px-7 py-3.5 rounded-xl bg-white hover:bg-blue-50 text-[#0066B3] hover:text-[#004B87] font-extrabold text-xs sm:text-sm transition-all shadow-lg shadow-blue-950/20 cursor-pointer active:scale-95 border-2 border-white/90"
+              >
+                Contact Us
+              </button>
+            </div>
+
+            <!-- Metrics Strip -->
+            <div class="mt-12 w-full grid grid-cols-2 lg:grid-cols-4 gap-3 max-w-3xl">
+              <div class="bg-white/10 border border-white/20 backdrop-blur-md rounded-2xl p-3.5 text-center shadow-md">
+                <div class="text-xl sm:text-2xl font-black text-white font-mono">118 MW</div>
+                <div class="text-[11px] text-blue-200 font-semibold mt-0.5">Installed Gross Capacity</div>
+              </div>
+              <div class="bg-white/10 border border-orange-400/30 backdrop-blur-md rounded-2xl p-3.5 text-center shadow-md">
+                <div class="text-xl sm:text-2xl font-black text-[#FB923C] font-mono">50 &amp; 60 Hz</div>
+                <div class="text-[11px] text-orange-200 font-semibold mt-0.5">Dual Simultaneous Frequency</div>
+              </div>
+              <div class="bg-white/10 border border-white/20 backdrop-blur-md rounded-2xl p-3.5 text-center shadow-md">
+                <div class="text-xl sm:text-2xl font-black text-white font-mono">2 × 250 MTPH</div>
+                <div class="text-[11px] text-blue-200 font-semibold mt-0.5">Hyundai CFB Boilers</div>
+              </div>
+              <div class="bg-white/10 border border-orange-400/30 backdrop-blur-md rounded-2xl p-3.5 text-center shadow-md">
+                <div class="text-xl sm:text-2xl font-black text-[#FB923C] font-mono">May 19, 2017</div>
+                <div class="text-[11px] text-orange-200 font-semibold mt-0.5">Commercial Operation (COD)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. COMPANY OVERVIEW & HISTORY (Wide View of Plant Structure & Environmental Coal Storage.jpeg) -->
+        <div id="home-overview" class="bg-white border-2 border-blue-100 rounded-3xl p-6 sm:p-10 shadow-xl shadow-blue-900/5">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+            <div class="lg:col-span-7 space-y-4">
+              <div class="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-wider text-[#EA580C] bg-orange-50 px-3 py-1 rounded-full border border-orange-200">
+                <i data-lucide="factory" class="w-4 h-4 text-[#EA580C]"></i>
+                <span>Company Overview &amp; History</span>
+              </div>
+              <h2 class="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-[#002B54] leading-tight">
+                Excellence Through In-House Execution
+              </h2>
+              <p class="text-slate-700 text-sm sm:text-base leading-relaxed font-normal">
+                FFBL Power Company Limited (FPCL) is an unlisted public limited company incorporated in June 2014 as a special purpose vehicle (SPV). FPCL accomplished a pioneering feat in Pakistan’s power sector by being completed on a <strong class="text-[#0066B3]">Non-EPC basis</strong> entirely through its in-house team of engineers and professionals.
+              </p>
+              <p class="text-slate-600 text-xs sm:text-sm leading-relaxed">
+                Operating under NEPRA Generation License No. <strong class="text-[#002B54]">SGC/111/2015</strong>, FPCL commenced commercial operation on <strong class="text-[#002B54]">May 19, 2017</strong>. Since commissioning, it has consistently delivered dual-frequency reliability and baseload steam generation to power Pakistan’s industrial core.
+              </p>
+
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3">
+                <div class="p-4 rounded-xl bg-blue-50/70 border border-blue-200">
+                  <div class="text-[10px] font-mono text-[#0066B3] font-bold uppercase">June 2014</div>
+                  <div class="text-xs font-bold text-[#002B54] mt-1">Incorporated as SPV</div>
+                  <div class="text-[11px] text-slate-500 mt-0.5">Unlisted Public Limited</div>
+                </div>
+                <div class="p-4 rounded-xl bg-orange-50/70 border border-orange-200">
+                  <div class="text-[10px] font-mono text-[#EA580C] font-bold uppercase">NEPRA License</div>
+                  <div class="text-xs font-bold text-[#002B54] mt-1">No. SGC/111/2015</div>
+                  <div class="text-[11px] text-slate-500 mt-0.5">Generation License</div>
+                </div>
+                <div class="p-4 rounded-xl bg-blue-50/70 border border-blue-200">
+                  <div class="text-[10px] font-mono text-[#0066B3] font-bold uppercase">May 19, 2017</div>
+                  <div class="text-xs font-bold text-[#002B54] mt-1">COD Milestone</div>
+                  <div class="text-[11px] text-slate-500 mt-0.5">Commercial Operation</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="lg:col-span-5">
+              <div class="relative rounded-2xl overflow-hidden border-2 border-blue-200 shadow-xl group">
+                <img
+                  src="./assets/Wide View of Plant Structure & Environmental Coal Storage.jpeg"
+                  alt="Wide View of Plant Structure & Environmental Coal Storage"
+                  class="w-full h-72 sm:h-80 object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                  onerror="if (this.src.indexOf('Fpcl4.jpeg') === -1) { this.src = './assets/Fpcl4.jpeg'; }"
+                />
+                <div class="absolute inset-0 bg-gradient-to-t from-[#001D3D]/90 via-transparent to-transparent"></div>
+                <div class="absolute bottom-3.5 left-4 right-4">
+                  <span class="text-[10px] font-mono font-bold text-white bg-[#EA580C] px-2.5 py-0.5 rounded shadow-xs">
+                    Port Qasim Complex
+                  </span>
+                  <p class="text-xs font-bold text-white mt-1.5 drop-shadow-sm">
+                    Wide View of Plant Structure &amp; Environmental Coal Storage
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. DUAL-FREQUENCY POWER SUPPLY (50 Hz & 60 Hz) -->
+        <div id="home-dual-frequency" class="bg-white border-2 border-blue-100 rounded-3xl p-6 sm:p-10 shadow-xl shadow-blue-900/5 space-y-6">
+          <div class="text-center max-w-2xl mx-auto">
+            <div class="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-wider text-[#0066B3] bg-blue-50 px-3.5 py-1 rounded-full border border-blue-200 mb-2">
+              <i data-lucide="zap" class="w-4 h-4 text-[#0066B3]"></i>
+              <span>Dual-Frequency Engineering Innovation</span>
+            </div>
+            <h2 class="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-[#002B54]">
+              Powering Two Frequencies: 50 Hz &amp; 60 Hz
+            </h2>
+            <p class="text-slate-600 text-xs sm:text-sm mt-2">
+              FPCL is engineered to simultaneously supply two distinct frequencies, ensuring utility grid stabilization and dedicated fertilizer manufacturing without interruption.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- 50 Hz Card (K-Electric) - Royal Blue Theme -->
+            <div class="rounded-2xl bg-gradient-to-br from-blue-50 via-white to-blue-100/40 border-2 border-blue-300 p-6 relative overflow-hidden shadow-md">
+              <div class="flex items-center justify-between mb-4">
+                <span class="text-3xl font-black font-mono text-[#0066B3]">50 Hz</span>
+                <span class="px-3 py-1 rounded-full text-[11px] font-bold bg-[#0066B3] text-white shadow-xs">
+                  Utility Grid Interconnection
+                </span>
+              </div>
+              <h3 class="text-lg font-bold text-[#002B54] mb-2">
+                K-Electric (KE) Power Export
+              </h3>
+              <p class="text-slate-600 text-xs sm:text-sm leading-relaxed mb-4">
+                FPCL exports up to <strong class="text-[#0066B3]">60 MW</strong> of reliable thermal electricity directly to K-Electric, supporting metropolitan Karachi’s industrial and residential grid demand.
+              </p>
+              <ul class="space-y-2 text-xs text-slate-700 border-t border-blue-200/80 pt-4 font-medium">
+                <li class="flex items-center gap-2">
+                  <i data-lucide="check-circle-2" class="w-4 h-4 text-[#0066B3] shrink-0"></i>
+                  <span>Up to 60 MW continuous export capacity</span>
+                </li>
+                <li class="flex items-center gap-2">
+                  <i data-lucide="check-circle-2" class="w-4 h-4 text-[#0066B3] shrink-0"></i>
+                  <span>50 Hz STG Block: 1 × 60 MW turbine unit</span>
+                </li>
+                <li class="flex items-center gap-2">
+                  <i data-lucide="check-circle-2" class="w-4 h-4 text-[#0066B3] shrink-0"></i>
+                  <span>Direct 132 kV transmission interconnection</span>
+                </li>
+              </ul>
+            </div>
+
+            <!-- 60 Hz Card (FFBL) - Flame Orange Theme -->
+            <div class="rounded-2xl bg-gradient-to-br from-orange-50 via-white to-amber-100/40 border-2 border-orange-300 p-6 relative overflow-hidden shadow-md">
+              <div class="flex items-center justify-between mb-4">
+                <span class="text-3xl font-black font-mono text-[#EA580C]">60 Hz</span>
+                <span class="px-3 py-1 rounded-full text-[11px] font-bold bg-[#EA580C] text-white shadow-xs">
+                  Dedicated Industrial generation
+                </span>
+              </div>
+              <h3 class="text-lg font-bold text-[#002B54] mb-2">
+                Fauji Fertilizer Bin Qasim Limited (FFBL)
+              </h3>
+              <p class="text-slate-600 text-xs sm:text-sm leading-relaxed mb-4">
+                Continuous baseload supply of 60 Hz power and high-pressure superheated steam directly to Pakistan’s flagship DAP and fertilizer production complex.
+              </p>
+              <ul class="space-y-2 text-xs text-slate-700 border-t border-orange-200/80 pt-4 font-medium">
+                <li class="flex items-center gap-2">
+                  <i data-lucide="check-circle-2" class="w-4 h-4 text-[#EA580C] shrink-0"></i>
+                  <span>60 Hz STG Block: 2 × 24 MW + 1 × 10 MW generation units</span>
+                </li>
+                <li class="flex items-center gap-2">
+                  <i data-lucide="check-circle-2" class="w-4 h-4 text-[#EA580C] shrink-0"></i>
+                  <span>Simultaneous export of high &amp; medium pressure process steam</span>
+                </li>
+                <li class="flex items-center gap-2">
+                  <i data-lucide="check-circle-2" class="w-4 h-4 text-[#EA580C] shrink-0"></i>
+                  <span>Complete electrical islanding and plant protection safety</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. CFB TECHNOLOGY & ENVIRONMENTAL EXCELLENCE (02 × 250 MTPH CFB Boiler Unit & Stack Structure.jpeg) -->
+        <div id="home-cfb" class="bg-white border-2 border-blue-100 rounded-3xl p-6 sm:p-10 shadow-xl shadow-blue-900/5 space-y-6">
+          <div class="text-center max-w-2xl mx-auto">
+            <div class="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-wider text-[#EA580C] bg-orange-50 px-3.5 py-1 rounded-full border border-orange-200 mb-2">
+              <i data-lucide="flame" class="w-4 h-4 text-[#EA580C]"></i>
+              <span>Clean Combustion Leadership</span>
+            </div>
+            <h2 class="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-[#002B54]">
+              Advanced Circulating Fluidized Bed (CFB) Boilers
+            </h2>
+            <p class="text-slate-600 text-xs sm:text-sm mt-2">
+              Featuring 02 × 250 MTPH CFB boilers from Hyundai Heavy Industries (HHI) – South Korea, combining low emissions, high thermal efficiency, and wide fuel flexibility.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            <!-- 02 × 250 MTPH CFB Boiler Unit & Stack Structure.jpeg -->
+            <div class="lg:col-span-5">
+              <div class="relative rounded-2xl overflow-hidden border-2 border-blue-200 shadow-xl group h-80 sm:h-96">
+                <img
+                  src="./assets/02 × 250 MTPH CFB Boiler Unit & Stack Structure.jpeg"
+                  alt="02 × 250 MTPH CFB Boiler Unit & Stack Structure"
+                  class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                  onerror="if (this.src.indexOf('DSCN9326.jpg') === -1) { this.src = './assets/DSCN9326.jpg'; }"
+                />
+                <div class="absolute inset-0 bg-gradient-to-t from-[#001D3D]/90 via-transparent to-transparent"></div>
+                <div class="absolute bottom-3 left-4 right-4">
+                  <span class="text-[10px] font-mono font-bold text-white bg-[#0066B3] px-2.5 py-0.5 rounded">
+                    Hyundai Heavy Industries (HHI)
+                  </span>
+                  <p class="text-xs font-bold text-white mt-1.5 drop-shadow-sm">
+                    02 × 250 MTPH CFB Boiler Unit &amp; Stack Structure
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Features Grid -->
+            <div class="lg:col-span-7 space-y-4">
+              <div class="p-5 rounded-2xl bg-gradient-to-r from-blue-50/70 to-white border border-blue-200 shadow-xs">
+                <div class="flex items-start gap-4">
+                  <div class="w-10 h-10 rounded-xl bg-[#0066B3] text-white flex items-center justify-center shrink-0 shadow-md">
+                    <i data-lucide="shield" class="w-5 h-5 text-white"></i>
+                  </div>
+                  <div>
+                    <h3 class="text-base font-bold text-[#002B54]">Environment Friendly</h3>
+                    <p class="text-slate-600 text-xs sm:text-sm mt-1 leading-relaxed">
+                      Ensures low NOx and SOx emissions through staged low-temperature combustion and in-situ limestone injection, comfortably exceeding Sindh Environmental Quality Standards (SEQS).
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="p-5 rounded-2xl bg-gradient-to-r from-orange-50/70 to-white border border-orange-200 shadow-xs">
+                <div class="flex items-start gap-4">
+                  <div class="w-10 h-10 rounded-xl bg-[#EA580C] text-white flex items-center justify-center shrink-0 shadow-md">
+                    <i data-lucide="activity" class="w-5 h-5 text-white"></i>
+                  </div>
+                  <div>
+                    <h3 class="text-base font-bold text-[#002B54]">High Thermal Efficiency</h3>
+                    <p class="text-slate-600 text-xs sm:text-sm mt-1 leading-relaxed">
+                      Fluidized bed cyclone particle recirculation captures high combustion heat rates while reducing specific auxiliary power consumption across varying steam loads.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="p-5 rounded-2xl bg-gradient-to-r from-blue-50/70 to-white border border-blue-200 shadow-xs">
+                <div class="flex items-start gap-4">
+                  <div class="w-10 h-10 rounded-xl bg-[#0066B3] text-white flex items-center justify-center shrink-0 shadow-md">
+                    <i data-lucide="flame" class="w-5 h-5 text-white"></i>
+                  </div>
+                  <div>
+                    <h3 class="text-base font-bold text-[#002B54]">Fuel Flexibility (Thar Coal Ready)</h3>
+                    <p class="text-slate-600 text-xs sm:text-sm mt-1 leading-relaxed">
+                      Robust design capable of combusting diverse coal grades from imported coal to local indigenous blends, including up to <strong class="text-[#EA580C]">40% Thar coal blends</strong>.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. INFRASTRUCTURE & OPERATIONS SHOWCASE (Coal shed.jpeg & Main Control room.jpeg) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Coal Shed Actual Photo -->
+          <div class="bg-white rounded-3xl overflow-hidden border-2 border-blue-100 shadow-xl shadow-blue-900/5 group">
+            <div class="h-64 sm:h-72 relative overflow-hidden">
+              <img
+                src="./assets/Coal shed.jpeg"
+                alt="Coal shed & Conveyors"
+                class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                onerror="if (this.src.indexOf('DSCN9295.jpg') === -1) { this.src = './assets/DSCN9295.jpg'; }"
+              />
+              <div class="absolute inset-0 bg-gradient-to-t from-[#001D3D]/90 via-transparent to-transparent"></div>
+              <div class="absolute bottom-3.5 left-4 right-4">
+                <span class="text-[10px] font-mono font-bold text-white bg-[#0066B3] px-2.5 py-0.5 rounded">
+                  Coal shed
+                </span>
+                <h3 class="text-base font-bold text-white mt-1 drop-shadow-sm">
+                  Coal shed &amp; Conveyors
+                </h3>
+              </div>
+            </div>
+            <div class="p-5 text-xs sm:text-sm text-slate-600 leading-relaxed">
+              Fully covered aerodynamic coal shed with continuous automated stacker and reclaimer conveyor systems. Eliminates fugitive coal dust and protects the coastal environment.
+            </div>
+          </div>
+
+          <!-- Main Control Room Actual Photo -->
+          <div class="bg-white rounded-3xl overflow-hidden border-2 border-orange-100 shadow-xl shadow-orange-900/5 group">
+            <div class="h-64 sm:h-72 relative overflow-hidden">
+              <img
+                src="./assets/Main Control room.jpeg"
+                alt="Main Control room"
+                class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                onerror="if (this.src.indexOf('DSC_2579.JPG') === -1) { this.src = './assets/DSC_2579.JPG'; }"
+              />
+              <div class="absolute inset-0 bg-gradient-to-t from-[#001D3D]/90 via-transparent to-transparent"></div>
+              <div class="absolute bottom-3.5 left-4 right-4">
+                <span class="text-[10px] font-mono font-bold text-white bg-[#EA580C] px-2.5 py-0.5 rounded">
+                  Engineering &amp; Control
+                </span>
+                <h3 class="text-base font-bold text-white mt-1 drop-shadow-sm">
+                  Main Control room
+                </h3>
+              </div>
+            </div>
+            <div class="p-5 text-xs sm:text-sm text-slate-600 leading-relaxed">
+              Equipped with centralized Distributed Control Systems (DCS) for synchronized generation, turbine governing, and continuous real-time plant parameters monitoring.
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. TECHNICAL SPECIFICATIONS & ENERGY BALANCE -->
+        <div id="home-specs" class="bg-white border-2 border-blue-100 rounded-3xl p-6 sm:p-10 shadow-xl shadow-blue-900/5 space-y-6">
+          <div class="text-center max-w-2xl mx-auto">
+            <div class="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-wider text-[#0066B3] bg-blue-50 px-3.5 py-1 rounded-full border border-blue-200 mb-2">
+              <i data-lucide="cpu" class="w-4 h-4 text-[#0066B3]"></i>
+              <span>Technical Data Sheet</span>
+            </div>
+            <h2 class="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-[#002B54]">
+              Technical Specifications &amp; Energy Balance
+            </h2>
+            <p class="text-slate-600 text-xs sm:text-sm mt-2">
+              Verified plant architecture, installed generation capacities, and location profile.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="p-5 rounded-2xl bg-gradient-to-b from-orange-50 to-white border-2 border-orange-200 shadow-xs">
+              <div class="text-[10px] font-mono text-[#EA580C] uppercase font-bold">Installed Capacity</div>
+              <div class="text-2xl font-black text-[#002B54] font-mono mt-1">118 MW</div>
+              <div class="text-[11px] text-slate-500 mt-1 font-medium">Dual STG Blocks Total</div>
+            </div>
+            <div class="p-5 rounded-2xl bg-gradient-to-b from-blue-50 to-white border-2 border-blue-200 shadow-xs">
+              <div class="text-[10px] font-mono text-[#0066B3] uppercase font-bold">Boilers</div>
+              <div class="text-2xl font-black text-[#0066B3] font-mono mt-1">02 × 250 MTPH</div>
+              <div class="text-[11px] text-slate-500 mt-1 font-medium">CFB Boilers (HHI Korea)</div>
+            </div>
+            <div class="p-5 rounded-2xl bg-gradient-to-b from-orange-50 to-white border-2 border-orange-200 shadow-xs">
+              <div class="text-[10px] font-mono text-[#EA580C] uppercase font-bold">60 Hz STG Block</div>
+              <div class="text-2xl font-black text-[#EA580C] font-mono mt-1">58 MW Total</div>
+              <div class="text-[11px] text-slate-500 mt-1 font-medium">02 × 24 MW + 01 × 10 MW</div>
+            </div>
+            <div class="p-5 rounded-2xl bg-gradient-to-b from-blue-50 to-white border-2 border-blue-200 shadow-xs">
+              <div class="text-[10px] font-mono text-[#0066B3] uppercase font-bold">50 Hz STG Block</div>
+              <div class="text-2xl font-black text-[#0066B3] font-mono mt-1">01 × 60 MW</div>
+              <div class="text-[11px] text-slate-500 mt-1 font-medium">Utility Export to K-Electric</div>
+            </div>
+          </div>
+
+          <!-- Structured Matrix Table -->
+          <div class="rounded-2xl border-2 border-blue-100 overflow-hidden shadow-md">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs sm:text-sm">
+                <thead class="bg-[#004B87] text-white font-mono uppercase text-[11px]">
+                  <tr>
+                    <th class="py-3.5 px-5 font-bold">System / Element</th>
+                    <th class="py-3.5 px-5 font-bold">Configuration Value</th>
+                    <th class="py-3.5 px-5 font-bold">Details / Technical Role</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-blue-100 text-slate-700 bg-white">
+                  <tr class="hover:bg-blue-50/50 transition-colors">
+                    <td class="py-3.5 px-5 font-bold text-[#002B54]">Installed Capacity</td>
+                    <td class="py-3.5 px-5 font-mono text-[#EA580C] font-black">118 MW Gross</td>
+                    <td class="py-3.5 px-5">Full thermal and generation gross rating</td>
+                  </tr>
+                  <tr class="hover:bg-blue-50/50 transition-colors">
+                    <td class="py-3.5 px-5 font-bold text-[#002B54]">Steam Generators</td>
+                    <td class="py-3.5 px-5 font-mono text-[#0066B3] font-bold">02 × 250 Metric Ton / Hour</td>
+                    <td class="py-3.5 px-5">Hyundai Heavy Industries (HHI) CFB Boilers</td>
+                  </tr>
+                  <tr class="hover:bg-blue-50/50 transition-colors">
+                    <td class="py-3.5 px-5 font-bold text-[#002B54]">60 Hz STG Block</td>
+                    <td class="py-3.5 px-5 font-mono text-[#EA580C] font-bold">02 × 24 MW + 01 × 10 MW</td>
+                    <td class="py-3.5 px-5">Dedicated power and process steam for FFBL complex</td>
+                  </tr>
+                  <tr class="hover:bg-blue-50/50 transition-colors">
+                    <td class="py-3.5 px-5 font-bold text-[#002B54]">50 Hz STG Block</td>
+                    <td class="py-3.5 px-5 font-mono text-[#0066B3] font-bold">01 × 60 MW</td>
+                    <td class="py-3.5 px-5">Utility grid power export to K-Electric (KE)</td>
+                  </tr>
+                  <tr class="hover:bg-blue-50/50 transition-colors">
+                    <td class="py-3.5 px-5 font-bold text-[#002B54]">Plant Site Location</td>
+                    <td class="py-3.5 px-5 font-mono font-bold">Approx. 100 Acres</td>
+                    <td class="py-3.5 px-5">Eastern Industrial Zone of Port Qasim, Karachi, Sindh (Adjacent to FFBL Complex)</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 7. CONTACT & LOCATION SECTION (Clean 2-card layout without inquiries form) -->
+        <div id="home-contact" class="bg-white border-2 border-blue-100 rounded-3xl p-6 sm:p-10 shadow-xl shadow-blue-900/5 space-y-8">
+          <div class="text-center max-w-2xl mx-auto">
+            <div class="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-wider text-[#EA580C] bg-orange-50 px-3.5 py-1 rounded-full border border-orange-200 mb-2">
+              <i data-lucide="map-pin" class="w-4 h-4 text-[#EA580C]"></i>
+              <span>Locations &amp; Contact</span>
+            </div>
+            <h2 class="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-[#002B54]">
+              Addresses &amp; Contact Details
+            </h2>
+            <p class="text-slate-600 text-xs sm:text-sm mt-2">
+              Official addresses for the registered corporate office and power generation facility.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Card 1: Registered Office Address - Royal Blue Corporate Theme -->
+            <div class="p-6 sm:p-8 rounded-2xl bg-gradient-to-br from-[#003B73] via-[#004B87] to-[#002244] text-white border-2 border-blue-300/40 flex flex-col justify-between shadow-xl">
+              <div>
+                <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-white/15 text-white border border-white/20 mb-4 backdrop-blur-md">
+                  <i data-lucide="building-2" class="w-3.5 h-3.5 text-[#FB923C]"></i>
+                  <span>Registered Office</span>
+                </div>
+                <h3 class="text-xl font-black text-white mb-2">
+                  Head Office Islamabad
+                </h3>
+                <p class="text-blue-100 text-xs sm:text-sm leading-relaxed mb-4">
+                  FFBL Power Company Limited<br />
+                  FFBL Tower, C1/C2, Sector B, Jinnah Boulevard, DHA II,<br />
+                  Islamabad, Pakistan
+                </p>
+              </div>
+              <div class="pt-4 border-t border-white/15 text-[11px] font-mono text-blue-200 flex items-center justify-between">
+                <span>Federal Capital</span>
+                <span class="text-[#FB923C] font-bold">Corporate Governance</span>
+              </div>
+            </div>
+
+            <!-- Card 2: Power Plant Site Address & Telephone - Orange Accent Theme -->
+            <div class="p-6 sm:p-8 rounded-2xl bg-white border-2 border-orange-200 flex flex-col justify-between shadow-xl shadow-orange-900/5">
+              <div>
+                <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-orange-50 text-[#EA580C] border border-orange-200 mb-4">
+                  <i data-lucide="factory" class="w-3.5 h-3.5 text-[#EA580C]"></i>
+                  <span>Power Plant Site</span>
+                </div>
+                <h3 class="text-xl font-black text-[#002B54] mb-2">
+                  Port Qasim Complex Karachi
+                </h3>
+                <p class="text-slate-600 text-xs sm:text-sm leading-relaxed mb-4">
+                  FFBL Power Company Limited<br />
+                  EZ/I/P-1, Eastern Zone, Bin Qasim,<br />
+                  Karachi – 75020, Pakistan
+                </p>
+                <div class="space-y-2 text-xs sm:text-sm text-slate-700 bg-orange-50/50 p-4 rounded-xl border border-orange-100">
+                  <div class="flex items-center gap-2">
+                    <i data-lucide="phone" class="w-4 h-4 text-[#EA580C]"></i>
+                    <span>Telephone (Plant Site): <strong class="text-[#002B54] font-black">+92 21 34724500</strong></span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <i data-lucide="phone" class="w-4 h-4 text-[#0066B3]"></i>
+                    <span>UAN / PBX: <strong class="text-[#002B54] font-black">+92 21 34243333-5</strong></span>
+                  </div>
+                </div>
+              </div>
+              <div class="pt-4 border-t border-slate-200 text-[11px] font-mono text-slate-500 flex items-center justify-between">
+                <span>Eastern Zone Port Qasim</span>
+                <span class="text-[#0066B3] font-bold">Generation Operations</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 8. FOOTER - Royal Blue with Orange Accent -->
+        <footer class="bg-[#002244] border-t-4 border-[#EA580C] rounded-2xl p-6 sm:p-8 text-white text-xs shadow-xl">
+          <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-2.5">
+              <span class="font-extrabold text-[#FB923C] text-base">FPCL</span>
+              <span class="text-blue-300">·</span>
+              <span class="font-semibold text-blue-100">FFBL Power Company Limited</span>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-center gap-4 text-[11px] font-medium text-blue-200">
+              <button onclick="document.getElementById('home-contact').scrollIntoView({ behavior: 'smooth' })" class="hover:text-[#FB923C] transition-colors cursor-pointer">
+                Registered Office (Islamabad)
+              </button>
+              <span>·</span>
+              <button onclick="document.getElementById('home-contact').scrollIntoView({ behavior: 'smooth' })" class="hover:text-[#FB923C] transition-colors cursor-pointer">
+                Plant Site (Karachi)
+              </button>
+              <span>·</span>
+              <button onclick="portalApp.handleDropdownSelect('overview')" class="text-white hover:text-[#FB923C] cursor-pointer font-bold underline">
+                Executive Overview Portal
+              </button>
+            </div>
+
+            <div class="font-mono text-[11px] text-blue-300 text-center md:text-right">
+              © 2026 FFBL Power Company Limited (FPCL). All rights reserved.
+            </div>
+          </div>
+        </footer>
+
+      </section>
+
+      <!-- ========================================================================= -->
       <!-- VIEW 1: MAIN LANDING PAGE / INDEX VIEW (DEPARTMENT DONUT ANALYTICS)        -->
       <!-- ========================================================================= -->
-      <section id="portal-landing-view" class="space-y-4 sm:space-y-5">
+      <section id="portal-landing-view" class="space-y-4 sm:space-y-5 hidden">
 
         <!-- ========================================================================= -->
         <!-- HSEQ KEY PERFORMANCE INDICATORS (Live Google Sheet: HSEQ_KPI)             -->
@@ -4300,7 +4875,7 @@
         overviewOpenCloseFilter: 'all',
         overviewYearFilter: 'all', // Default to all years
         hseqSelectedYear: String(new Date().getFullYear()), // Default to current year for HSEQ_KPI sheet
-        activeDashboardId: null,
+        activeDashboardId: 'home',
         connectedSheetUrl: (typeof localStorage !== 'undefined' && localStorage.getItem('FPCL_CONNECTED_SHEET_URL')) || 'https://docs.google.com/spreadsheets/d/1LJOdN8T7UUjaZbSfsCrO_Hdg1eoAgqnuE7mJDGtB8qo/export?format=csv&gid=1344438021',
         connectedPlrStatusSheetUrl: (typeof localStorage !== 'undefined' && localStorage.getItem('FPCL_CONNECTED_PLR_STATUS_SHEET_URL')) || 'https://docs.google.com/spreadsheets/d/1LJOdN8T7UUjaZbSfsCrO_Hdg1eoAgqnuE7mJDGtB8qo/export?format=csv&gid=0',
       }, window.portalApp.state || {});
@@ -4363,14 +4938,20 @@
           this.setupKeyboardShortcuts();
           this.renderPaletteSpecs();
           this.initChatbot();
-          // By default, when dashboard is opened from a link, always open the Overview page
-          this.showLandingView(false);
-          if (window.location.hash) {
-            try {
-              history.replaceState(null, '', window.location.pathname + window.location.search);
-            } catch (e) {
-              window.location.hash = '';
+          // By default, open on the corporate home page unless a specific hash route is requested
+          const initialHash = window.location.hash ? window.location.hash.replace('#', '') : '';
+          if (initialHash === 'overview') {
+            this.showLandingView(false);
+          } else if (initialHash.startsWith('dashboard/')) {
+            const dashId = initialHash.replace('dashboard/', '');
+            const dashboard = DASHBOARD_REGISTRY.find(d => d.id === dashId);
+            if (dashboard) {
+              this.showDetailView(dashId, false);
+            } else {
+              this.showHomeView(false);
             }
+          } else {
+            this.showHomeView(false);
           }
 
           // Once-per-day automatic synchronization for all Google Sheets (or when manual sync button is clicked)
@@ -7913,7 +8494,9 @@
           if (toolbarSelect) toolbarSelect.value = id;
           if (detailSelect) detailSelect.value = id;
 
-          if (!id || id === 'overview') {
+          if (id === 'home') {
+            this.showHomeView(true);
+          } else if (!id || id === 'overview') {
             this.showLandingView(true);
           } else {
             this.showDetailView(id, true);
@@ -7925,6 +8508,14 @@
          */
         checkUrlHash() {
           const hash = window.location.hash.replace('#', '');
+          if (hash === 'home' || !hash) {
+            this.showHomeView(false);
+            return;
+          }
+          if (hash === 'overview') {
+            this.showLandingView(false);
+            return;
+          }
           if (hash.startsWith('dashboard/')) {
             const id = hash.replace('dashboard/', '');
             const dashboard = DASHBOARD_REGISTRY.find(d => d.id === id);
@@ -7933,7 +8524,7 @@
               return;
             }
           }
-          this.showLandingView(false);
+          this.showHomeView(false);
         },
 
         /**
@@ -8337,10 +8928,38 @@
           const container = document.getElementById('nav-menu-links-container');
           if (!container) return;
 
-          const activeId = this.state.activeDashboardId || 'overview';
+          const activeId = this.state.activeDashboardId || 'home';
+          const isHomeSelected = activeId === 'home';
           const isOverviewSelected = activeId === 'overview';
 
           let html = `
+            ${isHomeSelected ? `
+              <div class="circulating-glow-wrapper shrink-0" style="--active-glow-color: #059669;">
+                <span class="circulating-glow-beam"></span>
+                <button
+                  id="nav-menu-home"
+                  onclick="portalApp.handleDropdownSelect('home')"
+                  class="circulating-glow-inner nav-menu-btn px-2.5 py-1 rounded-[7px] text-[11px] font-black transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 text-white shadow-2xs"
+                  title="FPCL Corporate Home"
+                >
+                  <i data-lucide="home" class="w-3 h-3 text-white"></i>
+                  <span>Home</span>
+                  <span class="w-1.5 h-1.5 rounded-full bg-white shadow-2xs"></span>
+                </button>
+              </div>
+            ` : `
+              <button
+                id="nav-menu-home"
+                onclick="portalApp.handleDropdownSelect('home')"
+                class="nav-menu-btn px-2.5 py-1 rounded-[7px] text-[11px] font-bold transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer border hover:shadow-2xs shrink-0"
+                style="background-color: #ECFDF5; border-color: #A7F3D0; color: #047857;"
+                title="FPCL Corporate Home"
+              >
+                <i data-lucide="home" class="w-3 h-3 text-[#047857]"></i>
+                <span>Home</span>
+                <span class="w-1.5 h-1.5 rounded-full bg-[#10B981]"></span>
+              </button>
+            `}
             ${isOverviewSelected ? `
               <div class="circulating-glow-wrapper shrink-0" style="--active-glow-color: #2563EB;">
                 <span class="circulating-glow-beam"></span>
@@ -8368,14 +8987,14 @@
             `}
           `;
 
-          // On Overview dashboard: show all dashboard buttons (excluding HSEQ).
+          // On Overview dashboard or Home: show all dashboard buttons (excluding HSEQ).
           // When a single dashboard is opened: show only that dashboard button; remaining dashboard names at top are not seen.
-          let itemsToRender = isOverviewSelected
+          let itemsToRender = (isOverviewSelected || isHomeSelected)
             ? DASHBOARD_REGISTRY.filter(item => item.id !== 'hseq')
             : DASHBOARD_REGISTRY.filter(item => item.id === activeId && item.id !== 'hseq');
 
           // Relocate buttons on Overview page: MSA next to PSI, Safety Talks next to MSA, and SR next to Safety Talks
-          if (isOverviewSelected) {
+          if (isOverviewSelected || isHomeSelected) {
             const msaIndex = itemsToRender.findIndex(item => item.id === 'msa');
             if (msaIndex !== -1) {
               const [msaItem] = itemsToRender.splice(msaIndex, 1);
@@ -8480,8 +9099,10 @@
             window.location.hash = `dashboard/${dashboardId}`;
           }
 
-          // Hide landing, show detail
+          // Hide landing and home, show detail
           document.getElementById('portal-landing-view').classList.add('hidden');
+          const homeView = document.getElementById('portal-home-view');
+          if (homeView) homeView.classList.add('hidden');
           const detailView = document.getElementById('dashboard-detail-view');
           detailView.classList.remove('hidden');
 
@@ -9626,6 +10247,8 @@
           if (stdContainer) stdContainer.classList.remove('hidden');
           const headerCard = document.getElementById('detail-header-card');
           if (headerCard) headerCard.classList.remove('hidden');
+          const homeView = document.getElementById('portal-home-view');
+          if (homeView) homeView.classList.add('hidden');
           document.getElementById('portal-landing-view').classList.remove('hidden');
 
           // FFC apps, Travel requests, and Netweaver buttons should only be displayed on overview page
@@ -9639,6 +10262,55 @@
           this.updateRollupStats();
           this.renderCards();
           this.renderComparisonChart();
+        },
+
+        /**
+         * VIEW SWITCHER: Show Corporate Homepage for FPCL
+         */
+        showHomeView(updateHash = true) {
+          if (updateHash) {
+            window.location.hash = 'home';
+          }
+          this.state.activeDashboardId = 'home';
+          document.body.setAttribute('data-active-dashboard', 'home');
+
+          // Update Navigation Menu Bar selection
+          this.renderNavMenu();
+
+          // Sync Chatbot theme
+          this.syncChatbotTheme('overview');
+
+          // Sync dropdowns
+          const headerSelect = document.getElementById('header-dashboard-select');
+          const toolbarSelect = document.getElementById('toolbar-dashboard-select');
+          const detailSelect = document.getElementById('detail-dashboard-select');
+          if (headerSelect) headerSelect.value = 'home';
+          if (toolbarSelect) toolbarSelect.value = 'home';
+          if (detailSelect) detailSelect.value = 'home';
+
+          // Hide landing & detail views
+          const landingView = document.getElementById('portal-landing-view');
+          if (landingView) landingView.classList.add('hidden');
+          const detailView = document.getElementById('dashboard-detail-view');
+          if (detailView) detailView.classList.add('hidden');
+
+          // Show home view
+          const homeView = document.getElementById('portal-home-view');
+          if (homeView) {
+            homeView.classList.remove('hidden');
+          }
+
+          // Show quick links bar on home page as well
+          const quickLinksBar = document.getElementById('overview-quick-links-bar');
+          if (quickLinksBar) {
+            quickLinksBar.classList.remove('hidden');
+            quickLinksBar.classList.add('flex');
+          }
+
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          if (window.lucide) {
+            window.lucide.createIcons();
+          }
         },
 
         /**
