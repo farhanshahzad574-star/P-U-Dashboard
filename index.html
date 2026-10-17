@@ -174,6 +174,9 @@
     <!-- Executive KPIs & Organogram Suite (Google Sheets ID: 1gkO-kV44ABOuB2JB72FQbwLYdAcAZKBzcIBMBZnR8Ts, Tab: KPIs) -->
     <script src="/assets/kpiData.js?v=20261008b"></script>
     <script src="/assets/kpiSuite.js?v=20261011a"></script>
+    <!-- SR (Safety Review) Dataset & Specialized Executive Suite (Google Sheets ID: 1V-klVfZrARyMBsjodjF52aQe6dzLtuBq64bgqcPAF1c, Tab: SR) -->
+    <script src="/assets/srData.js?v=20261017a"></script>
+    <script src="/assets/srSuite.js?v=20261017a"></script>
     <script>
       // Immediate global registration for KPI Organogram Modal opening & closing
       window.openKpisModal = window.openKpisModal || function (event) {
@@ -2136,6 +2139,43 @@
                 <i data-lucide="settings" class="w-4 h-4"></i>
               </button>
             </div>
+
+            <!-- PLR Header Actions (Sync Sheet Button & Controls) -->
+            <div id="detail-plr-actions" class="hidden shrink-0 flex items-center flex-wrap gap-2.5">
+              <button
+                id="plr-header-sync-btn"
+                onclick="if(window.portalApp && typeof window.portalApp.refreshFromLiveSheet === 'function') { window.portalApp.refreshFromLiveSheet(); }"
+                class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 shadow-sm transition-all cursor-pointer active:scale-95 border border-emerald-400/40"
+                title="Sync live status and records directly from Google Sheet (Sheet ID: 1LJOdN8T7UUjaZbSfsCrO_Hdg1eoAgqnuE7mJDGtB8qo, Tabs: 1-PLRstatus & Recommendations)"
+              >
+                <i data-lucide="refresh-cw" id="plr-header-sync-icon" class="w-4 h-4"></i>
+                <span id="plr-header-sync-label">Sync Sheet</span>
+              </button>
+              <button
+                onclick="if(window.portalApp && typeof window.portalApp.openPlrSheetSyncModal === 'function') { window.portalApp.openPlrSheetSyncModal(); }"
+                class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 shadow-2xs transition-all cursor-pointer"
+                title="View Google Sheet Configuration"
+              >
+                <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-600"></i>
+                <span>Sheet Config</span>
+              </button>
+              <button
+                onclick="if(window.portalApp && typeof window.portalApp.resetAllPlrImageFilters === 'function') { window.portalApp.resetAllPlrImageFilters(); }"
+                class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 shadow-2xs transition-all cursor-pointer"
+                title="Reset all filter selections"
+              >
+                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5 text-[#2E6DA4]"></i>
+                <span>Reset Filters</span>
+              </button>
+              <button
+                onclick="if(window.portalApp && typeof window.portalApp.exportPlrCSV === 'function') { window.portalApp.exportPlrCSV(); }"
+                class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-white bg-[#2E6DA4] hover:bg-[#235885] shadow-2xs transition-all cursor-pointer"
+                title="Export filtered records to CSV"
+              >
+                <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                <span>Export CSV</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -2490,6 +2530,13 @@
         <!-- ========================================================================= -->
         <div id="safety-talks-specialized-container" class="hidden space-y-6">
           <!-- Populated dynamically via FPCL_SAFETY_TALK_SUITE.render() -->
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- DEDICATED FULL-SCALE SR (SAFETY REVIEW) EXECUTIVE BI SUITE CONTAINER      -->
+        <!-- ========================================================================= -->
+        <div id="sr-specialized-container" class="hidden space-y-6">
+          <!-- Populated dynamically via FPCL_SR_SUITE.render() -->
         </div>
 
       </section>
@@ -4159,27 +4206,27 @@
           id: 'sr',
           name: 'SR',
           code: 'SR',
-          icon: 'file-text',
-          status: 'Awaiting Data',
-          hasSheetLink: false,
+          icon: 'file-check',
+          status: 'Active',
+          hasSheetLink: true,
           category: 'Safety & Regulatory Reporting',
           department: 'HSEQ Directorate',
-          cadence: 'Awaiting Google Sheet Data',
-          description: 'Safety Review (SR) Dashboard • Google Sheets dataset connection will be linked once provided.',
+          cadence: 'Live Sync / Google Sheet',
+          description: 'Safety Review (SR) Dashboard • Live synchronized with Google Sheet ID 1V-klVfZrARyMBsjodjF52aQe6dzLtuBq64bgqcPAF1c (Tab: SR).',
           color: {
-            bg: '#FFFBEB',
-            primary: '#B45309',
-            secondary: '#FDE68A',
-            text: '#78350F'
+            bg: '#FAF5FF',
+            primary: '#7C3AED',
+            secondary: '#C084FC',
+            text: '#581C87'
           },
-          gradient: 'from-amber-600 via-amber-700 to-yellow-600',
-          gradientStop1: '#D97706',
-          gradientStop2: '#B45309',
-          tagStyle: 'bg-amber-50 text-amber-800 border-amber-200',
-          kpis: { total: 0, closed: 0, inProgress: 0, overdue: 0, compliance: '0.0%' },
-          punchList: { open: 0, closed: 0, total: 0, rate: '0.0%' },
-          dataReadiness: { master: '0%', signoff: '0%' },
-          statusComment: 'Google Sheets dataset will be provided later.',
+          gradient: 'from-violet-600 via-purple-600 to-fuchsia-600',
+          gradientStop1: '#7C3AED',
+          gradientStop2: '#C026D3',
+          tagStyle: 'bg-purple-50 text-purple-800 border-purple-200',
+          kpis: { total: 3, closed: 3, inProgress: 0, overdue: 0, compliance: '100.0%' },
+          punchList: { open: 0, closed: 3, total: 3, rate: '100.0%' },
+          dataReadiness: { master: '100%', signoff: '100%' },
+          statusComment: 'Live Google Sheets: SR (1V-klVfZrARyMBsjodjF52aQe6dzLtuBq64bgqcPAF1c)',
           actions: []
         },
         {
@@ -6067,8 +6114,60 @@
           // Build comparison items: Includes all modules, labeling PSM as PSM Audits, plotting PSM Validation on secondary axis, and plotting PSSR and CAPEX next to IMS
           const chartItems = [];
           DASHBOARD_REGISTRY.forEach(d => {
-            // Exclude strategic, sub-hse-eri, hseq, and sr from the Overview Progress Comparison Status
-            if (d.id === 'strategic' || d.id === 'sub-hse-eri' || d.id === 'hseq' || d.id === 'sr') return;
+            // Exclude strategic, sub-hse-eri, and hseq from the Overview Progress Comparison Status
+            if (d.id === 'strategic' || d.id === 'sub-hse-eri' || d.id === 'hseq') return;
+
+            if (d.id === 'sr') {
+              const srRaw = (window.FPCL_SR_SUITE && typeof window.FPCL_SR_SUITE.getRawData === 'function')
+                ? window.FPCL_SR_SUITE.getRawData()
+                : (window.FPCL_SR_DATA || window.FPCL_SR_INITIAL_SEED || []);
+              
+              let srFiltered = srRaw.filter(row => {
+                if (yearFilter && yearFilter !== 'all') {
+                  const yVal = String(row.year || (window.FPCL_SR_SUITE ? window.FPCL_SR_SUITE.extractYear(row.date) : '') || '');
+                  if (yVal && yVal !== String(yearFilter)) return false;
+                }
+                return true;
+              });
+
+              if (srFiltered.length === 0 && srRaw.length > 0 && yearFilter !== 'all') {
+                srFiltered = srRaw;
+              }
+
+              const totalSRs = srFiltered.length || 3;
+              let closedCount = 0;
+              let openCount = 0;
+              srFiltered.forEach(r => {
+                const isCl = window.FPCL_SR_SUITE ? window.FPCL_SR_SUITE.isClosed(r.notificationStatus) : String(r.notificationStatus || '').toLowerCase() === 'closed';
+                if (isCl) closedCount++;
+                else openCount++;
+              });
+
+              const closedSRs = (openCloseFilter === 'open') ? 0 : closedCount;
+              const openSRs = (openCloseFilter === 'close') ? 0 : openCount;
+              const effTotal = closedSRs + openSRs;
+
+              const closedPct = effTotal > 0 ? (closedSRs / effTotal) * 100 : 0;
+              const openPct = effTotal > 0 ? (openSRs / effTotal) * 100 : 0;
+
+              chartItems.push({
+                id: 'sr',
+                name: 'SR',
+                code: 'SR (%)',
+                type: 'validation', // Plotted in percentage as requested: "show bar in PROGRESS COMPARISON STATUS in percentage"
+                closed: closedSRs,
+                open: openSRs,
+                total: effTotal,
+                totalPersonnel: effTotal,
+                passedPersonnel: closedSRs,
+                pendingPersonnel: openSRs,
+                passedPct: closedPct,
+                pendingPct: openPct,
+                clickHandler: "portalApp.showDetailView('sr');",
+                tooltip: `SR (Safety Review) Status (Percentage View):\n• Closure Rate: ${closedPct.toFixed(1)}%\n• Total SRs: ${effTotal}\n• Closed: ${closedSRs}\n• Open: ${openSRs}\nClick to view SR Dashboard`
+              });
+              return;
+            }
 
             if (d.id === 'safety-talks') {
               const stRaw = (window.FPCL_SAFETY_TALK_SUITE && typeof window.FPCL_SAFETY_TALK_SUITE.getRawData === 'function')
@@ -7853,8 +7952,8 @@
 
           const query = this.state.searchQuery.toLowerCase().trim();
           const filtered = DASHBOARD_REGISTRY.filter(item => {
-            // Exclude strategic, sub-hse-eri, hseq, and sr from the Overview Department Card Grid (Safety Talks card is rendered)
-            if (item.id === 'strategic' || item.id === 'sub-hse-eri' || item.id === 'hseq' || item.id === 'sr') return false;
+            // Exclude strategic, sub-hse-eri, and hseq from the Overview Department Card Grid (SR & Safety Talks cards are rendered)
+            if (item.id === 'strategic' || item.id === 'sub-hse-eri' || item.id === 'hseq') return false;
 
             const matchesQuery = !query || 
               item.name.toLowerCase().includes(query) ||
@@ -8402,6 +8501,7 @@
           const glow1 = document.getElementById('detail-glow-1');
           const glow2 = document.getElementById('detail-glow-2');
           const psmActions = document.getElementById('detail-psm-actions');
+          const plrActions = document.getElementById('detail-plr-actions');
           const titleEl = document.getElementById('detail-title');
           const descEl = document.getElementById('detail-description');
           const cadenceEl = document.getElementById('detail-cadence');
@@ -8559,6 +8659,7 @@
             }
 
             if (psmActions) psmActions.classList.add('hidden');
+            if (plrActions) plrActions.classList.toggle('hidden', dashboardId !== 'plr');
 
             if (dashboardId === 'plr') {
               if (catBadge) {
@@ -8631,12 +8732,14 @@
           const psiContainer = document.getElementById('psi-specialized-container');
           const msaContainer = document.getElementById('msa-specialized-container');
           const safetyTalksContainer = document.getElementById('safety-talks-specialized-container');
+          const srContainer = document.getElementById('sr-specialized-container');
 
           // Always ensure all specialized containers are hidden initially unless specifically activated
           if (subHseMechContainer) { subHseMechContainer.classList.add('hidden'); subHseMechContainer.hidden = true; }
           if (psiContainer) { psiContainer.classList.add('hidden'); psiContainer.hidden = true; }
           if (msaContainer) { msaContainer.classList.add('hidden'); msaContainer.hidden = true; }
           if (safetyTalksContainer) { safetyTalksContainer.classList.add('hidden'); safetyTalksContainer.hidden = true; }
+          if (srContainer) { srContainer.classList.add('hidden'); srContainer.hidden = true; }
 
           if (dashboardId === 'strategic') {
             if (headerCard) { headerCard.classList.add('hidden'); headerCard.hidden = true; }
@@ -8690,8 +8793,8 @@
               }
             }
             if (sheetKeyEl) {
-              sheetKeyEl.textContent = 'PLRs white dashboard • 233 Incidents & 534 Recommendations';
-              sheetKeyEl.title = 'PLRs white dashboard (PLRStatus & Recommendations)';
+              sheetKeyEl.textContent = 'Sheet ID: 1LJOdN8T7UUjaZbSfsCrO_Hdg1eoAgqnuE7mJDGtB8qo • Tabs: 1-PLRstatus & Recommendations';
+              sheetKeyEl.title = 'Sheet ID: 1LJOdN8T7UUjaZbSfsCrO_Hdg1eoAgqnuE7mJDGtB8qo (1-PLRstatus & Recommendations)';
             }
           } else if (dashboardId === 'sub-hse-psm' || dashboardId === 'psm-validation') {
             if (headerCard) { headerCard.classList.remove('hidden'); headerCard.hidden = false; }
@@ -9196,6 +9299,49 @@
               sheetKeyEl.textContent = 'Safety talks • Live Synchronized (1Fgx9ZEdHAQnH_oCuX0NdNO5_V3gEPHu0xjnqKk6GqWc)';
               sheetKeyEl.title = 'Live Google Sheets: Safety_Talk (1Fgx9ZEdHAQnH_oCuX0NdNO5_V3gEPHu0xjnqKk6GqWc)';
             }
+          } else if (dashboardId === 'sr') {
+            if (headerCard) { headerCard.classList.add('hidden'); headerCard.hidden = true; }
+            if (connCard) { connCard.classList.add('hidden'); connCard.hidden = true; }
+            const psmActions = document.getElementById('detail-psm-actions');
+            if (psmActions) { psmActions.classList.add('hidden'); psmActions.hidden = true; }
+            if (stdContainer) { stdContainer.classList.add('hidden'); stdContainer.hidden = true; }
+            if (plrContainer) { plrContainer.classList.add('hidden'); plrContainer.hidden = true; }
+            if (psmContainer) { psmContainer.classList.add('hidden'); psmContainer.hidden = true; }
+            if (strategicContainer) {
+              strategicContainer.classList.add('hidden');
+              strategicContainer.hidden = true;
+              strategicContainer.style.marginTop = '';
+            }
+            if (imsContainer) { imsContainer.classList.add('hidden'); imsContainer.hidden = true; }
+            if (pssrContainer) { pssrContainer.classList.add('hidden'); pssrContainer.hidden = true; }
+            if (capexContainer) { capexContainer.classList.add('hidden'); capexContainer.hidden = true; }
+            if (subHsePContainer) { subHsePContainer.classList.add('hidden'); subHsePContainer.hidden = true; }
+            if (subHseEiContainer) { subHseEiContainer.classList.add('hidden'); subHseEiContainer.hidden = true; }
+            if (ehseContainer) { ehseContainer.classList.add('hidden'); ehseContainer.hidden = true; }
+            if (subHseMechContainer) { subHseMechContainer.classList.add('hidden'); subHseMechContainer.hidden = true; }
+            if (psiContainer) { psiContainer.classList.add('hidden'); psiContainer.hidden = true; }
+            if (msaContainer) { msaContainer.classList.add('hidden'); msaContainer.hidden = true; }
+            if (safetyTalksContainer) { safetyTalksContainer.classList.add('hidden'); safetyTalksContainer.hidden = true; }
+            if (srContainer) {
+              srContainer.classList.remove('hidden');
+              srContainer.hidden = false;
+              if (window.FPCL_SR_SUITE) {
+                if (typeof window.FPCL_SR_SUITE.onOpen === 'function') {
+                  window.FPCL_SR_SUITE.onOpen();
+                } else if (typeof window.FPCL_SR_SUITE.render === 'function') {
+                  window.FPCL_SR_SUITE.render();
+                }
+                if (typeof window.FPCL_SR_SUITE.syncLiveFeed === 'function') {
+                  window.FPCL_SR_SUITE.syncLiveFeed({ silent: true });
+                }
+              }
+            }
+            const breadcrumbActive = document.getElementById('breadcrumb-active-name');
+            if (breadcrumbActive) breadcrumbActive.textContent = 'SR';
+            if (sheetKeyEl) {
+              sheetKeyEl.textContent = 'SR Dashboard • Live Synchronized (1V-klVfZrARyMBsjodjF52aQe6dzLtuBq64bgqcPAF1c)';
+              sheetKeyEl.title = 'Live Google Sheets: SR Tab (1V-klVfZrARyMBsjodjF52aQe6dzLtuBq64bgqcPAF1c)';
+            }
           } else {
             if (headerCard) { headerCard.classList.remove('hidden'); headerCard.hidden = false; }
             if (plrContainer) { plrContainer.classList.add('hidden'); plrContainer.hidden = true; }
@@ -9207,6 +9353,7 @@
             if (subHseEiContainer) { subHseEiContainer.classList.add('hidden'); subHseEiContainer.hidden = true; }
             if (ehseContainer) { ehseContainer.classList.add('hidden'); ehseContainer.hidden = true; }
             if (safetyTalksContainer) { safetyTalksContainer.classList.add('hidden'); safetyTalksContainer.hidden = true; }
+            if (srContainer) { srContainer.classList.add('hidden'); srContainer.hidden = true; }
             if (strategicContainer) {
               strategicContainer.classList.add('hidden');
               strategicContainer.hidden = true;
@@ -9403,6 +9550,8 @@
           document.getElementById('dashboard-detail-view').classList.add('hidden');
           const plrContainer = document.getElementById('plr-specialized-container');
           if (plrContainer) plrContainer.classList.add('hidden');
+          const plrActions = document.getElementById('detail-plr-actions');
+          if (plrActions) plrActions.classList.add('hidden');
           const psmContainer = document.getElementById('psm-specialized-container');
           if (psmContainer) psmContainer.classList.add('hidden');
           const strategicContainer = document.getElementById('strategic-specialized-container');

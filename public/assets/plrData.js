@@ -1,7 +1,6 @@
 /**
- * FPCL Plant Loss Reports (PLRs) Official Dataset
- * Extracted directly from Google Sheet: "PLRs white dashboard"
- * Tabs: PLRStatus (233 records) & Recommendations
+ * FPCL Plant Loss Incidents Dataset (from Google Sheet: 1LJOdN8T7UUjaZbSfsCrO_Hdg1eoAgqnuE7mJDGtB8qo, Tab: 1-PLRstatus)
+ * Open = 26, Closed = 207
  */
 window.FPCL_PLR_DATA = [
   {
@@ -11,7 +10,7 @@ window.FPCL_PLR_DATA = [
     "date": "01/Jan/2025",
     "incident": "Shut down of STG # 04 due to “No Demand” by KE from January 01 to 04, 2025.",
     "status": "Open",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -22,7 +21,7 @@ window.FPCL_PLR_DATA = [
     "date": "03/02/2025",
     "incident": "On 3 February 2025, steam leakage started from the insulating gasket flange of the 18” MPS Export Line at the FPCL – FFC-PQ battery limit, causing a drop in MPS header pressure. The leakage led to STG-3 tripping on low MPS header pressure, and MPS export was subsequently cut off, interrupting the startup of Ammonia plant at FFC-PQ.",
     "status": "Closed",
-    "machine": "STG # 3",
+    "machine": "STG#3",
     "priority": "High",
     "dept": "Mechanical"
   },
@@ -33,7 +32,7 @@ window.FPCL_PLR_DATA = [
     "date": "04/02/2025",
     "incident": "Planned shutdown of STG-02 was carried out on 4th February 2025 at 1133 hrs. for the installation of an additional feeder on the existing 13.8 kV Bus-B switchgear to fulfill the power requirement for the Data Center Project. After completion of the installation, STG-02 was restarted on 5th February 2025 at 1657 hrs. and synchronized at 1759 hrs.",
     "status": "Closed",
-    "machine": "STG # 2",
+    "machine": "STG#2",
     "priority": "Low",
     "dept": "E&I"
   },
@@ -44,7 +43,7 @@ window.FPCL_PLR_DATA = [
     "date": "3-Jun-2025",
     "incident": "1. STG # 01 tripped due to Servo Position Controller (SPC to probable failure of SPC I/O signal.\n 2. After troubleshooting SPC signals and replacing I/O card, machine started 04 times but stopped due to increasing trend of radial vibrations on turbine DE bearings.",
     "status": "Closed",
-    "machine": "STG # 1",
+    "machine": "STG#1",
     "priority": "High",
     "dept": "E&I"
   },
@@ -52,21 +51,21 @@ window.FPCL_PLR_DATA = [
     "sNo": 5,
     "plrNo": 217,
     "year": 2025,
-    "date": "24/03/2025",
+    "date": "",
     "incident": "Tripping of STG-04 and Urea Plant due to actuation of Master Fuel Trip (MFT) on Boiler-02, triggered by a high-high furnace pressure condition.",
     "status": "Closed",
-    "machine": "Boiler # 2",
+    "machine": "B#2",
     "priority": "High",
-    "dept": "OPS-PSG"
+    "dept": "Operations"
   },
   {
     "sNo": 6,
     "plrNo": 218,
     "year": 2025,
-    "date": "31/03/2025",
+    "date": "",
     "incident": "STG # 04 load was reduced as per KE instructions during February & March 2025.",
     "status": "Open",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -77,18 +76,18 @@ window.FPCL_PLR_DATA = [
     "date": "4-Feb-2025",
     "incident": "1. STG-04 was shut down at 0737 hrs. due to “No Demand” from K.E.\n 2. At 1505 hrs., after K.E power requirement, STG-04 startup was delayed due to a turbine trip valve opening failure. After rectification, the machine synchronized on 03 April at 0030 hrs.",
     "status": "Open",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
-    "dept": "KE , E&I"
+    "dept": "KE/E&I"
   },
   {
     "sNo": 8,
     "plrNo": 220,
     "year": 2025,
-    "date": "30/04/2025",
+    "date": "",
     "incident": "STG # 04 load was reduced as per KE instructions during Apr, 2025",
     "status": "Open",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -96,10 +95,10 @@ window.FPCL_PLR_DATA = [
     "sNo": 9,
     "plrNo": 221,
     "year": 2025,
-    "date": "18/05/2025",
+    "date": "",
     "incident": "Due to disturbance in KE 132 KV network, frequency & voltage surges were observed & consequently at 0446 hrs generator & turbine tripped on G60 relay loss of excitation protection followed by over frequency protection. After KE go-ahead the machine was synchronized at 0613 hrs.",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "High",
     "dept": "KE"
   },
@@ -107,10 +106,10 @@ window.FPCL_PLR_DATA = [
     "sNo": 10,
     "plrNo": 222,
     "year": 2025,
-    "date": "25/05/2025",
+    "date": "",
     "incident": "Disturbance in KE network resulted in STG # 04 Breaker opening on over frequency at 0251 & machine remained on FSNL. After KE the go-ahead machine was synchronized at 0314 hrs. and reached full load at 0410 hrs.",
     "status": "Open",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -118,10 +117,10 @@ window.FPCL_PLR_DATA = [
     "sNo": 11,
     "plrNo": 223,
     "year": 2025,
-    "date": "31/05/2025",
+    "date": "",
     "incident": "STG # 04 load was reduced as per KE instructions during May, 2025.",
     "status": "Open",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -132,7 +131,7 @@ window.FPCL_PLR_DATA = [
     "date": "6-Mar-2025",
     "incident": "Due to disturbance in KE 132 KV network, G60 Relay started to pick unbalance condition in voltages and in current, resulting in a trip of the generator and turbine on loss-of-excitation protection at 2056 Hrs. After KE go-ahead the machine was synchronized at 2223 hrs.",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "High",
     "dept": "KE"
   },
@@ -140,10 +139,10 @@ window.FPCL_PLR_DATA = [
     "sNo": 13,
     "plrNo": 225,
     "year": 2025,
-    "date": "18/06/2025",
+    "date": "",
     "incident": "STG-01 tripped at 0859 Hrs. with alarm “SPC Trip” during PLC switching from Primary to Secondary Controller. After troubleshooting and replacing the Governor AO card switching relay, the machine was synchronized at 1045 Hrs.",
     "status": "Closed",
-    "machine": "STG # 1",
+    "machine": "STG#1",
     "priority": "High",
     "dept": "E&I"
   },
@@ -151,10 +150,10 @@ window.FPCL_PLR_DATA = [
     "sNo": 14,
     "plrNo": 226,
     "year": 2025,
-    "date": "30/06/2025",
+    "date": "",
     "incident": "STG # 04 load was reduced as per KE instructions during June, 2025.",
     "status": "Open",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -162,10 +161,10 @@ window.FPCL_PLR_DATA = [
     "sNo": 15,
     "plrNo": 227,
     "year": 2025,
-    "date": "31/07/2025",
+    "date": "",
     "incident": "STG # 04 load was reduced as per KE instructions during July, 2025.",
     "status": "Open",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -173,10 +172,10 @@ window.FPCL_PLR_DATA = [
     "sNo": 16,
     "plrNo": 228,
     "year": 2025,
-    "date": "31/08/2026",
+    "date": "",
     "incident": "STG # 04 load was reduced as per KE instructions during Aug, 2025.",
     "status": "Open",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -184,10 +183,10 @@ window.FPCL_PLR_DATA = [
     "sNo": 17,
     "plrNo": 229,
     "year": 2025,
-    "date": "30/09/2025",
+    "date": "",
     "incident": "STG # 04 load was reduced as per KE instructions during Sep, 2025.",
     "status": "Open",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -195,10 +194,10 @@ window.FPCL_PLR_DATA = [
     "sNo": 18,
     "plrNo": 230,
     "year": 2025,
-    "date": "31/10/2025",
+    "date": "",
     "incident": "STG # 04 load was reduced as per KE instructions during Oct, 2025.",
     "status": "Open",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -206,10 +205,10 @@ window.FPCL_PLR_DATA = [
     "sNo": 19,
     "plrNo": 231,
     "year": 2025,
-    "date": "30/11/2025",
+    "date": "",
     "incident": "STG # 04 load was reduced as per KE instructions during Nov, 2025.",
     "status": "Open",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -220,18 +219,18 @@ window.FPCL_PLR_DATA = [
     "date": "12-Nov-2025",
     "incident": "Boiler-1 tripped on High Draft Security due to tube leakage during load increase for Boiler-2 shutdown for the planned UREA Plant outage.",
     "status": "Open",
-    "machine": "Boiler # 1",
+    "machine": "B#1",
     "priority": "High",
-    "dept": "Operations"
+    "dept": "E&I"
   },
   {
     "sNo": 21,
     "plrNo": 233,
     "year": 2025,
-    "date": "31/12/2025",
+    "date": "",
     "incident": "STG # 04 load was reduced as per KE instructions during Dec, 2025.",
     "status": "Open",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -239,20 +238,20 @@ window.FPCL_PLR_DATA = [
     "sNo": 22,
     "plrNo": 194,
     "year": 2024,
-    "date": "27/02/2024",
+    "date": "",
     "incident": "Manual opening of K-08 breaker as per FFBL request resulted in tripping of K-16 breaker (FFBL/FPCL power lines interconnection breakers) which caused power black-out in FFBL and STG - 02 de-synchronization (52-G breaker opening) at FPCL.",
     "status": "Closed",
-    "machine": "STG # 2",
+    "machine": "STG#2",
     "priority": "High",
-    "dept": "Ffbl E&I"
+    "dept": "FFBL E&I"
   },
   {
     "sNo": 23,
     "plrNo": 195,
     "year": 2024,
-    "date": "28/02/2024",
+    "date": "",
     "incident": "Ash leakage from the gap between the furnace floor refractory and Bed Ash Chute B resulted in damage to the sleeve of Bed Ash Chute B, leading to ash leakage into the windbox's west side hopper. The hot ash subsequently damaged the west side hopper of the windbox, resulting in ash leakage out of the boiler",
-    "status": "Open",
+    "status": "Closed",
     "machine": "Boiler # 1 / 2",
     "priority": "High",
     "dept": "Mechanical"
@@ -261,10 +260,10 @@ window.FPCL_PLR_DATA = [
     "sNo": 24,
     "plrNo": 196,
     "year": 2024,
-    "date": "Feb'23",
+    "date": "",
     "incident": "STG # 04 load was reduced as per KE instructions during February, 2024",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -272,10 +271,10 @@ window.FPCL_PLR_DATA = [
     "sNo": 25,
     "plrNo": 197,
     "year": 2024,
-    "date": "March",
+    "date": "",
     "incident": "STG # 04 load was reduced as per KE instructions during March, 2024",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -286,7 +285,7 @@ window.FPCL_PLR_DATA = [
     "date": "01/04/2024",
     "incident": "STG # 04 got tripped at 1152 hrs. ,Upon investigation during Loop testing, it was discovered that the fuse in TB-5 had blown out, disrupting the power supply from the card to the servo valve. The fused was replaced and at 1701 start command was given to the turbine. At 1728 machine was synchronized with the grid and reached full load at 1850 hrs.",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "FPCL E&I Department"
   },
@@ -294,10 +293,10 @@ window.FPCL_PLR_DATA = [
     "sNo": 27,
     "plrNo": 199,
     "year": 2024,
-    "date": "April",
+    "date": "",
     "incident": "STG # 04 load was reduced as per KE instructions during April, 2024",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -305,10 +304,10 @@ window.FPCL_PLR_DATA = [
     "sNo": 28,
     "plrNo": 200,
     "year": 2024,
-    "date": "21/05/2024",
+    "date": "",
     "incident": "Tripping of STG-04 and Urea Plant due to actuation of Master Fuel Trip (MFT) on Boiler-02 on Primary Air Low-Low Flow Security.",
     "status": "Closed",
-    "machine": "Boiler # 2",
+    "machine": "B#2",
     "priority": "High",
     "dept": "Operations"
   },
@@ -316,10 +315,10 @@ window.FPCL_PLR_DATA = [
     "sNo": 29,
     "plrNo": 201,
     "year": 2024,
-    "date": "May",
+    "date": "",
     "incident": "STG # 04 load was reduced as per KE instructions during May, 2024",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -327,10 +326,10 @@ window.FPCL_PLR_DATA = [
     "sNo": 30,
     "plrNo": 202,
     "year": 2024,
-    "date": "June",
+    "date": "",
     "incident": "STG # 04 load was reduced as per KE instructions during June, 2024",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -341,7 +340,7 @@ window.FPCL_PLR_DATA = [
     "date": "06/07/2024",
     "incident": "Planned shutdown of STG # 1 was carried out on July 6, 2024 at 1957 Hrs. due to high seismic vibrations observed at Generator side of the turbine. Accordingly, rotor was replaced with available spare rotor at site. Machine was restarted at 0737 Hrs. on July 13, 2024 after completion of rotor replacement job and turbine was synchronized at 1807 hrs.",
     "status": "Closed",
-    "machine": "STG # 1",
+    "machine": "STG#1",
     "priority": "High",
     "dept": "E&I"
   },
@@ -349,10 +348,10 @@ window.FPCL_PLR_DATA = [
     "sNo": 32,
     "plrNo": 204,
     "year": 2024,
-    "date": "July",
+    "date": "",
     "incident": "STG # 04 load was reduced as per KE instructions during July, 2024",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -360,10 +359,10 @@ window.FPCL_PLR_DATA = [
     "sNo": 33,
     "plrNo": 205,
     "year": 2024,
-    "date": "August",
+    "date": "",
     "incident": "STG # 04 load was reduced as per KE instructions during August, 2024",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -371,10 +370,10 @@ window.FPCL_PLR_DATA = [
     "sNo": 34,
     "plrNo": 206,
     "year": 2024,
-    "date": "Seotember",
+    "date": "",
     "incident": "STG # 04 load was reduced as per KE instructions during September, 2024",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -382,10 +381,10 @@ window.FPCL_PLR_DATA = [
     "sNo": 35,
     "plrNo": 207,
     "year": 2024,
-    "date": "October",
+    "date": "",
     "incident": "STG # 04 load was reduced as per KE instructions during October, 2024",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -393,10 +392,10 @@ window.FPCL_PLR_DATA = [
     "sNo": 36,
     "plrNo": 208,
     "year": 2024,
-    "date": "16/11/2024",
+    "date": "",
     "incident": "Tripping of STG-04 and Urea Plant due to actuation of Master Fuel Trip (MFT) on Boiler-01 on Primary Air Low-Low Flow Security.",
     "status": "Closed",
-    "machine": "Boiler # 1",
+    "machine": "B#1",
     "priority": "High",
     "dept": "Operations"
   },
@@ -407,7 +406,7 @@ window.FPCL_PLR_DATA = [
     "date": "12-Jan-24",
     "incident": "Manual stoppage of STG # 01 to attend / clean leaked bearing oil from generator",
     "status": "Open",
-    "machine": "STG # 1",
+    "machine": "STG#1",
     "priority": "High",
     "dept": "Mechanical"
   },
@@ -415,10 +414,10 @@ window.FPCL_PLR_DATA = [
     "sNo": 38,
     "plrNo": 210,
     "year": 2024,
-    "date": "November",
+    "date": "",
     "incident": "STG # 04 load was reduced as per KE instructions during November, 2024.",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -429,7 +428,7 @@ window.FPCL_PLR_DATA = [
     "date": "01/12/2024",
     "incident": "STG # 04 load was reduced as per KE instructions from December 01 to 04, 2024.",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -440,7 +439,7 @@ window.FPCL_PLR_DATA = [
     "date": "05/12/2024",
     "incident": "Shut down of STG # 04 due to “No Demand” by KE from December 05 to 31, 2024.",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -451,7 +450,7 @@ window.FPCL_PLR_DATA = [
     "date": "Jan-23",
     "incident": "ATA 2023 Budgeted vs Actual Production & Impact owing to delay in Boilers start-up",
     "status": "Open",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -462,7 +461,7 @@ window.FPCL_PLR_DATA = [
     "date": "17-Feb-23",
     "incident": "STG # 04 Breaker opened at 1235 hrs due to over frequency (51.01 Hz) at KE circuit & machine remained on FSNL. After KE go-ahead machine was synchronized at 1305 hrs and reached full load at 1401 hrs (55.14 MW).",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -470,10 +469,10 @@ window.FPCL_PLR_DATA = [
     "sNo": 43,
     "plrNo": 177,
     "year": 2023,
-    "date": "25th Feb 2023",
+    "date": "",
     "incident": "STG-03 stopped at 1121 hrs & steam export to FFBL stopped at 1141 hrs.",
     "status": "Closed",
-    "machine": "STG # 3",
+    "machine": "STG#3",
     "priority": "High",
     "dept": "Maintenance"
   },
@@ -481,10 +480,10 @@ window.FPCL_PLR_DATA = [
     "sNo": 44,
     "plrNo": 178,
     "year": 2023,
-    "date": "Feb'23",
+    "date": "",
     "incident": "STG # 04 load was reduced as per KE instructions during 18 ~ 28 Feb, 2023",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -492,10 +491,10 @@ window.FPCL_PLR_DATA = [
     "sNo": 45,
     "plrNo": 179,
     "year": 2023,
-    "date": "7th March 2023",
+    "date": "",
     "incident": "The total power failure that occurred at FPCL and FFBL plants on March 7, 2023, caused by the tripping of STG-02, due to the actuation of G-60 protection due to a ground fault measured by the Neutral Earthing Transformer (NET) following this STG-03 tripped on overcurrent, and STG-01 tripped on under-frequency and under-voltage resulting in total power failure at FFBL / FPCL complex. The power was restored at the complex by starting gas turbines at FFBL.",
     "status": "Closed",
-    "machine": "STG # 2",
+    "machine": "STG#2",
     "priority": "High",
     "dept": "E&I"
   },
@@ -506,7 +505,7 @@ window.FPCL_PLR_DATA = [
     "date": "March, 2023",
     "incident": "STG # 04 load was reduced as per KE instructions during March, 2023",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -517,7 +516,7 @@ window.FPCL_PLR_DATA = [
     "date": "April, 2023",
     "incident": "STG # 04 load was reduced as per KE instructions during April, 2023",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -525,7 +524,7 @@ window.FPCL_PLR_DATA = [
     "sNo": 48,
     "plrNo": 182,
     "year": 2023,
-    "date": "3rd May, 2023",
+    "date": "",
     "incident": "FPCL plant planned shutdown was taken on 3rd May 2023 for inspection of STG # 1 generator rotor. However, during STG # 01 rotor rigging / pulling activity from the Stator, Rotor slipped from the Hydraulic Jack arrangements and damaged the Stator winding on 5th May 2023 at 0030 hrs.\n Plant was started again on 11th May 2023, Boiler # 01 production resumed at 1921 hrs, MPS export started at 1921 hrs and KE power export resumed at 2230 hrs.",
     "status": "Closed",
     "machine": "STG # 1\n STG # 2 \n STG # 3",
@@ -539,7 +538,7 @@ window.FPCL_PLR_DATA = [
     "date": "15-Jun-23",
     "incident": "Disturbance in KE network resulted in STG # 04 Breaker opening on over frequency at 0701 & machine remained on FSNL.",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -550,7 +549,7 @@ window.FPCL_PLR_DATA = [
     "date": "June,2023",
     "incident": "STG # 04 load was reduced / adjusted owing to operation of single boiler due to unavailability of STG # 01 & 02, June 2023.",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "Mechanical Maintenance"
   },
@@ -561,7 +560,7 @@ window.FPCL_PLR_DATA = [
     "date": "July, 2023",
     "incident": "STG # 04 load was reduced / adjusted owing to operation of single boiler due to unavailability of STG # 01 & 02, July 2023",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "Mechanical Maintenance"
   },
@@ -572,7 +571,7 @@ window.FPCL_PLR_DATA = [
     "date": "August,2023",
     "incident": "STG # 04 load was reduced as per KE instructions & owing to operation of single boiler due to unavailability of STG # 01 & 02. during August, 2023",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "Mechanical Maintenance & KE"
   },
@@ -580,10 +579,10 @@ window.FPCL_PLR_DATA = [
     "sNo": 53,
     "plrNo": 187,
     "year": 2023,
-    "date": "24th August, 2023",
+    "date": "",
     "incident": "Breaker opening (86 G1) on over-frequency due to KE network disturbance",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE & FPCL"
   },
@@ -594,7 +593,7 @@ window.FPCL_PLR_DATA = [
     "date": "September,2023",
     "incident": "STG # 04 load was reduced as per KE instructions during September, 2023",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -605,7 +604,7 @@ window.FPCL_PLR_DATA = [
     "date": "30-Sep-23",
     "incident": "Voltage loss on Dhabeji & Protection Relay Operated at BOC lines resulted into STG # 04 breaker opening and shifting of machine to FSNL.",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -613,10 +612,10 @@ window.FPCL_PLR_DATA = [
     "sNo": 56,
     "plrNo": 190,
     "year": 2023,
-    "date": "3rd-Oct-2023",
+    "date": "",
     "incident": "Voltage loss on BOC & Protection Relay Operated at Dhabeji lines resulted into STG # 04 breaker opening and shifting of machine to FSNL",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -627,7 +626,7 @@ window.FPCL_PLR_DATA = [
     "date": "November,2023",
     "incident": "STG # 04 load was reduced as per KE instructions during November, 2023",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -635,10 +634,10 @@ window.FPCL_PLR_DATA = [
     "sNo": 58,
     "plrNo": 192,
     "year": 2023,
-    "date": "5th Nov-2023",
+    "date": "",
     "incident": "Disturbance in KE network resulted in STG # 04 Breaker opening on over frequency at 0651 & machine remained on FSNL. After KE go-ahead machine was synchronized at 0712 hrs. and reached full load at 0808 hrs.",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -649,7 +648,7 @@ window.FPCL_PLR_DATA = [
     "date": "December,2023",
     "incident": "STG # 04 load was reduced as per KE instructions during December, 2023",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -660,7 +659,7 @@ window.FPCL_PLR_DATA = [
     "date": "Jan-22",
     "incident": "STG # 04 Low Load as per KE instructions (Jan-22)",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -671,9 +670,9 @@ window.FPCL_PLR_DATA = [
     "date": "31-Jan-22",
     "incident": "Delay in STG # 04 start-up owing to high vibration at Turbine DE side bearings during start up.",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "High",
-    "dept": "Ops"
+    "dept": "Operations"
   },
   {
     "sNo": 62,
@@ -682,7 +681,7 @@ window.FPCL_PLR_DATA = [
     "date": "Feb-22",
     "incident": "STG # 04 Low Load as per KE instructions (Feb-22)",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -693,7 +692,7 @@ window.FPCL_PLR_DATA = [
     "date": "28-Feb-22",
     "incident": "Planned stoppage of STG-03 to inspect both bearings of turbine due to frequent high vibration at Turbine Drive End (DE) / Non-Drive End (NDE) side.",
     "status": "Closed",
-    "machine": "STG # 3",
+    "machine": "STG#3",
     "priority": "High",
     "dept": "BHGE /Mechanical"
   },
@@ -704,7 +703,7 @@ window.FPCL_PLR_DATA = [
     "date": "9-Mar-22",
     "incident": "STG # 04 Breaker opened at 1810 hrs due to over frequency at KE grid & machine remained on FSNL. After KE go-ahead machine was synchronized at 1824 hrs and reached full load at 1920 hrs.",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -715,7 +714,7 @@ window.FPCL_PLR_DATA = [
     "date": "22-Mar-22",
     "incident": "STG # 04 Breaker opened at 1019 hrs due to over frequency at KE circuit (500 kV Jamshoro circuit) & machine remained on FSNL. After KE go-ahead machine was synchronized at 1105 hrs and reached full load at 1200 hrs.",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -726,7 +725,7 @@ window.FPCL_PLR_DATA = [
     "date": "Mar-22",
     "incident": "STG # 04 load was reduced for Coal Inventory Management as per management decision to ensure Power & Steam (MPS) availability for FFBL.",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "SCM"
   },
@@ -737,7 +736,7 @@ window.FPCL_PLR_DATA = [
     "date": "13-May-22",
     "incident": "Inadvertently touching interlock key during routine cleaning of panel (UCP-04) resulting in closure of trip valve and consequently tripping of STG # 04.",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "E&I"
   },
@@ -748,7 +747,7 @@ window.FPCL_PLR_DATA = [
     "date": "22-May-22",
     "incident": "1. Halting of control input to governor valve & feedback was found constant / held at 33 % and consequently shutdown of STG # 02.\n 2. After troubleshooting & rectification (replacement of Redundant Module of Rack A & Analog output card of Rack B), machine was started at 1257 hrs & synchronized at 1325 hrs.",
     "status": "Closed",
-    "machine": "STG # 2",
+    "machine": "STG#2",
     "priority": "High",
     "dept": "E&I"
   },
@@ -759,9 +758,9 @@ window.FPCL_PLR_DATA = [
     "date": "11-Jun-22",
     "incident": "STG # 04 Breaker opened at 1854 due to over frequency & then turbine tripped on over voltage. After KE go-ahead machine was synchronized at 1950 hrs and reached full load at 2117 hrs.",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "High",
-    "dept": "KE / E&I"
+    "dept": "KE/E&I"
   },
   {
     "sNo": 70,
@@ -770,7 +769,7 @@ window.FPCL_PLR_DATA = [
     "date": "28-Jun-22",
     "incident": "STG # 04 Breaker opened at 0527 hrs due to loss of voltage of both lines (BOC & Dhabeji) at KE circuit & machine remained on FSNL. After KE go-ahead machine was synchronized at 0634 hrs and reached full load at 0730 hrs.",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -781,7 +780,7 @@ window.FPCL_PLR_DATA = [
     "date": "3-Jul-22",
     "incident": "STG # 04 load was reduced as per KE instructions on 03rd July 2022 at 1047 hrs. After KE go-ahead load was normalized at 2134 hrs",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -789,10 +788,10 @@ window.FPCL_PLR_DATA = [
     "sNo": 72,
     "plrNo": 160,
     "year": 2022,
-    "date": "8~13 Jul-22",
+    "date": "",
     "incident": "a. STG # 04 power dispatch was reduced on 08th July 2022 & later it was stopped on 9th July 2022 as per KE demand.\n b. After KE go-ahead machine was started and load was normalized on 12th July 2022.\n c. Again the load was reduced on 13th July from 0342 ~ 0855 hrs as per KE instructions.",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -800,7 +799,7 @@ window.FPCL_PLR_DATA = [
     "sNo": 73,
     "plrNo": 161,
     "year": 2022,
-    "date": "24 & 28 Jul 22",
+    "date": "",
     "incident": "July 24, 2022:\n i. Tripping of Boiler-02 coal volumetric feeders (C&D) occurred owning to high moisture and increased coal consumption due to low LHV in Thar & 14th Indo Coal blend. Consequently, Boiler-02 load was reduced from 203 to 133 Met/hr, STG-04 load was reduced from 55 to 20 MW and 02 NG burners (C & D) were light up resulting in NG consumption of 0.08 MMSCF. \n July 28, 2022:\n i. STG-04 load was varied due to variation in HPS header pressure owing to tripping of coal feeders of Boiler-01 & Boiler-02. Consequently, actual power export to KE was 1,280 MW vs budgeted 1,310 MW",
     "status": "Closed",
     "machine": "Boiler # 1 / 2",
@@ -814,7 +813,7 @@ window.FPCL_PLR_DATA = [
     "date": "25-Jul-22",
     "incident": "1- Due to disturbance in KE network, power, frequency & voltage surges observed at STG # 04 generator, 86 G1 & 86 G2 actuated and consequently machine tripped on V/Hz security. After KE go-ahead machine was synchronized at 0420 hrs.\n 2- E-mail received from KE to maintain load at 20 MW at 0429 hrs & machine load reached 20 MW at 0512 hrs.\n 3- After KE go-ahead load increment started at 0806 hrs & reached 55 MW at 0844 hrs",
     "status": "Closed",
-    "machine": "STG # 04",
+    "machine": "STG#4",
     "priority": "High",
     "dept": "KE"
   },
@@ -825,7 +824,7 @@ window.FPCL_PLR_DATA = [
     "date": "24-Aug-22",
     "incident": "Due to disturbance in KE network, power, frequency & voltage surges observed at STG # 04 generator, 86 G1 & 86 G2 actuated and consequently machine tripped on 59P security(over voltage). After KE go-ahead machine was synchronized at 0255 hrs & reached 55 MW at 0420 hrs,",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -836,7 +835,7 @@ window.FPCL_PLR_DATA = [
     "date": "3-Aug-22",
     "incident": "i. Tripping of Boiler-01 coal volumetric feeders (B, C & D) occurred. Consequently, Boiler-01 load was reduced from 237 to 183 Met/hr, STG-04 load was reduced from 55 to 25 MW.",
     "status": "Closed",
-    "machine": "CFB - 1",
+    "machine": "B#1",
     "priority": "Medium",
     "dept": "Mechanical"
   },
@@ -847,7 +846,7 @@ window.FPCL_PLR_DATA = [
     "date": "13-Sep-22",
     "incident": "Outage of Boiler # 1 to attend tube leakage and accordingly shutdown of STG # 4 suspension of power export to KE.",
     "status": "Closed",
-    "machine": "CFB - 1",
+    "machine": "B#1",
     "priority": "High",
     "dept": "Mechanical"
   },
@@ -858,7 +857,7 @@ window.FPCL_PLR_DATA = [
     "date": "4-Oct-22",
     "incident": "Failure of MCC control supply due to faulty under voltage coil resulting in stoppage of Auxiliary motors of STG # 4 (HP oil pump, Condensate pump & demister fan motors)",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "High",
     "dept": "E&I"
   },
@@ -869,7 +868,7 @@ window.FPCL_PLR_DATA = [
     "date": "13-Oct-22",
     "incident": "Breaker opening (86 G1) twice due to KE network disturbance (frequency disturbance) but machine remained on FSNL. However, machine tripped on high high exhaust temperature afterwards",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "High",
     "dept": "KE"
   },
@@ -880,7 +879,7 @@ window.FPCL_PLR_DATA = [
     "date": "22-Oct-22",
     "incident": "On October 21, 2022 50 Hz Purchaser energy meter screen got black at ~ 0600 hrs. and KE was informed. Accordingly, for replacement of purchaser energy meter by KE team machine breaker was opened and machine remained at FSNL due for planned activity.",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "-"
   },
@@ -888,10 +887,10 @@ window.FPCL_PLR_DATA = [
     "sNo": 81,
     "plrNo": 169,
     "year": 2022,
-    "date": "9,15,16,23,30,31 Oct-2022",
+    "date": "",
     "incident": "STG # 04 load was reduced as per KE instructions during Oct, 2022",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -899,10 +898,10 @@ window.FPCL_PLR_DATA = [
     "sNo": 82,
     "plrNo": 170,
     "year": 2022,
-    "date": "20-Noc-22",
+    "date": "",
     "incident": "Due to disturbance in KE network, STG # 04 breaker opened on over frequency (Max frequency observed is 52.55 Hz), machine also tripped on over-voltage.",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -910,10 +909,10 @@ window.FPCL_PLR_DATA = [
     "sNo": 83,
     "plrNo": 171,
     "year": 2022,
-    "date": "6,8,91,13 Nov -2022",
+    "date": "",
     "incident": "STG # 04 load was reduced as per KE instructions during Oct, 2022",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -924,7 +923,7 @@ window.FPCL_PLR_DATA = [
     "date": "2-Dec-22",
     "incident": "Due to disturbance in KE network, STG # 04 breaker opened on over frequency (Max frequency observed is 53.67 Hz), machine also tripped on over-voltage.",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -932,10 +931,10 @@ window.FPCL_PLR_DATA = [
     "sNo": 85,
     "plrNo": 173,
     "year": 2022,
-    "date": "(Except 1,8) Dec-22",
+    "date": "",
     "incident": "STG # 04 load was reduced as per KE instructions during Oct, 2022",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -943,10 +942,10 @@ window.FPCL_PLR_DATA = [
     "sNo": 86,
     "plrNo": 174,
     "year": 2022,
-    "date": "21st Dec 2022 ~ 4th Jan 2023",
+    "date": "",
     "incident": "STG # 04 low load operation & shutdown of machine for 05 days due to lower ranking in merit order preference & lower demand in Dec / Jan 2023",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "Finance / Technical HO"
   },
@@ -957,9 +956,9 @@ window.FPCL_PLR_DATA = [
     "date": "26-Jan-21",
     "incident": "1. All VFD drives of 04 coal feeders, lime feeder & bed ash link conveyor of Boiler # 01 got trip simultaneously at 2038 hrs upon start-up of boiler # 02 Loop Seal Blower (CSK-2021 S). The Loop Seal Blower S was tripped on grounding fault due to dropped in voltage on 480 Volts bus bar.\n 2. To save from Total Power Failure of FPCL / FFBL, STG # 04 was stopped as boiler # 01 steam generation was decreasing fast (254 to 49 Met/hr) and could result in tripping of STG # 01 & 02.",
     "status": "Open",
-    "machine": "CFB-1",
+    "machine": "B#1",
     "priority": "High",
-    "dept": "Elect."
+    "dept": "Electrical"
   },
   {
     "sNo": 88,
@@ -968,7 +967,7 @@ window.FPCL_PLR_DATA = [
     "date": "18-Mar-21",
     "incident": "On 18 Mar, 2021 Boiler # 02 Coal feeders (B&C) tripped at same time due to wet coal received from outh Africa (29th Shipment MV Top Weather). Owing to unavailability of 02 coal feeders at the same time NG burners were fired in Boiler # 02 which resulted in 0.13 MMSCF NG consumption.",
     "status": "Closed",
-    "machine": "CFB-2",
+    "machine": "B#2",
     "priority": "High",
     "dept": "SCM"
   },
@@ -979,7 +978,7 @@ window.FPCL_PLR_DATA = [
     "date": "18-May-21",
     "incident": "On May 18, 2021, surge/ heavy disturbance observed in KE Grid causing variation in electrical parameter (Current, Voltage, Frequency, etc) and subsequent disturbance also occurred on STG # 04 resulting in tripping of machine at 0349 hrs on V/Hz over-flux protection (24) actuation on G-60 generator protection.",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "High",
     "dept": "KE / Electrical"
   },
@@ -990,7 +989,7 @@ window.FPCL_PLR_DATA = [
     "date": "22-May-21",
     "incident": "i. On May 22, 2021, 02 x 220 KV high tension lines of K-Electric i.e NKIBaldia 01 & 02 were tripped which affected 45 grid stations across Karachi.\n ii. Disturbance in KE grid caused variation in electrical parameter (Current,Voltage, Frequency, etc) and zero voltage in Dhabeji & BOC lines.\n iii. FPCL 132 KV breaker opened on transformer over current protection resulting in tripping of STG # 04 at 1327 hrs.",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "High",
     "dept": "KE / Electrical"
   },
@@ -1001,7 +1000,7 @@ window.FPCL_PLR_DATA = [
     "date": "23-May-21",
     "incident": "Disturbance in KE network caused load fluctuation on STG # 04 load (Max. 64.13 & Min. 49.92 MW). Afterwards, 86 G1 breaker opening on over frequency protection & subsequent tripping of machine on over-voltage (59 P) G-60 generator protection due to AVR not controlling the voltage after breaker opening.",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "High",
     "dept": "KE / Electrical"
   },
@@ -1012,9 +1011,9 @@ window.FPCL_PLR_DATA = [
     "date": "3-Jul-21",
     "incident": "STG # 04 was shut-down at 1721 hrs to attend high temperature problem at flexible joints of 11 KV transformer. After rectification, machine started at 2128 hrs, synchronized at 2152 hrs and reached full load at 2319 hrs.",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "High",
-    "dept": "Elect."
+    "dept": "Electrical"
   },
   {
     "sNo": 93,
@@ -1023,7 +1022,7 @@ window.FPCL_PLR_DATA = [
     "date": "10-Jul-21",
     "incident": "Voltage loss on Dhabeji & BOC lines resulted in 52 G breaker opening and machine shifted to FSNL. After voltage restoration & KE go-ahead machine was synchronized.",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -1034,7 +1033,7 @@ window.FPCL_PLR_DATA = [
     "date": "11-Jul-21",
     "incident": "Voltage loss on Dhabeji & BOC lines resulted in 52 G breaker opening and machine shifted to FSNL. After voltage restoration & KE go-ahead machine was synchronized.",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -1045,7 +1044,7 @@ window.FPCL_PLR_DATA = [
     "date": "12-Jul-21",
     "incident": "Voltage loss on Dhabeji & BOC lines resulted in 52 G breaker opening and machine shifted to FSNL. After voltage restoration & KE go-ahead machine was synchronized.",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -1056,7 +1055,7 @@ window.FPCL_PLR_DATA = [
     "date": "12-Jul-21",
     "incident": "Voltage loss on Dhabeji & BOC lines resulted in 52 G breaker opening and machine shifted to FSNL. After voltage restoration & KE go-ahead machine was synchronized.",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -1067,7 +1066,7 @@ window.FPCL_PLR_DATA = [
     "date": "18-Jul-21",
     "incident": "STG # 04 Load reduction as per KE demand & Load increased after KE go-ahead",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -1078,9 +1077,9 @@ window.FPCL_PLR_DATA = [
     "date": "19-Jul-21",
     "incident": "Boiler # 02 tripping on VFD failure resulting in tripping of STG # 04 & Urea plant as per logic",
     "status": "Open",
-    "machine": "CFB-2",
+    "machine": "B#2",
     "priority": "High",
-    "dept": "Elect."
+    "dept": "Electrical"
   },
   {
     "sNo": 99,
@@ -1089,9 +1088,9 @@ window.FPCL_PLR_DATA = [
     "date": "23-Jul-21",
     "incident": "Boiler # 02 manual stoppage for ID fan start-up on VFD mode instead of by-pas mode. STG # 04 load reduction & stopped due to Boiler SD.",
     "status": "Open",
-    "machine": "CFB-2",
+    "machine": "B#2",
     "priority": "Low",
-    "dept": "Elect."
+    "dept": "Electrical"
   },
   {
     "sNo": 100,
@@ -1100,7 +1099,7 @@ window.FPCL_PLR_DATA = [
     "date": "9-Aug-21",
     "incident": "STG # 04 was stopped to attend high temperature problem of 11KV transformer joints\n \n (same as PLR # 123)",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "High",
     "dept": "KE"
   },
@@ -1111,7 +1110,7 @@ window.FPCL_PLR_DATA = [
     "date": "31-Aug-21",
     "incident": "STG # 04 load was reduced as per KE instructions",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -1122,7 +1121,7 @@ window.FPCL_PLR_DATA = [
     "date": "1-Sep-21",
     "incident": "STG # 04 breaker opening due to KE network issues (500 KV Jamshoro line tripping).",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -1133,7 +1132,7 @@ window.FPCL_PLR_DATA = [
     "date": "7-Sep-21",
     "incident": "Outage of Boiler # 1 to attend tube leakage and accordingly shutdown of STG # 4 suspension of power export to KE along with reduction in Steam and Power export to FFBL.",
     "status": "Closed",
-    "machine": "CFB-1",
+    "machine": "B#1",
     "priority": "High",
     "dept": "Mech / Insp"
   },
@@ -1144,7 +1143,7 @@ window.FPCL_PLR_DATA = [
     "date": "20-Sep-21",
     "incident": "Total Power Failure",
     "status": "Closed",
-    "machine": "STG # 1\n (All machines)",
+    "machine": "Total Power Failure",
     "priority": "High",
     "dept": "-"
   },
@@ -1155,7 +1154,7 @@ window.FPCL_PLR_DATA = [
     "date": "1-Oct-21",
     "incident": "Tripping of all 04 coal feeders and hanging of MOVs at 03:03:57 hrs, subsequently at 0308 hrs, CFB Boiler-01 Master Fuel Trip (MFT) was applied, as a result Urea plant and STG-04 shutdown as per logic.",
     "status": "Closed",
-    "machine": "CFB-1",
+    "machine": "B#1",
     "priority": "High",
     "dept": "E&I"
   },
@@ -1166,7 +1165,7 @@ window.FPCL_PLR_DATA = [
     "date": "3-Oct-21",
     "incident": "STG # 04 Low Load as per KE instructions",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -1177,7 +1176,7 @@ window.FPCL_PLR_DATA = [
     "date": "5-Oct-21",
     "incident": "Tripping of all 04 coal feeders and hanging of MOVs at 23:41:50 hrs, subsequently at 2342 hrs, CFB Boiler-01 Master Fuel Trip (MFT) was applied, as a result Urea plant and STG-04 shutdown as per logic.",
     "status": "Closed",
-    "machine": "CFB-1",
+    "machine": "B#1",
     "priority": "High",
     "dept": "E&I"
   },
@@ -1188,7 +1187,7 @@ window.FPCL_PLR_DATA = [
     "date": "15-Oct-21",
     "incident": "STG # 04 Low Load as per KE instructions",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -1199,7 +1198,7 @@ window.FPCL_PLR_DATA = [
     "date": "16-Oct-21",
     "incident": "STG # 04 Low Load as per KE instructions",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -1210,7 +1209,7 @@ window.FPCL_PLR_DATA = [
     "date": "17-Oct-21",
     "incident": "STG # 04 Low Load as per KE instructions",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -1221,7 +1220,7 @@ window.FPCL_PLR_DATA = [
     "date": "17-Oct-21",
     "incident": "Boiler # 01 Tripping due to communication card failure in PCS-01 martelling cabinet of DCS.",
     "status": "Closed",
-    "machine": "CFB-1",
+    "machine": "B#1",
     "priority": "High",
     "dept": "E&I"
   },
@@ -1232,7 +1231,7 @@ window.FPCL_PLR_DATA = [
     "date": "18-Oct-21",
     "incident": "STG # 04 Low Load as per KE instructions",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -1243,7 +1242,7 @@ window.FPCL_PLR_DATA = [
     "date": "19-Oct-21",
     "incident": "STG # 04 Low Load as per KE instructions",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -1254,7 +1253,7 @@ window.FPCL_PLR_DATA = [
     "date": "Nov-21",
     "incident": "STG # 04 Low Load as per KE instructions (Nov-21)",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -1265,7 +1264,7 @@ window.FPCL_PLR_DATA = [
     "date": "Dec-21",
     "incident": "STG # 04 Low Load as per KE instructions (Dec-21)",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -1276,7 +1275,7 @@ window.FPCL_PLR_DATA = [
     "date": "28-Dec-21",
     "incident": "Boiler # 02 Outage to attend tube leakage in furnace front wall",
     "status": "Closed",
-    "machine": "CFB-2",
+    "machine": "B#2",
     "priority": "High",
     "dept": "Construction Contractor"
   },
@@ -1284,7 +1283,7 @@ window.FPCL_PLR_DATA = [
     "sNo": 117,
     "plrNo": 94,
     "year": 2020,
-    "date": "01-Jan-20 \n to \n 31-Jan-20",
+    "date": "",
     "incident": "Lower Steam and Power exports to FFBL and KE as compared to approved production plan in the month of January 2020.",
     "status": "Closed",
     "machine": "Low Load",
@@ -1298,7 +1297,7 @@ window.FPCL_PLR_DATA = [
     "date": "4-Mar-20",
     "incident": "STG-4 BOC line tripping on distance protection relay and afterwards load reduction owing to fault identification and provision of jumper / by-pass line to energize the BOC line from Dhabeji Line by-pass till the fault rectification from\n FPCL grid.\n After by-pass jumper, KE didn’t give go ahead for machine start-up resulted in 15.8 hrs loss out of total 25.9 hrs shutdown.",
     "status": "Open",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Critical",
     "dept": "KE / Electrical"
   },
@@ -1306,7 +1305,7 @@ window.FPCL_PLR_DATA = [
     "sNo": 119,
     "plrNo": 96,
     "year": 2020,
-    "date": "01-Feb-20 \n to \n 29-Feb-20",
+    "date": "",
     "incident": "Lower Power export off-take by FFBL as compared to approved production plan in\n the month of Feb 2020 and operation of PRDS line for steam export to FFBL.",
     "status": "Closed",
     "machine": "Low Load",
@@ -1317,7 +1316,7 @@ window.FPCL_PLR_DATA = [
     "sNo": 120,
     "plrNo": 97,
     "year": 2020,
-    "date": "01-Mar-20 \n to \n 31-Mar-20",
+    "date": "",
     "incident": "Low power and steam off-take by FFBL as per FFBL complex demand.",
     "status": "Closed",
     "machine": "Low Load",
@@ -1328,7 +1327,7 @@ window.FPCL_PLR_DATA = [
     "sNo": 121,
     "plrNo": 98,
     "year": 2020,
-    "date": "01-Apr-20 \n to \n 30-Apr-20",
+    "date": "",
     "incident": "Low power and steam off-take by FFBL as per FFBL complex demand.",
     "status": "Closed",
     "machine": "Low Load",
@@ -1342,7 +1341,7 @@ window.FPCL_PLR_DATA = [
     "date": "12-May-20",
     "incident": "STG-1 tripped at 0516 hrs due to malfunction of S2 Safety Relay, After replacement of Safety Relay the Machine started at 0750 hrs and synchronized at 0808 hrs.",
     "status": "Closed",
-    "machine": "STG-1",
+    "machine": "STG#1",
     "priority": "Critical",
     "dept": "E&I"
   },
@@ -1350,10 +1349,10 @@ window.FPCL_PLR_DATA = [
     "sNo": 123,
     "plrNo": 100,
     "year": 2020,
-    "date": "01-May-20 \n to \n 31-May-20",
+    "date": "",
     "incident": "STG-4 Load reduction as per KE demand.",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -1364,7 +1363,7 @@ window.FPCL_PLR_DATA = [
     "date": "20-May-20",
     "incident": "STG-04, Tripped at 0215 hrs on \"Overspeed Distance relay protection\" due to Fault in KE network, After rectification the machine started at 0410 hrs and synchronized at 0436 hrs. Again machine was stopped 0524 hrs due to same fault. After go ahead from KE the Machine started at 0648 hrs, synchronized at 0718 hrs and reached full load at 0842 hrs.",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Critical",
     "dept": "E&I"
   },
@@ -1375,7 +1374,7 @@ window.FPCL_PLR_DATA = [
     "date": "21-Jun-20",
     "incident": "STG-04, Breaker Opened at 0822 hrs & Machine stopped 0823 hrs due to gas replacement (rectification job) on E-01& E-02 Bay on KE Grid (FPCL-Side). \n \n After gas replacement (rectification job) on E-01& E-02 Bay , the Machine started on 22nd July 2020 at 0947 hrs, synchronized at 1012 hrs & reached full load at 1137 hrs.",
     "status": "Open",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Critical",
     "dept": "E&I"
   },
@@ -1386,9 +1385,9 @@ window.FPCL_PLR_DATA = [
     "date": "26-Jul-20",
     "incident": "On July 26 during raining, KE requested to reduce load on STG # 04 owing to reduced demand owing to feeders tripping at their end. Accordingly, the load on\n machine was reduced to 26.2 MW at 1320 hrs however at the same time, line voltage became zero and machine tripped.\n After go ahead from KE machine started at 1432 hrs and synchronized at 1457 hrs. The power load on machine was started to increase at 1653 hrs after KE go\n ahead and full load i.e. 55 MW was reached at 1719 hrs.",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
-    "dept": "KE/ E&I"
+    "dept": "KE/E&I"
   },
   {
     "sNo": 127,
@@ -1397,7 +1396,7 @@ window.FPCL_PLR_DATA = [
     "date": "27-Aug-20",
     "incident": "Tripping of 03 coal feeders of Boiler # 01 due to high moisture in coal owing to heavy rain and non –availability of sufficient mechanical crew to attend the feeders de-choking activities.\n As a result, following actions were taken\n - Gas Turbine was taken in service at FFBL at 0913 hrs\n - Natural Gas burners were also ignited in Boiler # 01.\n - Load on STG # 04 reduced to minimum 14.2 MW\n After rectification of coal feeders cleaning, GT was taken out of service at 1257 hrs & STG # 04 load was increased to full load at 1330hrs",
     "status": "Closed",
-    "machine": "Boiler # 1",
+    "machine": "B#1",
     "priority": "High",
     "dept": "Mechanical / Operations"
   },
@@ -1408,7 +1407,7 @@ window.FPCL_PLR_DATA = [
     "date": "27-Aug-20",
     "incident": "STG # 04 load reduction as per KE request owing to tripping of various KE feeders due to heavy rain in Karachi city",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Nil",
     "dept": "KE"
   },
@@ -1419,7 +1418,7 @@ window.FPCL_PLR_DATA = [
     "date": "29-Aug-20",
     "incident": "Opening of STG # 04 breaker (52 G) on over-frequency protection (81OP) due to disturbance in KE network owing to flash in KE Dhabeji line resulted in distance relay actuation. Machine remained on FSNL",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "High",
     "dept": "KE"
   },
@@ -1430,7 +1429,7 @@ window.FPCL_PLR_DATA = [
     "date": "11-Sep-20",
     "incident": "Tripping of STG # 4 machine on Over-flux (Volts/Hz) security (24) due to frequency and current variations / disturbance in KE network. No over speed observed",
     "status": "Open",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Critical",
     "dept": "E&I"
   },
@@ -1441,7 +1440,7 @@ window.FPCL_PLR_DATA = [
     "date": "13-Sep-20",
     "incident": "STG # 04 breaker opened and machine went on FSNL due to disturbance in KE network at 0124 hrs. Generator lockout relay 86G-1 operated and turbine shifted to speed mode and remained at FSNL. Thermal overload and OF alarm were also appeared.\n \n After go ahead from KE,machine re-synchronized at 0145 hrs.",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "High",
     "dept": "KE"
   },
@@ -1452,7 +1451,7 @@ window.FPCL_PLR_DATA = [
     "date": "23-Sep-20",
     "incident": "1. On Sept 23rd, 2020, voltage & frequency disturbance occurred in KE network, which resulted into voltage loss (zero voltage) on Dhabeji line and distance protection relay actuated (Zone 2, distance 61.8 Km).\n 2. STG # 04 breaker (52G) opened at 0907 hrs on over-frequency (81) and machine switched to FSNL mode.\n 3. The machine remained in FSNL mode till 1159 hrs, however, owing to delay in go-ahead by KE for re-synchronization machine stopped at1159 hrs.\n 4. After go-ahead from KE, machine was started at 1509 hrs, synchronized at 1559 hrs and load was normalized (55 MWh) at 1724 hrs.",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "High",
     "dept": "KE"
   },
@@ -1463,7 +1462,7 @@ window.FPCL_PLR_DATA = [
     "date": "18-Oct-20",
     "incident": "1. On Oct 18, planned shutdown of STG # 04 was taken to energize BOC E05 line after rehabilitation.\n 2. Boiler # 2 was also shut down at 1023 hrs to inspect PA fan dampers link inspection & rectification.\n 3. After energization of BOC E05 line, STG # 04 was started at 1352 hrs, reached FSNL at 1415 hrs and synchronized at 1458 hrs and reached full load (55.4 MWH) at 1624 hrs.\n 4. After PA fan damper inspection & rectification, Boiler # 02 ID fan was started at 1411 hrs and boiler was connected with main HPS header at 1504 hrs.",
     "status": "Open",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "Alstom / Electrical / Mechanical"
   },
@@ -1474,7 +1473,7 @@ window.FPCL_PLR_DATA = [
     "date": "1-Nov-20",
     "incident": "1. On Nov 01, 2020 planned shutdown of STG # 04 was taken for insulator replacement job on E02, G9 compartment Dhabeji line.\n 2. Machine was stopped at 1107 hrs, after job completion and KE go-ahead STG # 04 was synchronized at 1554 hrs and reached full load at 1719 hrs.",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "Alstom / Electrical"
   },
@@ -1485,7 +1484,7 @@ window.FPCL_PLR_DATA = [
     "date": "21-Nov-20",
     "incident": "1. On Nov 21, 2020 KE requested to decrease power load as per their system requirement. Accordingly, load reduction was started at 2220 hrs and machine reached at 24.6 MW at 2253 hrs and remained at 24.6 MW till 0910 hrs on 23 Nov, 2020.\n 2. Load was started to increase after KE go-ahead on 23 Nov, 2020 at 0910 hrs. STG # 04 load was normalized (55 MW) at 0942 hrs.",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -1496,7 +1495,7 @@ window.FPCL_PLR_DATA = [
     "date": "24-Nov-20",
     "incident": "1. On 24 Nov, 2020 STG # 04 load was decreased as per KE demand. The load was started to decrease at 0108 hrs and reached 24.5 MW at 0142 hrs.\n 2. Load on machine was started to increase on at 0757 (24 Nov, 2020) hrs after go-ahead from KE and load was normalized (55MW) at 0833 hrs.\n 3. Again KE requested to reduce Load on machine at 1947 hrs and load was reduced to 30 MW at 2013 hrs.\n 4. After KE go-ahead, load on machine started to increase at 0812 hrs (25 Nov, 2020) and normalized (55MW) at 0841 hrs.",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -1507,7 +1506,7 @@ window.FPCL_PLR_DATA = [
     "date": "26-Nov-20",
     "incident": "1. On 26 Nov, 2020 STG # 04 load was decreased as per KE demand. The load was started to decrease at 0158 hrs and reached 30 MW at 0225 hrs.\n 2. Load on machine was started to increase on at 0806 hrs after go-ahead from KE and load was normalized (55MW) at 0836 hrs.",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -1518,7 +1517,7 @@ window.FPCL_PLR_DATA = [
     "date": "27-Nov-20",
     "incident": "1. On 27 Nov, 2020 STG # 04 load was decreased as per KE demand. The load was started to decrease at 0014 hrs and reached 24.5 MW at 0045 hrs.\n 2. Load on machine was started to increase at 0914 hrs after go-ahead from KE\n and load was normalized (55MW) at 0948 hrs.\n 3. Again KE requested to decrease load on machine, the load was started to\n decrease at 2209 hrs and reached 24.5 MW at 2242 hrs.\n 4. After go-ahead from KE load on machine was started to increase at 1709 hrs\n (28-11-2020) and normalized at 1742 hrs.",
     "status": "Closed",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -1529,7 +1528,7 @@ window.FPCL_PLR_DATA = [
     "date": "17-Dec-20",
     "incident": "1. On 17th Dec 2020 Boiler # 01 tripped at 1737 hrs due to ID Fan Inverter (VFD) failure, MFT actuated after main VCB breaker tripping.\n 2. STG # 04 & FFBL Urea plants also tripped as per logic.\n 3. GT was taken in service at FFBL.\n 4. MPS export was also decreased from 188 Met/h to ~140 Met/h.\n 5. After go-ahead from Electrical team, ID fan started on by-pass mode at 1849 hrs. Coal feeding started at 1855 hrs and Boiler was connected with main steam header at 1956 hrs.",
     "status": "Open",
-    "machine": "Boiler # 1",
+    "machine": "B#1",
     "priority": "High",
     "dept": "E&I"
   },
@@ -1540,7 +1539,7 @@ window.FPCL_PLR_DATA = [
     "date": "23-Dec-20",
     "incident": "1. On 23 Dec, 2020 STG # 04 tripped, first out on HMI indicated 86 G2 (generator lockout relay actuation) and K-4 Trip B (trip command from protection relay B). On G 60-B voltage transformer failure (VTF) fault was observed whereas this was not observed on G 60-A.\n 2. Electrical team carried out inspection of VTs & fuses, connections tightness verification between VT & relay and two VT module cards were replaced in protection relay B.\n 3. After taking remedial actions & loop checking and go-ahead for start-up by Electrical machine was started at 1024 hrs, synchronized at 1055 hrs & load\n was normalized at 1222 hrs.",
     "status": "Open",
-    "machine": "STG # 4",
+    "machine": "STG#4",
     "priority": "High",
     "dept": "Elect. / BHGE"
   },
@@ -1551,7 +1550,7 @@ window.FPCL_PLR_DATA = [
     "date": "16-Jan-19",
     "incident": "STG-04 tripped at 0613 hrs due to malfunctioning of \"Safety Relay\". After replacement of the faulty relay with new one, the machine started at 0741 hrs, \n synchronized at 0805 hrs & reached 52 MW at 0927 hrs.",
     "status": "Closed",
-    "machine": "STG-4",
+    "machine": "STG#4",
     "priority": "Critical",
     "dept": "E&I"
   },
@@ -1562,7 +1561,7 @@ window.FPCL_PLR_DATA = [
     "date": "25-Jan-19",
     "incident": "STG-04 breaker opened at 0922 hrs on 25th Jan 2019 due to outage of both BOC and Dhabeji lines. Machine remained on FSNL for 174 minutes\n \n After normalization & go ahead from KE, machine was resynchronized at 1216 hrs and reached peak load of 55MW at 1316 hrs.",
     "status": "Closed",
-    "machine": "STG-4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -1573,8 +1572,8 @@ window.FPCL_PLR_DATA = [
     "date": "2-Feb-19",
     "incident": "STG-04 breaker opened and machine was stopped manually due to steam availability issue as CFB-1 was shut-down due to maintenance jobs.",
     "status": "Closed",
-    "machine": "STG-4",
-    "priority": "No",
+    "machine": "STG#4",
+    "priority": "Nil",
     "dept": "Mechanical"
   },
   {
@@ -1584,7 +1583,7 @@ window.FPCL_PLR_DATA = [
     "date": "4-Feb-19",
     "incident": "STG-04 stopped to attend GIS cylinder filling job at grid station",
     "status": "Closed",
-    "machine": "STG-4",
+    "machine": "STG#4",
     "priority": "Nil",
     "dept": "Electrical"
   },
@@ -1595,7 +1594,7 @@ window.FPCL_PLR_DATA = [
     "date": "14-Feb-19",
     "incident": "STG-04 stopped manually due to non availability of boiler # 01 and demand of steam by FFBL for Urea plant start up\n (0914 hrs 14th Feb ~ 1726 hrs 17th Feb)",
     "status": "Closed",
-    "machine": "STG-4",
+    "machine": "STG#4",
     "priority": "Nil",
     "dept": "Mechanical"
   },
@@ -1606,7 +1605,7 @@ window.FPCL_PLR_DATA = [
     "date": "21-Feb-19",
     "incident": "STG-04 breaker opened to test modified logic of bypass opening at 1249 hrs",
     "status": "Closed",
-    "machine": "STG-4",
+    "machine": "STG#4",
     "priority": "Nil",
     "dept": "BHGE"
   },
@@ -1617,7 +1616,7 @@ window.FPCL_PLR_DATA = [
     "date": "6-Apr-19",
     "incident": "STG-01 tripped at 1324 hrs due to issue governor control card “SPC Trip”. After preventive replacement of two safety relays and one digital input card, machine was re-started at 1817 hrs and synchronized at 1838 hrs.",
     "status": "Closed",
-    "machine": "STG-1",
+    "machine": "STG#1",
     "priority": "Critical",
     "dept": "E&I"
   },
@@ -1628,7 +1627,7 @@ window.FPCL_PLR_DATA = [
     "date": "3-Apr-19",
     "incident": "STG-04 tripped at 2218 hrs due to malfunctioning of \"Safety Relay\". After replacement of the faulty relay with new one, the machine started at 0111 hrs, Synchronized at 0137 hrs & reached 52 MW at 0305 hrs.",
     "status": "Closed",
-    "machine": "STG-4",
+    "machine": "STG#4",
     "priority": "Critical",
     "dept": "E&I"
   },
@@ -1639,7 +1638,7 @@ window.FPCL_PLR_DATA = [
     "date": "20-Apr-19",
     "incident": "Planned shutdown of Boiler # 1 to attend noise coming ID Fan coupling side and subsequent increase in vibration",
     "status": "Closed",
-    "machine": "CFB-1",
+    "machine": "B#1",
     "priority": "Critical",
     "dept": "Mechanical"
   },
@@ -1650,7 +1649,7 @@ window.FPCL_PLR_DATA = [
     "date": "4-May-19",
     "incident": "CFB Boiler # 1 was tripped upon actuation of the MFT on Furnace Pressure HH +350mmH2O during change over to by pass mode from VFD.",
     "status": "Closed",
-    "machine": "CFB-1",
+    "machine": "B#1",
     "priority": "Low",
     "dept": "Operations"
   },
@@ -1661,7 +1660,7 @@ window.FPCL_PLR_DATA = [
     "date": "9-Jun-19",
     "incident": "STG-4 breaker opened at 1724hrs due to disturbance at KE Grid and machine\n remained at FSNL for 24 minutes. On initial investigation, it was revealed that\n the incident occurred after heavy surge observed at 132 KV network, whereas\n voltage swing was recorded from 131KV to 122K.",
     "status": "Closed",
-    "machine": "STG-4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -1672,7 +1671,7 @@ window.FPCL_PLR_DATA = [
     "date": "6-Jul-19",
     "incident": "STG-04 tripped at 0216 hrs due to disturbance/fault in KE network. After go-ahead from KE, the machine started at 0247 hrs, synchronized at 0311 hrs and reached 54MW at 0433 hrs",
     "status": "Closed",
-    "machine": "STG-4",
+    "machine": "STG#4",
     "priority": "Critical",
     "dept": "KE"
   },
@@ -1683,7 +1682,7 @@ window.FPCL_PLR_DATA = [
     "date": "9-Jul-19",
     "incident": "STG-03 Shut down due to governer hunting issue. Servo valve of machine was replaced.",
     "status": "Closed",
-    "machine": "STG-3",
+    "machine": "STG#3",
     "priority": "High",
     "dept": "E&I"
   },
@@ -1694,9 +1693,9 @@ window.FPCL_PLR_DATA = [
     "date": "20-Jul-19",
     "incident": "STG-04 tripped at 0357 hrs due to outage of both \"BOC & DHABEJI\" Lines. After go-ahead from KE, the machine started at 0437hrs, synchronized at 0500 hrs and reached 54MW at 0625 hrs.",
     "status": "Closed",
-    "machine": "STG-4",
+    "machine": "STG#4",
     "priority": "Critical",
-    "dept": "KE / E&I"
+    "dept": "KE/E&I"
   },
   {
     "sNo": 155,
@@ -1705,7 +1704,7 @@ window.FPCL_PLR_DATA = [
     "date": "22-Jul-19",
     "incident": "STG-04, tripped at 2142 hrs due to outage of both \"BOC & DHABEJI\" Lines. After go-ahead from KE, the machine started at 0009 hr (23-07-19) synchronized at 0033 hr and reached 54 MW at 0202 hr.",
     "status": "Closed",
-    "machine": "STG-4",
+    "machine": "STG#4",
     "priority": "Critical",
     "dept": "KE"
   },
@@ -1716,9 +1715,9 @@ window.FPCL_PLR_DATA = [
     "date": "29-Jul-19",
     "incident": "STG-04, tripped at 0743 hrs due to outage of KE network (Heavy Rainfall). The machine again synchronized twice (1023 hrs & 1310 hrs) but each time\n the breaker opened due to continuous disturbance in the network. Finally as per advise of K.E official, the machine stopped at 1326 hrs. After clearance from K.E the machine started at 0045hrs (30-07-19), synchronized at 0110hrs & reached 54.6 MW at 0236hrs.",
     "status": "Closed",
-    "machine": "STG-4",
+    "machine": "STG#4",
     "priority": "Critical",
-    "dept": "KE / E&I"
+    "dept": "KE/E&I"
   },
   {
     "sNo": 157,
@@ -1727,7 +1726,7 @@ window.FPCL_PLR_DATA = [
     "date": "5-Aug-19",
     "incident": "Tripping of CFB boiler # 2 due to high vibration security actuation of Secondary\n Air (SA) fan",
     "status": "Closed",
-    "machine": "CFB-2",
+    "machine": "B#2",
     "priority": "Critical",
     "dept": "I&C"
   },
@@ -1738,9 +1737,9 @@ window.FPCL_PLR_DATA = [
     "date": "11-Aug-19",
     "incident": "STG-04 tripped twice as a result of outage of both K.E lines at 0258 hrs and again at 0747 hrs. After go-ahead from KE, the machine started/ synchronized/ reached at peak load in both the cases at 0410 hrs/ 0431 hrs/ 0557 hrs and 0840 hrs/ 0908 hrs/ 1034 hrs respectively",
     "status": "Closed",
-    "machine": "STG-4",
+    "machine": "STG#4",
     "priority": "Critical",
-    "dept": "KE / E&I"
+    "dept": "KE/E&I"
   },
   {
     "sNo": 159,
@@ -1749,7 +1748,7 @@ window.FPCL_PLR_DATA = [
     "date": "17-Aug-19",
     "incident": "Outage of Boiler # 1 to attend 02 tube leakages (tube # 64 & 65 on front wall) at lower weld joint elevation EL +16.35 meter. STG # 4 shutdown also along with reduction in steam and power export to FFBL",
     "status": "Closed",
-    "machine": "CFB-1",
+    "machine": "B#1",
     "priority": "Critical",
     "dept": "Maintenance / Technical"
   },
@@ -1760,9 +1759,9 @@ window.FPCL_PLR_DATA = [
     "date": "11-Sep-19",
     "incident": "Outage of Boiler # 1 to attend 02 tube leakages (tube # 51 & 52 on front wall) at lower weld joint elevation EL +16.35 meter. STG # 4 shutdown also along with reduction in steam and power export to FFBL",
     "status": "Closed",
-    "machine": "CFB-1",
+    "machine": "B#1",
     "priority": "Critical",
-    "dept": "Maintenance / Technical (Inspection)"
+    "dept": "Maintenance / Inspection"
   },
   {
     "sNo": 161,
@@ -1771,7 +1770,7 @@ window.FPCL_PLR_DATA = [
     "date": "21-Sep-19",
     "incident": "Boiler 2 tripped on high furnace pressure due to unintentional wrong command from Boardman to ID fan damper. PA fan west side link bolt found damaged & repaired.",
     "status": "Closed",
-    "machine": "CFB-2",
+    "machine": "B#2",
     "priority": "Critical",
     "dept": "Operations / Mechanical"
   },
@@ -1782,7 +1781,7 @@ window.FPCL_PLR_DATA = [
     "date": "7-Oct-19",
     "incident": "CFB Boiler # 01 tripped due to actuation of furnace (draft) \"High Pressure Security\" upon changeover of ID fan from VFD to Bypass mode (sound and area bearing vibrations found increased), which caused the MFT to actuate.",
     "status": "Closed",
-    "machine": "CFB-1",
+    "machine": "B#1",
     "priority": "Critical",
     "dept": "Operations / E & I / Mechanical"
   },
@@ -1793,7 +1792,7 @@ window.FPCL_PLR_DATA = [
     "date": "14-Oct-19",
     "incident": "CFB Boiler # 02 ID fan VFD panel input breaker fuses blown out and main breaker tripped due to high inrush current owing to short circuiting in VFD panel transformer windings.",
     "status": "Closed",
-    "machine": "CFB-2",
+    "machine": "B#2",
     "priority": "Critical",
     "dept": "E&I / Operations"
   },
@@ -1804,7 +1803,7 @@ window.FPCL_PLR_DATA = [
     "date": "8-Nov-19",
     "incident": "Outage of Boiler # 2 to attend tube leakages and buildups on eroded tubes. STG # 4 also shut down along with reduction in steam and power export to FFBL.",
     "status": "Closed",
-    "machine": "CFB-2",
+    "machine": "B#2",
     "priority": "Critical",
     "dept": "Mechanical / Inspection / HHI"
   },
@@ -1848,7 +1847,7 @@ window.FPCL_PLR_DATA = [
     "date": "30-Dec-19",
     "incident": "STG-3 tripped on “control oil pressure low low” indication due to malfunctioning of the control oil system “Safety Relay”.",
     "status": "Closed",
-    "machine": "STG-3",
+    "machine": "STG#3",
     "priority": "High",
     "dept": "E&I"
   },
@@ -1859,9 +1858,9 @@ window.FPCL_PLR_DATA = [
     "date": "9-Jan-18",
     "incident": "STG-4 tripped at 1653 hrs due to differential Pressure Security (PDI -CE-4010-09) as extraction control was put on auto mode.",
     "status": "Closed",
-    "machine": "STG - 4",
+    "machine": "STG#4",
     "priority": "Low",
-    "dept": "OPRS /E&I"
+    "dept": "Operations /E&I"
   },
   {
     "sNo": 170,
@@ -1870,7 +1869,7 @@ window.FPCL_PLR_DATA = [
     "date": "7-Feb-18",
     "incident": "STG-4 tripped at 2114 hrs due to malfunctioning of turbine thrust bearing temperature indication. The faulty indication was bypassed and machine restarted. But it was stopped manually due to increasing trend of Gearbox bearing temperatures observed. \n \n Tripping due to malfunctioning of turbine thrust bearing temperature & main lube oil pump damage",
     "status": "Closed",
-    "machine": "STG - 4",
+    "machine": "STG#4",
     "priority": "High",
     "dept": "Mechanical"
   },
@@ -1881,7 +1880,7 @@ window.FPCL_PLR_DATA = [
     "date": "16-Feb-18",
     "incident": "STG-04 tripped on faulty indication for temperature transmitter (TT-CE-4050-48A/B) for turbine thrust bearing temperature. \n \n Machine was restarted after bypassing faulty indication (TT-CE-4050-48 A/B).",
     "status": "Closed",
-    "machine": "STG - 4",
+    "machine": "STG#4",
     "priority": "High",
     "dept": "E&I"
   },
@@ -1892,7 +1891,7 @@ window.FPCL_PLR_DATA = [
     "date": "19-Feb-18",
     "incident": "STG-4 tripped at 0818 hrs due to actuation of \"long distance\" protection at KE end owing to problem in BOC network and its breaker was opened accordingly.",
     "status": "Closed",
-    "machine": "STG - 4",
+    "machine": "STG#4",
     "priority": "Critical",
     "dept": "E&I"
   },
@@ -1903,7 +1902,7 @@ window.FPCL_PLR_DATA = [
     "date": "6-Mar-18",
     "incident": "STG-4 tripped on actuation of voltage restraint overcurrent (51V) security on G60 resulting breaker opening and machine tripping by actuation of lock out relay K-86G2A&B",
     "status": "Closed",
-    "machine": "STG - 4",
+    "machine": "STG#4",
     "priority": "Critical",
     "dept": "E&I"
   },
@@ -1914,7 +1913,7 @@ window.FPCL_PLR_DATA = [
     "date": "18-Mar-18",
     "incident": "STG-4 tripped STG-4 tripped at 1153 hrs on \"Overspeed\" security due to outage of both (BOC & Dhabeji) lines in K.E network",
     "status": "Closed",
-    "machine": "STG - 4",
+    "machine": "STG#4",
     "priority": "Critical",
     "dept": "E&I"
   },
@@ -1925,7 +1924,7 @@ window.FPCL_PLR_DATA = [
     "date": "28-Mar-18",
     "incident": "STG#04 tripped on fluctuation in control oil pressure",
     "status": "Closed",
-    "machine": "STG - 4",
+    "machine": "STG#4",
     "priority": "High",
     "dept": "Mechanical"
   },
@@ -1936,7 +1935,7 @@ window.FPCL_PLR_DATA = [
     "date": "30-Mar-18",
     "incident": "STG#04 breaker opened on Thermal Overload due to BOC line fault but remained on FSNL",
     "status": "Closed",
-    "machine": "STG - 4",
+    "machine": "STG#4",
     "priority": "Critical",
     "dept": "KE"
   },
@@ -1947,7 +1946,7 @@ window.FPCL_PLR_DATA = [
     "date": "3-May-18",
     "incident": "STG-4 tripped at 0405 hrs on actuation of Generator Lockout Relay - 86G2 A/B, caused by surge in the K.E Grid.",
     "status": "Closed",
-    "machine": "STG - 4",
+    "machine": "STG#4",
     "priority": "Critical",
     "dept": "KE"
   },
@@ -1958,7 +1957,7 @@ window.FPCL_PLR_DATA = [
     "date": "13-May-18",
     "incident": "STG-4 tripped at 0555 hrs on actuation of Generator Lockout Relay - 86G2 A/B and CFB Stage-02 Trip from Grid caused by surge in the K.E Grid.",
     "status": "Closed",
-    "machine": "STG - 4",
+    "machine": "STG#4",
     "priority": "Critical",
     "dept": "E&I"
   },
@@ -1966,10 +1965,10 @@ window.FPCL_PLR_DATA = [
     "sNo": 179,
     "plrNo": 47,
     "year": 2018,
-    "date": "14-May-18\n to\n 21-May-18",
+    "date": "",
     "incident": "Machine had to be manually stopped due to problems in its control system and\n discrepancy between Governor feedback and Command.",
     "status": "Closed",
-    "machine": "STG - 3",
+    "machine": "STG#3",
     "priority": "Nil",
     "dept": "E&I / Mechanical"
   },
@@ -1980,7 +1979,7 @@ window.FPCL_PLR_DATA = [
     "date": "20-May-18",
     "incident": "STG-4 tripped at 0308 hrs on “Line distance Relay Protection”. Also, “CFB Stage-02 Trip from Grid” indication appeared on Event Log",
     "status": "Closed",
-    "machine": "STG - 4",
+    "machine": "STG#4",
     "priority": "Critical",
     "dept": "E&I"
   },
@@ -1991,7 +1990,7 @@ window.FPCL_PLR_DATA = [
     "date": "6-Jun-18",
     "incident": "Planned shutdown of STG-04 was taken to rectifY difference in temperatures of\n the termination points of 11 KV to 132KV A Transformer. In parallel, modification\n in control system and signal verification to rectify false indication of earthing\n switch was carried out",
     "status": "Closed",
-    "machine": "STG - 4",
+    "machine": "STG#4",
     "priority": "Nil",
     "dept": "E&I"
   },
@@ -2002,7 +2001,7 @@ window.FPCL_PLR_DATA = [
     "date": "29-Jun-18",
     "incident": "STG-04 tripped on over speed protection due to sudden tripping of both BOC and Dhabeji circuits.",
     "status": "Closed",
-    "machine": "STG - 4",
+    "machine": "STG#4",
     "priority": "Critical",
     "dept": "E&I"
   },
@@ -2013,7 +2012,7 @@ window.FPCL_PLR_DATA = [
     "date": "8-Jul-18",
     "incident": "STG-3, tripped at 2118 hrs on “control oil pressure low low” indication due to malfunctioning of the control oil system “Safety Relay”.",
     "status": "Closed",
-    "machine": "STG - 3",
+    "machine": "STG#3",
     "priority": "High",
     "dept": "E&I"
   },
@@ -2024,7 +2023,7 @@ window.FPCL_PLR_DATA = [
     "date": "19-Jul-18",
     "incident": "STG-04 breaker opened due to actuation of Thermal overload 49OP and 81OP at G60 panel and machine was at FSNL. On resynchronization STG-04 tripped on over speed protection (Max speed 4696 rpm) due to surge in KE Grid once again.",
     "status": "Closed",
-    "machine": "STG - 4",
+    "machine": "STG#4",
     "priority": "Critical",
     "dept": "E&I"
   },
@@ -2035,7 +2034,7 @@ window.FPCL_PLR_DATA = [
     "date": "10-Aug-18",
     "incident": "STG-04 tripped at 0240 hrs due to outage of both BOC and Dhabeji lines. After normalization & go ahead from KE, machine was restarted at 0307 hrs and re-synchronized at 0342 hrs and reached peak load of 55MW at 0507 hrs. \n \n Machine again tripped at 0511 hrs due to outage of both BOC and Dhabeji lines. After normalization & go ahead from KE, machine was restarted at 0545 hrs and re-synchronized at 0610 hrs and reached peak load of 55MW at 0735 hrs. \n \n On both occasions tripping occurred on over-speed protection.",
     "status": "Closed",
-    "machine": "STG - 4",
+    "machine": "STG#4",
     "priority": "Critical",
     "dept": "E&I"
   },
@@ -2043,10 +2042,10 @@ window.FPCL_PLR_DATA = [
     "sNo": 186,
     "plrNo": 54,
     "year": 2018,
-    "date": "11-Aug-18\n 12-Aug-18",
+    "date": "",
     "incident": "STG-4, the electrical breaker opened at 2236 hrs due to loss of voltage in both (BOC & Dhabeji) lines followed by turbine tripping at 2240 hrs on actuation of generator lockout relay due (V/Hz) protection actuation on G-60. Machine rolled at 2322 hrs and synchronized at 0147 hrs (18-08-2018) due to delayed KE go-ahead. The Electrical breaker again opened at 0252 hrs due to loss of only available BOC line. Machine again synchronized at 0317 hrs, however breaker again opened at 0320 hrs due to loss of BOC line. Machine re-synchronized at 0347 hrs. The machine reached at peak load at 0439 hrs.",
     "status": "Closed",
-    "machine": "STG - 4",
+    "machine": "STG#4",
     "priority": "Critical",
     "dept": "E&I"
   },
@@ -2054,10 +2053,10 @@ window.FPCL_PLR_DATA = [
     "sNo": 187,
     "plrNo": 55,
     "year": 2018,
-    "date": "17-Aug-18\n 18-Aug-18",
+    "date": "",
     "incident": "STG-4, the electrical breaker opened at 2236 hrs due to loss of voltage in both (BOC & Dhabeji) lines followed by turbine tripping at 2240 hrs on actuation of generator lockout relay due (V/Hz) protection actuation on G-60. Machine rolled at 2322 hrs and synchronized at 0147 hrs (18-08-2018) due to delayed KE go-ahead. The Electrical breaker again opened at 0252 hrs due to loss of only available BOC line. Machine again synchronized at 0317 hrs, however breaker again opened at 0320 hrs due to loss of BOC line. Machine re-synchronized at 0347 hrs. The machine reached at peak load at 0439 hrs.",
     "status": "Closed",
-    "machine": "STG - 4",
+    "machine": "STG#4",
     "priority": "Critical",
     "dept": "E&I"
   },
@@ -2079,7 +2078,7 @@ window.FPCL_PLR_DATA = [
     "date": "5-Oct-18",
     "incident": "STG-04 breaker opened at 1245 hrs due to outage of both BOC and Dhabeji lines. After normalization machine was re-synchronized at 1415 hrs and reached peak load of 55MW at 1511 hrs. Machine remained on FSNL for 90 minutes.",
     "status": "Closed",
-    "machine": "STG - 4",
+    "machine": "STG#4",
     "priority": "Nil",
     "dept": "E&I"
   },
@@ -2090,9 +2089,9 @@ window.FPCL_PLR_DATA = [
     "date": "11-Oct-18",
     "incident": "Boiler # 02 Planned SD for tubes inspection",
     "status": "Closed",
-    "machine": "Boiler # 02",
+    "machine": "B#2",
     "priority": "Medium",
-    "dept": "Operations"
+    "dept": "E&I"
   },
   {
     "sNo": 191,
@@ -2101,7 +2100,7 @@ window.FPCL_PLR_DATA = [
     "date": "18-Oct-18",
     "incident": "STG-04 breaker opened at 1245 hrs due to outage of both BOC and Dhabeji lines. After normalization machine was re-synchronized at 1415 hrs and reached peak load of 55MW at 1511 hrs. Machine remained on FSNL for 90 minutes.",
     "status": "Closed",
-    "machine": "STG - 4",
+    "machine": "STG#4",
     "priority": "Critical",
     "dept": "E&I"
   },
@@ -2112,7 +2111,7 @@ window.FPCL_PLR_DATA = [
     "date": "20-Oct-18",
     "incident": "STG-04 breaker opened at 1245 hrs due to outage of both BOC and Dhabeji lines. After normalization machine was re-synchronized at 1415 hrs and reached peak load of 55MW at 1511 hrs. Machine remained on FSNL for 90 minutes.",
     "status": "Closed",
-    "machine": "STG - 4",
+    "machine": "STG#4",
     "priority": "Critical",
     "dept": "KE"
   },
@@ -2123,7 +2122,7 @@ window.FPCL_PLR_DATA = [
     "date": "12-Nov-18",
     "incident": "STG-04 breaker opened at 0623 hrs due to outage of both BOC and Dhabeji lines. After normalization machine was re-synchronized at 0809 hrs and reached peak load of 55MW at 0905 hrs. Machine remained on FSNL for 106 min",
     "status": "Closed",
-    "machine": "STG - 4",
+    "machine": "STG#4",
     "priority": "Critical",
     "dept": "KE"
   },
@@ -2134,7 +2133,7 @@ window.FPCL_PLR_DATA = [
     "date": "18-Nov-18",
     "incident": "STG-04 tripped at 0629 hrs due to outage of both BOC and Dhabeji lines. After normalization & go ahead from KE, machine was restarted at 0812 hrs and re-synchronized at 0837 hrs and reached peak load of 55MW at 1002 hrs. Machine remained tripped for 103 min\n \n Voltages on Dhabeji and BOC Circuits becomes dead while STG # 4 tripped on over-speed (4752 rpm) security with breaker open after tripping as AVR not perform.",
     "status": "Closed",
-    "machine": "STG - 4",
+    "machine": "STG#4",
     "priority": "Critical",
     "dept": "E&I"
   },
@@ -2145,7 +2144,7 @@ window.FPCL_PLR_DATA = [
     "date": "19-Nov-18",
     "incident": "STG-04 tripped on over speed security at 0352 hrs due to outage of both BOC and Dhabeji lines. After normalization & go ahead from KE, machine was restarted at 0755 hrs, re-synchronized at 0821 hrs and reached peak load of 55MW at 0945 hrs. Machine remained tripped for 243 min, of which 151 min delay was due to KE go ahead.\n \n \n Voltages on Dhabeji and BOC Circuits becomes dead while STG # 4 tripped on over-speed (4752 rpm) security with breaker open after tripping as AVR not perform.",
     "status": "Closed",
-    "machine": "STG - 4",
+    "machine": "STG#4",
     "priority": "Critical",
     "dept": "E&I"
   },
@@ -2156,7 +2155,7 @@ window.FPCL_PLR_DATA = [
     "date": "2-Dec-18",
     "incident": "STG-2, tripped at 2053 hrs due to malfunctioning of the “Safety Relay”. DAP Plant & Urea Granulation section tripped on actuation of ELSS as per logic. STG-1, reached up to 19 MW with all parameters remaining normal.STG-2 restarted at 2313 hrs and synchronized at 2328 hrs after replacement of safety relay.",
     "status": "Closed",
-    "machine": "STG - 2",
+    "machine": "STG#2",
     "priority": "Critical",
     "dept": "E&I"
   },
@@ -2167,7 +2166,7 @@ window.FPCL_PLR_DATA = [
     "date": "29-Dec-18",
     "incident": "STG-1 manually stopped at 2255 hrs on 29th Dec 2018 due to high vibration of the generator DE side bearing (VTX-CE-1080-55). The machine restarted at 0048 hrs and synchronized at 0101 hrs on 30th Dec 2018",
     "status": "Closed",
-    "machine": "STG - 1",
+    "machine": "STG#1",
     "priority": "Low",
     "dept": "BHGE"
   },
@@ -2178,7 +2177,7 @@ window.FPCL_PLR_DATA = [
     "date": "13-May-17",
     "incident": "The machine tripped on \"Over flux\" protection during Reliability Run test at 2159 hours.",
     "status": "Closed",
-    "machine": "STG - 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   },
@@ -2189,7 +2188,7 @@ window.FPCL_PLR_DATA = [
     "date": "26-May-17",
     "incident": "STG 4 breaker opened due to extensive fluctuation in KE distribution network, the Electrical Breaker of the machine opened at 0847 Hrs on \"Thermal Overload\" protection.Machine resynchronized at 0924 Hrs and reached peak load at 1017 Hrs.",
     "status": "Closed",
-    "machine": "STG - 4",
+    "machine": "STG#4",
     "priority": "Critical",
     "dept": "KE"
   },
@@ -2200,7 +2199,7 @@ window.FPCL_PLR_DATA = [
     "date": "28-May-17",
     "incident": "STG4 (60 MW) breaker opened on “under frequency protection” due to reason of trip was due to huge disturbance in K.E grid system which resulted in opening of the breaker",
     "status": "Closed",
-    "machine": "STG - 4",
+    "machine": "STG#4",
     "priority": "Critical",
     "dept": "KE"
   },
@@ -2211,7 +2210,7 @@ window.FPCL_PLR_DATA = [
     "date": "28-May-17",
     "incident": "STG4 (60 MW) tripped on “overflux protection” and reason of trip was due to short circuiting at \"Airport & Gul Ahmed\" Grid.All process parameters were normal.",
     "status": "Closed",
-    "machine": "STG - 4",
+    "machine": "STG#4",
     "priority": "Critical",
     "dept": "KE"
   },
@@ -2222,9 +2221,9 @@ window.FPCL_PLR_DATA = [
     "date": "26-May-17",
     "incident": "STG-2 planned shutdown to install trip multiplier and dump tube logic.",
     "status": "Closed",
-    "machine": "STG - 2",
+    "machine": "STG#2",
     "priority": "Nil",
-    "dept": "OPRS/E&I"
+    "dept": "Operations /E&I"
   },
   {
     "sNo": 203,
@@ -2233,9 +2232,9 @@ window.FPCL_PLR_DATA = [
     "date": "29-May-17",
     "incident": "STG-1 planned shutdown to install trip multiplier and dump tube logic.",
     "status": "Closed",
-    "machine": "STG - 4",
+    "machine": "STG#4",
     "priority": "Nil",
-    "dept": "OPRS/E&I"
+    "dept": "Operations /E&I"
   },
   {
     "sNo": 204,
@@ -2244,9 +2243,9 @@ window.FPCL_PLR_DATA = [
     "date": "30-May-17",
     "incident": "STG4 machine tripped on “over-speed protection”. Machine was operating at 54.6 MW.",
     "status": "Closed",
-    "machine": "STG - 4",
+    "machine": "STG#4",
     "priority": "Critical",
-    "dept": "OPRS/E&I"
+    "dept": "Operations /E&I"
   },
   {
     "sNo": 205,
@@ -2255,7 +2254,7 @@ window.FPCL_PLR_DATA = [
     "date": "9-Jun-17",
     "incident": "STG3 machine tripped on high vibration of Turbine NDE side bearing (VT-CE-3050 52X) while operating at 9.8MW.",
     "status": "Closed",
-    "machine": "STG - 3",
+    "machine": "STG#3",
     "priority": "High",
     "dept": "Mechanical"
   },
@@ -2266,7 +2265,7 @@ window.FPCL_PLR_DATA = [
     "date": "15-Jun-17",
     "incident": "STG4 (60 MW) machine tripped twice on “Turbine Thrust Bearing Temp High High”. Machine was operating at 53 MW. Malfunctioning of turbine thrust bearing (active side) temperature indication (TT-CE-4050-45A/B)",
     "status": "Closed",
-    "machine": "STG - 4",
+    "machine": "STG#4",
     "priority": "High",
     "dept": "BHGE"
   },
@@ -2277,7 +2276,7 @@ window.FPCL_PLR_DATA = [
     "date": "16-Jun-17",
     "incident": "Planned shutdown to attend oil leakage at generator side seals",
     "status": "Closed",
-    "machine": "STG - 2",
+    "machine": "STG#2",
     "priority": "Nil",
     "dept": "BHGE"
   },
@@ -2288,7 +2287,7 @@ window.FPCL_PLR_DATA = [
     "date": "17-Jun-17",
     "incident": "STG-1 machine breaker was manually shutdown at 2200 hrs to check cause of high temperature at thrust bearing of the turbine.\n Planned shutdown to attend high temperature issue at turbine thrust bearing and TTV passing issues",
     "status": "Closed",
-    "machine": "STG - 1",
+    "machine": "STG#1",
     "priority": "Nil",
     "dept": "BHGE"
   },
@@ -2299,7 +2298,7 @@ window.FPCL_PLR_DATA = [
     "date": "20-Jun-17",
     "incident": "Sequential tripping of STG 1, GT 1 and STG 2 resulted in Total Power Failure.",
     "status": "Closed",
-    "machine": "Total Power Failure\n (Initiated after STG - 2 tripping)",
+    "machine": "Total Power Failure",
     "priority": "Critical",
     "dept": "BHGE"
   },
@@ -2310,7 +2309,7 @@ window.FPCL_PLR_DATA = [
     "date": "28-Jun-17",
     "incident": "Machine tripped on \"Generator Lockout Relay K86G2-A &B”",
     "status": "Closed",
-    "machine": "STG - 4",
+    "machine": "STG#4",
     "priority": "High",
     "dept": "E&I"
   },
@@ -2321,7 +2320,7 @@ window.FPCL_PLR_DATA = [
     "date": "30-Jun-17",
     "incident": "STG4 machine tripped on “over-speed protection”. Machine was operating at Machine was operating at 53 MW.",
     "status": "Closed",
-    "machine": "STG - 4",
+    "machine": "STG#4",
     "priority": "Critical",
     "dept": "E&I"
   },
@@ -2332,7 +2331,7 @@ window.FPCL_PLR_DATA = [
     "date": "3-Jul-17",
     "incident": "STG2 machine breaker was manually opened at 1054 hrs to collect reference data for STG-1.",
     "status": "Closed",
-    "machine": "STG - 2",
+    "machine": "STG#2",
     "priority": "Nil",
     "dept": "BHGE"
   },
@@ -2343,7 +2342,7 @@ window.FPCL_PLR_DATA = [
     "date": "17-Jul-17",
     "incident": "STG3 machine tripped on momentarily high radial vibration of Gearbox high speed shaft (VT-3050-76Y). Machine was operating at 9.8MW.",
     "status": "Closed",
-    "machine": "STG - 3",
+    "machine": "STG#3",
     "priority": "Low",
     "dept": "BHGE"
   },
@@ -2354,7 +2353,7 @@ window.FPCL_PLR_DATA = [
     "date": "24-Jul-17",
     "incident": "STG2 machine tripped on safety relay status due to “Excitation Off” indication.",
     "status": "Closed",
-    "machine": "STG - 2",
+    "machine": "STG#2",
     "priority": "Critical",
     "dept": "BHGE"
   },
@@ -2365,7 +2364,7 @@ window.FPCL_PLR_DATA = [
     "date": "26-Jul-17",
     "incident": "STG4 (60 MW) machine tripped on “Turbine Journal Bearing Temp High High”. Machine was operating at 53 MW. Machine tripped on malfunctioning of TE-CE-4050-44 A",
     "status": "Closed",
-    "machine": "STG - 4",
+    "machine": "STG#4",
     "priority": "High",
     "dept": "BHGE"
   },
@@ -2374,9 +2373,9 @@ window.FPCL_PLR_DATA = [
     "plrNo": 19,
     "year": 2017,
     "date": "6-Aug-17",
-    "incident": "Sequential Tripping of STG 1, GT 1 and STG 2 resulted in Total Power Failure due to fire on bus duct in MEB\n resulted in Total Power Failure at FPCL and FFBL",
+    "incident": "Sequential Tripping of STG 1, GT 1 and STG 2 resulted in Total Power Failure due to fire on bus duct in MEB\n resulted in Total Power Failure at FPCL and FFBL. (Initiated after fire on bus duct in MEB)",
     "status": "Closed",
-    "machine": "Total Power Failure\n (Initiated after fire on bus duct in MEB)",
+    "machine": "Total Power Failure",
     "priority": "Critical",
     "dept": "Schneider / E&I"
   },
@@ -2387,7 +2386,7 @@ window.FPCL_PLR_DATA = [
     "date": "22-Aug-17",
     "incident": "STG4 (60 MW) machine tripped on “Generator Lock out Relay Protection K86G2 A/B”",
     "status": "Closed",
-    "machine": "STG - 4",
+    "machine": "STG#4",
     "priority": "High",
     "dept": "BHGE"
   },
@@ -2398,9 +2397,9 @@ window.FPCL_PLR_DATA = [
     "date": "28-Aug-17",
     "incident": "STG3 machine tripped on “Cumulative Radial Vibration” caused by momentarily high radial vibration of Gearbox high speed shaft (VT-3050-76Y). Machine was operating at 7.2 MW.",
     "status": "Closed",
-    "machine": "STG - 3",
+    "machine": "STG#3",
     "priority": "High",
-    "dept": "I/C"
+    "dept": "I&C"
   },
   {
     "sNo": 219,
@@ -2409,7 +2408,7 @@ window.FPCL_PLR_DATA = [
     "date": "1-Sep-17",
     "incident": "STG4 (60 MW) machine tripped on “Generator Lock out Relay Protection K86G2 A/B”",
     "status": "Closed",
-    "machine": "STG - 4",
+    "machine": "STG#4",
     "priority": "High",
     "dept": "BHGE"
   },
@@ -2420,7 +2419,7 @@ window.FPCL_PLR_DATA = [
     "date": "8-Sep-17",
     "incident": "STG-1 manually stopped to attend job",
     "status": "Closed",
-    "machine": "STG - 1",
+    "machine": "STG#1",
     "priority": "Nil",
     "dept": "BHGE"
   },
@@ -2431,7 +2430,7 @@ window.FPCL_PLR_DATA = [
     "date": "8-Sep-17",
     "incident": "Machine tripped on actuation of \"Generator Lockout Relay\".",
     "status": "Closed",
-    "machine": "STG - 1",
+    "machine": "STG#1",
     "priority": "Low",
     "dept": "BHGE"
   },
@@ -2442,7 +2441,7 @@ window.FPCL_PLR_DATA = [
     "date": "13-Sep-17",
     "incident": "Planned stoppage to incorporate logic with electrical breaker opening",
     "status": "Closed",
-    "machine": "STG - 2",
+    "machine": "STG#2",
     "priority": "Nil",
     "dept": "BHGE / E&I"
   },
@@ -2453,7 +2452,7 @@ window.FPCL_PLR_DATA = [
     "date": "23-Sep-17",
     "incident": "STG1 machine tripped on actuation of high vibration security of turbine NDE Bearing (VT-CE-1080-35).",
     "status": "Closed",
-    "machine": "STG - 2",
+    "machine": "STG#2",
     "priority": "High",
     "dept": "BHGE / E&I"
   },
@@ -2464,7 +2463,7 @@ window.FPCL_PLR_DATA = [
     "date": "26-Sep-17",
     "incident": "STG-3, 03 Cooling Tower fans(B,D,S), 01 closed loop cooling water pump (A) & 01 side stream pump (A) tripped due to Electrical Grounding fault in 01 spare cubical of LV switch gear in Main Electrical Substation.\n \n (ON 26th Sept, at 11:oo PM ground fault occurred in 480V Low Voltage Switchgaer causing LV incoming protection operated on Ground fault sensing , resulting in tripping of Steam Turbine #3 and BOP section of Plant.\n \n Fault occurred in spare cubical section where no breaker was in service i.e. No Load was feeding from faulty section)",
     "status": "Closed",
-    "machine": "STG - 3",
+    "machine": "STG#3",
     "priority": "Critical",
     "dept": "Schneider / E&I"
   },
@@ -2475,7 +2474,7 @@ window.FPCL_PLR_DATA = [
     "date": "27-Sep-17",
     "incident": "Tripped on \"Generator Lock out relay\"(K-86G2-A/B)",
     "status": "Closed",
-    "machine": "STG - 3",
+    "machine": "STG#3",
     "priority": "High",
     "dept": "E&I"
   },
@@ -2486,7 +2485,7 @@ window.FPCL_PLR_DATA = [
     "date": "27-Sep-17",
     "incident": "Tripped on \"Generator Lock out relay\"(K-86G2-A/B)",
     "status": "Closed",
-    "machine": "STG - 3",
+    "machine": "STG#3",
     "priority": "High",
     "dept": "E&I"
   },
@@ -2497,7 +2496,7 @@ window.FPCL_PLR_DATA = [
     "date": "29-Sep-17",
     "incident": "Tripped on \"Generator Lock out relay\"(K-86G2-A/B)",
     "status": "Closed",
-    "machine": "STG - 3",
+    "machine": "STG#3",
     "priority": "High",
     "dept": "E&I"
   },
@@ -2508,7 +2507,7 @@ window.FPCL_PLR_DATA = [
     "date": "31-Oct-17",
     "incident": "Tripped on \"Generator Lock out relay\"(K-86G2-A/B)",
     "status": "Closed",
-    "machine": "STG - 3",
+    "machine": "STG#3",
     "priority": "High",
     "dept": "E&I"
   },
@@ -2519,7 +2518,7 @@ window.FPCL_PLR_DATA = [
     "date": "7-Nov-17",
     "incident": "STG-2 & 3 tripped on actuation of \"Generator Lock out relay\"(K-86G2-A/B) due to grounding fault in breaker in SRB substation.",
     "status": "Closed",
-    "machine": "STG - 3",
+    "machine": "STG#3",
     "priority": "Critical",
     "dept": "E&I"
   },
@@ -2530,7 +2529,7 @@ window.FPCL_PLR_DATA = [
     "date": "7-Nov-17",
     "incident": "STG-2 tripped on actuation of \"Generator Lock out relay\"(K-86G2-A/B)",
     "status": "Closed",
-    "machine": "STG - 3",
+    "machine": "STG#3",
     "priority": "High",
     "dept": "E&I"
   },
@@ -2541,7 +2540,7 @@ window.FPCL_PLR_DATA = [
     "date": "1-Dec-17",
     "incident": "STG # 4 Machine tripped due to surge in 132 KV pipri line.",
     "status": "Closed",
-    "machine": "STG - 4",
+    "machine": "STG#4",
     "priority": "High",
     "dept": "E&I"
   },
@@ -2552,7 +2551,7 @@ window.FPCL_PLR_DATA = [
     "date": "2-Dec-17",
     "incident": "Machine tripped due to drop / fluctuations in control oil pressure. Spare parts of control system was not available at site",
     "status": "Closed",
-    "machine": "STG - 4",
+    "machine": "STG#4",
     "priority": "High",
     "dept": "Mechanical"
   },
@@ -2563,300 +2562,8 @@ window.FPCL_PLR_DATA = [
     "date": "19-Dec-17",
     "incident": "STG # 4 machine breaker opened due to fault in KE network however the machine remained at FSNL",
     "status": "Closed",
-    "machine": "STG - 4",
+    "machine": "STG#4",
     "priority": "Low",
     "dept": "KE"
   }
 ];
-if (!window.FPCL_PLR_RECOMMENDATIONS || window.FPCL_PLR_RECOMMENDATIONS.length < 50) {
-window.FPCL_PLR_RECOMMENDATIONS = [
-  {
-    "sNo": 1,
-    "plrNo": 213,
-    "year": 2025,
-    "date": "01/Jan/2025",
-    "recommendation": "Matter to be taken up with KE by FPCL/KE steering committee for resolution / way forward.",
-    "actionBy": "Finance / FPCL-KE O/C",
-    "status": "Open"
-  },
-  {
-    "sNo": 2,
-    "plrNo": 214,
-    "year": 2025,
-    "date": "3rd Feb 2025",
-    "recommendation": "1. Standard checklist should be developed and implemented for the installation of the VCXT gasket, based on OEM installation instructions; any deviation from OEM instructions must be reviewed and approved in the relevant forums.\n2. Previous RCA recommendations and lessons learned should be reviewed during job planning and prior to job execution. Ensuring their availability and adherence will help prevent future gasket failures.",
-    "actionBy": "Mechanical",
-    "status": "Closed"
-  },
-  {
-    "sNo": 3,
-    "plrNo": 215,
-    "year": 2025,
-    "date": "4th Feb 2025",
-    "recommendation": "1. Proper SOP to be developed and followed along with clear checklist for planning and interdepartmental coordination for all future shutdowns involving modifications.\n2. Update SLD with new feeder integration for operational reference.",
-    "actionBy": "E&I",
-    "status": "Closed"
-  },
-  {
-    "sNo": 4,
-    "plrNo": 216,
-    "year": 2025,
-    "date": "6-Mar-2025",
-    "recommendation": "1. Perform the removed I/O card signal trend analysis to see if there is any fluctuation that led to the intermittent trip.\n2. Review/live monitoring of all the SPC signals in order identify if there is any intermittent malfunctioning that led to the potential turbine trip.\n3. HP oil, low pressure alarm at 117 bar needs to be checked and verified.\n4. The SPC command is not configured on the HMI and should be integrated. An alarm should be set to trigger if the difference between the command and feedback exceeds 5%.\n5. It is recommended to review and align the SPC alarm and trip settings on STG-01 with those of STG-02 to ensure consistency and reliable protection. Specifically, the SPC trip threshold on STG-01 should be reconfigured from 100% to 20%, in line with STG-02 settings.",
-    "actionBy": "E&I",
-    "status": "Closed"
-  },
-  {
-    "sNo": 4,
-    "plrNo": 216,
-    "year": 2025,
-    "date": "6-Mar-2025",
-    "recommendation": "1. Investigate the possibility of a physical issue in the Governor Valve (GV) that may be causing HP oil system pressure variations and GV hunting.\n2. Conduct a detailed inspection of bearings, oil piping, and lubrication system in available opportunity.",
-    "actionBy": "Mechanical",
-    "status": "Closed"
-  },
-  {
-    "sNo": 4,
-    "plrNo": 216,
-    "year": 2025,
-    "date": "6-Mar-2025",
-    "recommendation": "1. Revise shutdown and startup SOPs to ensure positive seal steam pressure is maintained at all times, especially during trips, as shaft bowing primarily occurs at the time of tripping.\n2. Avoid multiple consecutive start-ups if high vibrations persist; pause, inspect, analyze, and then proceed with clearance.",
-    "actionBy": "Operations / Mechanical",
-    "status": "Closed"
-  },
-  {
-    "sNo": 5,
-    "plrNo": 217,
-    "year": 2025,
-    "date": "24/03/2025",
-    "recommendation": "1. Audit and recalibrate furnace pressure transmitters (PT-2021-A/B/C) with 2oo3 logic testing.\n2. Service Boiler-02 Master Fuel Trip (MFT) solenoid trip coils and inspect draft dampers.",
-    "actionBy": "OPS-PSG / E&I",
-    "status": "Closed"
-  },
-  {
-    "sNo": 6,
-    "plrNo": 218,
-    "year": 2025,
-    "date": "31/03/2025",
-    "recommendation": "1. Reconcile lost generation capacity and tariff adjustments with K-Electric commercial team.\n2. Issue formal correspondence regarding continuous off-peak dispatch constraints.",
-    "actionBy": "Commercial / KE Liaison",
-    "status": "Open"
-  },
-  {
-    "sNo": 7,
-    "plrNo": 219,
-    "year": 2025,
-    "date": "4-Feb-2025",
-    "recommendation": "1. Overhaul turbine trip valve mechanical actuator linkage and verify full opening travel speed.\n2. Establish fast-response synchronization protocol with KE dispatch control room.",
-    "actionBy": "E&I / Mechanical",
-    "status": "Open"
-  },
-  {
-    "sNo": 8,
-    "plrNo": 220,
-    "year": 2025,
-    "date": "30/04/2025",
-    "recommendation": "Maintain continuous log of KE load-curtailment directives for regulatory compliance and capacity invoicing.",
-    "actionBy": "Operations / Finance",
-    "status": "Open"
-  },
-  {
-    "sNo": 9,
-    "plrNo": 221,
-    "year": 2025,
-    "date": "18/05/2025",
-    "recommendation": "1. Review G60 protection relay loss-of-excitation pickup margins against KE 132kV grid fault transients.\n2. Coordinate with KE Protection department for harmonic filtering and voltage stabilizer tuning.",
-    "actionBy": "E&I / KE Protection",
-    "status": "Closed"
-  },
-  {
-    "sNo": 10,
-    "plrNo": 222,
-    "year": 2025,
-    "date": "25/05/2025",
-    "recommendation": "1. Verify 52G generator breaker opening curve under frequency swings.\n2. Fast resynchronization checklist validation for FSNL mode transition.",
-    "actionBy": "E&I / Operations",
-    "status": "Open"
-  },
-  {
-    "sNo": 11,
-    "plrNo": 223,
-    "year": 2025,
-    "date": "31/05/2025",
-    "recommendation": "Bi-weekly grid coordination review meeting with KE operations team on load scheduling.",
-    "actionBy": "KE / Operations",
-    "status": "Open"
-  },
-  {
-    "sNo": 12,
-    "plrNo": 224,
-    "year": 2025,
-    "date": "6-Mar-2025",
-    "recommendation": "1. G60 Relay unbalance voltage settings re-audit by OEM representative.\n2. Install digital fault recorder (DFR) triggering on 132kV interconnection.",
-    "actionBy": "E&I / Schneider",
-    "status": "Closed"
-  },
-  {
-    "sNo": 13,
-    "plrNo": 225,
-    "year": 2025,
-    "date": "18/06/2025",
-    "recommendation": "1. Implement preventative replacement schedule for Governor AO card switching relays across all STGs.\n2. Perform secondary-to-primary bump-less transfer simulator test.",
-    "actionBy": "E&I Department",
-    "status": "Closed"
-  },
-  {
-    "sNo": 20,
-    "plrNo": 232,
-    "year": 2025,
-    "date": "12-Nov-2025",
-    "recommendation": "1. Ultrasonic thickness mapping of Boiler-01 waterwall tubes at elevation +14m.\n2. Replace eroded tube section with upgraded metallurgy (SA-213 T22).",
-    "actionBy": "Mechanical / Inspection",
-    "status": "Open"
-  },
-  {
-    "sNo": 20,
-    "plrNo": 232,
-    "year": 2025,
-    "date": "12-Nov-2025",
-    "recommendation": "Review boiler water chemistry records and silica carryover limits leading up to the tube leakage incident.",
-    "actionBy": "Operations / Laboratory",
-    "status": "Open"
-  },
-  {
-    "sNo": 22,
-    "plrNo": 194,
-    "year": 2024,
-    "date": "27/02/2024",
-    "recommendation": "Review interlocking and protection trip coordination between FFBL and FPCL K-08 / K-16 interconnecting breakers.",
-    "actionBy": "FFBL E&I / FPCL E&I",
-    "status": "Closed"
-  },
-  {
-    "sNo": 22,
-    "plrNo": 194,
-    "year": 2024,
-    "date": "27/02/2024",
-    "recommendation": "Update switching protocol and authorization matrix for manual opening of tie breakers during grid disturbances.",
-    "actionBy": "Operations / Technical",
-    "status": "Closed"
-  },
-  {
-    "sNo": 23,
-    "plrNo": 195,
-    "year": 2024,
-    "date": "28/02/2024",
-    "recommendation": "Redesign refractory seal packing arrangement at Bed Ash Chute B to furnace floor interface.",
-    "actionBy": "Mechanical Maintenance",
-    "status": "Closed"
-  },
-  {
-    "sNo": 23,
-    "plrNo": 195,
-    "year": 2024,
-    "date": "28/02/2024",
-    "recommendation": "Repair windbox west side hopper thermal insulation and conduct thermographic survey prior to light-up.",
-    "actionBy": "Mechanical / Inspection",
-    "status": "Closed"
-  },
-  {
-    "sNo": 28,
-    "plrNo": 200,
-    "year": 2024,
-    "date": "21/05/2024",
-    "recommendation": "Inspect primary air flow measurement differential transmitters and clear impulse line chokages.",
-    "actionBy": "E&I / Instrumentation",
-    "status": "Closed"
-  },
-  {
-    "sNo": 31,
-    "plrNo": 203,
-    "year": 2024,
-    "date": "06/07/2024",
-    "recommendation": "Dynamic balancing and vibration baseline recording of newly installed replacement rotor on STG-01 generator.",
-    "actionBy": "Mechanical / BHGE",
-    "status": "Closed"
-  },
-  {
-    "sNo": 45,
-    "plrNo": 179,
-    "year": 2023,
-    "date": "7th March 2023",
-    "recommendation": "Overhaul Neutral Earthing Transformer (NET) and re-verify G-60 ground fault trip sensitivity thresholds.",
-    "actionBy": "E&I Department",
-    "status": "Closed"
-  },
-  {
-    "sNo": 45,
-    "plrNo": 179,
-    "year": 2023,
-    "date": "7th March 2023",
-    "recommendation": "Establish islanding contingency procedure to preserve STG-01 and STG-03 stability during abrupt grid disconnection.",
-    "actionBy": "Operations / Technical",
-    "status": "Closed"
-  },
-  {
-    "sNo": 48,
-    "plrNo": 182,
-    "year": 2023,
-    "date": "3rd May 2023",
-    "recommendation": "Revise heavy rigging and hydraulic jacking procedure for turbine generator rotor extraction with certified lifting plans.",
-    "actionBy": "Mechanical Maintenance",
-    "status": "Closed"
-  },
-  {
-    "sNo": 48,
-    "plrNo": 182,
-    "year": 2023,
-    "date": "3rd May 2023",
-    "recommendation": "Complete stator rewinding, high-voltage insulation resistance testing, and wedge tightness audit by OEM.",
-    "actionBy": "E&I / OEM Specialist",
-    "status": "Closed"
-  },
-  {
-    "sNo": 48,
-    "plrNo": 182,
-    "year": 2023,
-    "date": "3rd May 2023",
-    "recommendation": "Procure dedicated rotor extraction carriage tool to eliminate hydraulic jack slippage hazards.",
-    "actionBy": "Procurement / Maintenance",
-    "status": "Closed"
-  },
-  {
-    "sNo": 68,
-    "plrNo": 156,
-    "year": 2022,
-    "date": "22-May-2022",
-    "recommendation": "Replace redundant module of Rack A and analog output card of Rack B on STG-02 governor control rack.",
-    "actionBy": "E&I Department",
-    "status": "Closed"
-  },
-  {
-    "sNo": 68,
-    "plrNo": 156,
-    "year": 2022,
-    "date": "22-May-2022",
-    "recommendation": "Conduct 6-month preventative health-check of all PLC rack power supplies and output cards.",
-    "actionBy": "E&I Department",
-    "status": "Closed"
-  },
-  {
-    "sNo": 167,
-    "plrNo": 92,
-    "year": 2019,
-    "date": "24-Dec-2019",
-    "recommendation": "Retrofit dual-redundant I/O cards for boiler feed water level control valves (LCVs).",
-    "actionBy": "E&I / Schneider",
-    "status": "Closed"
-  },
-  {
-    "sNo": 167,
-    "plrNo": 92,
-    "year": 2019,
-    "date": "24-Dec-2019",
-    "recommendation": "Tune steam drum low-level and high-level trip response timing to prevent cascading plant-wide tripping.",
-    "actionBy": "Operations / Process",
-    "status": "Closed"
-  }
-];
-}

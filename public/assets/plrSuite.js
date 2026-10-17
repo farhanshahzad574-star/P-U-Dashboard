@@ -144,11 +144,13 @@
     ? JSON.parse(JSON.stringify(window.FPCL_PLR_DATA))
     : [];
 
-  // HARDCODED PERMANENT GOOGLE SHEET CONFIGURATION
-  // Pre-configured, permanent URLs for Recommendations and PLR tabs so user does not need to re-enter them
-  const HARDCODED_RECOMMENDATIONS_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1LJOdN8T7UUjaZbSfsCrO_Hdg1eoAgqnuE7mJDGtB8qo/export?format=csv&gid=1344438021';
-  const HARDCODED_PLR_STATUS_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1LJOdN8T7UUjaZbSfsCrO_Hdg1eoAgqnuE7mJDGtB8qo/export?format=csv&gid=0';
+  // HARDCODED PERMANENT GOOGLE SHEET CONFIGURATION (Sheet ID: 1LJOdN8T7UUjaZbSfsCrO_Hdg1eoAgqnuE7mJDGtB8qo)
+  // Tabs: 1-PLRstatus and Recommendations
+  const PLR_SHEET_ID = '1LJOdN8T7UUjaZbSfsCrO_Hdg1eoAgqnuE7mJDGtB8qo';
+  const HARDCODED_RECOMMENDATIONS_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1LJOdN8T7UUjaZbSfsCrO_Hdg1eoAgqnuE7mJDGtB8qo/gviz/tq?tqx=out:csv&sheet=Recommendations';
+  const HARDCODED_PLR_STATUS_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1LJOdN8T7UUjaZbSfsCrO_Hdg1eoAgqnuE7mJDGtB8qo/gviz/tq?tqx=out:csv&sheet=1-PLRstatus';
 
+  window.FPCL_PLR_SHEET_ID = PLR_SHEET_ID;
   window.FPCL_HARDCODED_RECOMMENDATIONS_SHEET_URL = HARDCODED_RECOMMENDATIONS_SHEET_URL;
   window.FPCL_HARDCODED_PLR_STATUS_SHEET_URL = HARDCODED_PLR_STATUS_SHEET_URL;
 
@@ -179,8 +181,8 @@
       const parsedSaved = JSON.parse(savedRecs);
       const minCount = Array.isArray(window.FPCL_PLR_RECOMMENDATIONS_BASELINE) && window.FPCL_PLR_RECOMMENDATIONS_BASELINE.length >= 500
         ? window.FPCL_PLR_RECOMMENDATIONS_BASELINE.length
-        : 534;
-      if (Array.isArray(parsedSaved) && parsedSaved.length >= minCount) {
+        : 533;
+      if (Array.isArray(parsedSaved) && parsedSaved.length >= minCount && parsedSaved.length !== 534) {
         const { recs, modified } = cleansePeEntities(parsedSaved);
         window.FPCL_PLR_RECOMMENDATIONS = recs;
         if (modified) {
@@ -473,19 +475,20 @@
         rawRec = `Action item for ${rawAction || 'Department'} (PLR #${row[colPlr] || r})`;
       }
 
-      // Extract Status (Col G / index 6)
+      // Extract Status strictly from Column G (0-indexed 6) named "Status" in Google Sheet Recommendations tab
       let rawStatus = '';
-      if (row.length > 6 && row[6] !== undefined && row[6] !== null && String(row[6]).trim() !== '') {
-        rawStatus = String(row[6]).trim();
-      } else if (colStatus !== -1 && row[colStatus] !== undefined && row[colStatus] !== null) {
+      if (colStatus !== -1 && row[colStatus] !== undefined && row[colStatus] !== null && String(row[colStatus]).trim() !== '') {
         rawStatus = String(row[colStatus]).trim();
+      } else if (row.length > 6 && row[6] !== undefined && row[6] !== null && String(row[6]).trim() !== '') {
+        rawStatus = String(row[6]).trim();
       }
       if (!rawStatus) rawStatus = 'Open';
 
-      // Normalize status: "Closed", "Close", "Done", "Resolved", "Completed", "Yes" -> "Closed"; others -> "Open"
+      // Open / Close logic verified from Column G named Status in Recommendations tab:
+      // "Closed", "closed", "Close", "Done", "Resolved", "Completed", "Yes" -> "Closed"; others -> "Open"
       let normStatus = 'Open';
       const sLower = rawStatus.toLowerCase().trim();
-      if (sLower.includes('close') || sLower.includes('done') || sLower.includes('resolv') || sLower.includes('complet') || sLower === 'yes' || sLower === 'y') {
+      if (sLower === 'closed' || sLower === 'close' || sLower.includes('close') || sLower === 'done' || sLower === 'resolv' || sLower === 'complet' || sLower === 'yes' || sLower === 'y') {
         normStatus = 'Closed';
       } else {
         normStatus = 'Open';
@@ -1565,6 +1568,7 @@
     container.innerHTML = `
       <div class="space-y-6 text-slate-800 font-sans antialiased">
         
+
         <!-- ========================================================================= -->
         <!-- EXECUTIVE FILTER SUITE (ATTACHED IMAGE FILTER CONTROLS)                   -->
         <!-- ========================================================================= -->
@@ -3441,6 +3445,15 @@
           <span class="text-xs font-mono text-slate-500">Showing <strong class="text-slate-900">${totalFiltered}</strong> records</span>
 
           <button
+            type="button"
+            onclick="portalApp.refreshFromLiveSheet()"
+            class="px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 active:scale-95 border border-emerald-500 flex items-center gap-1.5 cursor-pointer shadow-xs"
+            title="Sync live status and records directly from Google Sheet (Sheet ID: 1LJOdN8T7UUjaZbSfsCrO_Hdg1eoAgqnuE7mJDGtB8qo)"
+          >
+            <i data-lucide="refresh-cw" class="w-3.5 h-3.5 plr-sync-icon"></i>
+            <span class="plr-sync-btn-label">Sync Sheet</span>
+          </button>
+          <button
             onclick="portalApp.exportPlrCSV()"
             class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 flex items-center gap-1.5 cursor-pointer shadow-xs"
           >
@@ -3763,12 +3776,13 @@
 
           <div class="flex items-center gap-1.5">
             <button
-              onclick="portalApp.openPlrSheetSyncModal()"
-              class="px-2 py-1.5 rounded-lg text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 shadow-xs transition-colors flex items-center gap-1 cursor-pointer shrink-0"
-              title="Sync recommendations from Google Sheet Tab Recommendations"
+              type="button"
+              onclick="portalApp.refreshFromLiveSheet()"
+              class="px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 active:scale-95 border border-emerald-500 shadow-xs transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
+              title="Sync recommendations and status from Google Sheet (Sheet ID: 1LJOdN8T7UUjaZbSfsCrO_Hdg1eoAgqnuE7mJDGtB8qo, Tab: Recommendations)"
             >
-              <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-emerald-600"></i>
-              <span>Sync</span>
+              <i data-lucide="refresh-cw" class="w-3.5 h-3.5 plr-sync-icon"></i>
+              <span class="plr-sync-btn-label">Sync Sheet</span>
             </button>
           </div>
 
@@ -6099,7 +6113,7 @@
                   <span>2. PLRs Status &amp; Incidents Google Sheet (New Dedicated Row)</span>
                 </label>
                 <span class="text-[10px] font-bold text-sky-800 bg-sky-100/80 px-2 py-0.5 rounded-full border border-sky-300">
-                  Target Tab: PLR / PLRstatus
+                  Target Tab: 1-PLRstatus
                 </span>
               </div>
               <div class="flex flex-col sm:flex-row gap-2">
@@ -6289,15 +6303,32 @@
       return;
     }
 
-    if (btn) {
-      btn.disabled = true;
-      btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i><span>Syncing Live Embedded Sheets...</span>`;
-      if (window.lucide) window.lucide.createIcons();
-    }
+    const setSyncLoading = (loading) => {
+      if (btn) {
+        btn.disabled = loading;
+        btn.innerHTML = loading
+          ? `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i><span>Syncing Live Embedded Sheets...</span>`
+          : `<i data-lucide="refresh-cw" class="w-4 h-4"></i><span>Fetch &amp; Sync Both Sheets Now (Live Status Updation)</span>`;
+      }
+      const labels = document.querySelectorAll('.plr-sync-btn-label, #plr-header-sync-label');
+      labels.forEach(l => { l.textContent = loading ? 'Syncing...' : 'Sync Sheet'; });
+      const icons = document.querySelectorAll('#plr-header-sync-icon, #plr-sync-sheet-main-btn i[data-lucide], .plr-sync-icon');
+      icons.forEach(i => {
+        if (loading) i.classList.add('animate-spin');
+        else i.classList.remove('animate-spin');
+      });
+      const allBtns = document.querySelectorAll('#plr-header-sync-btn, #plr-sync-sheet-main-btn, #plr-table-sync-btn');
+      allBtns.forEach(b => { b.disabled = loading; });
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
+      }
+    };
+
+    setSyncLoading(true);
 
     if (statusMsg) {
       statusMsg.className = 'text-xs p-3 rounded-xl bg-blue-50 text-blue-900 border border-blue-200 block';
-      statusMsg.innerHTML = `Fetching live data starting from Row 2 across embedded sheets...`;
+      statusMsg.innerHTML = `Fetching live data starting from Row 2 across Sheet ID 1LJOdN8T7UUjaZbSfsCrO_Hdg1eoAgqnuE7mJDGtB8qo (Tabs: 1-PLRstatus &amp; Recommendations)...`;
     }
 
     const fetchTabCsv = async (sheetTab, targetUrl) => {
@@ -6443,7 +6474,7 @@
 
       // 2. Sync PLRs Status & Incidents Sheet (if requested)
       if ((targetSource === 'both' || targetSource === 'incidents' || targetSource === 'status') && savedStatusUrl) {
-        const plrTabCandidates = ['PLRstatus', 'PLRStatus', 'PLR', 'PLR status', 'PLR Status', 'PLRs status', 'PLRs Status', 'PLRs', 'PLR Incident', 'Incidents', 'Outages', 'Sheet1'];
+        const plrTabCandidates = ['1-PLRstatus', 'PLRstatus', 'PLRStatus', 'PLR', '1-PLR status', 'PLR status', 'PLR Status', 'PLRs status', 'PLRs Status', 'PLRs', 'PLR Incident', 'Incidents', 'Outages', 'Sheet1'];
         let incidentsCsv = '';
         for (const tab of plrTabCandidates) {
           incidentsCsv = await fetchTabCsv(tab, savedStatusUrl);
@@ -6494,9 +6525,9 @@
         const combinedMsg = [recsSummary, incidentsSummary].filter(Boolean).join(' • ');
         if (!isSilent) {
           portalApp.closeActionModal();
-          portalApp.showToast('Embedded Sheets Synced', combinedMsg || 'Successfully refetched live data starting from Row 2.', 'success');
+          portalApp.showToast('Google Sheet Synced', combinedMsg || 'Successfully synchronized live data from Sheet ID 1LJOdN8T7UUjaZbSfsCrO_Hdg1eoAgqnuE7mJDGtB8qo.', 'success');
         } else {
-          console.log('Live Google Sheets auto-sync completed:', combinedMsg);
+          console.log('Live Google Sheet auto-sync completed:', combinedMsg);
         }
       } else {
         if (!isSilent) {
@@ -6518,6 +6549,8 @@
       if (!isSilent) {
         portalApp.showToast('Sync Notice', 'Could not refresh from live sheet. Using cached baseline data.', 'warning');
       }
+    } finally {
+      setSyncLoading(false);
     }
   };
 

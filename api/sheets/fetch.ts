@@ -105,6 +105,17 @@ export default async function handler(req: any, res: any) {
       url = process.env.COO_SELF_ASSIGNED_SHEET_URL || process.env.COO_SHEET_URL || `https://docs.google.com/spreadsheets/d/1s5czmIVCXiOPTRc69QffJ51JFW2-gAErPitstUar2dU/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(targetTab)}`;
     }
 
+    // Direct PLR match by sheet ID (Sheet ID: 1LJOdN8T7UUjaZbSfsCrO_Hdg1eoAgqnuE7mJDGtB8qo, Tabs: 1-PLRstatus & Recommendations)
+    if (sheetIdParam === '1LJOdN8T7UUjaZbSfsCrO_Hdg1eoAgqnuE7mJDGtB8qo' || (typeof url === 'string' && url.includes('1LJOdN8T7UUjaZbSfsCrO_Hdg1eoAgqnuE7mJDGtB8qo'))) {
+      const sLower = (sheetTab || '').toLowerCase();
+      const targetTab = (sLower.includes('rec') || sLower.includes('action'))
+        ? 'Recommendations'
+        : (sLower.includes('plr') || sLower.includes('status') || sLower.includes('incident') || sLower.includes('outage'))
+          ? '1-PLRstatus'
+          : (sheetTab || 'Recommendations');
+      url = `https://docs.google.com/spreadsheets/d/1LJOdN8T7UUjaZbSfsCrO_Hdg1eoAgqnuE7mJDGtB8qo/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(targetTab)}`;
+    }
+
     // Resolve URL from environment variables or registry if not provided or pointing to placeholder
     if (!url || typeof url !== 'string' || url.includes('1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms')) {
       const sLower = (sheetTab || '').toLowerCase();
@@ -203,7 +214,7 @@ export default async function handler(req: any, res: any) {
         if (!candidateTabs.includes(t)) candidateTabs.push(t);
       });
     } else if (sLower === 'plr' || sLower.includes('plr')) {
-      const extraPlrTabs = ['PLRstatus', 'PLRStatus', 'PLR', 'PLRs', 'PLR status', 'PLR Status', 'PLRs status', 'PLRs Status', 'PLR Incident', 'PLR Incidents', 'Incidents', 'Incident', 'Outages', 'Plant Records'];
+      const extraPlrTabs = ['1-PLRstatus', 'PLRstatus', 'PLRStatus', 'PLR', 'PLRs', 'PLR status', 'PLR Status', 'PLRs status', 'PLRs Status', 'PLR Incident', 'PLR Incidents', 'Incidents', 'Incident', 'Outages', 'Plant Records'];
       extraPlrTabs.forEach(t => {
         if (!candidateTabs.includes(t)) candidateTabs.push(t);
       });
