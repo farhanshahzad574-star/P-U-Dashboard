@@ -702,7 +702,7 @@ function DashboardLayout({ onLogout }) {
             <div className="bg-white rounded-3xl overflow-hidden border-2 border-orange-100 shadow-xl shadow-orange-900/5 group">
               <div className="h-64 sm:h-72 relative overflow-hidden">
                 <img
-                  src="/assets/Main Control room.jpeg"
+                  src="/assets/MCR.jpeg"
                   alt="Main Control room"
                   className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
                 />
