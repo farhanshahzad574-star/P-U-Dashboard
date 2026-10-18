@@ -356,11 +356,11 @@ function DashboardLayout({ onLogout }: DashboardLayoutProps) {
               <img
                 src="/assets/Wide View of Plant Structure & Environmental Coal Storage Dome.jpeg"
                 alt="FFBL Power company - Actual Aerial Plant View"
-                className="w-full h-full object-cover object-center filter brightness-65 contrast-110"
+                className="w-full h-full object-cover object-center filter brightness-95 contrast-105"
               />
-              {/* Brand Blue & Orange Gradient Overlays */}
-              <div className="absolute inset-0 bg-gradient-to-t from-[#001D3D] via-[#003566]/85 to-[#002244]/60" />
-              <div className="absolute inset-0 bg-radial from-transparent via-[#001D3D]/40 to-[#001D3D]/90" />
+              {/* Brand Blue & Tinted Gradient Overlays (Calibrated opacity so the power plant background image is clearly visible, while text above remains sharp and high-contrast) */}
+              <div className="absolute inset-0 bg-gradient-to-t from-[#001428]/85 via-[#002244]/45 to-[#001428]/35" />
+              <div className="absolute inset-0 bg-radial from-slate-950/25 via-[#001d3d]/45 to-[#001024]/75" />
             </div>
 
             <div className="relative z-10 max-w-4xl mx-auto text-center flex flex-col items-center">
@@ -368,7 +368,7 @@ function DashboardLayout({ onLogout }: DashboardLayoutProps) {
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-orange-500/25 border border-orange-400/50 text-orange-200 text-xs sm:text-sm font-bold mb-6 shadow-lg backdrop-blur-md"
+                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-950/70 border border-orange-400/70 text-orange-200 text-xs sm:text-sm font-bold mb-6 shadow-xl backdrop-blur-md drop-shadow-md"
               >
                 <Sparkles className="w-4 h-4 text-orange-400" />
                 <span>Excellence in Power generation • Port Qasim, Karachi</span>
@@ -379,7 +379,8 @@ function DashboardLayout({ onLogout }: DashboardLayoutProps) {
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white leading-tight drop-shadow-md"
+                className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white leading-tight drop-shadow-[0_4px_16px_rgba(0,0,0,0.95)]"
+                style={{ textShadow: '0 3px 14px rgba(0,0,0,0.9)' }}
               >
                 FFBL Power company
               </motion.h1>
@@ -389,7 +390,8 @@ function DashboardLayout({ onLogout }: DashboardLayoutProps) {
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="mt-5 text-base sm:text-lg lg:text-xl text-blue-100 max-w-2xl leading-relaxed font-normal"
+                className="mt-5 text-base sm:text-lg lg:text-xl text-white font-medium max-w-2xl leading-relaxed drop-shadow-[0_2px_10px_rgba(0,0,0,0.95)]"
+                style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9)' }}
               >
                 State-of-the-art 118 MW coal-fired power plant delivering dual-frequency reliability to K-Electric and Fauji Fertilizer Bin Qasim.
               </motion.p>
@@ -423,21 +425,21 @@ function DashboardLayout({ onLogout }: DashboardLayoutProps) {
                 transition={{ delay: 0.4 }}
                 className="mt-12 w-full grid grid-cols-2 lg:grid-cols-4 gap-3 max-w-3xl"
               >
-                <div className="bg-white/10 border border-white/20 backdrop-blur-md rounded-2xl p-3.5 text-center shadow-md">
-                  <div className="text-xl sm:text-2xl font-black text-white font-mono">118 MW</div>
-                  <div className="text-[11px] text-blue-200 font-semibold mt-0.5">Installed Gross Capacity</div>
+                <div className="bg-slate-950/60 border border-white/25 backdrop-blur-md rounded-2xl p-3.5 text-center shadow-xl">
+                  <div className="text-xl sm:text-2xl font-black text-white font-mono drop-shadow-sm">118 MW</div>
+                  <div className="text-[11px] text-blue-100 font-semibold mt-0.5 drop-shadow-xs">Installed Gross Capacity</div>
                 </div>
-                <div className="bg-white/10 border border-orange-400/30 backdrop-blur-md rounded-2xl p-3.5 text-center shadow-md">
-                  <div className="text-xl sm:text-2xl font-black text-[#FB923C] font-mono">50 &amp; 60 Hz</div>
-                  <div className="text-[11px] text-orange-200 font-semibold mt-0.5">Dual Simultaneous Frequency</div>
+                <div className="bg-slate-950/60 border border-orange-400/40 backdrop-blur-md rounded-2xl p-3.5 text-center shadow-xl">
+                  <div className="text-xl sm:text-2xl font-black text-[#FB923C] font-mono drop-shadow-sm">50 &amp; 60 Hz</div>
+                  <div className="text-[11px] text-orange-200 font-semibold mt-0.5 drop-shadow-xs">Dual Simultaneous Frequency</div>
                 </div>
-                <div className="bg-white/10 border border-white/20 backdrop-blur-md rounded-2xl p-3.5 text-center shadow-md">
-                  <div className="text-xl sm:text-2xl font-black text-white font-mono">2 × 250 MTPH</div>
-                  <div className="text-[11px] text-blue-200 font-semibold mt-0.5">Hyundai CFB Boilers</div>
+                <div className="bg-slate-950/60 border border-white/25 backdrop-blur-md rounded-2xl p-3.5 text-center shadow-xl">
+                  <div className="text-xl sm:text-2xl font-black text-white font-mono drop-shadow-sm">2 × 250 MTPH</div>
+                  <div className="text-[11px] text-blue-100 font-semibold mt-0.5 drop-shadow-xs">Hyundai CFB Boilers</div>
                 </div>
-                <div className="bg-white/10 border border-orange-400/30 backdrop-blur-md rounded-2xl p-3.5 text-center shadow-md">
-                  <div className="text-xl sm:text-2xl font-black text-[#FB923C] font-mono">May 19, 2017</div>
-                  <div className="text-[11px] text-orange-200 font-semibold mt-0.5">Commercial Operation (COD)</div>
+                <div className="bg-slate-950/60 border border-orange-400/40 backdrop-blur-md rounded-2xl p-3.5 text-center shadow-xl">
+                  <div className="text-xl sm:text-2xl font-black text-[#FB923C] font-mono drop-shadow-sm">May 19, 2017</div>
+                  <div className="text-[11px] text-orange-200 font-semibold mt-0.5 drop-shadow-xs">Commercial Operation (COD)</div>
                 </div>
               </motion.div>
             </div>
