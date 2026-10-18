@@ -754,20 +754,24 @@ function DashboardLayout({ onLogout }) {
                 <div className="text-2xl font-black text-[#0066B3] font-mono mt-1">02 × 250 MTPH</div>
                 <div className="text-[11px] text-slate-500 mt-1 font-medium">CFB Boilers (HHI Korea)</div>
               </div>
+              <div className="p-5 rounded-2xl bg-gradient-to-b from-blue-50 to-white border-2 border-blue-200 shadow-xs flex flex-col items-center justify-center text-center h-full min-h-[180px]">
+                <div className="text-[10px] font-mono text-[#0066B3] uppercase font-bold tracking-wider">1-50 Hz STG Block</div>
+                <div className="text-2xl font-black text-[#0066B3] font-mono mt-1">01 × 60 MW</div>
+                <div className="text-[11px] text-slate-500 mt-1 font-medium">Utility Export to K-Electric</div>
+                <div className="text-[10px] text-slate-500 mt-2 font-medium leading-normal max-w-[260px] space-y-1">
+                  <div>GE Oil &amp; Gas NUOVO PIGNONE S.r.l.Via Felice Matteucci n.2 50127 FIRENZE, ITALY</div>
+                  <div className="font-semibold text-[#0066B3]">Synchronous Generator: Indar</div>
+                </div>
+              </div>
               <div className="p-5 rounded-2xl bg-gradient-to-b from-orange-50 to-white border-2 border-orange-200 shadow-xs flex flex-col items-center justify-center text-center h-full min-h-[180px]">
-                <div className="text-[10px] font-mono text-[#EA580C] uppercase font-bold tracking-wider">60 Hz STG Block</div>
+                <div className="text-[10px] font-mono text-[#EA580C] uppercase font-bold tracking-wider">2-60 Hz STG Block</div>
                 <div className="text-2xl font-black text-[#EA580C] font-mono mt-1">58 MW Total</div>
                 <div className="text-[11px] text-slate-500 mt-1 font-medium">02 × 24 MW + 01 × 10 MW</div>
                 <div className="text-[10px] text-slate-500 mt-2 font-medium leading-normal max-w-[260px] space-y-1">
-                  <div>(24 MW STGs: Thermodyn  Gustave Eiffel Le Creusot Cedex - France)</div>
+                  <div>(24 MW STGs: Thermodyn Gustave Eiffel Le Creusot Cedex - France)</div>
                   <div>(10 MW STG NUOVO PIGNONE Felice Matteucci n.2 FIRENZE, ITALY)</div>
+                  <div className="font-semibold text-[#EA580C]">Synchronous Generator::TOSHIBA MITSUBISHI ELECTRIC SYSTEMS</div>
                 </div>
-              </div>
-              <div className="p-5 rounded-2xl bg-gradient-to-b from-blue-50 to-white border-2 border-blue-200 shadow-xs flex flex-col items-center justify-center text-center h-full min-h-[180px]">
-                <div className="text-[10px] font-mono text-[#0066B3] uppercase font-bold tracking-wider">50 Hz STG Block</div>
-                <div className="text-2xl font-black text-[#0066B3] font-mono mt-1">01 × 60 MW</div>
-                <div className="text-[11px] text-slate-500 mt-1 font-medium">Utility Export to K-Electric</div>
-                <div className="text-[10px] text-slate-400 mt-2 font-medium leading-normal max-w-[240px]">GE Oil &amp; Gas NUOVO PIGNONE S.r.l.Via Felice Matteucci n.2 50127 FIRENZE, ITALY</div>
               </div>
             </div>
 
@@ -794,14 +798,14 @@ function DashboardLayout({ onLogout }) {
                       <td className="py-3.5 px-5">Hyundai Heavy Industries (HHI) CFB Boilers</td>
                     </tr>
                     <tr className="hover:bg-blue-50/50 transition-colors">
-                      <td className="py-3.5 px-5 font-bold text-[#002B54]">60 Hz STG Block</td>
-                      <td className="py-3.5 px-5 font-mono text-[#EA580C] font-bold">02 × 24 MW + 01 × 10 MW</td>
-                      <td className="py-3.5 px-5">Dedicated power and process steam for FFBL complex</td>
+                      <td className="py-3.5 px-5 font-bold text-[#002B54]">1-50 Hz STG Block</td>
+                      <td className="py-3.5 px-5 font-mono text-[#0066B3] font-bold">01 × 60 MW</td>
+                      <td className="py-3.5 px-5">Utility grid power export to K-Electric (KE) · Synchronous Generator: Indar</td>
                     </tr>
                     <tr className="hover:bg-blue-50/50 transition-colors">
-                      <td className="py-3.5 px-5 font-bold text-[#002B54]">50 Hz STG Block</td>
-                      <td className="py-3.5 px-5 font-mono text-[#0066B3] font-bold">01 × 60 MW</td>
-                      <td className="py-3.5 px-5">Utility grid power export to K-Electric (KE)</td>
+                      <td className="py-3.5 px-5 font-bold text-[#002B54]">2-60 Hz STG Block</td>
+                      <td className="py-3.5 px-5 font-mono text-[#EA580C] font-bold">02 × 24 MW + 01 × 10 MW</td>
+                      <td className="py-3.5 px-5">Dedicated power and process steam for FFBL complex · Synchronous Generator::TOSHIBA MITSUBISHI ELECTRIC SYSTEMS</td>
                     </tr>
                     <tr className="hover:bg-blue-50/50 transition-colors">
                       <td className="py-3.5 px-5 font-bold text-[#002B54]">Plant Site Location</td>
