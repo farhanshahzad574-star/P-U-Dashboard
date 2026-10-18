@@ -766,7 +766,10 @@ function DashboardLayout({ onLogout }: DashboardLayoutProps) {
                 <div className="text-[10px] font-mono text-[#EA580C] uppercase font-bold tracking-wider">60 Hz STG Block</div>
                 <div className="text-2xl font-black text-[#EA580C] font-mono mt-1">58 MW Total</div>
                 <div className="text-[11px] text-slate-500 mt-1 font-medium">02 × 24 MW + 01 × 10 MW</div>
-                <div className="text-[10px] text-slate-400 mt-2 font-medium leading-normal max-w-[240px]">Thermodyn S.A.S.480, allée Gustave Eiffel - B.P. 11971203 Le Creusot Cedex - France</div>
+                <div className="text-[10px] text-slate-500 mt-2 font-medium leading-normal max-w-[260px] space-y-1">
+                  <div>(24 MW STGs: Thermodyn  Gustave Eiffel Le Creusot Cedex - France)</div>
+                  <div>(10 MW STG NUOVO PIGNONE Felice Matteucci n.2 FIRENZE, ITALY)</div>
+                </div>
               </div>
               <div className="p-5 rounded-2xl bg-gradient-to-b from-blue-50 to-white border-2 border-blue-200 shadow-xs flex flex-col items-center justify-center text-center h-full min-h-[180px]">
                 <div className="text-[10px] font-mono text-[#0066B3] uppercase font-bold tracking-wider">50 Hz STG Block</div>
