@@ -7263,9 +7263,9 @@
             // Default baseline fallback if offline
             if (!this.state.hseqTotals) {
               this.state.hseqTotals = {
-                safeManhours: 60166213,
+                safeManhours: 11385834,
                 safeManhoursDailyWages: 560000,
-                totalSafeManhours: 60726213,
+                totalSafeManhours: 11945834,
                 trirPlanned: 0.6,
                 trirActual: 0,
                 lti: 0,
@@ -7386,10 +7386,18 @@
           });
 
           yearlyData.sort((a, b) => Number(a.year) - Number(b.year));
+          const latest = yearlyData[yearlyData.length - 1] || yearlyData[0];
+          const years = yearlyData.map(r => r.year);
+
+          // For all years filter, Safe Million Manhours card displays latest year values from column B and K rather than sum
+          const latestRegular = latest ? Number(latest.safeManhours || 0) : 0;
+          const latestDaily = latest ? Number(latest.safeManhoursDailyWages || 0) : 0;
+          const latestTotal = latest ? (latest.totalSafeManhours !== undefined ? Number(latest.totalSafeManhours) : (latestRegular + latestDaily)) : (latestRegular + latestDaily);
+
           const totals = {
-            safeManhours: yearlyData.reduce((acc, row) => acc + (row.safeManhours || 0), 0),
-            safeManhoursDailyWages: yearlyData.reduce((acc, row) => acc + (row.safeManhoursDailyWages || 0), 0),
-            totalSafeManhours: yearlyData.reduce((acc, row) => acc + (row.totalSafeManhours !== undefined ? row.totalSafeManhours : ((row.safeManhours || 0) + (row.safeManhoursDailyWages || 0))), 0),
+            safeManhours: latestRegular,
+            safeManhoursDailyWages: latestDaily,
+            totalSafeManhours: latestTotal,
             fire: yearlyData.reduce((acc, row) => acc + (row.fire || 0), 0),
             lti: yearlyData.reduce((acc, row) => acc + (row.lti || 0), 0),
             medicalTreatment: yearlyData.reduce((acc, row) => acc + (row.medicalTreatment || 0), 0),
@@ -7398,8 +7406,6 @@
             trirActual: yearlyData.reduce((acc, row) => acc + (row.trirActual || 0), 0),
             trirPlanned: yearlyData.length > 0 ? yearlyData[yearlyData.length - 1].trirPlanned : 0.6
           };
-          const latest = yearlyData[yearlyData.length - 1] || yearlyData[0];
-          const years = yearlyData.map(r => r.year);
 
           return {
             success: true,
@@ -7704,6 +7710,9 @@
 
         /**
          * Apply HSEQ KPI Year Filter (all = sum of all values, or specific year)
+         * Note: For 'all' years filter, Safe Million Manhours card specifically displays
+         * the values of the latest year from column B (Safe Manhours) and column K (Safe Manhours Daily wages)
+         * rather than summing all years across column B and K. Latest year tracked from column H (Year).
          */
         applyHseqKpiFilter(selectedYear) {
           const select = document.getElementById('hseq-year-select');
@@ -7715,14 +7724,41 @@
           const badgeText = document.getElementById('hseq-year-status-text');
           const badgeEl = document.getElementById('hseq-year-status-badge');
 
+          const yearlyList = this.state.hseqYearlyData || [];
+
+          // Find the latest year row tracked from column H named Year
+          let latestRow = null;
+          if (yearlyList.length > 0) {
+            const validYearRows = [...yearlyList].filter(r => r && r.year !== undefined && r.year !== null);
+            validYearRows.sort((a, b) => Number(b.year) - Number(a.year));
+            latestRow = validYearRows[0] || null;
+          }
+          if (!latestRow && this.state.hseqLatest) {
+            latestRow = this.state.hseqLatest;
+          }
+          if (!latestRow) {
+            latestRow = {
+              year: 2026,
+              safeManhours: 11385834,
+              safeManhoursDailyWages: 560000,
+              totalSafeManhours: 11945834
+            };
+          }
+
+          const latestRegular = Number(latestRow.safeManhours || 0);
+          const latestDaily = Number(latestRow.safeManhoursDailyWages || 0);
+          const latestTotal = (latestRow.totalSafeManhours !== undefined && latestRow.totalSafeManhours !== null)
+            ? Number(latestRow.totalSafeManhours)
+            : (latestRegular + latestDaily);
+
           let dataToDisplay = null;
           let subTextMap = {};
 
           if (isAll) {
-            dataToDisplay = this.state.hseqTotals || {
-              safeManhours: 60166213,
-              safeManhoursDailyWages: 560000,
-              totalSafeManhours: 60726213,
+            const rawTotals = this.state.hseqTotals || {
+              safeManhours: latestRegular,
+              safeManhoursDailyWages: latestDaily,
+              totalSafeManhours: latestTotal,
               trirPlanned: 0.6,
               trirActual: 0,
               lti: 0,
@@ -7731,13 +7767,23 @@
               nearmiss: 125
             };
 
+            // For all years filter only for safe million manhours don't sum values in column,
+            // instead display the values of latest year from column B and column K
+            dataToDisplay = {
+              ...rawTotals,
+              safeManhours: latestRegular,
+              safeManhoursDailyWages: latestDaily,
+              totalSafeManhours: latestTotal,
+              latestYear: latestRow.year
+            };
+
             if (badgeText) badgeText.textContent = '';
             if (badgeEl) {
               badgeEl.className = 'hidden';
             }
 
             subTextMap = {
-              safeManhours: `Sum: ${Number(dataToDisplay.totalSafeManhours || dataToDisplay.safeManhours || 0).toLocaleString()}`,
+              safeManhours: `Latest Year (${latestRow.year}): ${(latestTotal / 1e6).toFixed(1)}M`,
               trir: `Sum: Plan ${dataToDisplay.trirPlanned || 0.6} | Act ${dataToDisplay.trirActual || 0}`,
               lti: `Sum: ${dataToDisplay.lti || 0} (Zero LTI)`,
               medicalTreatment: `Sum: ${dataToDisplay.medicalTreatment || 0} (Zero Cases)`,
@@ -7746,7 +7792,6 @@
             };
           } else {
             // Find specific year from column H named Year
-            const yearlyList = this.state.hseqYearlyData || [];
             const found = yearlyList.find(r => String(r.year) === String(selectedYear));
 
             dataToDisplay = found || {
@@ -7766,12 +7811,11 @@
               badgeEl.className = 'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg text-[11px] font-bold text-emerald-800 bg-emerald-50/90 border border-emerald-200 shadow-2xs';
             }
 
-            const totalSafe = (this.state.hseqTotals && (this.state.hseqTotals.totalSafeManhours || this.state.hseqTotals.safeManhours)) || 60726213;
             const totalFA = (this.state.hseqTotals && this.state.hseqTotals.firstAidCase) || 34;
             const totalNM = (this.state.hseqTotals && this.state.hseqTotals.nearmiss) || 125;
 
             subTextMap = {
-              safeManhours: `Year ${selectedYear} (Total Sum: ${(totalSafe / 1e6).toFixed(1)}M)`,
+              safeManhours: `Year ${selectedYear} (${(((dataToDisplay.totalSafeManhours !== undefined ? dataToDisplay.totalSafeManhours : (dataToDisplay.safeManhours + (dataToDisplay.safeManhoursDailyWages || 0)))) / 1e6).toFixed(1)}M)`,
               trir: `Year ${selectedYear} (Plan 0.6 | Act 0)`,
               lti: `Year ${selectedYear} (Zero LTI)`,
               medicalTreatment: `Year ${selectedYear} (Zero Cases)`,

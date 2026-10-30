@@ -175,11 +175,21 @@ export default async function handler(req: any, res: any) {
     // Sort ascending by year for charts and trends
     yearlyData.sort((a, b) => Number(a.year) - Number(b.year));
 
+    const latest = yearlyData[yearlyData.length - 1] || yearlyData[0];
+    const years = yearlyData.map(r => r.year);
+
     // Calculate sum of all values per category
+    // For all years filter, Safe Million Manhours card specifically displays
+    // the values of the latest year from column B (Safe Manhours) and column K (Safe Manhours Daily wages)
+    // rather than summing all years across column B and K.
+    const latestRegular = latest ? Number(latest.safeManhours || 0) : 0;
+    const latestDaily = latest ? Number(latest.safeManhoursDailyWages || 0) : 0;
+    const latestTotal = latest ? (latest.totalSafeManhours !== undefined ? Number(latest.totalSafeManhours) : (latestRegular + latestDaily)) : (latestRegular + latestDaily);
+
     const totals = {
-      safeManhours: yearlyData.reduce((acc, row) => acc + (row.safeManhours || 0), 0),
-      safeManhoursDailyWages: yearlyData.reduce((acc, row) => acc + (row.safeManhoursDailyWages || 0), 0),
-      totalSafeManhours: yearlyData.reduce((acc, row) => acc + (row.totalSafeManhours !== undefined ? row.totalSafeManhours : ((row.safeManhours || 0) + (row.safeManhoursDailyWages || 0))), 0),
+      safeManhours: latestRegular,
+      safeManhoursDailyWages: latestDaily,
+      totalSafeManhours: latestTotal,
       fire: yearlyData.reduce((acc, row) => acc + (row.fire || 0), 0),
       lti: yearlyData.reduce((acc, row) => acc + (row.lti || 0), 0),
       medicalTreatment: yearlyData.reduce((acc, row) => acc + (row.medicalTreatment || 0), 0),
@@ -188,9 +198,6 @@ export default async function handler(req: any, res: any) {
       trirActual: yearlyData.reduce((acc, row) => acc + (row.trirActual || 0), 0),
       trirPlanned: yearlyData.length > 0 ? yearlyData[yearlyData.length - 1].trirPlanned : 0.6
     };
-
-    const latest = yearlyData[yearlyData.length - 1] || yearlyData[0];
-    const years = yearlyData.map(r => r.year);
 
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
     res.json({
@@ -236,9 +243,9 @@ export default async function handler(req: any, res: any) {
       sheetName: 'HSEQ_KPI',
       updatedAt: new Date().toISOString(),
       totals: {
-        safeManhours: 60166213,
+        safeManhours: 11385834,
         safeManhoursDailyWages: 560000,
-        totalSafeManhours: 60726213,
+        totalSafeManhours: 11945834,
         fire: 0,
         lti: 0,
         medicalTreatment: 0,
