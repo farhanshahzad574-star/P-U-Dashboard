@@ -84,6 +84,10 @@
       cooSelfIsSyncing: false,
       isDeptActionsModalOpen: false,
       deptActionsModalSearch: '',
+      // Operations Dashboard Sub-Tabs: 'fpcl' (existing dashboard, orange button) | 'pq' (PQ dashboard, green button)
+      operationsSubTab: 'fpcl',
+      opsPqLastSynced: 'Live',
+      opsPqIsSyncing: false,
       visibility: {
         auth: false,
         old: false,
@@ -97,6 +101,8 @@
     init() {
       window.FPCL_STRATEGIC_SUITE = this;
       this.loadStoredData();
+      this.initOperationsActions();
+      this.initPqActions();
       this.loadCooStoredActions();
       this.fetchServerSheetConfigs();
       this.fetchCooSelfAssignedActions();
@@ -110,6 +116,98 @@
           }
         }
       });
+    },
+
+    initOperationsActions() {
+      const ops = this.customActions['operations'];
+      if (!Array.isArray(ops) || ops.length === 0 || ops.some(a => a.title === 'asset' || a.title === 'efgh')) {
+        const opsConfig = this.getEmployeesConfig().find(e => e.id === 'operations');
+        if (opsConfig && Array.isArray(opsConfig.actions) && opsConfig.actions.length >= 6) {
+          this.customActions['operations'] = JSON.parse(JSON.stringify(opsConfig.actions));
+          this.saveStoredActions();
+        }
+      }
+    },
+
+    initPqActions() {
+      const existing = this.customActions['operations-pq'];
+      if (Array.isArray(existing) && existing.length > 0 && !existing.some(a => a.title && a.title.includes('operational interfaces'))) {
+        return;
+      }
+      this.customActions['operations-pq'] = [
+        {
+          id: 'PQ-01',
+          sNo: '1',
+          background: '',
+          dateReference: '24/06/26',
+          title: 'Thar coal update was discussed. Non-dedicated IPPs are expected to receive Thar coal at the same rate as dedicated IPPs. Approval of N0C for Thar coal to be expedited. \nAction by COO-FPCL',
+          category: 'Director M&O',
+          assignedTo: 'SCM',
+          dueDate: '',
+          status: 'Open',
+          closureDate: '',
+          remarks: 'Thar Coal recevi8ng started on date',
+          ackBy: '',
+          rawColumns: {
+            'S_No': '1',
+            'Background': '',
+            'Date/Reference': '24/06/26',
+            'Assigned Action': 'Thar coal update was discussed. Non-dedicated IPPs are expected to receive Thar coal at the same rate as dedicated IPPs. Approval of N0C for Thar coal to be expedited. \nAction by COO-FPCL',
+            'Action category': 'Director M&O',
+            'Assigned to': 'SCM',
+            'Target date': '',
+            'Status detail': 'Open',
+            'Remarks': 'Thar Coal recevi8ng started on date',
+            'Ack by': ''
+          }
+        },
+        {
+          id: 'PQ-02',
+          sNo: '2',
+          background: '',
+          dateReference: '24/06/26',
+          title: 'In reference to prevailing inhibition in workplace assimilation, DIR-MFG suggested that professional interaction of female officers to be improved with colleagues, JMCs, operators and interns through a regulated plan. \nNoted for Compliance',
+          category: 'Director M&O',
+          assignedTo: 'SCM',
+          dueDate: '',
+          status: 'Open',
+          closureDate: '',
+          remarks: 'On going',
+          ackBy: '',
+          rawColumns: {
+            'S_No': '2',
+            'Background': '',
+            'Date/Reference': '24/06/26',
+            'Assigned Action': 'In reference to prevailing inhibition in workplace assimilation, DIR-MFG suggested that professional interaction of female officers to be improved with colleagues, JMCs, operators and interns through a regulated plan. \nNoted for Compliance',
+            'Action category': 'Director M&O',
+            'Assigned to': 'SCM',
+            'Target date': '',
+            'Status detail': 'Open',
+            'Remarks': 'On going',
+            'Ack by': ''
+          }
+        }
+      ];
+      this.saveStoredActions();
+    },
+
+    setOperationsSubTab(tab) {
+      if (tab !== 'fpcl' && tab !== 'pq') tab = 'fpcl';
+      this.state.operationsSubTab = tab;
+      this.state.tilePage = 1;
+      this.state.tileFilterSearch = '';
+      this.state.tileFilterStatus = 'all';
+      this.state.tileFilterColE = 'all';
+      this.state.tileFilterColF = 'all';
+      this.state.tileFilterColH = 'all';
+      this.state.tileFilterColJ = 'all';
+      this.state.tileFilterColC = 'all';
+      this.state.tileFilterColD = 'all';
+      if (tab === 'pq') {
+        this.initPqActions();
+      }
+      this.render();
+      if (window.lucide) window.lucide.createIcons();
     },
 
     // Automatically query backend for live Google Sheet data & environment secret-configured sheet URLs
@@ -162,6 +260,7 @@
               'machinery': '1zRmPlFDlRijQOTboLfhukEjdFHeUR9P5pcRIUeV7rY0',
               'mechanical': '1gedfNYWwLaLDL85bz2PuDGi1NZP8QiwW42Vklym5i1w',
               'operations': '19iQ_D6k_hvKYP8-FTuBZ51yTcu3Zo2Q0VhXv67wRVZ0',
+              'operations-pq': '1-Gr8VU2pZfFZNhpCPnNjxo_rUedtqRT61J7M-x9YCLQ',
               'reliability': '15H3FZaEOczMu5_XcGo7Rs576n4CVakY0iRlvHYdbyvk',
               'scm': '1SXhHYiQy21bF1g0PimScyhhyBGNch37VWTSHTgWPbP0',
               'projects': '1Gr0IBANH6GeKMeozJywlHrQccPBdrMuJ5RRctPsQvRI',
@@ -815,6 +914,7 @@
         'machinery': { id: '1zRmPlFDlRijQOTboLfhukEjdFHeUR9P5pcRIUeV7rY0', tab: 'MACHINERY_SHEET_URL', url: 'https://docs.google.com/spreadsheets/d/1zRmPlFDlRijQOTboLfhukEjdFHeUR9P5pcRIUeV7rY0/edit' },
         'mechanical': { id: '1gedfNYWwLaLDL85bz2PuDGi1NZP8QiwW42Vklym5i1w', tab: 'MECHANICAL_SHEET_URL', url: 'https://docs.google.com/spreadsheets/d/1gedfNYWwLaLDL85bz2PuDGi1NZP8QiwW42Vklym5i1w/edit' },
         'operations': { id: '19iQ_D6k_hvKYP8-FTuBZ51yTcu3Zo2Q0VhXv67wRVZ0', tab: 'OPERATIONS_SHEET_URL', url: 'https://docs.google.com/spreadsheets/d/19iQ_D6k_hvKYP8-FTuBZ51yTcu3Zo2Q0VhXv67wRVZ0/edit' },
+        'operations-pq': { id: '1-Gr8VU2pZfFZNhpCPnNjxo_rUedtqRT61J7M-x9YCLQ', tab: 'PQ', url: 'https://docs.google.com/spreadsheets/d/1-Gr8VU2pZfFZNhpCPnNjxo_rUedtqRT61J7M-x9YCLQ/edit' },
         'reliability': { id: '15H3FZaEOczMu5_XcGo7Rs576n4CVakY0iRlvHYdbyvk', tab: 'RELIABILITY_SHEET_URL', url: 'https://docs.google.com/spreadsheets/d/15H3FZaEOczMu5_XcGo7Rs576n4CVakY0iRlvHYdbyvk/edit' },
         'scm': { id: '1SXhHYiQy21bF1g0PimScyhhyBGNch37VWTSHTgWPbP0', tab: 'SCM_SHEET_URL', url: 'https://docs.google.com/spreadsheets/d/1SXhHYiQy21bF1g0PimScyhhyBGNch37VWTSHTgWPbP0/edit' },
         'projects': { id: '1Gr0IBANH6GeKMeozJywlHrQccPBdrMuJ5RRctPsQvRI', tab: 'PROJECTS', url: 'https://docs.google.com/spreadsheets/d/1Gr0IBANH6GeKMeozJywlHrQccPBdrMuJ5RRctPsQvRI/edit' },
@@ -850,9 +950,21 @@
         }
       }
 
+      const isOpsPq = (tileId === 'operations' && this.state.operationsSubTab === 'pq');
+      if (isOpsPq) {
+        sheetUrl = 'https://docs.google.com/spreadsheets/d/1-Gr8VU2pZfFZNhpCPnNjxo_rUedtqRT61J7M-x9YCLQ/edit';
+        sheetTab = 'PQ';
+        gid = '0';
+      }
+
       // Merge actions
       let actions = [];
-      if (this.customActions[tileId]) {
+      if (isOpsPq) {
+        if (!this.customActions['operations-pq'] || this.customActions['operations-pq'].length === 0) {
+          this.initPqActions();
+        }
+        actions = this.customActions['operations-pq'] || [];
+      } else if (this.customActions[tileId]) {
         actions = this.customActions[tileId];
       } else if (tileId === 'admin-security' && this.customActions['admin_security']) {
         actions = this.customActions['admin_security'];
@@ -908,7 +1020,7 @@
 
         return {
           ...a,
-          id: a.id || `${config.code || 'ACT'}-${String(idx + 1).padStart(2, '0')}`,
+          id: a.id || `${(isOpsPq ? 'PQ' : (config.code || 'ACT'))}-${String(idx + 1).padStart(2, '0')}`,
           background,
           dateReference,
           title: actionTitle,
@@ -927,8 +1039,10 @@
 
       return {
         ...config,
+        name: isOpsPq ? 'PQ' : (config.name || 'Operations'),
+        code: isOpsPq ? 'PQ' : (config.code || 'OPS'),
         sheetUrl,
-        sheetTab,
+        sheetTab: isOpsPq ? 'PQ' : sheetTab,
         gid,
         fromSecret: Boolean(customSheet.fromSecret || serverSheet.fromSecret),
         actions,
@@ -943,6 +1057,9 @@
 
     getTileSheetEditUrl(tile) {
       if (!tile) return 'https://docs.google.com/spreadsheets';
+      if (tile.id === 'operations-pq' || (tile.id === 'operations' && this.state.operationsSubTab === 'pq')) {
+        return 'https://docs.google.com/spreadsheets/d/1-Gr8VU2pZfFZNhpCPnNjxo_rUedtqRT61J7M-x9YCLQ/edit';
+      }
       const CANONICAL_SHEET_MAP = {
         'asset-integrity': 'https://docs.google.com/spreadsheets/d/1al3SsYo9FWHZxc8rYrJE5SV4H3RafPcd1xGSyfcy5Nc/edit',
         'business-development': 'https://docs.google.com/spreadsheets/d/1PYQlmmzy2VFMohIlNxipiFsfgKPsopgd2VdAdXhMiB4/edit',
@@ -960,6 +1077,7 @@
         'machinery': 'https://docs.google.com/spreadsheets/d/1zRmPlFDlRijQOTboLfhukEjdFHeUR9P5pcRIUeV7rY0/edit',
         'mechanical': 'https://docs.google.com/spreadsheets/d/1gedfNYWwLaLDL85bz2PuDGi1NZP8QiwW42Vklym5i1w/edit',
         'operations': 'https://docs.google.com/spreadsheets/d/19iQ_D6k_hvKYP8-FTuBZ51yTcu3Zo2Q0VhXv67wRVZ0/edit',
+        'operations-pq': 'https://docs.google.com/spreadsheets/d/1-Gr8VU2pZfFZNhpCPnNjxo_rUedtqRT61J7M-x9YCLQ/edit',
         'reliability': 'https://docs.google.com/spreadsheets/d/15H3FZaEOczMu5_XcGo7Rs576n4CVakY0iRlvHYdbyvk/edit',
         'scm': 'https://docs.google.com/spreadsheets/d/1SXhHYiQy21bF1g0PimScyhhyBGNch37VWTSHTgWPbP0/edit',
         'projects': 'https://docs.google.com/spreadsheets/d/1Gr0IBANH6GeKMeozJywlHrQccPBdrMuJ5RRctPsQvRI/edit',
@@ -2160,11 +2278,13 @@
     },
 
     disconnectSheet(tileId) {
+      const targetId = (tileId === 'operations' && this.state.operationsSubTab === 'pq') ? 'operations-pq' : tileId;
+      this.state.syncStatus[targetId] = 'broken';
       this.state.syncStatus[tileId] = 'broken';
-      if (this.customSheets[tileId]) {
-        this.customSheets[tileId].sheetUrl = '';
+      if (this.customSheets[targetId]) {
+        this.customSheets[targetId].sheetUrl = '';
       } else {
-        this.customSheets[tileId] = { sheetUrl: '', sheetTab: '', gid: '0' };
+        this.customSheets[targetId] = { sheetUrl: '', sheetTab: '', gid: '0' };
       }
       this.saveStoredSheets();
       this.closeSheetConfigModal();
@@ -2173,6 +2293,7 @@
     },
 
     saveSheetConfigModal(tileId) {
+      const targetId = (tileId === 'operations' && this.state.operationsSubTab === 'pq') ? 'operations-pq' : tileId;
       const urlEl = document.getElementById('modal-sheet-url');
       const tabEl = document.getElementById('modal-sheet-tab');
       const gidEl = document.getElementById('modal-sheet-gid');
@@ -2182,14 +2303,16 @@
       const gid = gidEl ? gidEl.value.trim() : '0';
 
       const isValid = url.length > 10 && (url.includes('docs.google.com/spreadsheets') || url.startsWith('http'));
-      this.customSheets[tileId] = { sheetUrl: url, sheetTab: tab, gid };
+      this.customSheets[targetId] = { sheetUrl: url, sheetTab: tab, gid };
       this.saveStoredSheets();
 
       if (!isValid || url === '') {
+        this.state.syncStatus[targetId] = 'broken';
         this.state.syncStatus[tileId] = 'broken';
         this.closeSheetConfigModal();
         this.showToast('Link Broken', 'No valid Google Sheet link provided. Status dot turned orange.', 'warning');
       } else {
+        this.state.syncStatus[targetId] = 'success';
         this.state.syncStatus[tileId] = 'success';
         this.closeSheetConfigModal();
         this.showToast('Settings Saved', 'Google Sheet connection verified active. Status dot is green.', 'success');
@@ -2311,6 +2434,8 @@
 
     // Live Sync single employee sheet via Google Sheets API
     async syncEmployeeSheet(tileId) {
+      const isOpsPq = (tileId === 'operations' && this.state.operationsSubTab === 'pq');
+      const targetSyncId = isOpsPq ? 'operations-pq' : tileId;
       const tile = this.getTileData(tileId);
       if (!tile) return;
 
@@ -2327,12 +2452,12 @@
       // 1. Try server live-data endpoint first (fast, bypasses CORS, handles multiple tab aliases, cache-busting)
       try {
         const nonce = Date.now();
-        const res = await fetch(`/api/strategic/live-data?tileId=${encodeURIComponent(tileId)}&refresh=true&_t=${nonce}`, { cache: 'no-store' });
+        const res = await fetch(`/api/strategic/live-data?tileId=${encodeURIComponent(targetSyncId)}&refresh=true&_t=${nonce}`, { cache: 'no-store' });
         if (res.ok) {
           const data = await res.json();
-          if (data && data.liveActions && Array.isArray(data.liveActions[tileId])) {
-            const actions = data.liveActions[tileId];
-            this.customActions[tileId] = actions;
+          if (data && data.liveActions && Array.isArray(data.liveActions[targetSyncId])) {
+            const actions = data.liveActions[targetSyncId];
+            this.customActions[targetSyncId] = actions;
             this.saveStoredActions();
             this.state.syncStatus[tileId] = 'success';
             this.state.tileLastSynced[tileId] = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -2341,7 +2466,7 @@
           }
         }
       } catch (err) {
-        console.warn('Backend sync failed, attempting client-side fallback for', tileId, err);
+        console.warn('Backend sync failed, attempting client-side fallback for', targetSyncId, err);
       }
 
       // 2. Fallback to client-side sheet sync if needed
@@ -2350,15 +2475,15 @@
           let csvText = '';
           if (window.FPCL_SHEET_SYNC && typeof window.FPCL_SHEET_SYNC.fetchGoogleSheetData === 'function') {
             csvText = await window.FPCL_SHEET_SYNC.fetchGoogleSheetData(tile.sheetUrl, {
-              sheetTab: tile.sheetTab || tile.name || 'Sheet1',
+              sheetTab: isOpsPq ? 'PQ' : (tile.sheetTab || tile.name || 'Sheet1'),
               gid: tile.gid || '0'
             });
           }
 
           if (csvText && csvText.length > 30) {
-            const parsedActions = this.parseCsvToActions(csvText, tile.code);
+            const parsedActions = this.parseCsvToActions(csvText, isOpsPq ? 'PQ' : tile.code);
             if (parsedActions) {
-              this.customActions[tileId] = parsedActions;
+              this.customActions[targetSyncId] = parsedActions;
               this.saveStoredActions();
               this.state.syncStatus[tileId] = 'success';
               this.state.tileLastSynced[tileId] = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -2367,7 +2492,7 @@
             }
           }
         } catch (err) {
-          console.warn('Fallback sync error for', tileId, err);
+          console.warn('Fallback sync error for', targetSyncId, err);
         }
       }
 
@@ -4621,7 +4746,7 @@
                     </button>
                   ` : ''}
                 </div>
-                <h2 class="text-base sm:text-xl font-black text-slate-900 tracking-tight leading-snug mt-0.5">${tile.name} Dashboard</h2>
+                <h2 class="text-base sm:text-xl font-black text-slate-900 tracking-tight leading-snug mt-0.5">${(tile.id === 'operations' || (tile.name && tile.name.toLowerCase().includes('operations'))) ? (this.state.operationsSubTab === 'pq' ? 'PQ' : 'Operations Dashboard') : `${tile.name} Dashboard`}</h2>
               </div>
             </div>
 
@@ -4640,18 +4765,46 @@
                 </button>
               ` : ''}
 
-              <!-- Live Google Sheet Button: Opens the live Google Sheet in a new tab on click -->
-              <a
-                href="${this.getTileSheetEditUrl(tile)}"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="px-3.5 py-2 text-xs sm:text-sm font-bold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition-all cursor-pointer flex items-center gap-2 shadow-xs border border-emerald-500 hover:shadow-md shrink-0"
-                title="Open live Google Sheet in new tab (${tile.name})"
-              >
-                <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
-                <span>Open Google Sheet</span>
-                <i data-lucide="external-link" class="w-3.5 h-3.5 opacity-80"></i>
-              </a>
+              ${(tile.id === 'operations' || (tile.name && tile.name.toLowerCase().includes('operations'))) ? `
+                <!-- FPCL Google Sheet Button (Orange color as FPCL button) -->
+                <a
+                  href="https://docs.google.com/spreadsheets/d/19iQ_D6k_hvKYP8-FTuBZ51yTcu3Zo2Q0VhXv67wRVZ0/edit"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="px-3.5 py-2 text-xs sm:text-sm font-bold rounded-xl bg-[#EA580C] hover:bg-[#C2410C] text-white transition-all cursor-pointer flex items-center gap-2 shadow-xs border border-orange-500 hover:shadow-md shrink-0"
+                  title="Open FPCL live Google Sheet in new tab (Sheet: 19iQ_D6k_hvKYP8-FTuBZ51yTcu3Zo2Q0VhXv67wRVZ0 • Tab: OPERATIONS_SHEET_URL)"
+                >
+                  <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+                  <span>FPCL Google Sheet</span>
+                  <i data-lucide="external-link" class="w-3.5 h-3.5 opacity-80"></i>
+                </a>
+
+                <!-- PQ Google Sheet Button (Green color as PQ button) -->
+                <a
+                  href="https://docs.google.com/spreadsheets/d/1-Gr8VU2pZfFZNhpCPnNjxo_rUedtqRT61J7M-x9YCLQ/edit"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="px-3.5 py-2 text-xs sm:text-sm font-bold rounded-xl bg-[#16A34A] hover:bg-[#15803D] text-white transition-all cursor-pointer flex items-center gap-2 shadow-xs border border-emerald-500 hover:shadow-md shrink-0"
+                  title="Open PQ live Google Sheet in new tab (Sheet: 1-Gr8VU2pZfFZNhpCPnNjxo_rUedtqRT61J7M-x9YCLQ • Tab: PQ)"
+                >
+                  <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+                  <span>PQ Google Sheet</span>
+                  <i data-lucide="external-link" class="w-3.5 h-3.5 opacity-80"></i>
+                </a>
+              ` : `
+                <!-- Live Google Sheet Button: Opens the live Google Sheet in a new tab on click -->
+                <a
+                  href="${this.getTileSheetEditUrl(tile)}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="px-3.5 py-2 text-xs sm:text-sm font-bold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition-all cursor-pointer flex items-center gap-2 shadow-xs border border-emerald-500 hover:shadow-md shrink-0"
+                  title="Open live Google Sheet in new tab (${tile.name})"
+                >
+                  <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+                  <span>Open Google Sheet</span>
+                  <i data-lucide="external-link" class="w-3.5 h-3.5 opacity-80"></i>
+                </a>
+              `}
 
               <!-- Sync Option -->
               <button
@@ -4709,6 +4862,85 @@
               </button>
             </div>
           </div>
+
+          ${(tile.id === 'operations' || (tile.name && tile.name.toLowerCase().includes('operations'))) ? `
+            <!-- OPERATIONS SUB-DASHBOARD NAVIGATION (FPCL ORANGE BUTTON & PQ GREEN BUTTON ABOVE FILTER BANNER) -->
+            <div class="bg-white border-2 border-slate-200/90 rounded-2xl p-2.5 sm:p-3 shadow-xs flex items-center justify-between gap-3 flex-wrap sm:flex-nowrap">
+              <div class="flex items-center gap-2.5 flex-wrap">
+                <span class="text-xs font-black uppercase tracking-wider text-slate-500 px-1">Operations Site:</span>
+                <div class="inline-flex items-center gap-2.5 p-1 bg-slate-100/90 rounded-xl border border-slate-200">
+                  <!-- FPCL BUTTON (ORANGE COLOR) -->
+                  <button
+                    type="button"
+                    id="ops-btn-fpcl"
+                    onclick="window.FPCL_STRATEGIC_SUITE.setOperationsSubTab('fpcl')"
+                    class="px-6 py-2.5 rounded-lg text-xs sm:text-sm font-black transition-all cursor-pointer flex items-center gap-2 select-none ${
+                      this.state.operationsSubTab === 'fpcl'
+                        ? 'bg-[#EA580C] hover:bg-[#C2410C] text-white shadow-lg shadow-orange-500/35 ring-2 ring-orange-500 ring-offset-1 font-black scale-[1.02]'
+                        : 'bg-orange-500/15 text-orange-700 hover:bg-orange-500/25 border-2 border-orange-500 font-bold'
+                    }"
+                    title="Open existing FPCL Operations Dashboard (Tab: OPERATIONS_SHEET_URL)"
+                  >
+                    <i data-lucide="factory" class="w-4 h-4"></i>
+                    <span>FPCL</span>
+                    ${this.state.operationsSubTab === 'fpcl' ? '<span class="inline-flex items-center px-1.5 py-0.2 text-[10px] bg-white/25 rounded-md font-bold">Active</span>' : ''}
+                  </button>
+
+                  <!-- PQ BUTTON (GREEN COLOR) -->
+                  <button
+                    type="button"
+                    id="ops-btn-pq"
+                    onclick="window.FPCL_STRATEGIC_SUITE.setOperationsSubTab('pq')"
+                    class="px-6 py-2.5 rounded-lg text-xs sm:text-sm font-black transition-all cursor-pointer flex items-center gap-2 select-none ${
+                      this.state.operationsSubTab === 'pq'
+                        ? 'bg-[#16A34A] hover:bg-[#15803D] text-white shadow-lg shadow-emerald-500/35 ring-2 ring-emerald-500 ring-offset-1 font-black scale-[1.02]'
+                        : 'bg-emerald-600/15 text-emerald-700 hover:bg-emerald-600/25 border-2 border-emerald-500 font-bold'
+                    }"
+                    title="Open PQ Operations Dashboard (Port Qasim Site Operations)"
+                  >
+                    <i data-lucide="building" class="w-4 h-4"></i>
+                    <span>PQ</span>
+                    ${this.state.operationsSubTab === 'pq' ? '<span class="inline-flex items-center px-1.5 py-0.2 text-[10px] bg-white/25 rounded-md font-bold">Active</span>' : ''}
+                  </button>
+                </div>
+              </div>
+
+              <!-- GOOGLE SHEET LINKS FOR OPERATIONS: FPCL (ORANGE) & PQ (GREEN) IN FRONT OF THE BUTTONS -->
+              <div class="flex items-center gap-2 flex-wrap">
+                <a
+                  href="https://docs.google.com/spreadsheets/d/19iQ_D6k_hvKYP8-FTuBZ51yTcu3Zo2Q0VhXv67wRVZ0/edit"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="px-3.5 py-2 text-xs sm:text-sm font-bold rounded-xl transition-all cursor-pointer flex items-center gap-2 shadow-xs border ${
+                    this.state.operationsSubTab === 'fpcl'
+                      ? 'bg-[#EA580C] hover:bg-[#C2410C] text-white border-orange-500 shadow-md ring-2 ring-orange-500 ring-offset-1'
+                      : 'bg-orange-50 hover:bg-orange-100 text-orange-800 border-orange-300'
+                  }"
+                  title="Open FPCL live Google Sheet in new tab"
+                >
+                  <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+                  <span>FPCL Google Sheet</span>
+                  <i data-lucide="external-link" class="w-3.5 h-3.5 opacity-80"></i>
+                </a>
+
+                <a
+                  href="https://docs.google.com/spreadsheets/d/1-Gr8VU2pZfFZNhpCPnNjxo_rUedtqRT61J7M-x9YCLQ/edit"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="px-3.5 py-2 text-xs sm:text-sm font-bold rounded-xl transition-all cursor-pointer flex items-center gap-2 shadow-xs border ${
+                    this.state.operationsSubTab === 'pq'
+                      ? 'bg-[#16A34A] hover:bg-[#15803D] text-white border-emerald-500 shadow-md ring-2 ring-emerald-500 ring-offset-1'
+                      : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-300'
+                  }"
+                  title="Open PQ live Google Sheet in new tab"
+                >
+                  <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+                  <span>PQ Google Sheet</span>
+                  <i data-lucide="external-link" class="w-3.5 h-3.5 opacity-80"></i>
+                </a>
+              </div>
+            </div>
+          ` : ''}
 
           <!-- FILTER BAR (COLUMNS C, D, F, H + SEARCH) -->
           <div class="bg-white border border-slate-200 rounded-2xl p-3 sm:p-3.5 shadow-xs space-y-2.5">
@@ -4895,17 +5127,42 @@
                 <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200">
                   Showing ${pagedActions.length} of ${filteredTotal}
                 </span>
-                <a
-                  href="${this.getTileSheetEditUrl(tile)}"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-300 hover:bg-emerald-100 transition-colors shadow-2xs"
-                  title="Open live Google Sheet in new tab"
-                >
-                  <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-600"></i>
-                  <span>Open Google Sheet</span>
-                  <i data-lucide="external-link" class="w-3 h-3 text-emerald-500"></i>
-                </a>
+                ${(tile.id === 'operations' || (tile.name && tile.name.toLowerCase().includes('operations'))) ? `
+                  <a
+                    href="https://docs.google.com/spreadsheets/d/19iQ_D6k_hvKYP8-FTuBZ51yTcu3Zo2Q0VhXv67wRVZ0/edit"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold rounded-lg bg-orange-50 text-orange-800 border border-orange-300 hover:bg-orange-100 transition-colors shadow-2xs"
+                    title="Open FPCL live Google Sheet in new tab"
+                  >
+                    <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-orange-600"></i>
+                    <span>FPCL Google Sheet</span>
+                    <i data-lucide="external-link" class="w-3 h-3 text-orange-500"></i>
+                  </a>
+                  <a
+                    href="https://docs.google.com/spreadsheets/d/1-Gr8VU2pZfFZNhpCPnNjxo_rUedtqRT61J7M-x9YCLQ/edit"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-300 hover:bg-emerald-100 transition-colors shadow-2xs"
+                    title="Open PQ live Google Sheet in new tab"
+                  >
+                    <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-600"></i>
+                    <span>PQ Google Sheet</span>
+                    <i data-lucide="external-link" class="w-3 h-3 text-emerald-500"></i>
+                  </a>
+                ` : `
+                  <a
+                    href="${this.getTileSheetEditUrl(tile)}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-300 hover:bg-emerald-100 transition-colors shadow-2xs"
+                    title="Open live Google Sheet in new tab"
+                  >
+                    <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-600"></i>
+                    <span>Open Google Sheet</span>
+                    <i data-lucide="external-link" class="w-3 h-3 text-emerald-500"></i>
+                  </a>
+                `}
               </div>
 
               <div class="flex items-center gap-2 text-xs sm:text-sm">

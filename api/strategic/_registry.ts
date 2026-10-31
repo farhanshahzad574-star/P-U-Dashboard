@@ -160,6 +160,22 @@ export const STRATEGIC_TILE_REGISTRY: Record<string, StrategicTileConfig> = {
     name: 'Operations',
     fallbackUrl: 'https://docs.google.com/spreadsheets/d/19iQ_D6k_hvKYP8-FTuBZ51yTcu3Zo2Q0VhXv67wRVZ0/edit'
   },
+  'operations-pq': {
+    sheetId: '1-Gr8VU2pZfFZNhpCPnNjxo_rUedtqRT61J7M-x9YCLQ',
+    envKeys: [
+      'PQ_SHEET_URL',
+      'PQ_SHEET_ID',
+      'OPERATIONS_PQ_SHEET_URL',
+      'PQ_OPERATIONS_SHEET_URL',
+      'OPERATIONS_PQ',
+      'PQ',
+      'PQ_ACTIONS'
+    ],
+    code: 'PQ',
+    defaultTab: 'PQ',
+    name: 'PQ',
+    fallbackUrl: 'https://docs.google.com/spreadsheets/d/1-Gr8VU2pZfFZNhpCPnNjxo_rUedtqRT61J7M-x9YCLQ/edit?usp=sharing'
+  },
   'reliability': {
     sheetId: '15H3FZaEOczMu5_XcGo7Rs576n4CVakY0iRlvHYdbyvk',
     envKeys: ['RELIABILITY_SHEET_URL', 'RELIABILITY', 'Reliability', 'STRATEGIC_RELIABILITY_SHEET_URL'],
@@ -245,6 +261,14 @@ export function getCandidateTabsForTile(tileId: string, sheetUrl?: string): stri
     ['HCM_SHEET_URL', 'HCM_Actions', 'HCM', 'HCM Actions', 'Human Capital'].forEach(t => {
       if (!candidateTabs.includes(t)) candidateTabs.push(t);
     });
+  } else if (normalizedId === 'operations-pq') {
+    ['PQ', 'Operations_PQ', 'PQ_Operations', 'OPERATIONS_PQ', 'Port_Qasim', 'Port Qasim', 'Sheet1'].forEach(t => {
+      if (!candidateTabs.includes(t)) candidateTabs.push(t);
+    });
+  } else if (normalizedId === 'operations') {
+    ['OPERATIONS_SHEET_URL', 'Operations', 'FPCL', 'OPS', 'Sheet1'].forEach(t => {
+      if (!candidateTabs.includes(t)) candidateTabs.push(t);
+    });
   }
 
   if (!candidateTabs.includes('Sheet1')) candidateTabs.push('Sheet1');
@@ -281,31 +305,57 @@ export function getSheetUrlForTile(tileId: string): string {
   return reg.fallbackUrl;
 }
 
+export function parseCsvRows(csvText: string): string[][] {
+  const rows: string[][] = [];
+  let currentRow: string[] = [];
+  let currentToken = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < csvText.length; i++) {
+    const ch = csvText[i];
+    const nextCh = csvText[i + 1];
+
+    if (ch === '"') {
+      if (inQuotes && nextCh === '"') {
+        currentToken += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (ch === ',' && !inQuotes) {
+      currentRow.push(currentToken.trim().replace(/^"|"$/g, ''));
+      currentToken = '';
+    } else if ((ch === '\r' || ch === '\n') && !inQuotes) {
+      if (ch === '\r' && nextCh === '\n') {
+        i++;
+      }
+      currentRow.push(currentToken.trim().replace(/^"|"$/g, ''));
+      currentToken = '';
+      if (currentRow.length > 0 && currentRow.some(cell => cell.length > 0)) {
+        rows.push(currentRow);
+      }
+      currentRow = [];
+    } else {
+      currentToken += ch;
+    }
+  }
+
+  if (currentToken.length > 0 || currentRow.length > 0) {
+    currentRow.push(currentToken.trim().replace(/^"|"$/g, ''));
+    if (currentRow.some(cell => cell.length > 0)) {
+      rows.push(currentRow);
+    }
+  }
+
+  return rows;
+}
+
 export function parseCsvToStrategicActions(csvText: string, defaultCode: string): StrategicActionItem[] {
   if (!csvText) return [];
-  const lines = csvText.split(/\r\n|\n|\r/).filter(l => l.trim().length > 0);
-  if (lines.length <= 1) return [];
+  const rows = parseCsvRows(csvText);
+  if (rows.length <= 1) return [];
 
-  const parseRowTokens = (line: string): string[] => {
-    const row: string[] = [];
-    let inQuotes = false;
-    let token = '';
-    for (let c = 0; c < line.length; c++) {
-      const ch = line[c];
-      if (ch === '"') {
-        inQuotes = !inQuotes;
-      } else if (ch === ',' && !inQuotes) {
-        row.push(token.trim().replace(/^"|"$/g, ''));
-        token = '';
-      } else {
-        token += ch;
-      }
-    }
-    row.push(token.trim().replace(/^"|"$/g, ''));
-    return row;
-  };
-
-  const rawHeaders = parseRowTokens(lines[0]).filter(h => h.length > 0);
+  const rawHeaders = rows[0].map(h => h.trim()).filter(h => h.length > 0);
   const headers = rawHeaders.map(h => h.toLowerCase());
   const findCol = (candidates: string[]) => headers.findIndex(h => candidates.some(c => h.includes(c)));
 
@@ -318,8 +368,8 @@ export function parseCsvToStrategicActions(csvText: string, defaultCode: string)
   const closureCol = findCol(['closure date', 'closed on', 'completed date', 'resolved date']);
 
   const parsed: StrategicActionItem[] = [];
-  for (let i = 1; i < lines.length; i++) {
-    const row = parseRowTokens(lines[i]);
+  for (let i = 1; i < rows.length; i++) {
+    const row = rows[i];
 
     const desc = descCol !== -1 ? (row[descCol] || '') : (row[1] || row[0] || '');
     if (!desc || desc.trim().length === 0) continue;

@@ -46,12 +46,18 @@ export default async function handler(req: any, res: any) {
   // Serve from cache only if not force-refreshing and still fresh
   if (!forceRefresh && (now - strategicLiveCache.timestamp) < CACHE_TTL_MS && Object.keys(strategicLiveCache.data).length > 0) {
     if (tileIdQuery && strategicLiveCache.data[tileIdQuery]) {
+      const respData: Record<string, any> = { [tileIdQuery]: strategicLiveCache.data[tileIdQuery] };
+      const respActions: Record<string, any> = { [tileIdQuery]: strategicLiveCache.data[tileIdQuery].actions };
+      if (tileIdQuery === 'operations' && strategicLiveCache.data['operations-pq']) {
+        respData['operations-pq'] = strategicLiveCache.data['operations-pq'];
+        respActions['operations-pq'] = strategicLiveCache.data['operations-pq'].actions;
+      }
       res.status(200).json({
         success: true,
         cached: true,
         timestamp: strategicLiveCache.timestamp,
-        data: { [tileIdQuery]: strategicLiveCache.data[tileIdQuery] },
-        liveActions: { [tileIdQuery]: strategicLiveCache.data[tileIdQuery].actions }
+        data: respData,
+        liveActions: respActions
       });
       return;
     } else if (!tileIdQuery) {
@@ -70,7 +76,9 @@ export default async function handler(req: any, res: any) {
     }
   }
 
-  const targetsToFetch = tileIdQuery ? [tileIdQuery] : Object.keys(STRATEGIC_TILE_REGISTRY);
+  const targetsToFetch = tileIdQuery
+    ? (tileIdQuery === 'operations' ? ['operations', 'operations-pq'] : [tileIdQuery])
+    : Object.keys(STRATEGIC_TILE_REGISTRY);
 
   const fetchPromises = targetsToFetch.map(async (tid) => {
     const reg = STRATEGIC_TILE_REGISTRY[tid];
@@ -178,8 +186,16 @@ export default async function handler(req: any, res: any) {
     res.status(200).json({
       success: true,
       timestamp: now,
-      data: tileIdQuery ? { [tileIdQuery]: updatedData[tileIdQuery] } : updatedData,
-      liveActions: tileIdQuery ? { [tileIdQuery]: liveActions[tileIdQuery] } : liveActions
+      data: tileIdQuery
+        ? (tileIdQuery === 'operations'
+            ? { operations: updatedData['operations'], 'operations-pq': updatedData['operations-pq'] }
+            : { [tileIdQuery]: updatedData[tileIdQuery] })
+        : updatedData,
+      liveActions: tileIdQuery
+        ? (tileIdQuery === 'operations'
+            ? { operations: liveActions['operations'], 'operations-pq': liveActions['operations-pq'] }
+            : { [tileIdQuery]: liveActions[tileIdQuery] })
+        : liveActions
     });
   } catch (err: any) {
     console.error('Error in /api/strategic/live-data:', err);
