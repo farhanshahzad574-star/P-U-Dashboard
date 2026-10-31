@@ -885,7 +885,7 @@
       }
     },
 
-    getTileData(tileId) {
+    getTileData(tileId, options = {}) {
       const config = this.getEmployeesConfig().find(e => e.id === tileId);
       if (!config) return null;
 
@@ -950,7 +950,10 @@
         }
       }
 
-      const isOpsPq = (tileId === 'operations' && this.state.operationsSubTab === 'pq');
+      // PQ dashboard actions only apply when user is explicitly viewing the Operations dashboard with PQ subtab active
+      // PQ actions MUST NEVER be returned when viewing COO Executive dashboard or in Boss rollup
+      const isOpsPq = !options.forceStandard &&
+                      (tileId === 'operations' && this.state.operationsSubTab === 'pq' && this.state.selectedTileId === 'operations');
       if (isOpsPq) {
         sheetUrl = 'https://docs.google.com/spreadsheets/d/1-Gr8VU2pZfFZNhpCPnNjxo_rUedtqRT61J7M-x9YCLQ/edit';
         sheetTab = 'PQ';
@@ -1057,7 +1060,7 @@
 
     getTileSheetEditUrl(tile) {
       if (!tile) return 'https://docs.google.com/spreadsheets';
-      if (tile.id === 'operations-pq' || (tile.id === 'operations' && this.state.operationsSubTab === 'pq')) {
+      if (tile.id === 'operations-pq' || (tile.id === 'operations' && this.state.operationsSubTab === 'pq' && this.state.selectedTileId === 'operations')) {
         return 'https://docs.google.com/spreadsheets/d/1-Gr8VU2pZfFZNhpCPnNjxo_rUedtqRT61J7M-x9YCLQ/edit';
       }
       const CANONICAL_SHEET_MAP = {
@@ -1096,13 +1099,21 @@
       return rawUrl;
     },
 
-    getAllTiles() {
-      return this.getEmployeesConfig().map(c => this.getTileData(c.id));
+    getAllTiles(options = {}) {
+      return this.getEmployeesConfig().map(c => this.getTileData(c.id, options));
     },
 
     // Overall Boss rollup metrics across all employee tiles (excluding the boss tile itself)
+    // STRICT USER REQUIREMENT:
+    // Only PQ dashboard actions from dashboard should not display in COO executive strategic dashboard.
+    // PQ dashboard in operations dashboard will remain separate from COO executive strategic dashboard.
     getBossRollup() {
-      const employeeTiles = this.getAllTiles().filter(t => !t.isBossDashboard);
+      // Force standard FPCL Operations, exclude boss and any separate PQ tile
+      const employeeTiles = this.getEmployeesConfig()
+        .filter(c => c && c.id !== 'boss' && c.id !== 'operations-pq' && c.code !== 'PQ')
+        .map(c => this.getTileData(c.id, { forceStandard: true }))
+        .filter(t => t && !t.isBossDashboard && t.id !== 'operations-pq' && t.code !== 'PQ' && t.name !== 'PQ');
+
       let totalActions = 0;
       let closedActions = 0;
       let openActions = 0;
@@ -1111,17 +1122,33 @@
       const allActionsList = [];
 
       employeeTiles.forEach(tile => {
-        totalActions += tile.stats.total;
-        closedActions += tile.stats.closed;
-        openActions += tile.stats.open;
+        // Double-check no PQ actions leak into the COO executive rollup
+        const validActions = (tile.actions || []).filter(action => {
+          if (!action) return false;
+          const aid = String(action.id || '').toUpperCase();
+          if (aid.startsWith('PQ-')) return false;
+          if (action.tileId === 'operations-pq') return false;
+          if (action.department === 'PQ' || action.code === 'PQ') return false;
+          const title = String(action.title || action.action || '').toLowerCase();
+          if (title.includes('thar coal update was discussed') && title.includes('non-dedicated ipps')) return false;
+          return true;
+        });
 
-        if (tile.stats.open === 0 && tile.stats.total > 0) {
+        const tileTotal = validActions.length;
+        const tileClosed = validActions.filter(a => a.status === 'Closed' || a.status === 'Completed' || (a.status || '').toLowerCase().includes('close') || this.getActionColVal(a, 'STATUS') === 'Closed').length;
+        const tileOpen = validActions.filter(a => a.status !== 'Closed' && a.status !== 'Completed' && !(a.status || '').toLowerCase().includes('close') && this.getActionColVal(a, 'STATUS') !== 'Closed').length;
+
+        totalActions += tileTotal;
+        closedActions += tileClosed;
+        openActions += tileOpen;
+
+        if (tileOpen === 0 && tileTotal > 0) {
           employeesFullyClosed++;
         } else {
           employeesWithPending++;
         }
 
-        tile.actions.forEach(action => {
+        validActions.forEach(action => {
           allActionsList.push({
             ...action,
             tileId: tile.id,
@@ -2084,7 +2111,15 @@
 
     getFilteredMasterActions() {
       const rollup = this.getBossRollup();
-      const all = rollup.allActionsList || [];
+      // Safeguard: Ensure no PQ actions are included in the COO executive strategic dashboard
+      const all = (rollup.allActionsList || []).filter(action => {
+        if (!action) return false;
+        const aid = String(action.id || '').toUpperCase();
+        if (aid.startsWith('PQ-')) return false;
+        if (action.tileId === 'operations-pq') return false;
+        if (action.department === 'PQ' || action.code === 'PQ') return false;
+        return true;
+      });
       return this.filterActionList(all, {
         dept: this.state.masterFilterDept,
         colE: this.state.masterFilterColE !== 'all' ? this.state.masterFilterColE : this.state.masterFilterColC,
@@ -6515,7 +6550,7 @@
     getDepartmentalActionsModalHtml() {
       const isOpen = Boolean(this.state.isDeptActionsModalOpen);
       const q = (this.state.deptActionsModalSearch || '').toLowerCase().trim();
-      const employeeTiles = this.getAllTiles().filter(t => !t.isBossDashboard);
+      const employeeTiles = this.getAllTiles({ forceStandard: true }).filter(t => !t.isBossDashboard && t.id !== 'operations-pq' && t.code !== 'PQ');
       const filtered = employeeTiles.filter(tile => {
         if (!q) return true;
         return tile.name.toLowerCase().includes(q) ||
